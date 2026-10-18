@@ -27,7 +27,7 @@
 | B-09 start wear | 0–1 | 0.22 | 0–0.6 | gives wear a visible effect without dominating |
 | wear.perNominalFlight | 0–1 | 0.06 | 0.03–0.1 | ~10 flights before refurb matters |
 | wear.engineOut | 0–1 | 0.10 | 0.05–0.2 | |
-| wear.highWindCatch (tower wind > 10 m/s) | 0–1 | 0.04 | 0–0.1 | |
+| wear.highWindCatch (tower wind > 11 m/s, = `sigmaWindRefMPerS`, §13) | 0–1 | 0.04 | 0–0.1 | |
 | wear.reliabilityFactor | – | 1 + 2·wear | — | multiplies all booster failure probabilities |
 | vehicleHealth.goThreshold | 0–1 | 0.80 | 0.7–0.9 | VEHICLE station |
 
@@ -41,8 +41,8 @@
 | farm.heelFraction | – | 0.03 | 0.02–0.05 | unusable bottom fraction per tank |
 | farm.boilOff.LOX | 1/s | 2.3e-8 (0.20 %/day) | 1e-8–5e-8 | vacuum-jacketed storage typically 0.1–0.3 %/day |
 | farm.boilOff.CH4 | 1/s | 1.2e-8 (0.10 %/day) | 0.5e-8–3e-8 | warmer cryogen, lower loss |
-| MVP start farm LOX | kg | 4 150 000 | 3.95M–4.6M | **usable margin ≈ 88 t after a nominal load = ~38 min of hold**. Main D1 lever |
-| MVP start farm CH4 | kg | 1 140 000 | 1.10M–1.30M | margin ≈ 17 t = ~39 min of hold. Both propellants bind at once |
+| MVP start farm LOX | kg | 4 190 000 (§13) | 4.17M–4.25M | **reserve at T-0 after a nominal no-hold load ≈ 71 t = ~31 min of hold** (load + boil-off during load + topping to T-0 all counted). Main D1 lever; LOX binds first |
+| MVP start farm CH4 | kg | 1 155 000 (§13) | 1.15M–1.17M | reserve ≈ 21 t = ~49 min of hold. Binds second: an LOX-only order hits a CH4 wall in a long hold |
 | load.booster.LOX | kg/s | 1 000 | 700–1 400 | → 44 min; a full load of this class takes ~40–50 min [S3] |
 | load.booster.CH4 | kg/s | 280 | 200–400 | 44 min |
 | load.ship.LOX | kg/s | 450 | 300–600 | 43 min |
@@ -111,7 +111,7 @@ Nominal prep (no holds) from start T-06:00:00: booster lifted → rolled → sta
 | Key | Unit | Default | Range | Rationale |
 |---|---|---|---|---|
 | window.open | T s | −900 (planned T-0 = open + 15 min) | −1 800–0 | |
-| window.duration | s | 5 400 (90 min) | 1 800–7 200 | 75 min of hold possible versus ~38 min of propellant: **the core tension** |
+| window.duration | s | 5 400 (90 min) | 1 800–7 200 | 75 min of hold possible versus ~31 min of propellant at start (≤ ~66 min with the full standard fleet, §13): **the core tension** |
 | payloadMass | kg | 95 000 | 50k–150k | label, feeds flight profile post-MVP |
 | price | cr | 62 000 000 | 40M–90M | |
 | penalty.windowMissed | cr | 15 000 000 | 10–30 % of price | |
@@ -155,16 +155,18 @@ Success if the lateral error *e* ~ N(0, σ) satisfies |*e*| ≤ tol → **p = er
 |---|---|---|---|---|
 | arms.tolerance | m | 1.8 | 1.2–2.5 | catch arms close on hardpoints with a few m of play |
 | sigma.base | m | 0.6 | 0.4–0.8 | nominal p ≈ 0.997 |
-| sigma.perEngineOut | m | 0.9 | 0.5–1.2 | one out → p ≈ 0.77 |
-| sigma.windCoef (above windRef) | m per m/s | 0.12 | 0.05–0.2 | |
-| sigma.windRef | m/s | 8 | 6–10 | |
+| sigma.perEngineOut | m | 1.0 (§13) | 0.8–1.2 | one out, calm → p ≈ 0.74 |
+| sigma.windCoef (above windRef) | m per m/s | 0.15 (§13) | 0.1–0.2 | |
+| sigma.windRef (**tower** wind) | m/s | 11 (§13) | 10–13 | ≈ ground 8.5 m/s × towerFactor 1.3: σ only grows in the windier ~28 % |
 | sigma.lowProp (prop < lowPropRef) | m | 0.4 | 0.2–0.6 | |
-| lowPropRef | kg | 50 000 | — | |
+| lowPropRef | kg | 60 000 (§13) | 55k–64k | a boostback engine-out (90 − 35 = 55 t) is low-prop, an ascent one (65 t) is not |
 | tower.windLimitCatch (forced divert above) | m/s | 20 | 16–24 | |
-| autoCatchThreshold | – | 0.90 | 0.8–0.95 | policy without player input |
+| autoCatchThreshold | – | 0.65 (§13) | 0.6–0.75 | policy without player input: never takes a contested call |
 | catch.maxVerticalSpeed | m/s | 2 | — | display / assert only (scripted) |
 
-Reference cases: nominal 0.997 · 1 engine-out 0.77 · 1 engine-out + 14 m/s tower wind (σ = 2.22) 0.58 · same + low prop (σ = 2.62) 0.51. Break-even is 0.535 (§9), so the contested cases fall right around it.
+Reference cases (tower wind V<sub>t</sub>; §13): nominal calm 0.997 · nominal V<sub>t</sub> 14.3 0.90 · nominal V<sub>t</sub> 16.9 (ground at the 13 m/s launch limit) 0.78 · ascent engine-out calm 0.74 · ascent EO V<sub>t</sub> 14 0.62 · boostback EO (low prop) calm 0.63 · boostback EO V<sub>t</sub> 14 (σ = 2.45) **0.537** · boostback EO V<sub>t</sub> 16 0.49. Break-even is 0.535 (§9).
+
+**Catch bands** (decision strip label; UI-only thresholds, data in `catch.ts`): CLEAR p ≥ 0.90 · LEAN 0.65–0.90 · **CONTESTED 0.45–0.65** (EV of catch vs divert within ≈ ±10 M cr) · AGAINST < 0.45.
 
 ## 8. Weather and anomalies: `src/data/weather.ts`, `src/data/anomalies.ts`
 
@@ -228,7 +230,7 @@ Nominal flight P&L: +62 M − 20 M (ship) − 1.1 M (prop) − 1.5 M (refurb) �
 ## 11. Known balance concerns
 
 1. **Cash is a weak lever in the MVP.** Real propellant and haulage are tiny next to a 62 M contract, so D1's real tension is *timing* (lead time versus road closure) and *hold capacity*, not money. Rush fees are inflated to register in the debrief. In the campaign, daily ops cost and an expansion budget make cash bite.
-2. **The hold window (75 min) versus propellant margin (~38 min)** is the main dial. If playtests show players always scrub or always go, tune `MVP start farm LOX/CH4` and `vehicle.boilOff` first.
+2. **The hold window (75 min) versus propellant margin (~31 min at start, §13)** is the main dial. If playtests show players always scrub or always go, tune `MVP start farm LOX/CH4` and `vehicle.boilOff` first.
 3. **Anomaly frequency without the director** is ~45 % per run. The director makes it 100 % in the MVP. Revisit for the campaign.
 4. Rounded figures: no real vehicle is replicated. Prefer round numbers that are easy to read on the HUD.
 
@@ -255,7 +257,12 @@ Numbers the sim needed that this document did not specify. Each lives in `src/da
 | `logistics.windLimit.resumeMarginMPerS` | 0.5 | a wind-paused stack / transporter resumes 0.5 m/s under the limit |
 | `anomalies.director.windowCloseLeadS` | 1 800 | director fallback also 30 min before the window closes (count frozen at a poll) |
 
-**Flagged** (please review):
+**Review status (balancing pass 1, §13)**: all additions above are **accepted as is**, except
+`weather.groundWind.towerFactor` (kept at 1.3, now paired with a tower-wind `sigmaWindRefMPerS`) and
+`vehicles.wear.highWindCatchAboveMPerS` (10 → 11). Flag 1 → **resolved** (§13.1). Flag 4 → **resolved** (§13.2).
+Flags 2 and 3 → **accepted as deferred** (catastrophic failure and lightning stay unsimulated in the MVP; GDD §13.4).
+
+**Flagged** (resolved in §13, kept for history):
 1. **Hold margin is ~13 min, not ~38 min.** With the MVP start farm the sim leaves ≈ 31 t LOX / 6 t CH4 usable at T-0
    after a nominal load (the "88 t" above omits the loaded-vehicle boil-off during the 44-min load, ≈ 51 t LOX). Hence
    PROPELLANT starts MARGINAL. The golden autopilot orders 3 LX + 1 MX standard deliveries, which restores ≈ 39 min.
@@ -265,6 +272,83 @@ Numbers the sim needed that this document did not specify. Each lives in `src/da
 4. **The auto catch policy diverts often**: in the 200-run hands-off sweep (QA.md) 82 of 188 flights diverted. Tower
    wind = 1.3 × ground wind sits above `sigma.windRef` (8 m/s) most of the time, so p < 0.90 whenever ground wind
    exceeds ~9.3 m/s or an engine is out. Consider windRef 10 or towerFactor 1.15 if the auto policy should mostly catch.
+
+## 13. Balancing pass 1 (post-Phase 3)
+
+Resolves §12 flags 1 and 4 and the AC 3 no-input case. Data-only changes; no system logic changes. Hold-minute
+figures use the PROPELLANT station's own estimate (`propellantReserve().holdS`: usable farm − remaining load −
+boil-off during the load − topping to T-0, divided by the topping rate). Topping = 38.3 kg/s LOX (2.30 t/min) and
+7.1 kg/s CH4 (0.43 t/min); one LX truck = +8.7 min, one MX truck = +37 min.
+
+| Tunable (`file` → key) | Old | New | Unit | Rationale | Expected effect |
+|---|---|---|---|---|---|
+| `propellant.ts` → `mvpStart.farmLoxKg` | 4 150 000 | **4 190 000** | kg | the "88 t" design figure forgot boil-off during the load (≈ 51 t). 31 min covers one typical hold (A3 fix 20 min, or A1 at 11–22 min) but not two, nor a front | LOX reserve at T-0 ≈ 71 t ≈ **31 min**; PROPELLANT opens **MARGINAL** (intended: it is the D1 prompt) |
+| `propellant.ts` → `mvpStart.farmCh4Kg` | 1 140 000 | **1 155 000** | kg | CH4 binds *second*, so LOX is the readable main dial and an LOX-only order meets a CH4 wall | CH4 reserve ≈ 21 t ≈ **49 min** |
+| `catch.ts` → `sigmaWindRefMPerS` | 8 | **11** | m/s | the reference was written for ground wind but the model feeds **tower** wind (1.3 × ground). 11 m/s tower ≈ 8.5 m/s ground ≈ 72nd percentile | nominal flights: σ grows only in the windy tail |
+| `catch.ts` → `sigmaWindCoefMPerMPerS` | 0.12 | **0.15** | m per m/s | keeps wind a real driver once above the reference | nominal p = 0.90 at tower 14.3 m/s (ground 11, ~5 % of flights); floor ≈ 0.78 at the 13 m/s launch limit |
+| `catch.ts` → `sigmaPerEngineOutM` | 0.9 | **1.0** | m | an engine-out must make the call visibly risky in every wind | ascent EO calm p ≈ 0.74, at tower 14 m/s ≈ 0.62 |
+| `catch.ts` → `lowPropRefKg` | 50 000 | **60 000** | kg | with 50 t no single engine-out ever triggered the low-prop term (landing prop 65 t / 55 t), so the "+ low prop" reference case was unreachable | **boostback** EO (55 t) is low-prop: p 0.63 calm → **0.537 at tower 14 m/s** (on break-even) → 0.49 at 16 m/s. Ascent EO (65 t) is not |
+| `catch.ts` → `autoCatchThreshold` | 0.90 | **0.65** | – | rule: *the flight computer never takes a contested call for you*. 0.65 is the top of the CONTESTED band (EV catch − divert = 86p − 46 M cr ≈ +10 M); below it a human must decide, else divert (protects the irreversible asset). Above it, catching is clearly EV-positive | hands-off diverts drop from 44 % to **≈ 15–25 %** (essentially the contested flights) |
+| `vehicles.ts` → `wear.highWindCatchAboveMPerS` | 10 | **11** | m/s | "high wind" = the wind that also raises σ (same reference) | cosmetic: slightly fewer high-wind wear hits |
+| `weather.ts` → `groundWind.towerFactor` | 1.3 | 1.3 (kept) | – | power law from 10 m to the ~145 m arms with α ≈ 0.1 gives 1.31; physically right, so the fix goes into the σ reference instead | — |
+| `weather.ts` → `groundWind.gustFactor` | 1.25 | 1.25 (kept) | – | accepted | — |
+| `catch.ts` (new, UI only) → `bands` | — | CLEAR ≥ 0.90 · LEAN ≥ 0.65 · CONTESTED ≥ 0.45 · AGAINST | – | decision-strip label (§7); not read by the sim | — |
+
+Break-even is unchanged at 0.535 (economy untouched; `scenarios.test.ts` asserts it).
+
+### 13.1 Hold margin and D1 (finding 1)
+Design answer: **start lean on purpose** (~31 min, MARGINAL) so D1 is always presented and always has a price in time.
+D1 ladder (standard orders placed by T-04:40:00 arrive by T-02:00:00, before the T-00:40:00 road closure):
+
+| Orders | LOX min | CH4 min | Binding | PROPELLANT at load poll |
+|---|---|---|---|---|
+| none | 31 | 49 | LOX 31 | MARGINAL |
+| 3 LX + 1 MX (golden / hands-off autopilot) | 57 | 86 | 57 | MARGINAL |
+| 4 LX only | 66 | 49 | CH4 49 | MARGINAL |
+| **4 LX + 1 MX** (whole standard LX fleet) | 66 | 86 | 66 | **GO** (> 61.8 min incl. hysteresis) |
+| 4 LX + 2 rush LX + 1 MX | 83 | 86 | 83 | GO; covers the full 75-min hold budget |
+
+The tension is **information vs lead time**, not cash: the 3 h forecast only covers the launch window from ≈ T-03:00:00,
+after the standard-order cutoff (T-04:40:00). So the player either buys a blind hedge with standard trucks, or waits
+for the forecast and pays 20× for rush (cutoff T-02:10:00). Only rush beyond the 4-truck LX fleet can cover a full
+75-min hold. Cash stays a weak lever (§11.1, GDD §14 risk 5).
+
+### 13.2 Catch call and D3 (finding 2)
+Target distribution of p (tower wind ~ N(9.1, 3.25) m/s; launch needs ground ≤ 13 m/s):
+
+| Flight class | CLEAR ≥ 0.90 | LEAN 0.65–0.90 | CONTESTED 0.45–0.65 | AGAINST < 0.45 |
+|---|---|---|---|---|
+| nominal (no engine-out) | ≥ 93 % | ≤ 7 % | ≈ 0 % | 0 % |
+| ascent engine-out | 0 % | ≈ 89 % (0.65–0.74) | ≈ 11 % (tower > 13.1 m/s) | 0 % |
+| boostback engine-out (low prop) | 0 % | 0 % | ≈ 99 % | < 1 % (tower > 17.7 m/s) |
+| all hands-off flights (≈ 35 % have an EO, mostly via the director) | ≈ 60 % | ≈ 20 % | **≈ 18–20 %** | < 1 % |
+
+D3 is a confirmation without anomaly, a "lean catch with visible risk" after an ascent engine-out, and a real
+coin-flip after a boostback engine-out (the later failure is worse: less propellant to correct). Wind alone never
+creates a contested call: the launch wind limit puts a floor under nominal p. Hands-off now catches the LEAN cases,
+so it will lose some: expect **≈ 3–7 % failed catches** under hands-off, all of them ascent-EO catches at p 0.65–0.74.
+That is the price of an EV-sane default, and it shows on the debrief.
+
+### 13.3 AC 3 no-input case (finding 3)
+Design answer: **reword AC 3, keep the director unchanged.** With no input at all nothing is rolled out or stacked,
+so there is no load and no flight: A2–A4 are unreachable by construction, and the load poll waits on MARGINAL
+PROPELLANT. A director that fired anomalies into an empty pad would be spectacle without a decision. The anomaly
+guarantee is therefore measured under the scripted **hands-off** policy, and the no-input run becomes a robustness
+clause (still ≥ 1 anomaly via the existing fallback, clean auto-scrub, no hang). New text: GDD §13.3 AC 3.
+
+### 13.4 Expected sweep outcomes (`npx tsx scripts/sim/anomaly-sweep.ts 200`) and checks to verify
+| Check | Before | Target after pass 1 |
+|---|---|---|
+| PROPELLANT `holdS` at the scenario start, no orders | ≈ 13 min (LOX) | **31 ± 2 min** LOX (CH4 49 ± 3), status MARGINAL, driver `FARM_RESERVE_LOX` |
+| Same after the autopilot's 3 LX + 1 MX have offloaded | ≈ 39 min | **57 ± 2 min**, still MARGINAL (golden log: the load-poll GO stays `MARGINAL PROPELLANT`) |
+| `hands-off`: runs with ≥ 1 anomaly | 200 / 200 | 200 / 200 |
+| `hands-off`: anomaly shares vs 30 / 25 / 20 / 25 | 33.6 / 22.3 / 20.4 / 23.7 | each within ±10 pts (expect ≈ unchanged) |
+| `hands-off`: diverted / flights | 82 / 188 (44 %) | **15–25 %** (≈ 28–47 of ~190), none from wind alone |
+| `hands-off`: failed catches / flights | 1 / 188 | **3–7 %** |
+| `hands-off`: scrubbed runs | 12 | ≤ 12 (more hold margin) |
+| `none`: runs with ≥ 1 anomaly / outcome | 200 / 200, all scrubbed, A1 only | unchanged: 200 / 200 with ≥ 1 anomaly, all scrubbed with the window-missed penalty, each reaches Debrief |
+| Golden seed 42 | CAUGHT, p 0.997 | still CAUGHT (no EO, calm). Diff expected only in farm levels / PROPELLANT `value`; regenerate with that explanation |
+| Unit tests to retarget | — | `range.test.ts` "MVP start: MARGINAL on LOX" stays valid; any test asserting 0.90 auto policy or the old σ reference cases moves to the §7 cases |
 
 ## Sources (brief)
 - [S1] Widely reported public specs for the super-heavy methalox class (booster ~3 400 t, ship ~1 200–1 500 t of propellant). Not re-verified in this pass; used as order of magnitude only.

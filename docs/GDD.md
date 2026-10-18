@@ -91,7 +91,7 @@ Format for each: **Decision** · **Inputs** · **Outputs** · **Trade-off** · *
 - **Decision**: how many deliveries to order (standard or rush), and when, so they arrive before the road closes. Run lean (cheap) or build margin (costly, but survives holds and a recycle).
 - **Inputs**: farm inventories (LOX, CH4), farm capacity, farm boil-off, tanker fleet (LX-xx LOX, MX-xx CH4), round-trip time to the off-map supplier, offload rate, road closure rule (no tanker inside the pad hazard radius from T-00:40:00 until Safing ends).
 - **Outputs**: tankers drive in, offload, and leave. Farm level rises. Cost is charged per tonne delivered (+ rush premium).
-- **Trade-off**: margin versus cash, and the timing of the road closure. A delivery that arrives after the closure waits at the gate and does not count for this attempt.
+- **Trade-off**: margin versus cash, and the timing of the road closure. A delivery that arrives after the closure waits at the gate and does not count for this attempt. In the MVP the sharp edge is **information versus lead time**: standard trucks must be ordered before the 3 h forecast can see the window (blind hedge), while rush trucks can wait for the forecast but cost 20×. The farm starts lean (~31 min of holds, PROPELLANT MARGINAL); the whole standard LX fleet (4 LX + 1 MX) turns it GO at ~66 min, still short of the 75-min hold budget (BALANCING §13.1).
 - **Failure mode**: farm too low to complete the load, to top off through a hold, or to reload after a scrub → propellant station NO-GO → forced scrub. The window is lost, with its penalty.
 - **HUD**: Tanks tab (each tank: level %, tonnes, boil-off rate), Vehicles tab (tankers: state, ETA, km/h), flight card propellant sparkline, Tasks tab (Order delivery action).
 
@@ -139,8 +139,8 @@ Format for each: **Decision** · **Inputs** · **Outputs** · **Trade-off** · *
 - **Decision**: **GO FOR CATCH** or **DIVERT** (offshore splashdown, booster expended). Deadline: landing-burn ignition. The booster flies an offshore aim point by default and only crosses to the tower on a GO, as the real approach does.
 - **Inputs**: predicted catch probability *p* (from lateral error σ vs arm tolerance; σ grows with engine-outs, tower wind and low landing-propellant margin), landing propellant margin, tower wind, booster health.
 - **Outputs**: catch success → booster `CAUGHT, SAFING`, small wear. Catch failure → booster destroyed **and** tower damaged (pad down for weeks, big repair). Divert → booster lost (replacement cost), tower safe.
-- **Trade-off**: *p* is shown honestly (to 1 %). The expected-value break-even sits around *p* ≈ 55 % with default numbers (BALANCING §9), so anomalies push the call into a real dilemma.
-- **Auto policy**: if the player gives no input by the deadline, the flight computer catches if *p* ≥ `autoCatchThreshold` (0.90) and diverts otherwise. Forced divert if landing propellant < minimum (no choice, shown as NO-GO).
+- **Trade-off**: *p* is shown honestly (to 1 %) with a band label: CLEAR ≥ 0.90 · LEAN 0.65–0.90 · CONTESTED 0.45–0.65 · AGAINST < 0.45. The expected-value break-even sits at *p* ≈ 0.535 with default numbers (BALANCING §9). Without anomaly the call is a confirmation (wind alone never drops *p* below ~0.78); an ascent engine-out makes it LEAN (~0.62–0.74); a boostback engine-out (low landing propellant) makes it CONTESTED (~0.49–0.63, on break-even in a 14 m/s tower wind). Target: ~18–20 % of flights contested (BALANCING §13.2).
+- **Auto policy**: if the player gives no input by the deadline, the flight computer catches if *p* ≥ `autoCatchThreshold` (0.65) and diverts otherwise: it never takes a contested call on the player's behalf. Forced divert if landing propellant < minimum (no choice, shown as NO-GO).
 - **HUD**: decision strip (`CATCH p 0.62 · DEADLINE T+06:20 · GO FOR CATCH / DIVERT`), inspector (catch arms `OPEN/CLOSED`, landing prop, tower wind), TOWER-1 label turns orange, recovery ring on the sea (divert point).
 
 ### 4.9 Safing and turnaround
@@ -234,7 +234,7 @@ Rule: the game never auto-raises the rate. It only drops it. Time scale is imple
 | A1 | **Range fouled**: a fishing boat (`UNK-01`) enters the maritime hazard area | T-02:00:00 → T-0 | RANGE NO-GO until intercepted; a PICKET boat is dispatched, ETA shown | HOLD and wait for the ETA (window and farm drain), or SCRUB if the ETA exceeds the window |
 | A2 | **Upper-wind spike** (front arrives early) | prop load → T-0 | WEATHER MARGINAL or NO-GO, forecast shows the trend | HOLD and wait for a lull (forecast band), GO on MARGINAL (ascent risk ×2), or SCRUB |
 | A3 | **GSE leak** on a CH4 quick-disconnect | propellant load | VEHICLE MARGINAL, load rate ×0.5 | continue degraded (may not finish before window) or HOLD 20 min to fix (full rate after) |
-| A4 | **Booster engine-out** (ascent or boostback) | T+0 → landing burn | engines lit 32/33, σ catch +, landing prop margin − | catch decision becomes contested (see §4.8) |
+| A4 | **Booster engine-out** (ascent or boostback) | T+0 → landing burn | engines lit 32/33, σ catch +, landing prop margin − | catch decision becomes LEAN (ascent EO) or CONTESTED (boostback EO, low landing prop), see §4.8 |
 
 Post-MVP pool: ship engine-out / abort to ocean, lightning hold, transporter breakdown, tanker delay, crew sickness, sea state blocks pickets/RV, sensor false alarm (auto-abort at T-10 s), tower arm hydraulic fault, catastrophic ascent failure (vehicle lost).
 
@@ -352,14 +352,14 @@ Tone: matter-of-fact, procedural, a little dry. Event log lines read like a real
 - **Site**: Brackwater (LC-1) only. Breadcrumb shows the other three sites as non-interactive.
 - **Entities**: TOWER-1, OLM-1, tank farm (LOX-1..3, CH4-1..2, LN2-1), small yard (HB-1, TH-1), B-09, S-21, SP-41 (+ SP-42 ambient), CR-77, LX-01..04, MX-01..02, CV-01..03, PK-03, PK-04, RV-1, WX-1, WX-2, and UNK-01 when A1 fires.
 - **Contract**: NRL-3, pre-accepted. Window opens at a fixed scenario time, 90 min long.
-- **Start state**: T-06:00:00 (planned T-0 = window open + 15 min). Booster and ship in the yard. Farm partially full (LOX ≈ 4,150 t, CH4 ≈ 1,140 t: enough for a nominal load plus ~38 min of holds).
+- **Start state**: T-06:00:00 (planned T-0 = window open + 15 min). Booster and ship in the yard. Farm partially full (LOX ≈ 4,190 t, CH4 ≈ 1,155 t: enough for a nominal load plus ~31 min of holds, LOX binding; CH4 lasts ~49 min). PROPELLANT therefore opens MARGINAL on purpose: it is the D1 prompt.
 - **Cycle**: Rollout → Stack → Propellant load → Terminal count → Liftoff → Boostback → Tower catch (or divert) → Safing → Debrief.
 - **Target length**: 25–40 min real time.
 
 ### 13.2 The MVP decisions
 1. **D1: Propellant margin**: order 0–N extra deliveries (standard/rush) before the road closes at T-00:40:00. Cost versus surviving holds.
 2. **D2: Go / No-Go**: at the T-01:20:00 load poll, the T-00:10:00 terminal poll, the T-00:00:40 final poll, and whenever a station changes: GO / HOLD / RECYCLE / SCRUB.
-3. **D3: Catch or divert** (contested when A4 or high tower wind occurs; otherwise a confirmation).
+3. **D3: Catch or divert** (confirmation without anomaly; LEAN after an ascent engine-out; CONTESTED after a boostback engine-out, worse in high tower wind).
 4. **D3b: GSE leak response** (only when A3 fires): degraded vs hold-to-fix.
 
 D1, D2 and D3 are always presented, so the slice always has ≥ 2 meaningful decisions even before anomalies.
@@ -369,7 +369,10 @@ D1, D2 and D3 are always presented, so the slice always has ≥ 2 meaningful dec
 **Scenario and determinism**
 1. Launching the MVP scenario with a fixed seed produces the same event log (timestamps + payloads) on two runs with the same player inputs (headless test).
 2. The scenario starts at the documented start state (§13.1) with every value loaded from `src/data/*` (no tunables in systems code; checked by review + a test that changing a data value changes the outcome).
-3. At least one anomaly from A1–A4 fires in 100 % of 200 seeded headless runs with no player input (director on), and the pool distribution is within ±10 points of the configured weights.
+3. **Anomaly coverage** (`scripts/sim/anomaly-sweep.ts`, scenario `mvp`, seeds 0–199, director on, each run stepped to Debrief or 2 000 000 ticks):
+   a. Policy **`hands-off`** = the standard autopilot's StartRollout, Stack, delivery orders and GO at every poll / releasable hold, with **no** leak response and **no** catch call (auto policy decides): ≥ 1 anomaly from A1–A4 fires in **200 / 200** runs, and each anomaly's share of all fired anomalies is within **±10 points** of `anomalies.director.weights`.
+   b. Policy **`none`** (no input at all; nothing is rolled out, the count waits at the load poll): ≥ 1 anomaly still fires in 200 / 200 runs (director fallback, A1 only is acceptable), and every run reaches Debrief as a scrub with the window-missed penalty (no hang, no crash).
+   c. Under `hands-off`, diverted flights are 15–25 % of flights and none is diverted at *p* ≥ `autoCatchThreshold` (BALANCING §13.4).
 
 **Prepare**
 4. "Start rollout" on B-09 in the Tasks tab sends CR-77 to load it onto SP-41, which drives yard → OLM-1 on a visible path at the configured speed. Arrival time = path length / speed ± 1 tick.
@@ -391,7 +394,7 @@ D1, D2 and D3 are always presented, so the slice always has ≥ 2 meaningful dec
 16. Liftoff at T-0 follows the nominal profile within tolerance: MECO at T+155 s ± 2 s, ~68 km; catch at T+415 s ± 5 s (nominal, no anomaly). Golden telemetry log test.
 17. Engines-lit, altitude, velocity, propellant and heading in the inspector match the sim projection (UI shows values ≤ 250 ms old).
 18. A4 engine-out changes engines lit (e.g. `32 of 33`), raises σ and lowers landing margin. The displayed catch probability updates.
-19. The catch decision strip appears no later than boostback end and stays until the landing-burn ignition deadline. GO FOR CATCH / DIVERT work. No input → auto policy (threshold 0.90).
+19. The catch decision strip appears no later than boostback end and stays until the landing-burn ignition deadline. GO FOR CATCH / DIVERT work. No input → auto policy (catch if *p* ≥ `autoCatchThreshold` = 0.65, else divert).
 20. Catch outcome is rolled once from *p*, seeded. Success → arms close, booster `CAUGHT, SAFING`. Failure → booster lost + TOWER-1 `DAMAGED`. Divert → booster flies to the offshore point (orange recovery ring) and is lost.
 21. Ship S-21 reaches SECO (event) and the contract is marked fulfilled even if the booster is diverted or lost.
 22. Safing runs (configured duration), after which the debrief shows outcome, money and reputation delta, booster wear/flight count, and a timestamped decision log.
@@ -419,9 +422,10 @@ D1, D2 and D3 are always presented, so the slice always has ≥ 2 meaningful dec
 ## 14. Design risks (tracked)
 
 1. **Dead air**: long stretches with nothing to decide (stack, load). Mitigation: compression + skip, anomaly director, polls that need input, background logistics to watch.
-2. **The catch call feels like a coin flip**: if *p* is opaque the decision is noise. Mitigation: show *p*, its drivers and the expected cost of each branch in the decision strip, and keep the EV break-even near 55 %.
+2. **The catch call feels like a coin flip**: if *p* is opaque the decision is noise. Mitigation: show *p*, its band, its drivers and the expected cost of each branch in the decision strip, and keep the EV break-even near 0.535. Contested calls come from engine-outs (mostly boostback), not from wind alone; target ~18–20 % of flights contested (BALANCING §13.2). Watch: if playtests show players catch every LEAN call without thinking, raise `sigmaPerEngineOutM` toward 1.2.
 3. **Holds without texture**: HOLD needs visible costs (window bar shrinking, farm draining, crew clock). If those aren't legible, players will always hold or always GO.
 4. **Real-number scale vs fun**: real refill needs ~190 truckloads of LOX. Truck counts are kept real-ish on screen, but the farm buffers the scale; watch that orders don't feel like busywork (bulk orders, post-MVP standing orders).
+5. **D1 is a cheap hedge**: truck fees are tiny next to a 62 M contract, so a cash-only reading says "always order the whole fleet". D1 holds up only through lead time vs forecast (standard cutoff T-04:40:00 comes before the forecast sees the window; rush costs 20×) and the 4-truck LX fleet cap. If playtests show everyone orders 4 LX + 1 MX at T-06:00:00 every time, the campaign fix is cash (ops cost, expansion budget). A possible later MVP fix is offload slots that conflict with the load.
 
 ## 15. Open questions for the user
 
