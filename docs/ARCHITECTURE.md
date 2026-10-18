@@ -460,6 +460,13 @@ interface FuelxDebug {
 - **Versioning**: `schema` is an integer bumped on any `World` shape change; `src/sim/save/migrations.ts` holds `migrations[n]: (w_n) => w_{n+1}`, applied in order on load. Each migration ships with a fixture save under `tests/fixtures/saves/schema-<n>.json` and a test (load old fixture → migrate → validate → run 100 ticks without error). Saves newer than the app are rejected with a clear message.
 - Equivalence test: run K ticks → save → load → M ticks ≡ K+M ticks (canonical-JSON hash).
 - The `commandLog` (opt-in, on by default in dev) + seed reproduces a session for bug reports.
+- **Implementation (3.10)**: `src/sim/save/save.ts` — `createSave(world, { game, createdAt, commandLog? })` (canonical
+  JSON; `createdAt` comes from the host, the sim has no clock) and `loadSave(json, migrations?)` → `{ world, commandLog,
+  game, createdAt, fromSchema }`; errors are codes `SAVE_NOT_JSON`, `SAVE_BAD_FORMAT`, `SAVE_FROM_NEWER_GAME`,
+  `SAVE_MIGRATION_MISSING`, `WORLD_INVALID`. `src/sim/save/migrations.ts` — `MIGRATIONS` (empty at schema 1) +
+  `migrateWorld(raw, from, to, table)`. Fixture `tests/fixtures/saves/schema-1.json` (seed 42 at sim tick 540 000, under
+  the A3 LEAK_FIX hold), written once by `scripts/sim/make-save-fixture.ts`. Compression / IndexedDB stay in
+  `src/app/persistence` (8.3).
 
 ## 11. Token pipeline
 
@@ -567,6 +574,9 @@ Total GLB payload for the MVP site ≤ 4 MB (estimate 2.5 MB). Textures: none by
 | Entity capacity | MVP ≈ 45; designed for ≤ 2 000 across all sites; `maxSlots` 4 096 |
 | Golden full-launch test runtime | ≤ 5 s |
 | Save size (MVP) | ≤ 200 KB raw JSON |
+
+Measured by `npm run perf` (`scripts/perf/sim-bench.ts`, latest numbers in `docs/QA.md`): MVP 2.9 µs mean / 4.7 µs p95
+per tick, 100× frame 0.22 ms p95, stress (2 000 entities) 76 µs mean, MVP save 17 KB.
 
 ## 14. Top technical risks
 

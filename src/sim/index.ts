@@ -75,3 +75,8 @@ export type { MvpScenario, MvpScenarioOptions } from './scenarios/mvp';
 export { STANDARD_AUTOPILOT, autopilotCommands, catchBreakEvenP } from './scenarios/autopilot';
 export type { AutopilotOptions } from './scenarios/autopilot';
 export { economySystem, recordDecision } from './systems/economy';
+export { validateWorld } from './core/serialize';
+export { SAVE_FORMAT, createSave, loadSave } from './save/save';
+export type { LoadedSave, SaveFile, SaveMeta } from './save/save';
+export { MIGRATIONS, migrateWorld } from './save/migrations';
+export type { Migration, RawWorld } from './save/migrations';

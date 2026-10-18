@@ -33,6 +33,15 @@ export type {
   DirectorPlan,
   LeakState,
   PendingEngineOut,
+  LedgerItem,
+  LedgerEntry,
+  AttemptStart,
+  ContractStatus,
+  ContractState,
+  DecisionBy,
+  DecisionEntry,
+  DebriefOutcome,
+  Debrief,
 } from './core/world';
 export type { SimEvent, SimEventInput, SimEventType } from './core/events';
 export type { Command, CommandType, CommandOf, StampedCommand } from './core/commands';

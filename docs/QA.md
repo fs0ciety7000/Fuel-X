@@ -39,6 +39,8 @@ Never run `playwright install`; Playwright stays at 1.56.1 until the preinstalle
 | `tests/sim/properties.test.ts` | 200 fast-check cases (6 snapshots × random seeds × random commands, 100 s each): no negative propellant, tanks within capacity, mass conserved before liftoff, no NaN, phases monotonic except RECYCLE |
 | `scripts/sim/anomaly-sweep.ts` (manual) | AC 3: 200 full runs, policies `none` and `hands-off`; ≥ 1 anomaly in every run, distribution within ±10 points of the director weights. Results below |
 
+**Save fixtures**: `tests/fixtures/saves/schema-<n>.json` are frozen (prettier-ignored canonical JSON). On a `WORLD_SCHEMA` bump: keep the old fixture, add `migrations[n]` in `src/sim/save/migrations.ts`, then `npx tsx scripts/sim/make-save-fixture.ts` writes the new schema's fixture (it refuses to overwrite).
+
 **Golden update**: `npx vitest run tests/golden -u`, read the diff, explain in the commit which rule or number changed it (never regenerate to silence a red test).
 
 ## Visual baselines
@@ -53,6 +55,11 @@ Phase 2 reference screenshots (manual, not baselines yet): `docs/screens/phase2-
 | | CSS gzip | 25 KB | 2.7 KB |
 | | Fonts (WOFF2) | 150 KB | 85.1 KB |
 | | GLB payload | 4 MB | 0 |
+| 2026-10-18 (Phase 3.10, `npm run perf`, Node 22, container 4 vCPU) | Sim tick, MVP world (full seed-42 run, 750 455 ticks) mean / p95 | 50 / 150 µs | 2.94 / 4.72 µs |
+| | Sim per frame at 100× (50 steps) p95 | 4 ms | 0.22 ms |
+| | Sim tick, stress world (2 000 entities, from T-01:10:00) mean (p95) | 400 µs | 76.3 µs (151 µs) |
+| | MVP save at Debrief (raw canonical JSON, no command log) | 200 KB | 16.7 KB |
+| | Golden full-launch test runtime (Vitest, uninstrumented) | 5 s | ≈ 3.7 s |
 
 ### AC 3 anomaly sweep (2026-10-18, `npx tsx scripts/sim/anomaly-sweep.ts 200`, 195 s on 4 cores)
 

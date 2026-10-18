@@ -65,13 +65,17 @@ export function serializeWorld(world: World): string {
 }
 
 export function deserializeWorld(json: string): World {
-  const parsed: unknown = JSON.parse(json);
+  return validateWorld(JSON.parse(json));
+}
+
+/** Checks a parsed world (current schema, required fields); throws on anything else. */
+export function validateWorld(parsed: unknown): World {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new Error('deserializeWorld: not an object');
+    throw new Error('WORLD_INVALID: not an object');
   }
   const w = parsed as Partial<World>;
   if (w.schema !== WORLD_SCHEMA) {
-    throw new Error(`deserializeWorld: schema ${String(w.schema)} (expected ${WORLD_SCHEMA}; migrate first)`);
+    throw new Error(`WORLD_INVALID: schema ${String(w.schema)} (expected ${WORLD_SCHEMA}; migrate first)`);
   }
   if (
     typeof w.tick !== 'number' ||
@@ -79,9 +83,12 @@ export function deserializeWorld(json: string): World {
     !w.rng ||
     !w.countdowns ||
     !w.logistics ||
+    !w.economy ||
+    !w.config ||
+    !w.weather ||
     !Array.isArray(w.outbox)
   ) {
-    throw new Error('deserializeWorld: missing world fields');
+    throw new Error('WORLD_INVALID: missing world fields');
   }
   return parsed as World;
 }

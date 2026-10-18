@@ -9,3 +9,6 @@ src/tokens/generated/
 public/models/
 docs/
 *.md
+
+# Frozen save fixtures are canonical JSON (ARCHITECTURE §10)
+tests/fixtures/saves/
