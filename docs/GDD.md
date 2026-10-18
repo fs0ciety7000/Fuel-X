@@ -253,7 +253,7 @@ Vehicle loss during ascent exists in the model (very low base probability, raise
 | Crew shift time | s | shift change (12 h) | ops |
 
 ### 8.2 Flight economics (MVP defaults, see BALANCING §9)
-Contract 62 M cr. Nominal flight cost ≈ 24 M cr (expended ship 20 M + propellant ≈ 1.6 M + ops + refurb). Losing a booster ≈ 40 M. Tower damage ≈ 25 M + 21 days of pad downtime. So a nominal catch is very profitable, a divert roughly breaks even, and a failed catch is a disaster. That spread is what makes the catch call matter.
+Contract 62 M cr. Nominal flight cost ≈ 23 M cr (expended ship 20 M + propellant ≈ 1.1 M + refurb 1.5 M + ops). Losing a booster ≈ 40 M. Tower damage ≈ 25 M + 21 days of pad downtime. So a nominal catch is very profitable, a divert roughly breaks even, and a failed catch is a disaster. That spread is what makes the catch call matter.
 
 ### 8.3 Contract rules
 - Window: open time + duration. Liftoff must occur inside it.
@@ -351,7 +351,7 @@ Tone: matter-of-fact, procedural, a little dry. Event log lines read like a real
 - **Site**: Brackwater (LC-1) only. Breadcrumb shows the other three sites as non-interactive.
 - **Entities**: TOWER-1, OLM-1, tank farm (LOX-1..3, CH4-1..2, LN2-1), small yard (HB-1, TH-1), B-09, S-21, SP-41 (+ SP-42 ambient), CR-77, LX-01..04, MX-01..02, CV-01..03, PK-03, PK-04, RV-1, WX-1, WX-2, and UNK-01 when A1 fires.
 - **Contract**: NRL-3, pre-accepted. Window opens at a fixed scenario time, 90 min long.
-- **Start state**: scenario time T-06:00:00 before window open. Booster and ship in the yard. Farm partially full (LOX ≈ 4,300 t, CH4 ≈ 1,250 t: enough for a nominal load with a thin margin).
+- **Start state**: T-06:00:00 (planned T-0 = window open + 15 min). Booster and ship in the yard. Farm partially full (LOX ≈ 4,150 t, CH4 ≈ 1,140 t: enough for a nominal load plus ~38 min of holds).
 - **Cycle**: Rollout → Stack → Propellant load → Terminal count → Liftoff → Boostback → Tower catch (or divert) → Safing → Debrief.
 - **Target length**: 25–40 min real time.
 

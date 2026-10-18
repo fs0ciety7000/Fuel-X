@@ -20,9 +20,9 @@ and **Blender** (shared `MAT_*` materials). Enforcement must be mechanical, not 
 | CSS-in-JS runtime (styled-components/emotion) | Co-location | Runtime cost on a perf-budgeted page; SSR-oriented ecosystem we don't need |
 
 ## Decision
-- **Source of truth**: `src/tokens/tokens.ts` — a typed `as const` object, role-named (`color.paper`, `color.ink`, `color.accent`, `color.accentText`, `color.accentTint`, `ink ramp`, `space.*`, `type.*`, `rule.*`, `motion.*`, `radius: 0`). Values come from DESIGN_SYSTEM.md.
+- **Source of truth**: `src/tokens/tokens.ts` — a typed `as const` object following DESIGN_SYSTEM naming (`tokens.<group>.<role>`, camelCase, role-named: color, ink ramp, space, type, rule, motion, `world.*` 3D tokens, `radius: 0`). Values come from DESIGN_SYSTEM.md. It lives in a top-level `src/tokens/` (not `src/ui/`) because render code and Blender consume it too and render must not import UI.
 - **Generator** `scripts/tokens/build.ts` (run by `npm run tokens`, and as part of `dev`/`build`/`lint --check`) emits, committed to git:
-  - `src/tokens/generated/tokens.css` — `:root { --color-paper: #F4F4F0; … }` (sRGB hex).
+  - `src/tokens/generated/tokens.css` — `:root { --fx-color-paper: #F4F4F0; … }` (CSS names `--fx-<group>-<role>` per DESIGN_SYSTEM; sRGB hex).
   - `src/tokens/generated/tokens.json` — the same values with, for colors, both `srgb` hex and **`linear` float triplets**, consumed by `blender/lib/materials.py` and available to scripts.
   - Render code imports `@tokens/tokens` directly (TS), converting with three's `Color.setStyle()` (sRGB → linear handled by `ColorManagement`).
   - `lint` runs the generator in `--check` mode and fails if generated files are stale.
@@ -30,7 +30,7 @@ and **Blender** (shared `MAT_*` materials). Enforcement must be mechanical, not 
 - **Stylelint rules** (config in repo, applied to `src/**/*.css` except `src/tokens/generated/`):
   `color-no-hex`, `color-named: never`, `function-disallowed-list: [rgb, rgba, hsl, hsla, hwb, lab, lch, oklab, oklch, color-mix, linear-gradient, radial-gradient, conic-gradient, repeating-linear-gradient]`,
   `property-disallowed-list: [box-shadow, text-shadow, backdrop-filter, filter, opacity]`,
-  `declaration-property-value-allowed-list: { border-radius: ["0"], /^font-size$/: ["/^var\\(--/"], /^(margin|padding|gap)/: ["/var\\(--/", "0"] }` (`opacity` is allowed only in the noise-overlay file via a scoped override). Colors therefore can only arrive through `var(--color-*)`.
+  `declaration-property-value-allowed-list: { border-radius: ["0"], /^font-size$/: ["/^var\\(--fx-/"], /^(margin|padding|gap)/: ["/var\\(--fx-/", "0"] }` (`opacity` is allowed only in the noise-overlay file via a scoped override). Colors therefore can only arrive through `var(--fx-*)`.
 - **Fonts**: self-hosted subsetted WOFF2 in `public/fonts/` (families chosen in DESIGN_SYSTEM.md; licenses OFL). No Google Fonts CDN: offline-capable, deterministic screenshots.
 - No icon library: glyphs are a small inline SVG sprite / Unicode set defined by DESIGN_SYSTEM.
 
