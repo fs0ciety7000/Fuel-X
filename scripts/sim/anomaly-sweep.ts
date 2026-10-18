@@ -20,14 +20,18 @@ interface RunReport {
   fallback: boolean;
   outcome: string;
   recovery: { mode: string; result: string; p: number; decidedBy: string } | null;
+  /** p at the moment the recovery mode was committed (debrief p is the live value after it). */
+  committedP: number | null;
 }
 
 const HANDS_OFF: AutopilotOptions = { ...STANDARD_AUTOPILOT, leakResponse: null, catchDecision: false };
 
 function runOne(seed: number, policy: Policy): RunReport {
   const { world, countdown: cd } = createMvpScenario({ seed });
+  let committedP: number | null = null;
   for (let i = 0; i < 2_000_000 && cd.phase.state !== 'Debrief'; i++) {
     step(world, policy === 'none' ? [] : autopilotCommands(world, cd.id, HANDS_OFF));
+    for (const e of world.outbox) if (e.t === 'RecoveryCommitted') committedP = e.p;
     world.outbox.length = 0;
   }
   const st = world.anomalies[cd.id];
@@ -39,6 +43,7 @@ function runOne(seed: number, policy: Policy): RunReport {
     fallback: st?.director.fallbackUsed ?? false,
     outcome: world.debriefs[cd.id]?.outcome ?? cd.phase.state,
     recovery: world.debriefs[cd.id]?.recovery ?? null,
+    committedP,
   };
 }
 
@@ -94,7 +99,7 @@ if (workerIdx >= 0) {
     }
     console.log(`  outcomes: ${JSON.stringify(outcomes)}`);
     if (withOne < runs) failed = true;
-    const flights = reports.flatMap((r) => (r.recovery ? [r.recovery] : []));
+    const flights = reports.flatMap((r) => (r.recovery ? [{ ...r.recovery, p: r.committedP ?? r.recovery.p }] : []));
     const diverted = flights.filter((f) => f.mode === 'DIVERT');
     const failedCatch = flights.filter((f) => f.result === 'CATCH_FAILED').length;
     const highPDivert = diverted.filter((f) => f.p >= cm.autoCatchThreshold).length;

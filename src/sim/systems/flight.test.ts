@@ -307,7 +307,12 @@ describe('auto policy without input (AC 19)', () => {
       'CATCH',
       'AUTO',
     ],
-    ['tower wind 14 m/s, no engine-out (p ≈ 0.91) → catch', (f) => void (f.world.weather.towerWindMPerS = 14), 'CATCH', 'AUTO'],
+    [
+      'tower wind 14 m/s, no engine-out (p ≈ 0.91) → catch',
+      (f) => void (f.world.weather.towerWindMPerS = 14),
+      'CATCH',
+      'AUTO',
+    ],
     [
       'ascent engine-out + tower wind 14 m/s (p ≈ 0.62, CONTESTED) → divert',
       (f, tS) => {
@@ -319,7 +324,12 @@ describe('auto policy without input (AC 19)', () => {
     ],
     [
       'boostback engine-out, calm (p ≈ 0.63, low prop, CONTESTED) → divert',
-      (f) => void (f.booster.fsm.state === 'BOOSTBACK' && f.booster.engines.failed === 0 && engineOut(f.world, f.booster.id)),
+      (f) =>
+        void (
+          f.booster.fsm.state === 'BOOSTBACK' &&
+          f.booster.engines.failed === 0 &&
+          engineOut(f.world, f.booster.id)
+        ),
       'DIVERT',
       'AUTO',
     ],

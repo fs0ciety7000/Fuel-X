@@ -161,7 +161,7 @@ Success if the lateral error *e* ~ N(0, σ) satisfies |*e*| ≤ tol → **p = er
 | sigma.lowProp (prop < lowPropRef) | m | 0.4 | 0.2–0.6 | |
 | lowPropRef | kg | 60 000 (§13) | 55k–64k | a boostback engine-out (90 − 35 = 55 t) is low-prop, an ascent one (65 t) is not |
 | tower.windLimitCatch (forced divert above) | m/s | 20 | 16–24 | |
-| autoCatchThreshold | – | 0.65 (§13) | 0.6–0.75 | policy without player input: never takes a contested call |
+| autoCatchThreshold | – | **0.70 applied** (designer 0.65, §13.5) | 0.6–0.75 | policy without player input: never takes a contested call |
 | catch.maxVerticalSpeed | m/s | 2 | — | display / assert only (scripted) |
 
 Reference cases (tower wind V<sub>t</sub>; §13): nominal calm 0.997 · nominal V<sub>t</sub> 14.3 0.90 · nominal V<sub>t</sub> 16.9 (ground at the 13 m/s launch limit) 0.78 · ascent engine-out calm 0.74 · ascent EO V<sub>t</sub> 14 0.62 · boostback EO (low prop) calm 0.63 · boostback EO V<sub>t</sub> 14 (σ = 2.45) **0.537** · boostback EO V<sub>t</sub> 16 0.49. Break-even is 0.535 (§9).
@@ -349,6 +349,30 @@ clause (still ≥ 1 anomaly via the existing fallback, clean auto-scrub, no hang
 | `none`: runs with ≥ 1 anomaly / outcome | 200 / 200, all scrubbed, A1 only | unchanged: 200 / 200 with ≥ 1 anomaly, all scrubbed with the window-missed penalty, each reaches Debrief |
 | Golden seed 42 | CAUGHT, p 0.997 | still CAUGHT (no EO, calm). Diff expected only in farm levels / PROPELLANT `value`; regenerate with that explanation |
 | Unit tests to retarget | — | `range.test.ts` "MVP start: MARGINAL on LOX" stays valid; any test asserting 0.90 auto policy or the old σ reference cases moves to the §7 cases |
+
+### 13.5 Verification and applied deviations (simulation-engineer, 2026-10-18)
+All §13 values applied as written, except one. The σ model already fed tower wind; only its reference moved (8 → 11).
+
+| Tunable | Designer value | **Applied value** | Reason |
+|---|---|---|---|
+| `catch.ts` → `autoCatchThreshold` | 0.65 | **0.70** | at 0.65 the hands-off sweep diverted 27 / 193 = **14.0 %** (< 15 %). The seed set has fewer contested flights than the §13.2 estimate: 33 % of flights have an EO (64 / 193; 24 boostback, 37 ascent, 3 double), and ascent-EO tower winds sit mostly under 11 m/s, so ascent EO is a mass point at p 0.739. 0.70 is the only single-number change inside the listed ranges that meets every target: it adds the low-LEAN ascent EO calls (p 0.66–0.70) to the auto-divert set, still never diverts on wind alone, and keeps "never takes a contested call" (it is stricter). Alternatives checked offline on the same flights: threshold 0.68 → 15.0 % (on the edge); `sigmaPerEngineOutM` 1.2 → 15.5 % but 7.8 % failed; `sigmaWindRefMPerS` 10 → 15.0 % but 8.3 % failed; `sigmaWindCoefMPerMPerS` 0.17–0.2 → ≤ 15 % and a wind-only divert. UI bands stay CLEAR 0.90 / LEAN 0.65 / CONTESTED 0.45 |
+
+Measured (§13.4 checks):
+
+| Check | Target | Measured |
+|---|---|---|
+| PROPELLANT `holdS` at start, no orders | 31 ± 2 min LOX, CH4 49 ± 3, MARGINAL `FARM_RESERVE_LOX` | **31.4 min** LOX (72 t), CH4 **49.6 min** (21 t), MARGINAL `FARM_RESERVE_LOX` |
+| After 3 LX + 1 MX offloaded (load poll) | 57 ± 2 min, MARGINAL | **56.7 min** LOX (CH4 86.4 min), MARGINAL; golden load poll `marginal=[PROPELLANT]` |
+| `hands-off` runs with ≥ 1 anomaly | 200 / 200 | **200 / 200** |
+| `hands-off` shares vs 30 / 25 / 20 / 25 | ±10 pts | 33.3 / 22.1 / 20.3 / 24.3 |
+| `hands-off` diverted / flights | 15–25 %, none from wind alone | **30 / 193 = 15.5 %** (29 auto, 1 forced); 0 diverted at commit-time p ≥ 0.70; 0 nominal-flight auto diverts |
+| `hands-off` failed catches | 3–7 % | **11 / 193 = 5.7 %** (all ascent-EO LEAN catches) |
+| `hands-off` scrubbed runs | ≤ 12 | **7** |
+| `none` | 200 / 200, all scrubbed, reach Debrief | **200 / 200** with ≥ 1 anomaly (A1), 200 scrubbed |
+| Golden seed 42 | still CAUGHT | CAUGHT, p 0.997 (commit-time p was 0.995 before: tower wind ≈ 11 m/s is now at the σ reference) |
+
+Note: the 15.5 % divert share is close to the lower bound; a later change to the weather or A4 timing could push it
+under. The sweep script now fails on any AC 3c miss, so that will show up.
 
 ## Sources (brief)
 - [S1] Widely reported public specs for the super-heavy methalox class (booster ~3 400 t, ship ~1 200–1 500 t of propellant). Not re-verified in this pass; used as order of magnitude only.

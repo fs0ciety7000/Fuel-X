@@ -37,7 +37,7 @@ Never run `playwright install`; Playwright stays at 1.56.1 until the preinstalle
 | `tests/golden/full-launch.test.ts` | Seed-42 full launch with the standard autopilot vs `tests/golden/__files__/full-launch.seed42.log` (one line per event, telemetry every 5 min / 5 s in flight, debrief summary). AC 1, 16, 19–22 |
 | `tests/sim/equivalence.test.ts` | Save → load at T-01:50 and in boostback ≡ straight run; replay of the command log ≡ recorded event log + hash; uneven step batches ≡ step-by-step |
 | `tests/sim/properties.test.ts` | 200 fast-check cases (6 snapshots × random seeds × random commands, 100 s each): no negative propellant, tanks within capacity, mass conserved before liftoff, no NaN, phases monotonic except RECYCLE |
-| `scripts/sim/anomaly-sweep.ts` (manual) | AC 3: 200 full runs, policies `none` and `hands-off`; ≥ 1 anomaly in every run, distribution within ±10 points of the director weights. Results below |
+| `scripts/sim/anomaly-sweep.ts` (manual) | AC 3: 200 full runs, policies `none` and `hands-off`; ≥ 1 anomaly in every run, distribution within ±10 points of the director weights; AC 3c hands-off divert share 15–25 %, none at p ≥ `autoCatchThreshold`. Results below |
 
 **Save fixtures**: `tests/fixtures/saves/schema-<n>.json` are frozen (prettier-ignored canonical JSON). On a `WORLD_SCHEMA` bump: keep the old fixture, add `migrations[n]` in `src/sim/save/migrations.ts`, then `npx tsx scripts/sim/make-save-fixture.ts` writes the new schema's fixture (it refuses to overwrite).
 
@@ -61,14 +61,17 @@ Phase 2 reference screenshots (manual, not baselines yet): `docs/screens/phase2-
 | | MVP save at Debrief (raw canonical JSON, no command log) | 200 KB | 16.7 KB |
 | | Golden full-launch test runtime (Vitest, uninstrumented) | 5 s | ≈ 3.7 s |
 
-### AC 3 anomaly sweep (2026-10-18, `npx tsx scripts/sim/anomaly-sweep.ts 200`, 195 s on 4 cores)
+### AC 3 anomaly sweep (2026-10-18, balancing pass 1, `npx tsx scripts/sim/anomaly-sweep.ts 200`, 233 s on 4 cores)
 
 | Policy | Runs with ≥ 1 anomaly | Anomalies / run | A1 | A2 | A3 | A4 | Outcomes |
 |---|---|---|---|---|---|---|---|
-| `hands-off` (standard prep + orders + GO, no anomaly/catch decisions) | **200 / 200** | 1.37 | 33.6 % (+3.6) | 22.3 % (−2.7) | 20.4 % (+0.4) | 23.7 % (−1.3) | 105 caught, 82 diverted (auto policy p < 0.90), 1 catch failed, 12 scrubbed |
+| `hands-off` (standard prep + orders + GO, no anomaly/catch decisions) | **200 / 200** | 1.38 | 33.3 % (+3.3) | 22.1 % (−2.9) | 20.3 % (+0.3) | 24.3 % (−0.7) | 152 caught, 30 diverted (29 auto at p < 0.70, 1 forced), 11 catch failed, 7 scrubbed |
 | `none` (no input at all) | **200 / 200** | 1.00 | 100 % | — | — | — | 200 scrubbed (count frozen at the load poll; director fallback 30 min before window close, only A1 eligible) |
 
 Weights 30 / 25 / 20 / 25 %; tolerance ±10 points (hands-off policy, where every anomaly is reachable).
+AC 3c (hands-off, 193 flights): diverted **15.5 %** (target 15–25 %), none diverted at commit-time p ≥ `autoCatchThreshold`
+(0.70); failed catches 5.7 % (target 3–7 %); scrubs 7 (target ≤ 12). The sweep script fails on any AC 3a/3c miss.
+Before pass 1: 105 caught, 82 diverted (p < 0.90), 1 failed, 12 scrubbed.
 
 ## Known flaky areas
 

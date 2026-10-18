@@ -12,7 +12,7 @@ anomalies, flight, and the catch roll.
 
 | T-clock | What happens |
 |---|---|
-| **T-06:00:00** | Scenario start (Standby). Player: **StartRollout** and **4 standard deliveries** (LX-01..03, MX-01; gate ETA T-02:00:00; 4 × 6 000 cr haulage). PROPELLANT station opens **MARGINAL** (`FARM_RESERVE_LOX`: the farm only covers ~13 min of holds, see BALANCING §12). CR-77 starts lifting B-09 onto SP-41. |
+| **T-06:00:00** | Scenario start (Standby). Player: **StartRollout** and **4 standard deliveries** (LX-01..03, MX-01; gate ETA T-02:00:00; 4 × 6 000 cr haulage). PROPELLANT station opens **MARGINAL** (`FARM_RESERVE_LOX`: the farm covers ~31 min of holds at the start and ~57 min once the 4 deliveries have offloaded, still under the 60-min GO line; see BALANCING §13.1). CR-77 starts lifting B-09 onto SP-41. |
 | T-05:30:00 | B-09 is on SP-41, and SP-41 drives the 1 800 m to OLM-1 at 1 m/s. |
 | **T-05:00:00** | SP-41 reaches the pad. Phase **Rollout → Stack**. Player: **Stack**. The TOWER-1 arms close and take B-09. SP-41 returns for S-21. |
 | T-03:30:00 | B-09 is **STACKED**, and the arms take S-21 next. |
@@ -30,12 +30,12 @@ anomalies, flight, and the catch roll.
 | **T-00:10:00** | **Terminal poll**. Player: **GO** (PROPELLANT MARGINAL). Phase → **TerminalCount**. |
 | T-00:03:00 | Forced-1× milestone. |
 | **T-00:00:40** | **Final poll**. Player: **GO**. |
-| **T+00:00:00** | **Liftoff** (sim tick 684 003, 20 min later than with no holds). 33 of 33 engines lit. About 80 t LOX is left in the farm. |
+| **T+00:00:00** | **Liftoff** (sim tick 684 003, 20 min later than with no holds). 33 of 33 engines lit. About 120 t LOX is left in the farm. |
 | T+00:01:02 | Max-Q at 12 km, 450 m/s. |
 | **T+00:02:35** | **MECO** at 68 km, 1 550 m/s (nominal: T+155 s, AC 16). |
 | T+00:02:40 | Hot staging. S-21 separates and lights 6 engines. Phase → **Boostback**. |
 | T+00:02:45 | Boostback start: 13 engines, and **`DecisionRequired CATCH`** is raised (deadline: landing burn at T+06:20). |
-| **T+00:03:35** | Boostback end. Player: **CatchDecision CATCH** (p = 0.995 > 0.535). TOWER-1 goes to `CATCH_READY`. Phase → **TowerCatch**. |
+| **T+00:03:35** | Boostback end. Player: **CatchDecision CATCH** (p = 0.997 > 0.535). TOWER-1 goes to `CATCH_READY`. Phase → **TowerCatch**. |
 | T+00:04:10 | Booster apogee at 95 km. |
 | T+00:06:20 | Landing burn (3 engines). TOWER-1 goes to `CATCHING`. |
 | **T+00:06:55** | **Caught**: one seeded roll, 0.209 < p 0.997. The arms close, B-09 goes to `CAUGHT_SAFING`, and refurbishment is charged (−1.5 M). Phase → **Safing**. |
