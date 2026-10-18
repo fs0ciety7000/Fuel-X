@@ -8,7 +8,7 @@ export function App() {
         <p className={styles.meta}>[ CALDER ORBITAL / VARNE COAST / BRACKWATER LC-1 ]</p>
         <h1 className={styles.title}>FUEL-X</h1>
         <p className={styles.meta}>
-          REV 0.1 · PHASE 2 SCAFFOLD · <span className={styles.accent}>SIM OFFLINE</span> ·{' '}
+          REV 0.1 · PHASE 2 SCAFFOLD · <span className={styles.accent}>SIM OFFLINE</span> · <a href="./">/SITE</a> ·{' '}
           <a href="./design.html">/DESIGN</a>
         </p>
       </section>
