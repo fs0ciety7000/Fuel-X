@@ -331,12 +331,24 @@ As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face list
 | Asset | Script / contract | LOD0 / LOD1 / LOD2 tris | GLB LOD0 / LOD1 / LOD2 | Draw calls | Nodes / sockets | Preview |
 |---|---|---|---|---|---|---|
 | `TOWER` | `tower.py` · `tower.contract.json` | 4 084 / 2 486 / 370 | 67 / 45 / 14 KB | 9 | 17 (9 contract nodes, 7 sockets) | `docs/assets/tower.png`, turntable ×12 |
-| `PAD` | `pad.py` · `pad.contract.json` | 1 970 / 1 004 / 562 | 29 / 19 / 14 KB | 6 | 14 (5 contract nodes, 8 sockets) | `docs/assets/pad.png`, `docs/assets/_stack.png` |
+| `PAD` | `pad.py` · `pad.contract.json` | 1 970 / 1 004 / 562 | 29 / 19 / 14 KB (rebuilt 4.6, winding fix) | 6 | 14 (5 contract nodes, 8 sockets) | `docs/assets/pad.png`, `docs/assets/_stack.png` |
 | `BOOSTER` | `booster.py` · `booster.contract.json` | 6 952 / 2 608 / 756 | 58 / 33 / 19 KB | 8 | 57 (8 contract nodes, 39 sockets) | `docs/assets/booster.png`, `docs/assets/_stack.png` |
 | `SHIP` | `ship.py` · `ship.contract.json` | 2 582 / 912 / 276 | 27 / 18 / 13 KB | 8 | 29 (12 contract nodes, 12 sockets) | `docs/assets/ship.png`, `docs/assets/_stack.png` |
 | `TANK_V` | `tank_v.py` · `tank_v.contract.json` | 848 / 162 | 12.3 / 5.2 KB | 2 | 6 (`TANK_V_Body`, 4 sockets) | `docs/assets/tank_v.png` |
 | `TANK_H` | `tank_h.py` · `tank_h.contract.json` | 602 / 200 | 9.2 / 5.5 KB | 2 | 6 (`TANK_H_Body`, 4 sockets) | `docs/assets/tank_h.png` |
 | `TANK_SPHERE` | `tank_sphere.py` · `tank_sphere.contract.json` | 1 732 / 378 | 24.3 / 8.1 KB | 2 | 6 (`TANK_SPHERE_Body`, 4 sockets) | `docs/assets/tank_sphere.png` |
+| `TANKER` | `tanker.py` · `tanker.contract.json` | 1 496 / 653 | 16.7 / 13.6 KB | 6 (instanced) | axles shared (`instanceLinked`) | `docs/assets/tanker.png`, `docs/assets/_farm.png` |
+| `TRANSPORTER` | `transporter.py` · `transporter.contract.json` | 4 160 / 1 720 | 30.4 / 23.4 KB | 7 (instanced) | 16 bogies + 16 wheels shared (`instanceLinked`) | `docs/assets/transporter.png` |
+| `VAN` | `van.py` · `van.contract.json` | 270 / 134 | 5.9 / 4.7 KB | 2 | `VAN_Body`, 2 sockets | `docs/assets/van.png` |
+| `WX_STATION` | `wx_station.py` · `wx_station.contract.json` | 700 / 213 | 14.3 / 8.3 KB | 4 (class `building`) | 2 rotors, 2 sockets | `docs/assets/wx_station.png` |
+| `BOAT_RANGE` | `boat_range.py` · `boat_range.contract.json` | 696 / 184 | 13.7 / 8.0 KB | 4 | 8 (radar `spin y`, 4 sockets) | `docs/assets/boat_range.png` |
+| `VESSEL_RECOVERY` | `vessel_recovery.py` · `vessel_recovery.contract.json` | 1 200 / 478 / 268 | 22.9 / 14.5 / 11.4 KB | 7 | 11 (radar `spin y`, deck crane `rot y` ±150°, 5 sockets) | `docs/assets/vessel_recovery.png` |
+| `CRANE` | `crane.py` · `crane.contract.json` | 3 666 / 1 438 / 258 | 56.8 / 26.9 / 12.1 KB | 7 | 15 (slew, luff, cable counter-rotation, hook `trans y`; 4 sockets) | `docs/assets/crane.png` |
+| `BLDG_HIGHBAY` | `bldg_highbay.py` · `bldg_highbay.contract.json` | 630 / 58 | 11.3 / 5.3 KB | 4 | 9 (door leaves L/R `trans x`, 3 sockets) | `docs/assets/bldg_highbay.png` |
+| `HANGAR_TENT` | `hangar_tent.py` · `hangar_tent.contract.json` | 1 436 / 192 | 14.0 / 4.8 KB | 2 | 5 (static, 3 sockets) | `docs/assets/hangar_tent.png` |
+| `BLDG_MEGABAY` | — | — | — | — | deferred (BY-1, §2) | — |
+
+All 16 MVP GLBs incl. LODs: **739 KB** (LOD0 only 413 KB) vs the 4 MB budget (`npm run perf`, 4.7). Scale review: `docs/assets/_lineup.png`, `docs/assets/_lineup_small.png`.
 
 ### Acceptance checklist (per asset)
 - [ ] Script runs headless (`--factory-startup`), no Python errors; re-run → identical GLB md5.

@@ -46,8 +46,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] 4.3 **TOWER** end to end (carriage, catch arms, QD arm, sockets, LODs) + preview render — pipeline proof — ← 4.2
 - [x] 4.4 PAD/OLM, BOOSTER, SHIP + `_stack.png` socket-alignment check (`blender/lib/composite.py`) — ← 4.3
 - [x] 4.5 TANK_V/H/SPHERE (instancing-ready), TANKER (LX/MX share one GLB), TRANSPORTER, VAN, WX_STATION + `_farm.png` composite (`blender/scenes/farm.py`); contract `instanceLinked` (shared meshes = one draw call); MeshBuilder winding fix (beam/cylinder/pole fan were inside-out) — ← 4.3
-- [ ] 4.6 BOAT_RANGE, VESSEL_RECOVERY, CRANE, yard buildings (HB, TH) — ← 4.3
-- [ ] 4.7 `_lineup.png` scale review render; GLB payload vs budget (≤ 4 MB) — **qa-perf** ← 4.4–4.6
+- [x] 4.4b PAD/BOOSTER/SHIP rebuilt after the 4.5 winding fix; `_stack.png` re-checked (all Δ 0.000 m); ship heat shield + flaps → `MAT_Clay` (matched the booster / reference) — **blender-technical-artist**
+- [x] 4.6 BOAT_RANGE (PK-03/04, UNK-01), VESSEL_RECOVERY (RV-1), CRANE (CR-77), yard buildings HB-1 (bi-parting sliding doors) + TH-1; `BLDG_MEGABAY` deferred to BY-1 (not in the MVP small yard) — ← 4.3
+- [x] 4.7 `_lineup.png` (+ `_lineup_small.png`) scale review render, all assets within 5 % of ASSETS_GUIDE §2; GLB payload 739 KB vs ≤ 4 MB; WX_STATION kept in class `building` — **qa-perf** ← 4.4–4.6
 - [ ] ⛳ Gate 4 — Blender preview renders + lineup
 
 ## Phase 5 — Scene
