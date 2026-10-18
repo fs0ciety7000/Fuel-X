@@ -1,5 +1,6 @@
 // Typed asset wrappers (ADR 0007 stage 4, ASSETS_GUIDE §7) → src/render/assets/generated/<file>.ts + index.ts.
 // Pure string generation; build.ts formats with prettier and writes the files.
+import { effectiveDrawCalls } from './contract.ts';
 import type { AssetContract, GlbSummary } from './contract.ts';
 
 export interface CodegenInput {
@@ -51,6 +52,10 @@ export function generateAsset({ contract: c, summaries, hashes }: CodegenInput):
     )
     .join(', ');
   const b = lod0.bounds;
+  // Only for contracts that opt into instancing: node groups sharing one mesh → one InstancedMesh each.
+  const instanced = c.instanceLinked
+    ? `\n  instanced: [${lod0.sharedMeshes.map((g) => `[${g.map(lit).join(', ')}]`).join(', ')}],`
+    : '';
   return `${HEADER}
 // Source: blender/assets/${c.file}.py + ${c.file}.contract.json. Bounds in three (Y-up) metres at rest pose.
 export const ${C} = {
@@ -67,7 +72,7 @@ export const ${C} = {
   bounds: { min: [${b.min.join(', ')}], max: [${b.max.join(', ')}] },
   triangles: [${summaries.map((s) => s.triangles).join(', ')}],
   bytes: [${summaries.map((s) => s.bytes).join(', ')}],
-  drawCalls: ${lod0.drawCalls},
+  drawCalls: ${effectiveDrawCalls(c, lod0)},${instanced}
 } as const;
 
 export type ${T}Node = (typeof ${C}.nodes)[keyof typeof ${C}.nodes];

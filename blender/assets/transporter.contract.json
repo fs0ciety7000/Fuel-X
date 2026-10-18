@@ -1,0 +1,348 @@
+{
+  "asset": "TRANSPORTER",
+  "file": "transporter",
+  "class": "road-sea-vehicle",
+  "lods": 2,
+  "nodes": [
+    "TRANSPORTER_Static",
+    "TRANSPORTER_Deck",
+    "TRANSPORTER_DeckGeo",
+    "TRANSPORTER_Bogie_01",
+    "TRANSPORTER_Bogie_02",
+    "TRANSPORTER_Bogie_03",
+    "TRANSPORTER_Bogie_04",
+    "TRANSPORTER_Bogie_05",
+    "TRANSPORTER_Bogie_06",
+    "TRANSPORTER_Bogie_07",
+    "TRANSPORTER_Bogie_08",
+    "TRANSPORTER_Bogie_09",
+    "TRANSPORTER_Bogie_10",
+    "TRANSPORTER_Bogie_11",
+    "TRANSPORTER_Bogie_12",
+    "TRANSPORTER_Bogie_13",
+    "TRANSPORTER_Bogie_14",
+    "TRANSPORTER_Bogie_15",
+    "TRANSPORTER_Bogie_16",
+    "TRANSPORTER_BogieGeo_01",
+    "TRANSPORTER_BogieGeo_02",
+    "TRANSPORTER_BogieGeo_03",
+    "TRANSPORTER_BogieGeo_04",
+    "TRANSPORTER_BogieGeo_05",
+    "TRANSPORTER_BogieGeo_06",
+    "TRANSPORTER_BogieGeo_07",
+    "TRANSPORTER_BogieGeo_08",
+    "TRANSPORTER_BogieGeo_09",
+    "TRANSPORTER_BogieGeo_10",
+    "TRANSPORTER_BogieGeo_11",
+    "TRANSPORTER_BogieGeo_12",
+    "TRANSPORTER_BogieGeo_13",
+    "TRANSPORTER_BogieGeo_14",
+    "TRANSPORTER_BogieGeo_15",
+    "TRANSPORTER_BogieGeo_16",
+    "TRANSPORTER_Wheel_01",
+    "TRANSPORTER_Wheel_02",
+    "TRANSPORTER_Wheel_03",
+    "TRANSPORTER_Wheel_04",
+    "TRANSPORTER_Wheel_05",
+    "TRANSPORTER_Wheel_06",
+    "TRANSPORTER_Wheel_07",
+    "TRANSPORTER_Wheel_08",
+    "TRANSPORTER_Wheel_09",
+    "TRANSPORTER_Wheel_10",
+    "TRANSPORTER_Wheel_11",
+    "TRANSPORTER_Wheel_12",
+    "TRANSPORTER_Wheel_13",
+    "TRANSPORTER_Wheel_14",
+    "TRANSPORTER_Wheel_15",
+    "TRANSPORTER_Wheel_16",
+    "TRANSPORTER_WheelGeo_01",
+    "TRANSPORTER_WheelGeo_02",
+    "TRANSPORTER_WheelGeo_03",
+    "TRANSPORTER_WheelGeo_04",
+    "TRANSPORTER_WheelGeo_05",
+    "TRANSPORTER_WheelGeo_06",
+    "TRANSPORTER_WheelGeo_07",
+    "TRANSPORTER_WheelGeo_08",
+    "TRANSPORTER_WheelGeo_09",
+    "TRANSPORTER_WheelGeo_10",
+    "TRANSPORTER_WheelGeo_11",
+    "TRANSPORTER_WheelGeo_12",
+    "TRANSPORTER_WheelGeo_13",
+    "TRANSPORTER_WheelGeo_14",
+    "TRANSPORTER_WheelGeo_15",
+    "TRANSPORTER_WheelGeo_16"
+  ],
+  "sockets": ["SOCKET_Cargo", "SOCKET_Label", "SOCKET_Focus"],
+  "anim": {
+    "TRANSPORTER_Deck": {
+      "kind": "trans",
+      "axis": "y",
+      "min": 0,
+      "max": 0.6,
+      "rest": 0,
+      "unit": "m"
+    },
+    "TRANSPORTER_Bogie_01": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_02": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_03": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_04": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_05": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_06": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_07": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_08": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_09": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_10": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_11": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_12": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_13": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_14": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_15": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Bogie_16": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 90,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_01": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_02": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_03": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_04": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_05": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_06": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_07": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_08": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_09": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_10": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_11": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_12": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_13": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_14": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_15": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TRANSPORTER_Wheel_16": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    }
+  },
+  "budget": {
+    "tris": [8000, 2000],
+    "bytes": 102400,
+    "drawCalls": 8
+  },
+  "instanceLinked": true
+}

@@ -5,7 +5,11 @@ import { SHIP } from './ship.ts';
 import { TANK_H } from './tank_h.ts';
 import { TANK_SPHERE } from './tank_sphere.ts';
 import { TANK_V } from './tank_v.ts';
+import { TANKER } from './tanker.ts';
 import { TOWER } from './tower.ts';
+import { TRANSPORTER } from './transporter.ts';
+import { VAN } from './van.ts';
+import { WX_STATION } from './wx_station.ts';
 
 export * from './booster.ts';
 export * from './pad.ts';
@@ -13,7 +17,11 @@ export * from './ship.ts';
 export * from './tank_h.ts';
 export * from './tank_sphere.ts';
 export * from './tank_v.ts';
+export * from './tanker.ts';
 export * from './tower.ts';
+export * from './transporter.ts';
+export * from './van.ts';
+export * from './wx_station.ts';
 
 export const ASSETS = {
   booster: BOOSTER,
@@ -22,7 +30,11 @@ export const ASSETS = {
   tank_h: TANK_H,
   tank_sphere: TANK_SPHERE,
   tank_v: TANK_V,
+  tanker: TANKER,
   tower: TOWER,
+  transporter: TRANSPORTER,
+  van: VAN,
+  wx_station: WX_STATION,
 } as const;
 
 export type AssetName = keyof typeof ASSETS;

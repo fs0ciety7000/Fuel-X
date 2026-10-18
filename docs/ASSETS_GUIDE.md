@@ -37,7 +37,7 @@ Vehicle class: large fully reusable two-stage methane/LOX rocket, tower-caught b
 | `TANK_H` | 22 × Ø 3.6 (top at 5.2) | Horizontal tank on 2 saddles. | MVP |
 | `TANK_SPHERE` | Ø 18, top at 24 | Sphere on 8 legs, equatorial ring, stair. | MVP |
 | `TANKER` | 21 × 2.6 × 4.0 | Tractor 7 m + cryo trailer 14 m, 5 axles, articulated at the fifth wheel. | MVP |
-| `TRANSPORTER` | 16 × 14 × 1.6 deck (+3 m stand) | SPMT-style: 2 lines × 8 bogies, carries booster or ship vertically on a stand. | MVP |
+| `TRANSPORTER` | 16 × 14 × 1.6 deck (+3 m stand) | SPMT-style: 2 lines × 8 bogies, carries booster or ship vertically on a stand. Power pack overhangs the rear by 1.6 m (17.6 m overall). | MVP |
 | `VAN` | 6.0 × 2.1 × 2.7 | Pad crew / shift / patrol vans (one mesh, variants by label only). | MVP |
 | `BOAT_RANGE` | 26 × 6.5 × 9 (above WL) | Range safety boat, mast + radar. | MVP |
 | `VESSEL_RECOVERY` | 72 × 16 × 24 (above WL) | Offshore support vessel, aft cargo deck 30 × 14 m, deck crane, radar. | MVP |
@@ -110,9 +110,11 @@ As built (4.5): `MAT_Clay` shell + `MAT_ClayDark` details (`TANK_SPHERE`: `MAT_M
 
 ### TANKER
 `TANKER_Tractor` (empty) → `TANKER_TractorGeo`, `TANKER_Axle_01..02` (`spin x`), `TANKER_Steer` (front axle, `rot y` ±35°); `TANKER_Trailer` (empty at fifth wheel, `rot y` ±70°) → `TANKER_TrailerGeo`, `TANKER_Axle_03..05`. Sockets: `SOCKET_Hose` (trailer rear valve box), `SOCKET_Label`, `SOCKET_Focus`.
+As built (4.5): every `TANKER_Axle_NN` is an empty on the axle (the hierarchy rule: animated nodes are empties) with a leaf `TANKER_AxleGeo_NN`, all five sharing one mesh (`instanced` list in the wrapper). `TANKER_Axle_01` is a child of `TANKER_Steer` (0, −9.3, 0.5); `TANKER_Axle_02` (drive) at (0, −5.4, 0.5); `TANKER_Trailer` is a sibling of `TANKER_Tractor` at the king pin (0, −5.9, 1.2) with axles 03–05 at world y 6.0 / 7.4 / 8.8; `SOCKET_Hose` is under the trailer, +Z → aft. LX (RIME, LOX) and MX (FEN, LNG) share this one GLB — the trailers are near-identical at game scale, the variant is the call-sign label — so the whole fleet is one instance pool.
 
 ### TRANSPORTER
 `TRANSPORTER_Static` (chassis, power pack); `TRANSPORTER_Deck` (empty, `trans y` 0 → 0.6 m) → deck + stand; `TRANSPORTER_Bogie_01..16` (empty at king pin, `rot y` ±90° — SPMTs crab and pivot) → each `TRANSPORTER_Wheel_01..16` (one mesh per wheel pair, pivot on axle, `spin x`). Wheels are linked duplicates of one mesh. Sockets: `SOCKET_Cargo` (stand top center — booster/ship origin goes here), `SOCKET_Label`, `SOCKET_Focus`.
+As built (4.5): `TRANSPORTER_Deck` at the deck top centre (0, 0, 1.6) → `TRANSPORTER_DeckGeo` + `SOCKET_Cargo` (local z 3.0, world 4.6 at rest; ring girder Ø 9.2 / ID 7.8 on 8 columns, bells sit inside the ring). Bogies: king pins at x = ±5.4, y = −7 … 7 (2 m pitch), z = 1.0; **01–08 = L line (+X) front→rear, 09–16 = R line (−X)**. Each bogie → `TRANSPORTER_BogieGeo_NN` (steering housing) + `TRANSPORTER_Wheel_NN` (empty on the axle, z = 0.45) → `TRANSPORTER_WheelGeo_NN`; BogieGeo and WheelGeo are two shared meshes (16 nodes each). A wheel pair spans 1.64 m, so any steer pattern within ±90° is collision-free at the 2 m pitch (carousel: `rot y = atan(y/x)` per bogie).
 
 ### CRANE
 `CRANE_Static` (tracks, carbody); `CRANE_Upper` (empty at slew ring, z = 3, `rot y` −180° → 180°); `CRANE_Boom` (empty at boom foot, `rot x` 20° → 85° luff, rest 70°); `CRANE_Cable` (unit-length 1 m mesh hanging from the tip, render scales `y` to cable length); `CRANE_Hook` (empty, `trans y` along the cable). Sockets: `SOCKET_Hook` (load attach), `SOCKET_BoomTip`, `SOCKET_Label`, `SOCKET_Focus`.
@@ -122,9 +124,11 @@ As built (4.5): `MAT_Clay` shell + `MAT_ClayDark` details (`TANK_SPHERE`: `MAT_M
 
 ### VAN (instanced)
 Single mesh `VAN_Body`, wheels merged, no animated parts (not visible at game scale). Sockets: `SOCKET_Label`.
+As built (4.5): `MAT_Clay` + `MAT_Glass` (glass, tyres, bumpers — the only dark material allowed within the 2-material cap); also `SOCKET_Focus` (z 1.4).
 
 ### WX_STATION
 `WX_STATION_Static`; `WX_STATION_Anemometer` (`spin y`); `WX_STATION_Vane` (`rot y`, 0–360°, shows wind direction — gameplay readable). Sockets: `SOCKET_Label`.
+As built (4.5): both rotors are empties at (±1.2, 0, 9.55) with leaf `…Geo` meshes (anemometer L/+X, vane R/−X). **Vane at 0° points its arrow along local −Y (glTF +Z)**; it points into the wind, so render sets `rot y` = the heading the wind blows from (CCW from above, in the asset's frame). Contract class `building` (4 draw calls: Static ×2 materials + 2 rotors) — see §12 Q6.
 
 ### BLDG_HIGHBAY / BLDG_MEGABAY / HANGAR_TENT
 `<ASSET>_Static`; highbay/megabay `<ASSET>_Door` (vertical lift, `trans y` 0 → door height). Sockets: `SOCKET_DoorOut` (ground point just outside the door, path waypoint), `SOCKET_Label`.
@@ -155,6 +159,7 @@ Only these five shared materials may exist in a GLB. Colors come from the design
 - **Normals/shading**: `shade_smooth_by_angle(angle=30°)` (4.1+ operator, verified in 4.5), export normals, no tangents. Cylinders: 24 segments for Ø ≥ 6 m at LOD0, 16 for smaller, 8–12 at LOD1.
 - No hidden interior faces, no zero-area faces, no n-gons left after export (exporter triangulates; keep quads clean). Watertight is not required.
 - **Instancing-friendly assets** (`TANK_*`, `VAN`, later props): one leaf mesh, ≤ 2 materials, origin on the ground, no animated parts, no per-instance geometry. Variants are separate files (`tank_v_s.glb`), not non-uniform runtime scaling (it distorts heads).
+- **Winding**: faces must point outward (three `FrontSide`). Exported materials are currently `doubleSided`, which hides inverted faces in Blender and three alike; `MeshBuilder.beam`, `cylinder` and the bottom pole fan of `revolve` were inside-out until 4.5 (fixed, all assets rebuilt). Hand-written polygons go through `shapes.add_quad(…, facing)` or `add_extrusion_x` (CCW profile).
 - Repeated parts inside one asset (wheels, grid fins, flaps) are **linked duplicates** of one mesh — the exporter keeps one shared glTF mesh (verified: 3 linked duplicates → 1 mesh). Do not rely on `EXT_mesh_gpu_instancing` (the 4.5 exporter did not emit it for linked duplicates); the renderer builds `InstancedMesh` where useful.
 
 ### LODs
@@ -225,6 +230,7 @@ export const TOWER = {
   anim: { Carriage: { kind: 'trans', axis: 'y', min: 25, max: 135, rest: 86, unit: 'm' } },
 } as const;
 ```
+**Instanced draw calls** (4.5): a contract with `"instanceLinked": true` budgets draw calls with every shared mesh counted once (`GlbSummary.instancedDrawCalls`), because the renderer draws each group of linked duplicates as one `InstancedMesh`; the wrapper then also carries `instanced: [[node, …], …]` (groups of leaf nodes sharing one mesh) and `drawCalls` is the instanced figure. Used by `TANKER` (5 axles) and `TRANSPORTER` (16 bogie housings + 16 wheel pairs); without the flag the per-node count applies.
 If the ADR picks R3F, `gltfjsx --types` may generate components in addition, **without `--transform`** (it re-optimizes and would break the contract). The generator fails the build if a required node from §4 is missing.
 
 ## 8. File layout
@@ -237,6 +243,8 @@ public/models/          optimized GLB + LODs (generated, committed, never hand-e
 docs/assets/<asset>.png             preview 1024²
 docs/assets/turntable/<asset>_NN.png  optional 12-frame turntable 512²
 docs/assets/_lineup.png             all assets side by side + 1.8 m human, for scale review
+docs/assets/_farm.png               tank farm + tanker + transporter + vans + WX composite (blender/scenes/farm.py, raw GLBs)
+blender/scenes/<scene>.py           preview-only composites (never exported; not picked up by npm run assets)
 src/render/assets/generated/        typed wrappers (generated)
 scripts/assets/build.ts npm run asset -- <name>: blender → optimize → codegen → validate (ADR 0007)
 ```
@@ -341,3 +349,5 @@ As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face list
 3. Screen-space AO vs baked vertex AO (ARCHITECTURE/render).
 4. ~~Renderer ADR~~ — resolved: R3F + in-house codegen from `<asset>.contract.json` (ADR 0002/0007); no gltfjsx.
 5. Does gameplay need per-engine visuals (33 sockets kept either way), arm shock-absorber carts, or an ocean-landing variant with legs?
+6. `WX_STATION` draw calls: ARCHITECTURE §13.2 lists it as a prop (≤ 2 draw calls) but it has two independently animated rotors plus the static mesh (≥ 3); this guide's table says ≤ 4. Built under class `building` (cap 4) until **systems-architect** reconciles — only 2 copies exist, so no instancing pressure.
+7. `TANK_V` Ø 4.5 × 20 variant (`tank_v_s.glb`) — build when a placement needs it.

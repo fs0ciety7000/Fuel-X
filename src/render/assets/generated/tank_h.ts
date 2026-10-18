@@ -3,14 +3,14 @@
 export const TANK_H = {
   name: 'tank_h',
   asset: 'TANK_H',
-  url: '/models/tank_h.glb?v=d00b0d06',
-  lods: ['/models/tank_h_lod1.glb?v=13f76a74'],
+  url: '/models/tank_h.glb?v=ca363908',
+  lods: ['/models/tank_h_lod1.glb?v=1c70ac81'],
   nodes: { Body: 'TANK_H_Body' },
   sockets: { Fill: 'SOCKET_Fill', Vent: 'SOCKET_Vent', Label: 'SOCKET_Label', Focus: 'SOCKET_Focus' },
   anim: {},
   bounds: { min: [-12.018, 0, -1.814], max: [11, 6.23, 2.499] },
   triangles: [602, 200],
-  bytes: [9464, 5604],
+  bytes: [9428, 5544],
   drawCalls: 2,
 } as const;
 

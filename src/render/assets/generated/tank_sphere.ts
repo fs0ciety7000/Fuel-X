@@ -3,14 +3,14 @@
 export const TANK_SPHERE = {
   name: 'tank_sphere',
   asset: 'TANK_SPHERE',
-  url: '/models/tank_sphere.glb?v=f6541114',
-  lods: ['/models/tank_sphere_lod1.glb?v=bd0d5b4a'],
+  url: '/models/tank_sphere.glb?v=c6b06567',
+  lods: ['/models/tank_sphere_lod1.glb?v=9d5b3455'],
   nodes: { Body: 'TANK_SPHERE_Body' },
   sockets: { Fill: 'SOCKET_Fill', Vent: 'SOCKET_Vent', Label: 'SOCKET_Label', Focus: 'SOCKET_Focus' },
   anim: {},
   bounds: { min: [-10.443, -0.071, -9.339], max: [9.339, 25.227, 11.058] },
   triangles: [1732, 378],
-  bytes: [24856, 8252],
+  bytes: [24792, 8180],
   drawCalls: 2,
 } as const;
 

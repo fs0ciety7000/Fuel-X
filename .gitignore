@@ -5,3 +5,5 @@ coverage/
 test-results/
 playwright-report/
 *.blend1
+__pycache__/
+*.pyc

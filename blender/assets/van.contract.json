@@ -1,0 +1,14 @@
+{
+  "asset": "VAN",
+  "file": "van",
+  "class": "prop",
+  "lods": 2,
+  "nodes": ["VAN_Body"],
+  "sockets": ["SOCKET_Label", "SOCKET_Focus"],
+  "anim": {},
+  "budget": {
+    "tris": [1500, 400],
+    "bytes": 25600,
+    "drawCalls": 2
+  }
+}

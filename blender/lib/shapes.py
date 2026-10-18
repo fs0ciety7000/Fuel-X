@@ -124,3 +124,14 @@ def add_wheel_set(mb: MeshBuilder, center, radius: float, width: float, track: f
                         caps=(False, True) if s > 0 else (True, False), axis=(1, 0, 0))
     if axle:
         mb.beam(c + Vector((-track / 2, 0, 0)), c + Vector((track / 2, 0, 0)), axle, hub_material or material)
+
+
+def add_quad(mb: MeshBuilder, pts, facing, material: str, offset: float = 0.0) -> None:
+    """Planar polygon whose winding is chosen so its normal points along `facing` (three FrontSide),
+    optionally pushed `offset` metres along it (decals: windows, grilles)."""
+    p = [_v(q) for q in pts]
+    f = _v(facing).normalized()
+    n = (p[1] - p[0]).cross(p[2] - p[0])
+    if n.dot(f) < 0:
+        p.reverse()
+    mb.add([q + f * offset for q in p], [tuple(range(len(p)))], material)

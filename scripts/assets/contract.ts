@@ -1,7 +1,7 @@
 // Asset contract (ADR 0007 stage 3, ASSETS_GUIDE §3–§6, ARCHITECTURE §13.2).
 // Pure module: no fs / process access, so vitest can exercise it with in-memory documents.
 import { getBounds } from '@gltf-transform/core';
-import type { Document, Node } from '@gltf-transform/core';
+import type { Document, Mesh, Node } from '@gltf-transform/core';
 
 export type AnimKind = 'rot' | 'trans' | 'spin';
 export type Axis = 'x' | 'y' | 'z';
@@ -43,6 +43,12 @@ export interface AssetContract {
   anim: Record<string, AnimSpec>;
   budget: { tris: number[]; bytes: number; drawCalls: number };
   allowAccent?: boolean;
+  /**
+   * Linked-duplicate meshes (wheels, axles) are drawn as one `InstancedMesh` each by the renderer
+   * (ARCHITECTURE §13.2 "transporter wheels instanced"): the draw-call budget then counts every shared
+   * mesh once (`GlbSummary.instancedDrawCalls`) instead of once per node.
+   */
+  instanceLinked?: boolean;
 }
 
 export interface NodeSummary {
@@ -57,7 +63,12 @@ export interface GlbSummary {
   lod: number;
   bytes: number;
   triangles: number;
+  /** Primitives summed over mesh nodes (one draw call per node × material). */
   drawCalls: number;
+  /** Primitives summed over distinct meshes (nodes sharing a mesh count once — instanced rendering). */
+  instancedDrawCalls: number;
+  /** Groups of node names that share one glTF mesh (≥ 2 nodes each), in traversal order. */
+  sharedMeshes: string[][];
   roots: string[];
   nodes: NodeSummary[];
   materials: string[];
@@ -93,7 +104,7 @@ function num(v: unknown): v is number {
 export function parseContract(json: unknown, source = 'contract'): AssetContract {
   const errors: string[] = [];
   if (!isRecord(json)) throw new Error(`${source}: not an object`);
-  const { asset, file, lods, nodes, sockets, anim, budget, allowAccent } = json;
+  const { asset, file, lods, nodes, sockets, anim, budget, allowAccent, instanceLinked } = json;
   const cls = json['class'];
   if (typeof asset !== 'string' || !/^[A-Z][A-Z0-9_]*$/.test(asset)) errors.push('asset must be UPPER_SNAKE');
   if (typeof file !== 'string' || !/^[a-z][a-z0-9_]*$/.test(file)) errors.push('file must be lower_snake');
@@ -102,6 +113,7 @@ export function parseContract(json: unknown, source = 'contract'): AssetContract
   if (!isStringArray(nodes)) errors.push('nodes must be a string array');
   if (!isStringArray(sockets)) errors.push('sockets must be a string array');
   if (allowAccent !== undefined && typeof allowAccent !== 'boolean') errors.push('allowAccent must be boolean');
+  if (instanceLinked !== undefined && typeof instanceLinked !== 'boolean') errors.push('instanceLinked must be boolean');
   if (isStringArray(nodes) && typeof asset === 'string') {
     for (const n of nodes) if (!n.startsWith(`${asset}_`)) errors.push(`node ${n} must start with ${asset}_`);
   }
@@ -163,11 +175,22 @@ export function summarize(doc: Document, bytes: number, lod: number): GlbSummary
   const scene = root.getDefaultScene() ?? root.listScenes()[0];
   let triangles = 0;
   let drawCalls = 0;
+  let instancedDrawCalls = 0;
+  const meshUsers = new Map<Mesh, string[]>();
   const nodes: NodeSummary[] = [];
   const visit = (node: Node, parent: string | null): void => {
     const { tris, prims } = triangleCount(node);
     triangles += tris;
     drawCalls += prims;
+    const mesh = node.getMesh();
+    if (mesh) {
+      const users = meshUsers.get(mesh);
+      if (users) users.push(node.getName());
+      else {
+        meshUsers.set(mesh, [node.getName()]);
+        instancedDrawCalls += prims;
+      }
+    }
     const children = node.listChildren();
     nodes.push({
       name: node.getName(),
@@ -190,6 +213,8 @@ export function summarize(doc: Document, bytes: number, lod: number): GlbSummary
     bytes,
     triangles,
     drawCalls,
+    instancedDrawCalls,
+    sharedMeshes: [...meshUsers.values()].filter((u) => u.length > 1),
     roots: roots.map((r) => r.getName()),
     nodes,
     materials: root
@@ -210,6 +235,11 @@ export function summarize(doc: Document, bytes: number, lod: number): GlbSummary
 // ------------------------------------------------------------------------------------------------
 function close(a: unknown, b: number): boolean {
   return typeof a === 'number' && Math.abs(a - b) < 1e-4;
+}
+
+/** Draw calls the renderer will issue at LOD0: shared meshes count once when the contract opts into instancing. */
+export function effectiveDrawCalls(c: AssetContract, s: GlbSummary): number {
+  return c.instanceLinked ? s.instancedDrawCalls : s.drawCalls;
 }
 
 /** Returns every contract violation (empty = pass). `summaries[i]` is LOD i. */
@@ -265,7 +295,10 @@ export function checkContract(c: AssetContract, summaries: GlbSummary[]): string
     if (triBudget !== undefined && s.triangles > triBudget) err(`${s.triangles} tris > budget ${triBudget}`);
     if (s.lod === 0) {
       if (s.bytes > c.budget.bytes) err(`${s.bytes} B > budget ${c.budget.bytes} B`);
-      if (s.drawCalls > c.budget.drawCalls) err(`${s.drawCalls} draw calls > budget ${c.budget.drawCalls}`);
+      const dc = effectiveDrawCalls(c, s);
+      if (dc > c.budget.drawCalls) {
+        err(`${dc}${c.instanceLinked ? ' instanced' : ''} draw calls > budget ${c.budget.drawCalls}`);
+      }
     }
     nameSets.push(
       s.nodes

@@ -100,7 +100,7 @@ class MeshBuilder:
         w, h = (section, section) if isinstance(section, (int, float)) else section
         _, side, up = frame_from_axis(b - a, up_hint)
         s, u = side * (w / 2), up * (h / 2)
-        ring = [-s - u, s - u, s + u, -s + u]
+        ring = [-s - u, -s + u, s + u, s - u]  # CCW around the axis → outward faces (three FrontSide)
         verts = [a + r for r in ring] + [b + r for r in ring]
         faces = [(0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
         if caps:
@@ -132,7 +132,7 @@ class MeshBuilder:
                 if len(ra) == 1 and len(rb) == 1:
                     continue
                 if len(ra) == 1:
-                    faces.append((ra[0], rb[i], rb[j]))
+                    faces.append((ra[0], rb[j], rb[i]))  # bottom pole fan, outward
                 elif len(rb) == 1:
                     faces.append((ra[i], ra[j], rb[0]))
                 else:
@@ -150,8 +150,9 @@ class MeshBuilder:
     def cylinder(self, base, radius: float, height: float, segments: int, material: str,
                  caps=(True, True), smooth: bool = True, axis=(0, 0, 1)) -> None:
         d, side, up = frame_from_axis(axis)
+        # (up, side, d) is right-handed ((side, up, d) is a mirror and turned every face inward).
         m = Matrix.Translation(_v(base)) @ Matrix((
-            (side.x, up.x, d.x, 0), (side.y, up.y, d.y, 0), (side.z, up.z, d.z, 0), (0, 0, 0, 1)))
+            (up.x, side.x, d.x, 0), (up.y, side.y, d.y, 0), (up.z, side.z, d.z, 0), (0, 0, 0, 1)))
         self.revolve([(radius, 0.0), (radius, height)], segments, material, smooth, m,
                      cap_bottom=caps[0], cap_top=caps[1])
 

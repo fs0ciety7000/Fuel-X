@@ -1,0 +1,88 @@
+{
+  "asset": "TANKER",
+  "file": "tanker",
+  "class": "road-sea-vehicle",
+  "lods": 2,
+  "nodes": [
+    "TANKER_Tractor",
+    "TANKER_TractorGeo",
+    "TANKER_Steer",
+    "TANKER_Trailer",
+    "TANKER_TrailerGeo",
+    "TANKER_Axle_01",
+    "TANKER_Axle_02",
+    "TANKER_Axle_03",
+    "TANKER_Axle_04",
+    "TANKER_Axle_05",
+    "TANKER_AxleGeo_01",
+    "TANKER_AxleGeo_02",
+    "TANKER_AxleGeo_03",
+    "TANKER_AxleGeo_04",
+    "TANKER_AxleGeo_05"
+  ],
+  "sockets": ["SOCKET_Hose", "SOCKET_Label", "SOCKET_Focus"],
+  "anim": {
+    "TANKER_Steer": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -35,
+      "max": 35,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TANKER_Trailer": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -70,
+      "max": 70,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TANKER_Axle_01": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TANKER_Axle_02": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TANKER_Axle_03": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TANKER_Axle_04": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "TANKER_Axle_05": {
+      "kind": "spin",
+      "axis": "x",
+      "min": 0,
+      "max": 360,
+      "rest": 0,
+      "unit": "deg"
+    }
+  },
+  "budget": {
+    "tris": [5000, 1200],
+    "bytes": 71680,
+    "drawCalls": 8
+  },
+  "instanceLinked": true
+}

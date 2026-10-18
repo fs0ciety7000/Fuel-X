@@ -151,7 +151,8 @@ async function buildAsset(blender: string, name: string, opts: Options): Promise
   console.log(`  optimize + contract + codegen ${ms(t0)}`);
   for (const s of summaries) {
     console.log(
-      `  LOD${s.lod}: ${s.triangles} tris, ${(s.bytes / 1024).toFixed(1)} KB, ${s.drawCalls} draw calls, ${s.nodes.length} nodes`,
+      `  LOD${s.lod}: ${s.triangles} tris, ${(s.bytes / 1024).toFixed(1)} KB, ${s.drawCalls} draw calls` +
+        `${s.instancedDrawCalls !== s.drawCalls ? ` (${s.instancedDrawCalls} instanced)` : ''}, ${s.nodes.length} nodes`,
     );
   }
   return { contract, summaries, optimized };
