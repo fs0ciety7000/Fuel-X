@@ -13,6 +13,7 @@ import {
   commandStartRollout,
   countdownSystem,
 } from './systems/countdown';
+import { commandCatchDecision, flightSystem } from './systems/flight';
 import { commandOrderDelivery, logisticsSystem } from './systems/logistics';
 import { commandStack, prepSystem } from './systems/prep';
 import { propellantSystem } from './systems/propellant';
@@ -44,8 +45,9 @@ function applyCommand(world: World, cmd: Command): string | null {
       return commandOrderDelivery(world, cmd);
     case 'Stack':
       return commandStack(world, cmd);
-    case 'CatchDecision': // 3.6
-    case 'LeakResponse': // 3.7
+    case 'CatchDecision':
+      return commandCatchDecision(world, cmd);
+    case 'LeakResponse': // 3.7 (A3 GSE leak)
       return 'NOT_IMPLEMENTED';
   }
 }
@@ -68,9 +70,10 @@ function bookkeepingSystem(world: World): void {
  *  5 prep          — CR-77 / SP-41 / TOWER-1 rollout + stacking, wind pauses (writes rollout/stackComplete)
  *  6 logistics     — road closure, tanker orders/routes/gate/offload (fills the farm)
  *  7 propellant    — farm boil-off, vehicle load + topping, scrub detank (writes loadComplete/detankComplete)
+ *  8 flight        — scripted ascent/boostback/landing, S-21 to SECO, catch model, decision, outcome
+ *                    (writes stageSeparated / recoveryMode / recoveryComplete)
  * 10 bookkeeping   — tick++ (RenderSnapshot write in 5.2)
- * Reserved: environment (2, 3.7), contracts/economy + director (3, 3.7/3.8), flight dynamics (8, 3.6),
- * anomalies (9, 3.7).
+ * Reserved: environment (2, 3.7), contracts/economy + director (3, 3.7/3.8), anomalies (9, 3.7).
  */
 export const SYSTEMS: readonly SimSystem[] = [
   { name: 'applyCommands', run: applyCommandsSystem },
@@ -78,6 +81,7 @@ export const SYSTEMS: readonly SimSystem[] = [
   { name: 'prep', run: prepSystem },
   { name: 'logistics', run: logisticsSystem },
   { name: 'propellant', run: propellantSystem },
+  { name: 'flight', run: flightSystem },
   { name: 'bookkeeping', run: bookkeepingSystem },
 ];
 

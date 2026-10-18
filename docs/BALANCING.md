@@ -133,6 +133,12 @@ Nominal prep (no holds) from start T-06:00:00: booster lifted → rolled → sta
 | Tower catch | 415 | 60 (catch point) | ≤ 1 | 60 000 | catch ≈ T+6:56 [S3] |
 | Divert splashdown | 420 | 0 (offshore point, 8 km) | — | — | |
 
+Sim additions (3.6, plausibility only — **game-designer to review**): ground track along `launchHeadingRad` = π/2
+(east, over the sea); `downrangeM` per keyframe 0 / 4 000 / 60 000 / 66 000 / 70 000 / 72 000 / 60 000 / 0 / 0
+(liftoff … catch); ship SECO `secoDownrangeM` 1 300 000 m and `secoPropKg` 80 000 kg. The booster aims at the
+offshore divert point until a CATCH is committed. "Landing propellant" (forced-divert and low-prop σ input) =
+predicted booster propellant at landing-burn ignition (90 000 kg nominal − engine-out penalties).
+
 | Key | Unit | Default | Range | Rationale |
 |---|---|---|---|---|
 | landing.minProp (forced divert below) | kg | 30 000 | 20k–50k | |

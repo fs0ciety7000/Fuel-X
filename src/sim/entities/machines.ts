@@ -108,7 +108,7 @@ export const boosterFsm = entityFsm<BoosterState, StageTrigger>('booster', BOOST
   { from: 'LOADED', to: 'ASCENT', on: 'liftoff' },
   { from: 'ASCENT', to: 'BOOSTBACK', on: 'boostbackStart' },
   { from: 'BOOSTBACK', to: 'DESCENT', on: 'boostbackEnd' },
-  { from: 'DESCENT', to: 'DIVERTED', on: 'divert' },
+  { from: ['BOOSTBACK', 'DESCENT'], to: 'DIVERTED', on: 'divert' },
   { from: 'DESCENT', to: 'CAUGHT_SAFING', on: 'caught' },
   { from: ['ASCENT', 'BOOSTBACK', 'DESCENT', 'DIVERTED'], to: 'LOST', on: 'lost' },
 ]);

@@ -5,6 +5,10 @@ import type {
   ArmsState,
   ClockState,
   DecisionKind,
+  FlightEventName,
+  RecoveryDecidedBy,
+  RecoveryMode,
+  RecoveryResult,
   GoStatus,
   HoldReason,
   HoldReleasedBy,
@@ -73,6 +77,37 @@ export type SimEvent =
   | { t: 'RoadClosureChanged'; tick: Tick; siteId: SiteId; closed: boolean }
   // Prep (3.5) and recovery (3.6)
   | { t: 'ArmsChanged'; tick: Tick; id: Id; from: ArmsState; to: ArmsState }
+  // Flight (3.6)
+  | {
+      t: 'FlightEvent';
+      tick: Tick;
+      countdownId: Id;
+      id: Id;
+      kind: 'booster' | 'ship';
+      event: FlightEventName;
+      altitudeM: number;
+      speedMPerS: number;
+    }
+  | { t: 'EnginesChanged'; tick: Tick; id: Id; lit: number; failed: number }
+  | {
+      t: 'RecoveryCommitted';
+      tick: Tick;
+      countdownId: Id;
+      boosterId: Id;
+      mode: RecoveryMode;
+      by: RecoveryDecidedBy;
+      p: number;
+    }
+  | {
+      t: 'RecoveryOutcome';
+      tick: Tick;
+      countdownId: Id;
+      boosterId: Id;
+      mode: RecoveryMode;
+      result: RecoveryResult;
+      p: number;
+      roll: number | null;
+    }
   | {
       t: 'DetankCompleted';
       tick: Tick;

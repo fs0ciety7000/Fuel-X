@@ -143,7 +143,13 @@ type SimEvent =
   | { t: 'DeliveryOrdered'; tick; orderId; tankerId; callSign; fluid; rush; cargoKg; feeCr; gateEtaTick }
   | { t: 'DeliveryCompleted'; tick; orderId; tankerId; fluid; deliveredKg; costCr; aborted }
   | { t: 'RoadClosureChanged'; tick; siteId; closed }
-  | { t: 'DetankCompleted'; tick; countdownId; returnedKg: {LOX, CH4}; lostKg: {LOX, CH4} };
+  | { t: 'DetankCompleted'; tick; countdownId; returnedKg: {LOX, CH4}; lostKg: {LOX, CH4} }
+  // 3.5 prep · 3.6 flight
+  | { t: 'ArmsChanged'; tick; id; from: 'OPEN' | 'CLOSED'; to: 'OPEN' | 'CLOSED' }
+  | { t: 'FlightEvent'; tick; countdownId; id; kind: 'booster' | 'ship'; event: FlightEventName; altitudeM; speedMPerS }
+  | { t: 'EnginesChanged'; tick; id; lit; failed }
+  | { t: 'RecoveryCommitted'; tick; countdownId; boosterId; mode: 'CATCH' | 'DIVERT'; by: 'PLAYER' | 'AUTO' | 'FORCED'; p }
+  | { t: 'RecoveryOutcome'; tick; countdownId; boosterId; mode; result: 'CAUGHT' | 'CATCH_FAILED' | 'DIVERTED'; p; roll };
 ```
 
 `world.tick` is the index of the **next** tick to execute; events emitted while executing it carry that
@@ -292,7 +298,33 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   `WIND_HOLD`. Tasks are progress counters, so a pause delays them by exactly its length; the T-clock is untouched.
 - Prep runs in `Rollout … TerminalCount` and freezes once scrubbed.
 
-### 7.4 Logistics & propellant (3.4, `src/sim/systems/{logistics,propellant}.ts`)
+### 7.4 Flight & recovery (3.6, `src/sim/systems/flight.ts`, `src/sim/math/{profile,catch}.ts`)
+
+- **Profile**: booster keyframes (BALANCING §6) interpolated piecewise-linearly in *profile time*, which equals mission
+  time except between an ascent engine-out and MECO (the remaining burn stretches by `ascentMecoDelayS` per engine).
+  Ground track along `launchHeadingRad`; until a CATCH is committed the aim offset ramps to the offshore divert point
+  (boostback start → landing burn); a CATCH converges it on the tower by the catch time. Divert profile = same keyframes
+  to landing burn, then `SPLASHDOWN` at `divert.splashdownTS` on the divert point.
+- **Entity fields**: booster `engines {total, lit, failed}`, `flight` (telemetry `altitudeM, downrangeM, speedMPerS,
+  verticalSpeedMPerS, headingRad` + profile state), `recovery {p, sigmaM, landingPropKg, towerWindMPerS, forcedDivert,
+  decisionRequiredTick, deadlineTick, mode, decidedBy, result, roll}` (live p for the UI); ship `engines`, `flight`.
+  Booster propellant = profile − engine-out penalty, split by tank-capacity ratio.
+- **Events / inputs**: `FlightEvent` per keyframe (LIFTOFF … CATCH | SPLASHDOWN; ship `SECO` = contract fulfilment).
+  `HOT_STAGING` → S-21 `SEPARATED` (6 lit), `inputs.stageSeparated`. `BOOSTBACK_START` → `DecisionRequired
+  {decision: 'CATCH', deadlineTick = landing-burn ignition}`. Commit (player/auto/forced) → `RecoveryCommitted`,
+  `inputs.recoveryMode`, tower `CATCH_READY` (→ `CATCHING` at landing burn). Outcome → `RecoveryOutcome`,
+  `inputs.recoveryComplete`. S-21 → `SECO` → next tick `OFF_SCENE` + despawn.
+- **Catch model**: σ = base + perEngineOut·failed + windCoef·max(0, towerWind − windRef) + (landingProp < lowPropRef ?
+  lowProp : 0), p = erf(tol / (σ√2)). "Landing prop" = predicted propellant at landing-burn ignition. Forced divert when
+  landing prop < `landingMinPropKg` or tower wind > `towerWindLimitCatchMPerS` — committed as soon as the decision opens.
+  No input by the deadline → CATCH iff p ≥ `autoCatchThreshold`. One roll on rng stream `catch` at the catch keyframe:
+  `roll < p` → booster `CAUGHT_SAFING`, arms `CLOSED`, tower `IDLE`; else booster `LOST`, tower `DAMAGED`.
+- **Commands**: `CatchDecision {boosterId, choice}` between `DecisionRequired` and the deadline; rejections
+  `UNKNOWN_BOOSTER`, `NO_CATCH_DECISION_PENDING`, `ALREADY_DECIDED` (also after a forced divert).
+- **Hook** `engineOut(world, boosterId, n = 1): boolean` (A4, 3.7): ascent → lit `33 − n`, MECO slip, landing-prop
+  penalty; boostback → lit `13 − n`, boostback penalty; σ grows per engine out. No effect in other phases.
+
+### 7.5 Logistics & propellant (3.4, `src/sim/systems/{logistics,propellant}.ts`)
 
 - **World**: `world.logistics = { farm: {LOX, CH4, LN2: Id[]}, roadClosed, nextOrderSerial, charterSerial, loadRateFactor, ledger }`.
   `ledger[LOX|CH4]` books every kg: `deliveredKg`, `farmBoilOffKg`, `farmToVehicleKg`, `vehicleBoilOffKg`,

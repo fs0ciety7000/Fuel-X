@@ -266,8 +266,14 @@ describe('prep → load → T-0 with the real systems (no scripted inputs)', () 
     expect(s.cd.pollsPassed).toEqual(['load', 'terminal', 'final']);
     expect(s.cd.liftoffTick).toBe(T(-cdData.scenarioStartTS) - 1);
     const a = prepAssets(s);
-    expect(a.booster.fsm.state).toBe('LOADED');
-    expect(a.ship.fsm.state).toBe('LOADED');
+    // Fully loaded at T-0, then the flight system takes over in the liftoff tick.
+    expect(
+      log
+        .filter((e) => e.t === 'EntityStateChanged' && e.id === a.booster.id)
+        .map((e) => e.t === 'EntityStateChanged' && e.to)
+        .slice(-2),
+    ).toEqual(['LOADED', 'ASCENT']);
+    expect(a.ship.fsm.state).toBe('ASCENT');
     expect(log.find((e) => e.t === 'RoadClosureChanged')).toMatchObject({ closed: true });
   });
 });

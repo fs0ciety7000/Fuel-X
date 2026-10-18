@@ -44,3 +44,7 @@ export {
 } from './systems/propellant';
 export { createMvpFlight } from './entities/flight';
 export { craneFsm, setArms, towerFsm, transporterFsm } from './entities/machines';
+export { commandCatchDecision, engineOut } from './systems/flight';
+export { catchProbability, catchSigmaM, erf } from './math/catch';
+export type { CatchDrivers } from './math/catch';
+export { CATCH_PROFILE, DIVERT_PROFILE, sampleProfile } from './math/profile';
