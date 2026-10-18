@@ -73,7 +73,14 @@ export function deserializeWorld(json: string): World {
   if (w.schema !== WORLD_SCHEMA) {
     throw new Error(`deserializeWorld: schema ${String(w.schema)} (expected ${WORLD_SCHEMA}; migrate first)`);
   }
-  if (typeof w.tick !== 'number' || !w.entities || !w.rng || !w.countdowns || !Array.isArray(w.outbox)) {
+  if (
+    typeof w.tick !== 'number' ||
+    !w.entities ||
+    !w.rng ||
+    !w.countdowns ||
+    !w.logistics ||
+    !Array.isArray(w.outbox)
+  ) {
     throw new Error('deserializeWorld: missing world fields');
   }
   return parsed as World;

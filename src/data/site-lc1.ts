@@ -181,7 +181,7 @@ const paths = {
 export type Lc1PathId = keyof typeof paths;
 
 export const lc1Layout = {
-  siteId: 'LC-1' satisfies SiteId,
+  siteId: 'LC-1' as SiteId,
   points,
   placements,
   paths,

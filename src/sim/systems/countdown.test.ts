@@ -9,6 +9,7 @@ import { createWorld } from '../core/world';
 import type { World } from '../core/world';
 import { advance, step } from '../step';
 import type { ClockState, Countdown, Phase, PollId, Station } from '../types';
+import { roadShouldBeClosed } from './logistics';
 import {
   PHASES,
   clockFsm,
@@ -57,6 +58,8 @@ function setup(opts: SetupOptions = {}): Setup {
   if (opts.phase) cd.phase.state = opts.phase;
   if (opts.pollsPassed) cd.pollsPassed = [...opts.pollsPassed];
   Object.assign(cd.inputs, opts.inputs);
+  // Start with the road state the countdown implies, so the first tick has no RoadClosureChanged (3.4).
+  world.logistics.roadClosed = roadShouldBeClosed(world);
   return { world, cd };
 }
 
@@ -389,7 +392,7 @@ describe('SCRUB', () => {
   it('ends the attempt: Scrubbed, clock stopped, then Debrief once detanked', () => {
     const { world, cd } = setup({ startTS: -2_000, phase: 'PropellantLoad', pollsPassed: ['load'] });
     const events = step(world, [cmd('Scrub', cd)]);
-    expect(types(events)).toEqual(['PhaseChanged', 'ClockChanged']);
+    expect(types(events)).toEqual(['PhaseChanged', 'ClockChanged', 'RoadClosureChanged']);
     expect(events[0]).toMatchObject({ from: 'PropellantLoad', to: 'Scrubbed', trigger: 'Scrub' });
     expect(cd.scrubReason).toBe('COMMAND');
     const tClock = cd.tClockTicks;
@@ -420,7 +423,8 @@ describe('launch window', () => {
     step(world, [cmd('Hold', cd)]);
     const events = runUntil(world, () => cd.phase.state === 'Scrubbed');
     expect(world.tick - 1).toBe(cd.windowCloseTick); // scrubbed on the closing tick itself
-    expect(types(events)).toEqual(['PhaseChanged', 'WindowMissed', 'ClockChanged']);
+    // The scrub also reopens the road into the hazard radius (3.4 logistics).
+    expect(types(events)).toEqual(['PhaseChanged', 'WindowMissed', 'ClockChanged', 'RoadClosureChanged']);
     expect(events[0]).toMatchObject({ from: 'TerminalCount', to: 'Scrubbed', trigger: 'WindowClosed' });
     expect(events[1]).toMatchObject({ contractId: 'NRL-3', penaltyCr: mvpContract.penaltyWindowMissedCr });
     expect(cd.scrubReason).toBe('WINDOW_CLOSED');

@@ -3,6 +3,8 @@ import type {
   AnomalyId,
   AssetKey,
   EntityKind,
+  Fluid,
+  Lc1PathId,
   MilestoneName,
   PollId,
   Propellant,
@@ -10,8 +12,8 @@ import type {
   SiteStatus,
 } from '@data/index';
 
-export type { AnomalyId, AssetKey, MilestoneName, PollId, Propellant, SiteId, SiteStatus };
-export type { World, Site, EntityTable, Economy } from './core/world';
+export type { AnomalyId, AssetKey, Fluid, Lc1PathId, MilestoneName, PollId, Propellant, SiteId, SiteStatus };
+export type { World, Site, EntityTable, Economy, LogisticsState, PropLedger } from './core/world';
 export type { SimEvent, SimEventInput, SimEventType } from './core/events';
 export type { Command, CommandType, CommandOf, StampedCommand } from './core/commands';
 export type { RngState, RngStream } from './core/rng';
@@ -57,17 +59,102 @@ export interface EntityBase<K extends Kind> {
   asset: AssetKey;
 }
 
+/** Propellant on board a stage, kg. */
+export interface PropTanks {
+  loxKg: number;
+  ch4Kg: number;
+  loxCapKg: number;
+  ch4CapKg: number;
+}
+
+/** Path following along a named site path (src/data/site-lc1.ts). */
+export interface RouteState {
+  pathId: Lc1PathId;
+  /** Ticks moved along the path (distance = movedTicks × speed × DT, capped at the path length). */
+  movedTicks: number;
+  speedMPerS: number;
+}
+
+/** ARCHITECTURE §7.2. Prep (3.5) → load (3.4) → flight (3.6). */
+export type BoosterState =
+  | 'IN_YARD'
+  | 'ON_TRANSPORTER'
+  | 'STACKING'
+  | 'STACKED'
+  | 'LOADING'
+  | 'LOADED'
+  | 'DETANKING'
+  | 'ASCENT'
+  | 'BOOSTBACK'
+  | 'DESCENT'
+  | 'DIVERTED'
+  | 'CAUGHT_SAFING'
+  | 'LOST';
+export type ShipState =
+  | 'IN_YARD'
+  | 'ON_TRANSPORTER'
+  | 'STACKING'
+  | 'STACKED'
+  | 'LOADING'
+  | 'LOADED'
+  | 'DETANKING'
+  | 'ASCENT'
+  | 'SEPARATED'
+  | 'SECO'
+  | 'OFF_SCENE'
+  | 'LOST';
+export type TankerState = 'OFFMAP' | 'INBOUND' | 'GATE_WAIT' | 'OFFLOADING' | 'OUTBOUND';
+
+export interface BoosterFields {
+  fsm: FsmState<BoosterState>;
+  prop: PropTanks;
+  /** Unitless 0–1. */
+  wear: number;
+  flights: number;
+}
+export interface ShipFields {
+  fsm: FsmState<ShipState>;
+  prop: PropTanks;
+}
+export interface TankFields {
+  fluid: Fluid;
+  massKg: number;
+  capKg: number;
+  /** Cumulative boil-off of this tank, kg (bookkeeping for mass-conservation checks and the HUD). */
+  boiledOffKg: number;
+}
+export interface DeliveryOrder {
+  id: string;
+  rush: boolean;
+  placedTick: Tick;
+  /** Tick the tanker leaves the off-map entry so that it reaches the gate at `gateEtaTick`. */
+  departTick: Tick;
+  /** Ordered arrival at the road gate = placed + lead time. */
+  gateEtaTick: Tick;
+  deliveredKg: number;
+}
+export interface TankerFields {
+  fluid: Propellant;
+  fsm: FsmState<TankerState>;
+  capKg: number;
+  cargoKg: number;
+  /** Rush deliveries are chartered trucks spawned for the order and despawned when they leave. */
+  chartered: boolean;
+  order: DeliveryOrder | null;
+  route: RouteState | null;
+}
+
 /**
- * Kind-specific fields, merged into `EntityBase`. Systems added in 3.4–3.8 fill these in
- * (booster prop/engines/flight, tank mass, tanker route, …); keep them JSON-plain.
+ * Kind-specific fields, merged into `EntityBase`. Systems added in 3.5–3.8 fill in the rest
+ * (tower arms, transporter route, …); keep them JSON-plain.
  */
 export interface EntityFields {
-  booster: object;
-  ship: object;
+  booster: BoosterFields;
+  ship: ShipFields;
   tower: object;
   pad: object;
-  tank: object;
-  tanker: object;
+  tank: TankFields;
+  tanker: TankerFields;
   transporter: object;
   crane: object;
   van: object;
@@ -75,7 +162,6 @@ export interface EntityFields {
   wxStation: object;
   building: object;
 }
-
 export type EntityOf<K extends Kind> = EntityBase<K> & EntityFields[K];
 export type Entity = { [K in Kind]: EntityOf<K> }[Kind];
 

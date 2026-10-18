@@ -13,6 +13,8 @@ import {
   commandStartRollout,
   countdownSystem,
 } from './systems/countdown';
+import { commandOrderDelivery, logisticsSystem } from './systems/logistics';
+import { propellantSystem } from './systems/propellant';
 
 export interface StepContext {
   /** Commands stamped for this tick, in send order. */
@@ -37,8 +39,9 @@ function applyCommand(world: World, cmd: Command): string | null {
       return commandRecycle(world, cmd);
     case 'Scrub':
       return commandScrub(world, cmd);
+    case 'OrderDelivery':
+      return commandOrderDelivery(world, cmd);
     case 'Stack': // 3.5
-    case 'OrderDelivery': // 3.4
     case 'CatchDecision': // 3.6
     case 'LeakResponse': // 3.7
       return 'NOT_IMPLEMENTED';
@@ -57,13 +60,20 @@ function bookkeepingSystem(world: World): void {
 }
 
 /**
- * System order. Slots reserved for later tasks: environment (3.7), contracts/economy + scheduler (3.8),
- * vehicle FSMs (3.5/3.6), logistics/motion (3.4/3.5), propellant (3.4), flight dynamics (3.6),
- * anomalies (3.7); bookkeeping will also write the RenderSnapshot (5.2).
+ * System order (ARCHITECTURE §4) — changing it is a golden-log change:
+ *  1 applyCommands — player/host commands stamped for this tick
+ *  4 countdown     — T-clock, polls, holds, phase transitions (reads `countdown.inputs` from last tick)
+ *  6 logistics     — road closure, tanker orders/routes/gate/offload (fills the farm)
+ *  7 propellant    — farm boil-off, vehicle load + topping, scrub detank (writes loadComplete/detankComplete)
+ * 10 bookkeeping   — tick++ (RenderSnapshot write in 5.2)
+ * Reserved: environment (2, 3.7), contracts/economy + director (3, 3.7/3.8), vehicle FSMs (5, 3.5),
+ * flight dynamics (8, 3.6), anomalies (9, 3.7).
  */
 export const SYSTEMS: readonly SimSystem[] = [
   { name: 'applyCommands', run: applyCommandsSystem },
   { name: 'countdown', run: countdownSystem },
+  { name: 'logistics', run: logisticsSystem },
+  { name: 'propellant', run: propellantSystem },
   { name: 'bookkeeping', run: bookkeepingSystem },
 ];
 

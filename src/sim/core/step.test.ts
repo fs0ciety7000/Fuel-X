@@ -16,7 +16,13 @@ describe('time', () => {
 
 describe('step pipeline', () => {
   it('runs systems in a fixed order and increments the tick last', () => {
-    expect(SYSTEMS.map((s) => s.name)).toEqual(['applyCommands', 'countdown', 'bookkeeping']);
+    expect(SYSTEMS.map((s) => s.name)).toEqual([
+      'applyCommands',
+      'countdown',
+      'logistics',
+      'propellant',
+      'bookkeeping',
+    ]);
     const w = createWorld({ seed: 1 });
     step(w);
     step(w);
@@ -27,7 +33,7 @@ describe('step pipeline', () => {
     const w = createWorld({ seed: 1 });
     advance(w, 4);
     const events = step(w, [{ t: 'OrderDelivery', fluid: 'LOX', rush: false }]);
-    expect(events).toEqual([{ t: 'CommandRejected', tick: 4, cmd: 'OrderDelivery', reason: 'NOT_IMPLEMENTED' }]);
+    expect(events).toEqual([{ t: 'CommandRejected', tick: 4, cmd: 'OrderDelivery', reason: 'NO_TANKER_AVAILABLE' }]);
     expect(w.tick).toBe(5);
   });
 

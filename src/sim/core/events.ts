@@ -12,6 +12,8 @@ import type {
   MilestoneName,
   Phase,
   PollId,
+  Propellant,
+  SiteId,
   Station,
   Tick,
 } from '../types';
@@ -41,7 +43,40 @@ export type SimEvent =
   | { t: 'Spawned'; tick: Tick; id: Id; kind: Kind; callSign: string }
   | { t: 'Despawned'; tick: Tick; id: Id; kind: Kind; callSign: string }
   | { t: 'Milestone'; tick: Tick; countdownId: Id; name: MilestoneName }
-  | { t: 'CommandRejected'; tick: Tick; cmd: CommandType; reason: string };
+  | { t: 'CommandRejected'; tick: Tick; cmd: CommandType; reason: string }
+  // Logistics & propellant (3.4). Money fields are charges for the economy (3.8) to apply.
+  | {
+      t: 'DeliveryOrdered';
+      tick: Tick;
+      orderId: string;
+      tankerId: Id;
+      callSign: string;
+      fluid: Propellant;
+      rush: boolean;
+      cargoKg: number;
+      feeCr: number;
+      gateEtaTick: Tick;
+    }
+  | {
+      t: 'DeliveryCompleted';
+      tick: Tick;
+      orderId: string;
+      tankerId: Id;
+      fluid: Propellant;
+      deliveredKg: number;
+      /** Propellant price of the delivered mass. */
+      costCr: number;
+      /** Offload cut short (road closure or farm full); the rest of the cargo leaves with the truck. */
+      aborted: boolean;
+    }
+  | { t: 'RoadClosureChanged'; tick: Tick; siteId: SiteId; closed: boolean }
+  | {
+      t: 'DetankCompleted';
+      tick: Tick;
+      countdownId: Id;
+      returnedKg: Record<Propellant, number>;
+      lostKg: Record<Propellant, number>;
+    };
 
 export type SimEventType = SimEvent['t'];
 

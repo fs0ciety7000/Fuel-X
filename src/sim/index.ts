@@ -29,3 +29,16 @@ export {
 } from './systems/countdown';
 export type { CreateCountdownOptions, PhaseTrigger, ClockTrigger } from './systems/countdown';
 export type * from './types';
+export { spawnSiteLayout } from './entities/site';
+export { boosterFsm, shipFsm, tankerFsm } from './entities/machines';
+export { pathLengthM, pointAt, headingOf, headingToQuat } from './math/path';
+export { roadShouldBeClosed } from './systems/logistics';
+export {
+  addToFarm,
+  drawFromFarm,
+  farmFreeKg,
+  farmMassKg,
+  farmUsableKg,
+  stageFull,
+  toppingDemandKgPerS,
+} from './systems/propellant';

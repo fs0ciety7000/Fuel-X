@@ -138,7 +138,12 @@ type SimEvent =
   | { t: 'EntityStateChanged'; tick; id: Id; kind: Kind; from: string; to: string }
   | { t: 'Spawned' | 'Despawned'; tick; id: Id; kind: Kind; callSign: string }
   | { t: 'Milestone'; tick; countdownId; name: MilestoneName }   // T-clock marks from src/data/countdown.ts
-  | { t: 'CommandRejected'; tick; cmd: Command['t']; reason: string };  // reason = UPPER_SNAKE code (i18n key)
+  | { t: 'CommandRejected'; tick; cmd: Command['t']; reason: string }  // reason = UPPER_SNAKE code (i18n key)
+  // 3.4 logistics/propellant — money fields are charges the economy (3.8) applies
+  | { t: 'DeliveryOrdered'; tick; orderId; tankerId; callSign; fluid; rush; cargoKg; feeCr; gateEtaTick }
+  | { t: 'DeliveryCompleted'; tick; orderId; tankerId; fluid; deliveredKg; costCr; aborted }
+  | { t: 'RoadClosureChanged'; tick; siteId; closed }
+  | { t: 'DetankCompleted'; tick; countdownId; returnedKg: {LOX, CH4}; lostKg: {LOX, CH4} };
 ```
 
 `world.tick` is the index of the **next** tick to execute; events emitted while executing it carry that
@@ -268,6 +273,28 @@ stateDiagram-v2
 | Van `CV-` | PARKED → TO_PAD → AT_PAD → TO_SAFE → PARKED | — |
 
 Each FSM has a table-driven test (allowed transitions fire, disallowed don't, each emits its event) per `sim-testing`.
+Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states add `STACKING` (in the tower arms) and
+`CAUGHT_SAFING` (one state for the `CAUGHT, SAFING` chip).
+
+### 7.3 Logistics & propellant (3.4, `src/sim/systems/{logistics,propellant}.ts`)
+
+- **World**: `world.logistics = { farm: {LOX, CH4, LN2: Id[]}, roadClosed, nextOrderSerial, charterSerial, loadRateFactor, ledger }`.
+  `ledger[LOX|CH4]` books every kg: `deliveredKg`, `farmBoilOffKg`, `farmToVehicleKg`, `vehicleBoilOffKg`,
+  `detankReturnedKg`, `detankLostKg` — farm + on-board + sinks − deliveries is constant (tested to 1e-12 relative).
+- **Farm**: tanks spawned from the layout; start inventory split evenly; draws only above `heelFraction`, fills up to
+  capacity, tank with most available first. Boil-off `m -= m·f·DT` per tick (LN2 static).
+- **Orders** (`OrderDelivery`): standard = a free fleet truck (else `NO_TANKER_AVAILABLE`), rush = chartered truck
+  spawned as the next serial (`LX-05`, `MX-03`, …) and despawned when it leaves. Lead time = order → arrival at the
+  road gate; the truck leaves off-map `drive` ticks before. Fee in `DeliveryOrdered`, propellant price in
+  `DeliveryCompleted` (for delivered kg). Offload at `offloadRateKgPerS` into the farm.
+- **Road closure**: closed while any LC-1 countdown is pre-liftoff with T ≥ T-00:40:00, or in Liftoff…Safing.
+  Inbound trucks reaching the gate wait in `GATE_WAIT`; a truck offloading when the road closes stops and leaves
+  (`aborted: true`). Scrub/Debrief reopen the road.
+- **Load**: in `PropellantLoad`/`TerminalCount` once T ≥ T-01:15:00, each of the 4 lines (booster/ship × LOX/CH4)
+  fills at its rate × `loadRateFactor` (A3 hook) from the farm, for stages `STACKED|LOADING|LOADED`. Vehicle boil-off
+  runs every tick before liftoff, so a full line tops exactly its boil-off. `inputs.loadComplete` = all 4 lines full.
+- **Scrub**: stages → `DETANKING`, lines drain at the load rates, `scrubDetankLossFraction` vented, rest returned to
+  the farm (overflow vented); when empty → `STACKED`, `inputs.detankComplete = true`, `DetankCompleted`.
 
 ## 8. UI projection contract
 
