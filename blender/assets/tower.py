@@ -75,9 +75,8 @@ def build_static(lod: int) -> MeshBuilder:
     mb = MeshBuilder()
     seg = pick(lod, 16, 8, 6)
     # Podium the legs stand on.
-    mb.box_minmax((-8.5, -8.5, 0.0), (8.5, 8.5, 5.0), CLAY, faces="sides" if lod else "all")
-    if lod:
-        mb.box_minmax((-8.5, -8.5, 4.99), (8.5, 8.5, 5.0), CLAY, faces="top")
+    mb.box_minmax((-11.0, -11.0, 0.0), (11.0, 11.0, 2.0), CLAY, faces="sides" if lod == 2 else "all")
+    mb.box_minmax((-8.5, -8.5, 2.0), (8.5, 8.5, 5.0), CLAY, faces="sides" if lod == 2 else "all")
     # Main lattice: 4 heavy chords, square-ish X panels on every face.
     add_truss(mb, (0, 0, 5.0), (0, 0, LATTICE_TOP), 2 * HALF, 2 * HALF,
               bays=pick(lod, 15, 10, 1), panels=1, section=pick(lod, 0.7, 0.8, 0.8),
