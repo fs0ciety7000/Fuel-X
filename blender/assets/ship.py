@@ -6,7 +6,7 @@ Run:  blender -b --factory-startup -P blender/assets/ship.py -- \
 
 Frame (Blender, Z-up): origin = center of the engine plane (bell exits) = bottom of the vehicle;
 stacks on BOOSTER `SOCKET_ShipMount` (z 71 → world 91 on the mount). Faces −Y: the heat shield
-(MAT_ClayDark) covers the −Y half (belly), flap hinges sit on the ±X tile line; L = +X, R = −X.
+(MAT_Clay, like the hull — see build_static) covers the −Y half (belly), flap hinges sit on the ±X tile line; L = +X, R = −X.
 `SOCKET_QD` is on the leeward hull facing the TOWER QD hinge (−11, −7.5) relative to the tower,
 i.e. direction (−11, 18.5) from the ship axis, at z = 9 (tower QD height 100 − 91).
 Lift pins on ±X at z = 44: on the stack they sit at world 135 = TOWER carriage max.
@@ -99,9 +99,11 @@ def build_static(lod: int) -> MeshBuilder:
     mb = MeshBuilder()
     half = pick(lod, 20, 10, 6)  # segments per half hull
     prof = hull_profile(lod)
-    # Leeward half (+Y, angles 0 → π) in clay, belly half (−Y, π → 2π) heat shield.
+    # Leeward half (+Y, angles 0 → π) and belly half (−Y, π → 2π, heat shield). Both MAT_Clay: the
+    # reference reads the whole stack as one light clay; the tile line is marked by the dark hinge
+    # fairings (a dark belly faced the default camera and made the ship read as a different object).
     add_revolve_arc(mb, prof, 0.0, math.pi, half, CLAY)
-    add_revolve_arc(mb, prof, math.pi, 2 * math.pi, half, DARK)
+    add_revolve_arc(mb, prof, math.pi, 2 * math.pi, half, CLAY)
     add_disc(mb, (0, 0, AFT_BULKHEAD_Z), R, 2 * half, DARK, up=False)
     if lod < 2:
         # Skirt lip and a couple of weld rings on the leeward side.
@@ -154,9 +156,9 @@ def build_flap_geo(fore: bool) -> MeshBuilder:
     if fore:
         (r0, z0), (r1, z1) = fore_hinge()
         root_len = math.hypot(r1 - r0, z1 - z0)
-        add_flap(mb, root_len, FORE_FLAP["tip"], FORE_FLAP["span"], FLAP_THICK, DARK, sweep=0.4)
+        add_flap(mb, root_len, FORE_FLAP["tip"], FORE_FLAP["span"], FLAP_THICK, CLAY, sweep=0.4)
     else:
-        add_flap(mb, AFT_FLAP["root"], AFT_FLAP["tip"], AFT_FLAP["span"], FLAP_THICK, DARK, sweep=-0.6)
+        add_flap(mb, AFT_FLAP["root"], AFT_FLAP["tip"], AFT_FLAP["span"], FLAP_THICK, CLAY, sweep=-0.6)
     return mb
 
 

@@ -3,8 +3,8 @@
 export const BOOSTER = {
   name: 'booster',
   asset: 'BOOSTER',
-  url: '/models/booster.glb?v=4ded70de',
-  lods: ['/models/booster_lod1.glb?v=94873e87', '/models/booster_lod2.glb?v=88b981e6'],
+  url: '/models/booster.glb?v=2d386d47',
+  lods: ['/models/booster_lod1.glb?v=5e9d19ba', '/models/booster_lod2.glb?v=4c86aa46'],
   nodes: {
     Static: 'BOOSTER_Static',
     EnginesGimbal: 'BOOSTER_EnginesGimbal',
@@ -75,7 +75,7 @@ export const BOOSTER = {
   },
   bounds: { min: [-7.743, 0, -7.743], max: [7.743, 71, 7.743] },
   triangles: [6952, 2608, 756],
-  bytes: [59872, 33608, 19508],
+  bytes: [59904, 33640, 19520],
   drawCalls: 8,
 } as const;
 

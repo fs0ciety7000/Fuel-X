@@ -3,8 +3,8 @@
 export const SHIP = {
   name: 'ship',
   asset: 'SHIP',
-  url: '/models/ship.glb?v=d18ad6e0',
-  lods: ['/models/ship_lod1.glb?v=b30a8d39', '/models/ship_lod2.glb?v=15d3d862'],
+  url: '/models/ship.glb?v=606df5b2',
+  lods: ['/models/ship_lod1.glb?v=8dc38547', '/models/ship_lod2.glb?v=d60bf88c'],
   nodes: {
     Static: 'SHIP_Static',
     EnginesGimbal: 'SHIP_EnginesGimbal',
@@ -51,7 +51,7 @@ export const SHIP = {
   },
   bounds: { min: [-7.752, 0, -4.558], max: [7.752, 52, 4.539] },
   triangles: [2582, 912, 276],
-  bytes: [27500, 17964, 13300],
+  bytes: [27504, 17896, 13324],
   drawCalls: 8,
 } as const;
 
