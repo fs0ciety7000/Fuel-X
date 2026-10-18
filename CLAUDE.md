@@ -9,7 +9,7 @@ A **live rocket launch site you can play like a strategy game**, in the browser.
 - Plan: [`docs/TASKS.md`](docs/TASKS.md) · QA: [`docs/QA.md`](docs/QA.md)
 
 ## Status
-Phase 3 in progress (simulation core, headless). Live checklist: `docs/TASKS.md`.
+Phase 3 done (headless sim + golden log). Waiting for **Gate 3** approval before Phase 4 (asset pipeline). Live checklist: `docs/TASKS.md`.
 
 Stack (ADR 0001–0008): Vite SPA · React 19 · TypeScript strict · three (WebGL2) via R3F `frameloop="never"` · plain data-oriented sim @30 Hz on main thread behind `SimHost` · 10 Hz projection → Zustand · CSS Modules + generated CSS vars · Vitest + Playwright · Blender 4.5 → gltf-transform (dedup/prune/weld/meshopt) → in-house codegen · Coolify (nginx image).
 
