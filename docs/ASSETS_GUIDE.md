@@ -1,6 +1,6 @@
 # Fuel-X — Assets Guide
 
-Owner: `blender-technical-artist` · Status: **Phase 4** — pipeline live (`npm run asset -- <name>`), TOWER shipped; tank farm, TANKER, TRANSPORTER, VAN, WX_STATION shipped (4.5). Budgets per ARCHITECTURE §13.2, colors from `src/tokens/generated/tokens.json`.
+Owner: `blender-technical-artist` · Status: **Phase 4** — pipeline live (`npm run asset -- <name>`), TOWER shipped; tank farm, TANKER, TRANSPORTER, VAN, WX_STATION shipped (4.5); BOAT_RANGE, VESSEL_RECOVERY, CRANE, BLDG_HIGHBAY, HANGAR_TENT shipped (4.6). Budgets per ARCHITECTURE §13.2, colors from `src/tokens/generated/tokens.json`.
 Procedure for producing an asset: skill `blender-asset-pipeline`. This document is the **contract** between Blender scripts and render code.
 
 Class names below (`TOWER`, `BOOSTER`, `TANK_V`…) are technical asset classes, not lore names. Call-signs (`TOWER-1`, `B-14`) are runtime data and never appear in node names.
@@ -42,8 +42,8 @@ Vehicle class: large fully reusable two-stage methane/LOX rocket, tower-caught b
 | `BOAT_RANGE` | 26 × 6.5 × 9 (above WL) | Range safety boat, mast + radar. | MVP |
 | `VESSEL_RECOVERY` | 72 × 16 × 24 (above WL) | Offshore support vessel, aft cargo deck 30 × 14 m, deck crane, radar. | MVP |
 | `WX_STATION` | 3 × 3 × 10 | Mast, instrument box, anemometer, wind vane. | MVP |
-| `BLDG_HIGHBAY` | 32 × 32 × 85 | Tall bay for stacking ships; vertical door 18 × 60 m on −Y face. | MVP (yard) |
-| `BLDG_MEGABAY` | 70 × 50 × 90 | Booster integration bay; door 22 × 80 m. | MVP (yard) |
+| `BLDG_HIGHBAY` | 32 × 32 × 85 | Tall bay for stacking ships; door 18 × 60 m on −Y face (bi-parting sliding leaves, §4). | MVP (yard) |
+| `BLDG_MEGABAY` | 70 × 50 × 90 | Booster integration bay; door 22 × 80 m. Not in the MVP small yard (GDD §5.1/§13: HB-1, TH-1; mega bay = BY-1 Kilnmoor), no placement in `site-lc1`. | Later (BY-1) |
 | `HANGAR_TENT` | 45 × 30 × 18 | Barrel-vault tent hangar. | MVP (yard) |
 | `CRANE` | tracks 12 × 10; boom 96 | Crawler crane, superstructure 14 m, lattice boom. | MVP-nice |
 | `PAD_UC` | as `PAD` + scaffolds | Second pad under construction (parameter variant of `PAD`/`TOWER` partial height). | Later |
@@ -120,9 +120,11 @@ As built (4.5): `TRANSPORTER_Deck` at the deck top centre (0, 0, 1.6) → `TRANS
 
 ### CRANE
 `CRANE_Static` (tracks, carbody); `CRANE_Upper` (empty at slew ring, z = 3, `rot y` −180° → 180°); `CRANE_Boom` (empty at boom foot, `rot x` 20° → 85° luff, rest 70°); `CRANE_Cable` (unit-length 1 m mesh hanging from the tip, render scales `y` to cable length); `CRANE_Hook` (empty, `trans y` along the cable). Sockets: `SOCKET_Hook` (load attach), `SOCKET_BoomTip`, `SOCKET_Label`, `SOCKET_Focus`.
+As built (4.6): `CRANE_Upper` (0, 0, 3) → `CRANE_UpperGeo` + `CRANE_BoomMount` (static empty at the boom foot, upper-local (0, −3.2, 1.6), **rotated 180° about Z** so a positive `rot x` raises the forward-pointing boom) → `CRANE_Boom` (`rot x` 20 → 85, rest 70 = degrees above horizontal; exported at rest, so its rest rotation is about its own axis) → `CRANE_BoomGeo` (96 m lattice along local +Y, tapered foot/tip) + `SOCKET_BoomTip` (0, 96, 0) + `CRANE_Cable` (empty at the tip, `rot x` −85 → −20, rest −70: **render always sets `Cable.rotation.x = −Boom.rotation.x`** so the cable hangs plumb). Under the cable: `CRANE_CableGeo` (1 m along three local −Y; render sets `scale.y = −Hook.position.y`), `SOCKET_Label` (3 m above the tip, so it follows luff and slew), `CRANE_Hook` (`trans y` −90 → −2 m, rest −30) → `CRANE_HookGeo` + `SOCKET_Hook` (2 m under the hook pin, +Z down = load attach direction). `SOCKET_Focus` on the root (z 20). At rest the boom tip is ≈ 94.7 m high, 32.8 m forward of the slew axis (36 m ahead of the root). Draw calls 7 (Static 2, Upper 2, Boom, Cable, Hook).
 
 ### BOAT_RANGE / VESSEL_RECOVERY
 `<ASSET>_Static`; `<ASSET>_Radar` (`spin y`, continuous); recovery vessel also `VESSEL_RECOVERY_DeckCrane` (`rot y` ±150°). Sockets: `SOCKET_Wake` (stern, waterline, +Z aft), `SOCKET_Bow` (foam), `SOCKET_Deck` (cargo mount, vessel only), `SOCKET_Label`, `SOCKET_Focus`.
+As built (4.6): hulls come from `blender/lib/marine.py` (`Hull` loft through stations, smooth skin, raked stem, sheer) and continue 0.8 m (boat) / 1.5 m (vessel) **below the waterline** so bobbing never opens a gap at the sea surface; the below-WL band is `MAT_Metal`. Rotors are empties with leaf `…Geo` meshes. `BOAT_RANGE`: radar axis (0, −1.2, 8.3), `SOCKET_Wake` (0, 13, 0), `SOCKET_Bow` (0, −11.5, 0) (stem at the waterline, the raked deck stem reaches −13), `SOCKET_Label` z 12, `SOCKET_Focus` z 3.5; 4 draw calls (Static: Clay, Metal, Glass + radar). `UNK-01` (A1 intruder) reuses this GLB. `VESSEL_RECOVERY`: freeboard 4.5 m aft rising to 7.5 m at the bow, four-tier house y −24 … −6 (bridge roof 18.5 m), radar axis (0, −18, 22.6), antenna to 24 m; `VESSEL_RECOVERY_DeckCrane` at (5.2, −1.5, 10.5) on the L side, rest 0° = knuckle jib stowed toward the stern; `SOCKET_Deck` (0, 19, 4.5) centre of the 30 × 14 m cargo deck (y 4 … 34) behind 1.2 m bulwarks; stern A-frame (static); `SOCKET_Wake` (0, 36, 0), `SOCKET_Bow` (0, −32, 0), `SOCKET_Label` z 27, `SOCKET_Focus` z 9; 7 draw calls (Static ×4 materials, radar, crane ×2).
 
 ### VAN (instanced)
 Single mesh `VAN_Body`, wheels merged, no animated parts (not visible at game scale). Sockets: `SOCKET_Label`.
@@ -133,7 +135,8 @@ As built (4.5): `MAT_Clay` + `MAT_Glass` (glass, tyres, bumpers — the only dar
 As built (4.5): both rotors are empties at (±1.2, 0, 9.55) with leaf `…Geo` meshes (anemometer L/+X, vane R/−X). **Vane at 0° points its arrow along local −Y (glTF +Z)**; it points into the wind, so render sets `rot y` = the heading the wind blows from (CCW from above, in the asset's frame). Contract class `building` (4 draw calls: Static ×2 materials + 2 rotors) — see §12 Q6.
 
 ### BLDG_HIGHBAY / BLDG_MEGABAY / HANGAR_TENT
-`<ASSET>_Static`; highbay/megabay `<ASSET>_Door` (vertical lift, `trans y` 0 → door height). Sockets: `SOCKET_DoorOut` (ground point just outside the door, path waypoint), `SOCKET_Label`.
+`<ASSET>_Static`; ~~highbay/megabay `<ASSET>_Door` (vertical lift, `trans y` 0 → door height)~~ — see as built. Sockets: `SOCKET_DoorOut` (ground point just outside the door, path waypoint, +Z up), `SOCKET_Label`, `SOCKET_Focus`.
+As built (4.6): **`BLDG_HIGHBAY` doors are two bi-parting sliding leaves**, not one vertical-lift door: a 60 m leaf lifted by its own height would stand 35 m above the 85 m roof, and the opening must clear a ship on the transporter (52 + 4.6 m). `BLDG_HIGHBAY_DoorL` (`trans x` 0 → 9.5 m, leaf x 0 … 9, L/+X) and `BLDG_HIGHBAY_DoorR` (`trans x` −9.5 → 0, leaf x −9 … 0) are empties at (0, −17.4, 0) in front of the façade ribs, each → `…DoorLGeo`/`…DoorRGeo` (`MAT_Clay`, panel stiffeners); fully open they overhang the side walls by 2.5 m under a header track. The 3 m door recess is the only `MAT_ClayDark` (dark slot when open; the reference bays read all light). `SOCKET_DoorOut` (0, −24, 0), `SOCKET_Label` z 88, `SOCKET_Focus` z 40. 4 draw calls. `HANGAR_TENT`: barrel vault 45 × 30 × 18 on a 1.5 m kerb, ribs every 5 m, dark 16 × 12 m door panel on the −Y gable, no animated door; `SOCKET_DoorOut` (0, −30.5, 0), `SOCKET_Label` z 21, `SOCKET_Focus` z 8; 2 draw calls. `BLDG_MEGABAY` is deferred to BY-1 (§2); when built, use the same bi-parting `DoorL/DoorR` pattern.
 
 ## 5. Material contract
 
@@ -316,10 +319,10 @@ As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face list
 | 7 | `TRANSPORTER` ✅ | Rollout phase. |
 | 8 | `VAN` ✅ | Instanced background traffic. |
 | 9 | `WX_STATION` ✅ | Weather go/no-go readability. |
-| 10 | `BOAT_RANGE` | Range violations / hazard line. |
-| 11 | `VESSEL_RECOVERY` | Recovery fleet, wake sockets. |
-| 12 | `BLDG_HIGHBAY`, `BLDG_MEGABAY`, `HANGAR_TENT` | Small yard. |
-| 13 | `CRANE` | Stacking/yard flavor (MVP-nice; the tower stacks in the MVP). |
+| 10 | `BOAT_RANGE` ✅ | Range violations / hazard line. |
+| 11 | `VESSEL_RECOVERY` ✅ | Recovery fleet, wake sockets. |
+| 12 | `BLDG_HIGHBAY` ✅, `HANGAR_TENT` ✅ (`BLDG_MEGABAY` later, BY-1) | Small yard. |
+| 13 | `CRANE` ✅ | Stacking/yard flavor (MVP-nice; the tower stacks in the MVP). |
 
 ### Asset status (generated numbers: `npm run asset -- <name>`, `src/render/assets/generated/<name>.ts`)
 

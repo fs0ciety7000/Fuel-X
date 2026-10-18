@@ -1,0 +1,12 @@
+{
+  "asset": "BOAT_RANGE",
+  "file": "boat_range",
+  "class": "road-sea-vehicle",
+  "lods": 2,
+  "nodes": ["BOAT_RANGE_Static", "BOAT_RANGE_Radar", "BOAT_RANGE_RadarGeo"],
+  "sockets": ["SOCKET_Wake", "SOCKET_Bow", "SOCKET_Label", "SOCKET_Focus"],
+  "anim": {
+    "BOAT_RANGE_Radar": { "kind": "spin", "axis": "y", "min": 0, "max": 360, "rest": 0, "unit": "deg" }
+  },
+  "budget": { "tris": [4000, 1000], "bytes": 61440, "drawCalls": 4 }
+}

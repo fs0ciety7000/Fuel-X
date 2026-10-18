@@ -1,0 +1,19 @@
+{
+  "asset": "VESSEL_RECOVERY",
+  "file": "vessel_recovery",
+  "class": "large-machine",
+  "lods": 3,
+  "nodes": [
+    "VESSEL_RECOVERY_Static",
+    "VESSEL_RECOVERY_Radar",
+    "VESSEL_RECOVERY_RadarGeo",
+    "VESSEL_RECOVERY_DeckCrane",
+    "VESSEL_RECOVERY_DeckCraneGeo"
+  ],
+  "sockets": ["SOCKET_Wake", "SOCKET_Bow", "SOCKET_Deck", "SOCKET_Label", "SOCKET_Focus"],
+  "anim": {
+    "VESSEL_RECOVERY_Radar": { "kind": "spin", "axis": "y", "min": 0, "max": 360, "rest": 0, "unit": "deg" },
+    "VESSEL_RECOVERY_DeckCrane": { "kind": "rot", "axis": "y", "min": -150, "max": 150, "rest": 0, "unit": "deg" }
+  },
+  "budget": { "tris": [15000, 4000, 1000], "bytes": 204800, "drawCalls": 8 }
+}

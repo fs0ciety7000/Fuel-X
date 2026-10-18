@@ -1,0 +1,10 @@
+{
+  "asset": "HANGAR_TENT",
+  "file": "hangar_tent",
+  "class": "building",
+  "lods": 2,
+  "nodes": ["HANGAR_TENT_Static"],
+  "sockets": ["SOCKET_DoorOut", "SOCKET_Label", "SOCKET_Focus"],
+  "anim": {},
+  "budget": { "tris": [2000, 600], "bytes": 71680, "drawCalls": 4 }
+}

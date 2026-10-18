@@ -1,0 +1,19 @@
+{
+  "asset": "BLDG_HIGHBAY",
+  "file": "bldg_highbay",
+  "class": "building",
+  "lods": 2,
+  "nodes": [
+    "BLDG_HIGHBAY_Static",
+    "BLDG_HIGHBAY_DoorL",
+    "BLDG_HIGHBAY_DoorLGeo",
+    "BLDG_HIGHBAY_DoorR",
+    "BLDG_HIGHBAY_DoorRGeo"
+  ],
+  "sockets": ["SOCKET_DoorOut", "SOCKET_Label", "SOCKET_Focus"],
+  "anim": {
+    "BLDG_HIGHBAY_DoorL": { "kind": "trans", "axis": "x", "min": 0, "max": 9.5, "rest": 0, "unit": "m" },
+    "BLDG_HIGHBAY_DoorR": { "kind": "trans", "axis": "x", "min": -9.5, "max": 0, "rest": 0, "unit": "m" }
+  },
+  "budget": { "tris": [3000, 800], "bytes": 71680, "drawCalls": 4 }
+}
