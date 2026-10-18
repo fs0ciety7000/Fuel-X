@@ -21,7 +21,7 @@ Baseline values (DESIGN_SYSTEM.md is authoritative once written):
 | `ink` | `#0A0A0A` | text, rules |
 | `ink-2..4` | grey ramp | secondary text, inactive segments, clay shading |
 | `accent` | `#FF5A1F` | thrust, selection, alerts, hazard/recovery zones |
-| `accent-text` | `#C2410C` | small orange text on paper (AA) |
+| `accent-text` | `#B23B0B` | small orange text on paper (AA) |
 | `accent-tint` | flat pale orange | selected row background |
 | `radius` | `0` | everything |
 | `rule` | `1px` / `2px` | dividers, compartments |

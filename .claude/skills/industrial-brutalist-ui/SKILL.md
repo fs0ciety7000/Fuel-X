@@ -95,7 +95,7 @@ To prevent the design from appearing purely digital, simulated analog degradatio
 
 ## 9. Fuel-X project addendum (overrides the sections above where they conflict)
 - **Mode:** Swiss Industrial Print (light) only. Never the dark Tactical Telemetry/CRT mode, no scanlines, no terminal green.
-- **Accent:** signal orange `#FF5A1F` replaces the hazard red (user decision). Use `#C2410C` for small orange text on the paper substrate (WCAG AA). Selected rows use a flat, opaque pale-orange tint. Still exactly one accent hue.
+- **Accent:** signal orange `#FF5A1F` replaces the hazard red (user decision). Use `#B23B0B` for small orange text on the paper substrate (WCAG AA). Selected rows use a flat, opaque pale-orange tint. Still exactly one accent hue.
 - **3D world:** the three.js scene and Blender materials use the same substrate, ink ramp and accent tokens; orange is reserved for thrust/exhaust, selection, alerts and hazard/recovery zones.
 - **Macro-type** is limited to a few hero elements: the countdown clock, the followed vehicle's call-sign, phase transitions. Everything else is monospace micro-type.
 - **Texture:** one static global noise overlay (never animated — perf). Halftone/dithering is encouraged for the point-cloud sea and ground (postprocessing) and for Blender preview images, not for live data.

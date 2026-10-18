@@ -11,7 +11,7 @@ A **live rocket launch site you can play like a strategy game**, in the browser.
 ## Status
 Phase 1 done (design docs). Waiting for **Gate 1** user approval before any app code. Live checklist: `docs/TASKS.md`.
 
-Stack (ADR 0001–0008): Vite SPA · React 19 · TypeScript strict · three (WebGL2) via R3F `frameloop="never"` · plain data-oriented sim @30 Hz on main thread behind `SimHost` · 10 Hz projection → Zustand · CSS Modules + generated CSS vars · Vitest + Playwright · Blender 4.5 → gltf-transform (dedup/prune/weld/meshopt) → in-house codegen · Cloudflare Pages.
+Stack (ADR 0001–0008): Vite SPA · React 19 · TypeScript strict · three (WebGL2) via R3F `frameloop="never"` · plain data-oriented sim @30 Hz on main thread behind `SimHost` · 10 Hz projection → Zustand · CSS Modules + generated CSS vars · Vitest + Playwright · Blender 4.5 → gltf-transform (dedup/prune/weld/meshopt) → in-house codegen · Coolify (nginx image).
 
 ## Commands
 The script names are a contract; the stack ADR decides what they run.
@@ -45,7 +45,7 @@ Blender headless: `blender -b --factory-startup -P blender/assets/<asset>.py -- 
 2. **SI units in the sim** (m, s, kg, m/s, K, Pa). Display units (km, km/h, %) only in the UI projection.
 3. **No 60 Hz React**: render code mutates three objects in the frame loop; the HUD reads a throttled projection.
 4. **Assets are code**: every GLB comes from a committed `blender/assets/*.py`; no binary asset without its script; Z-up → Y-up only in the exporter; node/socket names are an API (renaming = update callers in the same commit).
-5. **Design tokens only**: no literal colors/sizes in components or materials; radius 0, no shadows, no gradients, no translucent panels; one accent (signal orange `#FF5A1F`, `#C2410C` for small text). Load `industrial-brutalist-ui` before any UI work.
+5. **Design tokens only**: no literal colors/sizes in components or materials; radius 0, no shadows, no gradients, no translucent panels; one accent (signal orange `#FF5A1F`, `#B23B0B` for small text). Load `industrial-brutalist-ui` before any UI work.
 6. **Original names only** — nothing reused from the reference video's branding.
 7. **Never** skip/disable a test or regenerate a golden without explaining the diff.
 

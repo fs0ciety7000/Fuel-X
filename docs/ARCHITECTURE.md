@@ -22,7 +22,7 @@
 | Assets | **Blender 4.5.14 LTS bpy headless → glTF-Transform 4.5.0 + meshopt → codegen** | gltfjsx 6.5.3, Draco, GUI `.blend` | Reproducible from script; sockets preserved; typed node names for instancing/LOD | [0007](adr/0007-asset-pipeline-tooling.md) |
 | Lint / format | ESLint 10.11.0 + typescript-eslint 8.70.1 + boundaries 7.2.0 + react-hooks 7.1.1, Prettier 3.9.9 | Biome | Import-boundary enforcement plugin exists only for ESLint | [0001](adr/0001-app-framework-and-build-tool.md) |
 | Scripts | tsx 4.23.15 (Node 22) | ts-node, plain `.mjs` | Run typed build scripts without a compile step | [0001](adr/0001-app-framework-and-build-tool.md) |
-| Deploy | **Static `dist/`, Cloudflare Pages** (GitHub Pages fallback) | Vercel, self-hosted | Headers file for caching/MIME, no lock-in | [0008](adr/0008-deployment-target.md) |
+| Deploy | **Static `dist/` in nginx image, Coolify (self-hosted, user decision)** | Cloudflare Pages, GitHub Pages, Vercel | User-owned infra; headers/MIME/caching in committed `deploy/nginx.conf` | [0008](adr/0008-deployment-target.md) |
 
 ## 2. Modules and boundary rules
 
@@ -323,7 +323,8 @@ src/
   tokens/    tokens.ts, build.ts helpers, generated/{tokens.css,tokens.json}
 tests/       golden/ (+ __files__), sim/ (equivalence, property), perf/ (benches), fixtures/saves/, e2e/ (Playwright: e2e, visual, perf)
 blender/     lib/ (export, materials, preview, truss, tanks…), assets/<asset>.py + <asset>.contract.json
-public/      models/*.glb (generated), fonts/*.woff2, _headers
+public/      models/*.glb (generated), fonts/*.woff2
+deploy/      nginx.conf (Coolify image) · Dockerfile at repo root
 docs/        GDD, BALANCING, ARCHITECTURE, adr/, DESIGN_SYSTEM, ASSETS_GUIDE, TASKS, QA, assets/ (previews)
 scripts/     install-blender.sh, session-start.sh, tokens/build.ts, assets/{build,codegen,contract}.ts, perf/{budgets.ts,budget.json}
 build/       git-ignored intermediates (models-raw/)
@@ -414,7 +415,7 @@ Total GLB payload for the MVP site ≤ 4 MB (estimate 2.5 MB). Textures: none by
 
 ## 15. Open questions (for Gate 1)
 
-1. Deployment: Cloudflare Pages account OK, or GitHub Pages (no custom headers)? (ADR 0008)
+1. ~~Deployment~~ — resolved at Gate 1: Coolify (ADR 0008).
 2. Reference hardware: confirm "Iris Xe / Radeon 680M class at 1080p" as the 60 fps target.
 3. Firefox/Safari: first-class targets, or Chrome/Edge first with best-effort others? (Affects test matrix only; WebGL2 works everywhere.)
 4. ASSETS_GUIDE alignment: token JSON path (`src/tokens/generated/tokens.json`) and pipeline script path (`scripts/assets/build.ts`) — blender-technical-artist to update the guide.

@@ -38,7 +38,7 @@ Naming: CSS `--fx-<group>-<role>`; TS `tokens.<group>.<role>` (camelCase). Names
 | `--fx-color-ink-4` | `tokens.color.ink4` | `#8C8C86` | Disabled text (exempt), scale ticks, chart baseline |
 | `--fx-color-ink-5` | `tokens.color.ink5` | `#BDBCB5` | Interior 1 px dividers (grid-gap parent), empty tracks, hatch |
 | `--fx-color-accent` | `tokens.color.accent` | `#FF5A1F` | Fills, bars, rings, glyph fills, playhead. **Never text on paper.** |
-| `--fx-color-accent-text` | `tokens.color.accentText` | `#C2410C` | Small orange text, **on `paper` only** |
+| `--fx-color-accent-text` | `tokens.color.accentText` | `#B23B0B` | Small orange text on `paper`, `paper-2` and `accent-tint` (5.41 / 4.87 / 4.81) |
 | `--fx-color-accent-tint` | `tokens.color.accentTint` | `#FFE1D2` | Selected row background (flat, opaque) |
 | `--fx-color-on-accent` | `tokens.color.onAccent` | = ink `#0A0A0A` | Text/glyph on an orange fill |
 | `--fx-color-focus` | `tokens.color.focus` | = ink | Focus outline |
@@ -61,13 +61,13 @@ Computed with a script (sRGB → linear, `(L1+.05)/(L2+.05)`). **Allowed** = may
 | ink-2 | **9.88** ✓ | **8.90** ✓ | **7.94** ✓ | **8.80** ✓ | 3.49 ✗ | 1.82 ✗ |
 | ink-3 | **5.91** ✓ | **5.32** ✓ | **4.75** ✓ | **5.26** ✓ | 2.09 ✗ | 3.04 ✗ |
 | ink-4 | 3.07 disabled/ticks only | 2.76 disabled only | 2.46 ✗ | 2.73 ✗ | ✗ | 5.86 (unused) |
-| accent-text | **4.70** ✓ | 4.23 ✗ | 3.77 ✗ | 4.18 ✗ | ✗ | 3.82 ✗ |
+| accent-text | **5.41** ✓ | **4.87** ✓ | 4.34 ✗ | **4.81** ✓ | 1.91 ✗ | 3.32 ✗ |
 | accent | 2.83 ✗ text | 2.55 ✗ | 2.27 ✗ | 2.52 ✗ | — | **6.35** (as bg) |
 | paper | — | — | — | — | 2.83 ✗ | **17.96** ✓ |
 
 Rules derived:
 - Text on orange is **ink**, never white/paper (the reference's white-on-orange fails at 2.83).
-- `accent-text` only on `paper`. On `paper-2` or `accent-tint`, emphasis is ink + an orange glyph/bar.
+- `accent-text` (`#B23B0B`, Gate 1 decision) allowed on `paper`, `paper-2` and `accent-tint`; never on `paper-3`/`accent`/`ink`.
 - `accent` as a non-text graphic on paper is 2.83 (< 3:1 for UI components). Therefore **every orange mark is paired with an ink element** (ink border on orange tags, ink glyph inside orange fills, ink numeric value next to an orange bar). Orange is never the sole carrier of information.
 - `ink-5` empty tracks (1.73 vs paper) are decorative; the filled part is ink and the value is always printed.
 - Inverted plates (ink bg, paper text, 17.96) are allowed for the alert variant of label tags and the phase stamp.
@@ -464,7 +464,7 @@ ORG / REGION / [LC-1 ▾]             dropdown (popover):
 ```
 - In a `role="listbox"` (single-select) or `<table>`-like grid for Tanks; row = `role="option" aria-selected`.
 - Data: `{id, glyph, name, sub, keyValue, keyUnit, state}`.
-- States: default; hover paper-2; **selected/followed = accent-tint bg + 2 px accent left rule, ink text** (ink on tint 15.98); warn (`△` glyph, sub-status stays ink because accent-text fails on tint/paper-2, 2 px accent right edge); danger (row left edge hazard band 4 px + `▲`, text ink); disabled/offline (hatch, ink-4).
+- States: default; hover paper-2; **selected/followed = accent-tint bg + 2 px accent left rule, ink text** (ink on tint 15.98); warn (`△` glyph, sub-status may use accent-text (passes on tint/paper-2 since Gate 1), 2 px accent right edge); danger (row left edge hazard band 4 px + `▲`, text ink); disabled/offline (hatch, ink-4).
 - Behavior: click/Enter = select + camera focus; double-click/F = follow; rows never reorder while hovered or focused (sort freezes, resumes on leave).
 
 ### 6.14 Tabbed panel (VEHICLES / TANKS / TASKS / RANGE / EVENTS)
@@ -684,7 +684,7 @@ A static route (or Storybook per ADR), no sim running, fixtures only, screenshot
 - [ ] Token grep from `design-tokens` returns nothing outside the token source.
 - [ ] No `border-radius`, `box-shadow`, gradients (patterns are SVG images), `opacity` on panels, `backdrop-filter`, `filter: blur`.
 - [ ] Only one hue (accent family) besides the ink/paper ramp; orange used only for attention/selection/thrust/zones.
-- [ ] No orange text except `accent-text` on `paper`; text on orange fills is ink.
+- [ ] No orange text except `accent-text` on `paper`/`paper-2`/`accent-tint`; text on orange fills is ink.
 - [ ] Every state has glyph + word; grayscale screenshot still readable.
 - [ ] All numbers tabular, fixed slots, units uppercase; `—` for missing data.
 - [ ] Macro-type used only for T-clock, followed call-sign, phase stamp; `clamp()` only there.
@@ -701,7 +701,7 @@ A static route (or Storybook per ADR), no sim running, fixtures only, screenshot
 
 ## 11. Open questions (for Gate 1)
 
-1. `#C2410C` passes AA only on `paper` (4.70); it fails on `paper-2` (4.23) and the tint (4.18). Keep it and restrict usage (current spec), or darken to `#B23B0B` (5.41 / 4.87 / 4.81) to allow orange text on tiles and selected rows?
+1. ~~accent-text value~~ — resolved at Gate 1: `#B23B0B`.
 2. `#FF5A1F` is 2.83:1 against paper — below the 3:1 non-text target. Spec mitigates by always pairing with ink; acceptable?
 3. Poll panel forcing 1× time scale and auto-hold on deadline — GDD to confirm.
 4. Label tags as DOM vs instanced sprites (perf with 100+ entities) — render/architect decision; visual spec unchanged.

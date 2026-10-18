@@ -21,7 +21,7 @@ A control-room HUD that reads like a printed technical document: paper substrate
 
 ## Project decisions (override the skill where they conflict)
 - Mode: Swiss Industrial Print, light only. Never the dark CRT mode, no scanlines.
-- Accent: **signal orange `#FF5A1F`** (user decision, replaces the skill's hazard red); use `#C2410C` for small orange text on paper to keep WCAG AA; a flat opaque pale-orange tint for selected rows.
+- Accent: **signal orange `#FF5A1F`** (user decision, replaces the skill's hazard red); use `#B23B0B` for small orange text on paper to keep WCAG AA; a flat opaque pale-orange tint for selected rows.
 - Radius 0, no shadows, no gradients, no translucency. 1px grid-gap dividers.
 - Micro-type monospace uppercase tracked with tabular figures for all data; heavy grotesk macro-type only for the countdown, the followed call-sign and phase transitions.
 - Static global noise overlay (one SVG, never animated) for perf.
