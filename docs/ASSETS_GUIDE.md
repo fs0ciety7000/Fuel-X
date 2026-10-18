@@ -1,6 +1,6 @@
 # Fuel-X — Assets Guide
 
-Owner: `blender-technical-artist` · Status: **Phase 1 draft** (budgets to be reconciled with `docs/ARCHITECTURE.md`, entity names with `docs/GDD.md`, colors with `docs/DESIGN_SYSTEM.md`).
+Owner: `blender-technical-artist` · Status: **Phase 4** — pipeline live (`npm run asset -- <name>`), TOWER shipped. Budgets per ARCHITECTURE §13.2, colors from `src/tokens/generated/tokens.json`.
 Procedure for producing an asset: skill `blender-asset-pipeline`. This document is the **contract** between Blender scripts and render code.
 
 Class names below (`TOWER`, `BOOSTER`, `TANK_V`…) are technical asset classes, not lore names. Call-signs (`TOWER-1`, `B-14`) are runtime data and never appear in node names.
@@ -79,10 +79,12 @@ Common sockets for every entity: `SOCKET_Label` (tag anchor, 2–4 m above the t
 | `TOWER_Carriage` | empty | carriage center on the front face | `trans y` 25 → 135 m, rest 86 |
 | `TOWER_ArmL` / `TOWER_ArmR` (children of carriage) | empty | hinge axis at (±6.5, −6.5) | `rot y` 0° (closed, parallel, 9.6 m gap) → open ±40° (L +, R −) |
 | `TOWER_ArmLGeo`, `TOWER_ArmRGeo` | mesh | — | arm geometry incl. catch rails |
-| `TOWER_QDArm` | empty | hinge on front face, h = 100 m | `rot y` 0° (stowed along tower face) → 90° (engaged with ship) |
+| `TOWER_QDArm` | empty | hinge on a bracket outboard of the R front corner, (−11, −7.5, 100) | `rot y` 0° (stowed, swung out to the R side, clear of the carriage path and the R arm sweep) → 90° (engaged: points at the ship hull, 17.0 m) |
 | Later: `TOWER_ArmL_Cart` / `R` | empty | on arm rail | `trans` along arm 0 → 4 m (shock absorber) |
 
-Sockets: `SOCKET_CatchPointL/R` (on the arm rails, where booster pins rest), `SOCKET_ShipQD` (QD arm tip), `SOCKET_Mount` (= where `PAD` origin goes, (0, −26, 0)), `SOCKET_Label`, `SOCKET_Focus` (h ≈ 70 m).
+Sockets: `SOCKET_CatchPointL/R` (on the arm rails, where booster pins rest: (±5.4, −26, carriage z) when closed), `SOCKET_ShipQD` (QD arm tip, +Z along the arm into the ship; engaged it sits on the Ø 9 hull at ≈ (−2.3, −22.1, 100), so SHIP `SOCKET_QD` goes on the hull facing the tower's R front corner, at z = 100 − 91 = 9 m above the ship base), `SOCKET_Mount` (= where `PAD` origin goes, (0, −26, 0)), `SOCKET_Label` (z 150), `SOCKET_Focus` (front face, h 70 m), `SOCKET_CatchFocus` (camera target for the catch, (0, −26, 86)).
+
+Why the QD hinge moved off the front face (Phase 4): stowed across the front face, the QD arm sits in the carriage/arm travel path at 100 m (the carriage passes it between booster catch ~86 m and ship stacking ~135 m). Operational rule for the sim: keep the carriage out of 92–106 m while the QD arm is engaged.
 
 ### PAD (launch mount + apron)
 `PAD_Static`; `PAD_BQD` (booster quick-disconnect hood, `trans y` 0 → −1.5 m, retracted at liftoff); `PAD_Clamps` (group, `rot` 0 → 20° outwards, cosmetic). Sockets: `SOCKET_VehicleMount` (deck center, z = 20), `SOCKET_FlameTrench` (trench exit, +Z along trench), `SOCKET_Deluge_01..04` (steam/water), `SOCKET_Label`.
@@ -206,7 +208,7 @@ gltf-transform meshopt t3.glb   public/models/<asset>.glb --level medium
 **Never run `gltf-transform optimize` with defaults**: verified, it joined and flattened the whole test asset into a single node and deleted the sockets. Even with `--join false --flatten false --instance false`, its prune step deletes socket empties unless `--prune false`. No `--simplify`, no `--palette`, no Draco (meshopt decodes faster and is enough; the renderer must register `MeshoptDecoder` on `GLTFLoader`). Raw GLBs go to a git-ignored `build/models-raw/`. Optimized output is deterministic (verified md5). `npx` resolved a newer `@gltf-transform/core` than the CLI version asked for, so the version **must** be pinned by the lockfile.
 
 ### Typed wrapper generation
-Default (works whatever the renderer ADR picks): `scripts/gen-asset-types.mjs` reads each optimized GLB with `@gltf-transform/core` and emits `src/render/assets/generated/<asset>.ts`:
+`scripts/assets/codegen.ts` (ADR 0007) emits `src/render/assets/generated/<asset>.ts` from `blender/assets/<asset>.contract.json` + the optimized GLBs (the contract check in `scripts/assets/contract.ts` runs first), plus `generated/index.ts` (`ASSETS`, `AssetName`, `AssetNode<N>`, `AssetSocket<N>`). Actual shape (also `name`, `asset`, `bounds` (Y-up, rest pose), `triangles[]`, `bytes[]`, `drawCalls`; `url`/`lods` carry `?v=<sha8>`):
 ```ts
 export const TOWER = {
   url: '/models/tower.glb', lods: ['/models/tower_lod1.glb', '/models/tower_lod2.glb'],
@@ -237,9 +239,9 @@ Asset scripts import the lib with `sys.path.insert(0, str(Path(__file__).resolve
 Matches `template_asset.py` (tested) so previews sit directly on the UI paper substrate:
 - Cycles CPU, 32 samples + denoise, `cycles.seed = 0`, view transform **Standard** (keeps the paper hex exact), 1024 × 1024 PNG, RGB 8-bit, no alpha.
 - World: camera rays see exactly paper `#F4F4F0` (from tokens); lighting uses the same paper color at strength 0.25 as fill.
-- Ground: 500 m plane, paper color, roughness 1, catches the shadow.
+- Ground: plane (≥ 500 m, 12 × bounding radius), Cycles **shadow catcher** so it shows exactly the camera-ray paper and only darkens under shadows (a lit paper plane rendered visibly greyer than the background).
 - Sun: rotation (50°, 0°, 35°) → elevation 40°, energy 2.2, angle 8° (soft shadow). **The same sun direction must be the game's** — expose it as a shared constant with ARCHITECTURE/render (`SUN_DIR`).
-- Camera: 85 mm (≈ 24° FOV, the game's narrow-FOV feel), direction (1, −1, 0.8) from the bounds center → front-right three-quarter view of the −Y face, distance 5 × bounding radius.
+- Camera: 85 mm (≈ 24° FOV, the game's narrow-FOV feel), direction (1, −1, 0.8) from the bounds center → front-right three-quarter view of the −Y face, pulled back until the bounding-box corners fit 86 % of the frame (capped at 5 × bounding radius). Animated parts may be posed after export for the preview only (tower: arms open 25°, QD engaged).
 - Turntable (optional, review): 12 frames, camera orbit 30° steps, 512².
 - Lineup (`_lineup.png`): all exported LOD0 assets on one ground in a row, orthographic side view, 2048 × 1024.
 - No halftone in the committed PNG; the in-game catalog may apply its own dithering.
@@ -279,13 +281,15 @@ export_glb(path: str) -> None                                              # §7
 render_preview(path: str, size=1024, turntable: int = 0) -> None           # §9
 render_lineup(paths: list[str], out: str) -> None
 ```
-Each asset script declares `ASSET`, `REQUIRED_NODES`, `TRI_BUDGET` and calls `validate()` before `export_glb()`.
+Each asset script declares `ASSET`, `REQUIRED_NODES`, `TRI_BUDGETS` and calls `lod.run_asset(ASSET, build, REQUIRED_NODES, TRI_BUDGETS, lods, preview_pose)`, which for each LOD resets the scene, creates materials, calls `build(lod)`, runs `validate()` and `export_glb()`, then renders the preview from LOD0.
+
+As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face lists → one object, one primitive per material, no operators → byte-stable exports); `prims.add_truss/add_tank_*/add_railing/add_engine_bell(mb, …)` append to a builder, `truss()/tank_*()/railing()` wrap them. `nodes.pivot/socket` take **parent-local** coordinates (identity parent inverse); `parent_keep` is the world-preserving variant. `lod.pick(lod, v0, v1, v2)` selects parameters. Python exceptions fail the build (`--python-exit-code 1`).
 
 ## 11. MVP asset list (priority order)
 
 | # | Asset | Why this order |
 |---|---|---|
-| 1 | `TOWER` | **Pipeline proof**: lattice helper, pivots (carriage → arms), sockets, LODs, export → optimize → wrapper → preview → in-scene. |
+| 1 | `TOWER` ✅ | **Pipeline proof**: lattice helper, pivots (carriage → arms), sockets, LODs, export → optimize → wrapper → preview → in-scene. |
 | 2 | `PAD` | Tower and vehicles are placed relative to it; flame trench/deluge sockets for liftoff particles. |
 | 3 | `BOOSTER` | Hero vehicle: exhaust, engines, grid fins, catch pins validated against tower catch points. |
 | 4 | `SHIP` | Stack + QD arm validation. |
@@ -298,6 +302,12 @@ Each asset script declares `ASSET`, `REQUIRED_NODES`, `TRI_BUDGET` and calls `va
 | 11 | `VESSEL_RECOVERY` | Recovery fleet, wake sockets. |
 | 12 | `BLDG_HIGHBAY`, `BLDG_MEGABAY`, `HANGAR_TENT` | Small yard. |
 | 13 | `CRANE` | Stacking/yard flavor (MVP-nice; the tower stacks in the MVP). |
+
+### Asset status (generated numbers: `npm run asset -- <name>`, `src/render/assets/generated/<name>.ts`)
+
+| Asset | Script / contract | LOD0 / LOD1 / LOD2 tris | GLB LOD0 / LOD1 / LOD2 | Draw calls | Nodes / sockets | Preview |
+|---|---|---|---|---|---|---|
+| `TOWER` | `tower.py` · `tower.contract.json` | 4 084 / 2 486 / 370 | 67 / 45 / 14 KB | 9 | 17 (9 contract nodes, 7 sockets) | `docs/assets/tower.png`, turntable ×12 |
 
 ### Acceptance checklist (per asset)
 - [ ] Script runs headless (`--factory-startup`), no Python errors; re-run → identical GLB md5.

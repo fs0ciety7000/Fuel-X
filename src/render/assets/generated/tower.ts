@@ -3,8 +3,8 @@
 export const TOWER = {
   name: 'tower',
   asset: 'TOWER',
-  url: '/models/tower.glb?v=baccd40e',
-  lods: ['/models/tower_lod1.glb?v=1aaf5499', '/models/tower_lod2.glb?v=cdc09669'],
+  url: '/models/tower.glb?v=5fc73c37',
+  lods: ['/models/tower_lod1.glb?v=a494d9b2', '/models/tower_lod2.glb?v=bab7df67'],
   nodes: {
     Static: 'TOWER_Static',
     Carriage: 'TOWER_Carriage',
@@ -31,9 +31,9 @@ export const TOWER = {
     ArmR: { node: 'TOWER_ArmR', kind: 'rot', axis: 'y', min: -40, max: 0, rest: 0, unit: 'deg' },
     QDArm: { node: 'TOWER_QDArm', kind: 'rot', axis: 'y', min: 0, max: 90, rest: 0, unit: 'deg' },
   },
-  bounds: { min: [-26.708, 0, -10.1], max: [8.498, 146, 42.675] },
-  triangles: [4072, 2480, 372],
-  bytes: [68560, 45876, 14340],
+  bounds: { min: [-26.708, 0, -10.997], max: [10.996, 146, 42.675] },
+  triangles: [4084, 2486, 370],
+  bytes: [68716, 45872, 14356],
   drawCalls: 9,
 } as const;
 
