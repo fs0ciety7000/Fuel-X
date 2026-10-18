@@ -184,7 +184,7 @@ export function summarize(doc: Document, bytes: number, lod: number): GlbSummary
     .listMeshes()
     .some((m) => m.listPrimitives().some((p) => p.listSemantics().some((s) => s.startsWith('TEXCOORD'))));
   const bb = scene ? getBounds(scene) : { min: [0, 0, 0], max: [0, 0, 0] };
-  const r3 = (v: number): number => Math.round(v * 1000) / 1000;
+  const r3 = (v: number | undefined): number => Math.round((v ?? 0) * 1000) / 1000;
   return {
     lod,
     bytes,

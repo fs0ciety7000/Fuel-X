@@ -170,7 +170,9 @@ async function verifyAsset(blender: string, name: string, built: Built, opts: Op
       throw new Error(`assets: --verify ${name} LOD${lod}: optimized GLB differs between two builds`);
     }
   }
-  console.log(`  verify: ${built.contract.lods} LOD(s) byte-identical (sha256 ${sha256(built.optimized[0] ?? new Uint8Array()).slice(0, 12)})`);
+  console.log(
+    `  verify: ${built.contract.lods} LOD(s) byte-identical (sha256 ${sha256(built.optimized[0] ?? new Uint8Array()).slice(0, 12)})`,
+  );
 }
 
 async function main(): Promise<void> {

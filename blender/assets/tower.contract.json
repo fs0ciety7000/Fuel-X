@@ -1,0 +1,33 @@
+{
+  "asset": "TOWER",
+  "file": "tower",
+  "class": "hero-structure",
+  "lods": 3,
+  "nodes": [
+    "TOWER_Static",
+    "TOWER_Carriage",
+    "TOWER_CarriageGeo",
+    "TOWER_ArmL",
+    "TOWER_ArmLGeo",
+    "TOWER_ArmR",
+    "TOWER_ArmRGeo",
+    "TOWER_QDArm",
+    "TOWER_QDArmGeo"
+  ],
+  "sockets": [
+    "SOCKET_CatchPointL",
+    "SOCKET_CatchPointR",
+    "SOCKET_ShipQD",
+    "SOCKET_Mount",
+    "SOCKET_Label",
+    "SOCKET_Focus",
+    "SOCKET_CatchFocus"
+  ],
+  "anim": {
+    "TOWER_Carriage": { "kind": "trans", "axis": "y", "min": 25, "max": 135, "rest": 86, "unit": "m" },
+    "TOWER_ArmL": { "kind": "rot", "axis": "y", "min": 0, "max": 40, "rest": 0, "unit": "deg" },
+    "TOWER_ArmR": { "kind": "rot", "axis": "y", "min": -40, "max": 0, "rest": 0, "unit": "deg" },
+    "TOWER_QDArm": { "kind": "rot", "axis": "y", "min": 0, "max": 90, "rest": 0, "unit": "deg" }
+  },
+  "budget": { "tris": [40000, 12000, 3000], "bytes": 512000, "drawCalls": 10 }
+}
