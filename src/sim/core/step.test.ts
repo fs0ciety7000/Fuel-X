@@ -19,6 +19,7 @@ describe('step pipeline', () => {
     expect(SYSTEMS.map((s) => s.name)).toEqual([
       'applyCommands',
       'countdown',
+      'prep',
       'logistics',
       'propellant',
       'bookkeeping',

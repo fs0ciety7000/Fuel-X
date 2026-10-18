@@ -28,6 +28,8 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts', 'tests/**/*.test.ts'],
     exclude: ['tests/e2e/**', 'node_modules/**'],
+    // Full-launch sim runs (~700 k ticks) take ~1–2 s plain but ~10× longer under coverage instrumentation.
+    testTimeout: 60_000,
     coverage: { provider: 'v8', include: ['src/sim/**'], thresholds: { lines: 90 } },
   },
 });

@@ -32,7 +32,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] 3.2 Data: `src/data/*` from BALANCING (typed, every number with unit), MVP site layout & paths — **simulation-engineer** ← 3.1
 - [x] 3.3 Countdown FSM: phases, polls (T-01:20:00 / T-00:10:00 / T-00:00:40), HOLD/RECYCLE/SCRUB, window, auto-hold at T-00:03:00 — AC 10–13 — **simulation-engineer** ← 3.1
 - [x] 3.4 Logistics: farm tanks + boil-off, tanker orders (standard/rush), gate closure at T-00:40:00, propellant load + topping — AC 7–9, 15 — ← 3.2
-- [ ] 3.5 Prep: CR-77, SP-41 rollout on paths, stacking with TOWER-1 arms, wind limits — AC 4–6 — ← 3.2
+- [x] 3.5 Prep: CR-77, SP-41 rollout on paths, stacking with TOWER-1 arms, wind limits — AC 4–6 — ← 3.2
 - [ ] 3.6 Flight: simplified ascent/MECO/boostback/landing profile, S-21 to SECO, catch probability model, catch/divert outcome — AC 16, 18–21 — ← 3.3
 - [ ] 3.7 Range & weather: 5 stations GO/MARGINAL/NO-GO, PICKET patrols, WX series, anomaly director + pool A1–A4 — AC 3, 10, 14 — ← 3.3
 - [ ] 3.8 Economy + debrief data, contract NRL-3 fulfilment — AC 21–22 — ← 3.6

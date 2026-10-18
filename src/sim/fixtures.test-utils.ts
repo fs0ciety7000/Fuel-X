@@ -1,11 +1,10 @@
 // Test factories shared by the system tests (not part of the public sim API).
-import { mvpFlight } from '@data/index';
 import type { SimEvent } from './core/events';
 import { createWorld } from './core/world';
 import type { World } from './core/world';
+import { createMvpFlight } from './entities/flight';
 import { spawnSiteLayout } from './entities/site';
 import { step } from './step';
-import { createCountdown } from './systems/countdown';
 import type { Countdown, Entity, EntityOf, Id, Kind, Phase, PollId } from './types';
 
 export interface MvpSetup {
@@ -26,15 +25,7 @@ export interface MvpOptions {
 export function mvpSetup(opts: MvpOptions = {}): MvpSetup {
   const world = createWorld({ seed: opts.seed ?? 7 });
   const ids = spawnSiteLayout(world);
-  const cd = createCountdown(world, {
-    flightName: mvpFlight.name,
-    siteId: mvpFlight.siteId,
-    contractId: mvpFlight.contractId,
-    boosterId: id(ids, mvpFlight.booster),
-    shipId: id(ids, mvpFlight.ship),
-    padId: id(ids, mvpFlight.mount),
-    ...(opts.startTS === undefined ? {} : { startTS: opts.startTS }),
-  });
+  const cd = createMvpFlight(world, ids, opts.startTS === undefined ? {} : { startTS: opts.startTS });
   if (opts.phase) cd.phase.state = opts.phase;
   if (opts.pollsPassed) cd.pollsPassed = [...opts.pollsPassed];
   world.outbox.length = 0;

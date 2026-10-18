@@ -13,7 +13,16 @@ import type {
 } from '@data/index';
 
 export type { AnomalyId, AssetKey, Fluid, Lc1PathId, MilestoneName, PollId, Propellant, SiteId, SiteStatus };
-export type { World, Site, EntityTable, Economy, LogisticsState, PropLedger } from './core/world';
+export type {
+  World,
+  Site,
+  EntityTable,
+  Economy,
+  LogisticsState,
+  PrepState,
+  PropLedger,
+  WeatherReadings,
+} from './core/world';
 export type { SimEvent, SimEventInput, SimEventType } from './core/events';
 export type { Command, CommandType, CommandOf, StampedCommand } from './core/commands';
 export type { RngState, RngStream } from './core/rng';
@@ -104,6 +113,18 @@ export type ShipState =
   | 'OFF_SCENE'
   | 'LOST';
 export type TankerState = 'OFFMAP' | 'INBOUND' | 'GATE_WAIT' | 'OFFLOADING' | 'OUTBOUND';
+export type TowerState = 'IDLE' | 'STACKING' | 'WIND_HOLD' | 'CATCH_READY' | 'CATCHING' | 'DAMAGED';
+export type ArmsState = 'OPEN' | 'CLOSED';
+export type TransporterState = 'IDLE' | 'LOADING' | 'MOVING' | 'WIND_HOLD' | 'AT_PAD' | 'RETURNING';
+export type CraneState = 'IDLE' | 'LIFTING';
+
+/** A timed prep task; `elapsedTicks` only advances while the task is not paused (wind). */
+export interface TaskProgress {
+  /** Stage being lifted / stacked. */
+  stageId: Id;
+  elapsedTicks: number;
+  durationTicks: number;
+}
 
 export interface BoosterFields {
   fsm: FsmState<BoosterState>;
@@ -115,6 +136,24 @@ export interface BoosterFields {
 export interface ShipFields {
   fsm: FsmState<ShipState>;
   prop: PropTanks;
+}
+export interface TowerFields {
+  fsm: FsmState<TowerState>;
+  arms: ArmsState;
+  task: TaskProgress | null;
+}
+export interface PadFields {
+  /** Booster standing on the mount. */
+  boosterId: Id | null;
+}
+export interface TransporterFields {
+  fsm: FsmState<TransporterState>;
+  cargo: Id | null;
+  route: RouteState | null;
+}
+export interface CraneFields {
+  fsm: FsmState<CraneState>;
+  task: TaskProgress | null;
 }
 export interface TankFields {
   fluid: Fluid;
@@ -145,18 +184,17 @@ export interface TankerFields {
 }
 
 /**
- * Kind-specific fields, merged into `EntityBase`. Systems added in 3.5–3.8 fill in the rest
- * (tower arms, transporter route, …); keep them JSON-plain.
+ * Kind-specific fields, merged into `EntityBase`; keep them JSON-plain.
  */
 export interface EntityFields {
   booster: BoosterFields;
   ship: ShipFields;
-  tower: object;
-  pad: object;
+  tower: TowerFields;
+  pad: PadFields;
   tank: TankFields;
   tanker: TankerFields;
-  transporter: object;
-  crane: object;
+  transporter: TransporterFields;
+  crane: CraneFields;
   van: object;
   boat: object;
   wxStation: object;

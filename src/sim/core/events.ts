@@ -2,6 +2,7 @@
 // `world.outbox`, stamped with the tick being executed; the host drains them after stepping.
 import type {
   AnomalyId,
+  ArmsState,
   ClockState,
   DecisionKind,
   GoStatus,
@@ -70,6 +71,8 @@ export type SimEvent =
       aborted: boolean;
     }
   | { t: 'RoadClosureChanged'; tick: Tick; siteId: SiteId; closed: boolean }
+  // Prep (3.5) and recovery (3.6)
+  | { t: 'ArmsChanged'; tick: Tick; id: Id; from: ArmsState; to: ArmsState }
   | {
       t: 'DetankCompleted';
       tick: Tick;

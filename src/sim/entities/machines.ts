@@ -3,7 +3,19 @@
 import { defineFsm } from '../core/fsm';
 import type { Fsm, FsmContext, FsmTransition } from '../core/fsm';
 import type { World } from '../core/world';
-import type { BoosterState, FsmState, Id, Kind, ShipState, TankerState } from '../types';
+import { emit } from '../core/events';
+import type {
+  ArmsState,
+  BoosterState,
+  CraneState,
+  FsmState,
+  Id,
+  Kind,
+  ShipState,
+  TankerState,
+  TowerState,
+  TransporterState,
+} from '../types';
 
 interface StatefulEntity<S extends string> {
   id: Id;
@@ -139,4 +151,66 @@ export const tankerFsm = entityFsm<TankerState, TankerTrigger>('tanker', TANKER_
   { from: 'INBOUND', to: 'OFFLOADING', on: 'atBay' },
   { from: 'OFFLOADING', to: 'OUTBOUND', on: 'offloadEnd' },
   { from: 'OUTBOUND', to: 'OFFMAP', on: 'offMap' },
+]);
+
+// --- Prep assets (3.5) and tower catch (3.6) --------------------------------------------------------
+
+export const TOWER_STATES: readonly TowerState[] = [
+  'IDLE',
+  'STACKING',
+  'WIND_HOLD',
+  'CATCH_READY',
+  'CATCHING',
+  'DAMAGED',
+];
+export type TowerTrigger =
+  'stackStart' | 'windHigh' | 'windOk' | 'stackDone' | 'catchArmed' | 'catchStart' | 'caught' | 'catchFailed';
+
+export const towerFsm = entityFsm<TowerState, TowerTrigger>('tower', TOWER_STATES, [
+  { from: 'IDLE', to: 'STACKING', on: 'stackStart' },
+  { from: 'STACKING', to: 'WIND_HOLD', on: 'windHigh' },
+  { from: 'WIND_HOLD', to: 'STACKING', on: 'windOk' },
+  { from: 'STACKING', to: 'IDLE', on: 'stackDone' },
+  { from: 'IDLE', to: 'CATCH_READY', on: 'catchArmed' },
+  { from: 'CATCH_READY', to: 'CATCHING', on: 'catchStart' },
+  { from: 'CATCHING', to: 'IDLE', on: 'caught' },
+  { from: 'CATCHING', to: 'DAMAGED', on: 'catchFailed' },
+]);
+
+/** Tower arms OPEN ⇄ CLOSED; emits `ArmsChanged` on a change. */
+export function setArms(world: World, tower: { id: Id; arms: ArmsState }, to: ArmsState): void {
+  if (tower.arms === to) return;
+  const from = tower.arms;
+  tower.arms = to;
+  emit(world, { t: 'ArmsChanged', id: tower.id, from, to });
+}
+
+export const TRANSPORTER_STATES: readonly TransporterState[] = [
+  'IDLE',
+  'LOADING',
+  'MOVING',
+  'WIND_HOLD',
+  'AT_PAD',
+  'RETURNING',
+];
+export type TransporterTrigger =
+  'loadStart' | 'loaded' | 'windHigh' | 'windOkLoaded' | 'windOkEmpty' | 'arrived' | 'unloaded' | 'home';
+
+export const transporterFsm = entityFsm<TransporterState, TransporterTrigger>('transporter', TRANSPORTER_STATES, [
+  { from: 'IDLE', to: 'LOADING', on: 'loadStart' },
+  { from: 'LOADING', to: 'MOVING', on: 'loaded' },
+  { from: ['MOVING', 'RETURNING'], to: 'WIND_HOLD', on: 'windHigh' },
+  { from: 'WIND_HOLD', to: 'MOVING', on: 'windOkLoaded' },
+  { from: 'WIND_HOLD', to: 'RETURNING', on: 'windOkEmpty' },
+  { from: 'MOVING', to: 'AT_PAD', on: 'arrived' },
+  { from: 'AT_PAD', to: 'RETURNING', on: 'unloaded' },
+  { from: 'RETURNING', to: 'IDLE', on: 'home' },
+]);
+
+export const CRANE_STATES: readonly CraneState[] = ['IDLE', 'LIFTING'];
+export type CraneTrigger = 'liftStart' | 'liftDone';
+
+export const craneFsm = entityFsm<CraneState, CraneTrigger>('crane', CRANE_STATES, [
+  { from: 'IDLE', to: 'LIFTING', on: 'liftStart' },
+  { from: 'LIFTING', to: 'IDLE', on: 'liftDone' },
 ]);

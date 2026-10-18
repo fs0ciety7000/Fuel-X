@@ -56,6 +56,27 @@ export interface LogisticsState {
   ledger: Record<Propellant, PropLedger>;
 }
 
+/**
+ * Current weather readings at LC-1, SI. Calm (0) until the environment system (3.7) writes them each
+ * tick; tests force series by writing them between steps. Prep compares the gust-inclusive ground wind to
+ * the stack / transporter limits; the catch model reads the tower wind.
+ */
+export interface WeatherReadings {
+  groundWindMPerS: number;
+  groundGustMPerS: number;
+  towerWindMPerS: number;
+  upperWindMPerS: number;
+}
+
+/** Prep assets and the player's stack request, per countdown (3.5). */
+export interface PrepState {
+  towerId: Id;
+  transporterId: Id;
+  craneId: Id;
+  /** `Stack` accepted: the tower stacks the booster, then the ship as soon as it is on the pad. */
+  stackRequested: boolean;
+}
+
 export interface World {
   schema: number;
   /** Index of the next tick to execute (= ticks executed so far). Sim time = tick × DT_S. */
@@ -68,6 +89,9 @@ export interface World {
   countdowns: Record<Id, Countdown>;
   economy: Economy;
   logistics: LogisticsState;
+  weather: WeatherReadings;
+  /** Keyed by countdown id. */
+  prep: Record<Id, PrepState>;
   /** Events not yet drained by the host. */
   outbox: SimEvent[];
 }
@@ -111,6 +135,8 @@ export function createWorld({ seed }: CreateWorldOptions): World {
       loadRateFactor: 1,
       ledger: { LOX: emptyLedger(), CH4: emptyLedger() },
     },
+    weather: { groundWindMPerS: 0, groundGustMPerS: 0, towerWindMPerS: 0, upperWindMPerS: 0 },
+    prep: {},
     outbox: [],
   };
 }

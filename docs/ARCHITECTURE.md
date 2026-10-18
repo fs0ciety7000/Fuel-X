@@ -261,11 +261,11 @@ stateDiagram-v2
 
 | Class | States (→ = nominal order) | Off-nominal |
 |---|---|---|
-| Booster `B-` | IN_YARD → ON_TRANSPORTER → STACKED → LOADING → LOADED → ASCENT → BOOSTBACK → DESCENT → CAUGHT → SAFING → REFURB → IN_YARD | DIVERTED, LOST; LOADING ⇄ DETANKING (scrub) |
-| Ship `S-` | IN_YARD → ON_TRANSPORTER → STACKED → LOADING → LOADED → ASCENT (attached) → SEPARATED → SECO → OFF_SCENE (despawn) | DETANKING, LOST |
-| Tower `TOWER-` | IDLE → STACKING → IDLE → CATCH_READY → CATCHING → IDLE | DAMAGED; arms sub-FSM OPEN ⇄ CLOSING ⇄ CLOSED |
-| Transporter `SP-` | IDLE → TO_PICKUP → LOADING → MOVING → POSITIONING → UNLOADING → RETURNING → IDLE | WIND_HOLD (from MOVING) |
-| Crane `CR-` | IDLE → MOVING → LIFTING → HOLDING → LOWERING → IDLE | WIND_HOLD |
+| Booster `B-` | IN_YARD → ON_TRANSPORTER → STACKING → STACKED → LOADING → LOADED → ASCENT → BOOSTBACK → DESCENT → CAUGHT_SAFING (→ REFURB → IN_YARD, post-MVP) | DIVERTED → LOST, LOST; LOADING/LOADED → DETANKING → STACKED (scrub) |
+| Ship `S-` | IN_YARD → ON_TRANSPORTER → STACKING → STACKED → LOADING → LOADED → ASCENT (attached) → SEPARATED → SECO → OFF_SCENE (despawn) | DETANKING, LOST |
+| Tower `TOWER-` | IDLE → STACKING → IDLE → CATCH_READY → CATCHING → IDLE | STACKING ⇄ WIND_HOLD; DAMAGED; arms OPEN ⇄ CLOSED (`ArmsChanged`; the closing motion is a render animation) |
+| Transporter `SP-` | IDLE → LOADING → MOVING → AT_PAD → RETURNING → IDLE (MVP: SP-41 parks at the yard pickup) | WIND_HOLD (from MOVING / RETURNING) |
+| Crane `CR-` | IDLE → LIFTING → IDLE (one timed task, `craneLoadTaskS`) | — (no crane wind limit in BALANCING) |
 | Tanker `LX-`/`MX-` | OFFMAP → INBOUND → GATE_WAIT → OFFLOADING → OUTBOUND → OFFMAP | GATE_WAIT held while pad hazard closed (≥ T-00:40:00) |
 | Picket `PK-` | DOCKED → PATROL → INTERCEPT → ESCORT → PATROL | — |
 | Recovery `RV-` | DOCKED → TRANSIT → ON_STATION → RECOVERING → RETURNING | — |
@@ -276,7 +276,23 @@ Each FSM has a table-driven test (allowed transitions fire, disallowed don't, ea
 Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states add `STACKING` (in the tower arms) and
 `CAUGHT_SAFING` (one state for the `CAUGHT, SAFING` chip).
 
-### 7.3 Logistics & propellant (3.4, `src/sim/systems/{logistics,propellant}.ts`)
+### 7.3 Prep (3.5, `src/sim/systems/prep.ts`)
+
+- **World**: `world.prep[countdownId] = { towerId, transporterId, craneId, stackRequested }` (made by
+  `createMvpFlight`); `world.weather = { groundWindMPerS, groundGustMPerS, towerWindMPerS, upperWindMPerS }` —
+  current readings, calm (0) until the environment system (3.7) writes them each tick.
+- **Rollout** (after `StartRollout`): CR-77 lifts B-09 onto SP-41 (`craneLoadTaskS`), SP-41 drives `sp.yardToOlm1`
+  at `speedLoadedMPerS` → `AT_PAD`, `inputs.rolloutComplete`. Arrival = ceil(length / (speed·DT)) ticks after the
+  lift ends.
+- **Stack** (`Stack { padId }`, accepted once the booster is on the pad): TOWER-1 arms (CLOSED) take B-09 onto
+  OLM-1 (`stackBoosterS`); SP-41 returns empty, CR-77 lifts S-21, SP-41 brings it; when B-09 is `STACKED` the arms put
+  S-21 on top (`stackShipS`) → `inputs.stackComplete`. Rejections: `NO_COUNTDOWN_FOR_PAD`, `NO_PREP_ASSETS`,
+  `NOT_IN_STACK_PHASE`, `ROLLOUT_NOT_COMPLETE`, `STACK_ALREADY_STARTED`.
+- **Wind**: `groundGustMPerS > windLimit.transporterMPerS` → SP-41 `WIND_HOLD`; `> windLimit.stackMPerS` → tower
+  `WIND_HOLD`. Tasks are progress counters, so a pause delays them by exactly its length; the T-clock is untouched.
+- Prep runs in `Rollout … TerminalCount` and freezes once scrubbed.
+
+### 7.4 Logistics & propellant (3.4, `src/sim/systems/{logistics,propellant}.ts`)
 
 - **World**: `world.logistics = { farm: {LOX, CH4, LN2: Id[]}, roadClosed, nextOrderSerial, charterSerial, loadRateFactor, ledger }`.
   `ledger[LOX|CH4]` books every kg: `deliveredKg`, `farmBoilOffKg`, `farmToVehicleKg`, `vehicleBoilOffKg`,

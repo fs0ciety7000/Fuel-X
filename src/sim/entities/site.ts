@@ -87,8 +87,22 @@ function specFor(world: World, p: Placement): AnyEntitySpec {
         route: null,
       } satisfies EntitySpec<'tanker'>;
     }
+    case 'tower':
+      return { ...b, kind: 'tower', fsm: fsm('IDLE'), arms: 'OPEN', task: null } satisfies EntitySpec<'tower'>;
+    case 'pad':
+      return { ...b, kind: 'pad', boosterId: null } satisfies EntitySpec<'pad'>;
+    case 'transporter':
+      return {
+        ...b,
+        kind: 'transporter',
+        fsm: fsm('IDLE'),
+        cargo: null,
+        route: null,
+      } satisfies EntitySpec<'transporter'>;
+    case 'crane':
+      return { ...b, kind: 'crane', fsm: fsm('IDLE'), task: null } satisfies EntitySpec<'crane'>;
     default:
-      // Kinds without sim fields yet (3.5+ adds tower, transporter, crane, pad).
+      // Kinds without sim fields yet (vans, boats, weather stations: 3.7; buildings: ambient).
       return b as AnyEntitySpec;
   }
 }

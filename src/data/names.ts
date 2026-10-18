@@ -68,6 +68,9 @@ export const mvpFlight = {
   ship: 'S-21',
   tower: 'TOWER-1',
   mount: 'OLM-1',
+  /** Prep assets: CR-77 lifts the stages onto SP-41, which carries them yard → OLM-1. */
+  transporter: 'SP-41',
+  crane: 'CR-77',
   contractId: 'NRL-3',
 } as const;
 
