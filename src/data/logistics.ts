@@ -34,6 +34,11 @@ export const logistics = {
     stackMPerS: 13,
     /** Transporter cannot move above this, m/s. */
     transporterMPerS: 15,
+    /**
+     * Sim addition 3.9 (review): a wind-paused task resumes only once the gust is this far below its limit
+     * (deadband; without it a gust hovering at the limit toggles the pause every few ticks), m/s.
+     */
+    resumeMarginMPerS: 0.5,
   },
   crewVanSpeedMPerS: 11,
   picketSpeedMPerS: 12,

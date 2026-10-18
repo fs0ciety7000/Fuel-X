@@ -70,3 +70,8 @@ export {
 } from './systems/anomalies';
 export { boatFsm, vanFsm } from './entities/machines';
 export { holdForLeakFix } from './systems/countdown';
+export { createMvpScenario } from './scenarios/mvp';
+export type { MvpScenario, MvpScenarioOptions } from './scenarios/mvp';
+export { STANDARD_AUTOPILOT, autopilotCommands, catchBreakEvenP } from './scenarios/autopilot';
+export type { AutopilotOptions } from './scenarios/autopilot';
+export { economySystem, recordDecision } from './systems/economy';

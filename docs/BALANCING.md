@@ -252,6 +252,8 @@ Numbers the sim needed that this document did not specify. Each lives in `src/da
 | `countdown.stationHysteresisFraction` | 0.03 | station deadband (no GO ⇄ MARGINAL flicker) |
 | `countdown.stationSampleS` | 0.1 | stations evaluated at 10 Hz |
 | `vehicles.healthLossPerWear` | 0.5 | VEHICLE health = 1 − 0.5·wear (B-09 = 0.89, GO) |
+| `logistics.windLimit.resumeMarginMPerS` | 0.5 | a wind-paused stack / transporter resumes 0.5 m/s under the limit |
+| `anomalies.director.windowCloseLeadS` | 1 800 | director fallback also 30 min before the window closes (count frozen at a poll) |
 
 **Flagged** (please review):
 1. **Hold margin is ~13 min, not ~38 min.** With the MVP start farm the sim leaves ≈ 31 t LOX / 6 t CH4 usable at T-0
@@ -260,6 +262,9 @@ Numbers the sim needed that this document did not specify. Each lives in `src/da
    To restore the design intent without orders: farm LOX ≈ 4 210 000 kg, CH4 ≈ 1 152 000 kg.
 2. Catastrophic ascent failure (`catastrophicAscentPerFlight`) is kept in data but not simulated yet.
 3. Lightning (GDD §4.10) has no numbers here and is not simulated.
+4. **The auto catch policy diverts often**: in the 200-run hands-off sweep (QA.md) 82 of 188 flights diverted. Tower
+   wind = 1.3 × ground wind sits above `sigma.windRef` (8 m/s) most of the time, so p < 0.90 whenever ground wind
+   exceeds ~9.3 m/s or an engine is out. Consider windRef 10 or towerFactor 1.15 if the auto policy should mostly catch.
 
 ## Sources (brief)
 - [S1] Widely reported public specs for the super-heavy methalox class (booster ~3 400 t, ship ~1 200–1 500 t of propellant). Not re-verified in this pass; used as order of magnitude only.

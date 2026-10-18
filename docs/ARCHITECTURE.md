@@ -382,6 +382,20 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
 - **Command** `LeakResponse { choice }` → the countdown with an active leak; rejections `NO_ACTIVE_LEAK`,
   `ALREADY_RESPONDED`, `ALREADY_FIXING`.
 
+### 7.8 Scenario `mvp` and autopilot (3.9, `src/sim/scenarios/`)
+
+- `createMvpScenario({ seed, config? })` = `createWorld` (LIVE config) + `spawnSiteLayout` + `createMvpFlight`:
+  LC-1 at T-06:00:00, NRL-3 `ACTIVE`, booster/ship in the yard, farm at the MVP start inventory.
+- `autopilotCommands(world, countdownId, opts)` — stateless scripted director: StartRollout + orders in Standby,
+  Stack once rolled out, GO whenever `releaseBlocker` is null (never on a LEAK_FIX hold), the configured leak
+  response, the catch call once the booster is in DESCENT (CATCH iff p > `catchBreakEvenP()` = 1 − divert / failed
+  catch cost). `STANDARD_AUTOPILOT` (3 LX + 1 MX standard, GO, HOLD_FIX, catch call) drives the golden test,
+  the equivalence suites and `jumpTo`.
+- Tests: `tests/golden/full-launch.test.ts` (seed 42 → `__files__/full-launch.seed42.log`), `tests/sim/equivalence`
+  (save/load at two points, replay of the command log, uneven step batches), `tests/sim/properties` (200 fast-check
+  cases from 6 snapshots), `scripts/sim/anomaly-sweep.ts` (AC 3, 200 full runs × 2 policies, not part of
+  `npm run test`: ~4 min on 4 cores).
+
 ### 7.7 Economy, contract, debrief (3.8, `src/sim/systems/economy.ts`)
 
 - Runs last before bookkeeping and books **this tick's events** (`eventsThisTick`): `DeliveryOrdered.feeCr` →
@@ -421,7 +435,9 @@ interface FuelxDebug {
   seed(seed: number, opts?: { scenario?: 'mvp'; autopilot?: boolean }): Promise<void>; // new game, deterministic
   jumpTo(target: string | { tick: number } | { phase: Phase }): Promise<void>;
       // 'T-00:00:04' | 'T+00:01:45' | 'Liftoff': steps headless (no render) with the scenario autopilot
-      // issuing the scripted decisions (same script as the golden test), then renders one frame
+      // issuing the scripted decisions (same script as the golden test), then renders one frame.
+      // Autopilot = `autopilotCommands(world, countdownId, STANDARD_AUTOPILOT)` from `src/sim/scenarios/autopilot.ts`:
+      // stateless (derived from the world each tick), so jumping, replaying and save/load stay deterministic.
   pause(): void; resume(): void; setTimeScale(s: 0 | 1 | 10 | 100): void; step(n?: number): void;
   follow(callSign: string | null, opts?: { snap?: boolean }): void;  // snap = no camera lerp (screenshots)
   site(code: 'LC-1' | string): void;

@@ -31,6 +31,7 @@ import { foulRange } from './range';
 const A1_START = secondsToTicks(an.A1.windowStartTS);
 const A1_END = secondsToTicks(an.A1.windowEndTS);
 const DEADLINE = secondsToTicks(an.director.deadlineTS);
+const CLOSE_LEAD = secondsToTicks(an.director.windowCloseLeadS);
 const FIX_TICKS = secondsToTicks(an.A3.fixDurationS);
 const LOAD_PHASES: readonly Phase[] = ['PropellantLoad', 'TerminalCount'];
 
@@ -170,24 +171,38 @@ function loadUnfinished(cd: Countdown): boolean {
   return !cd.inputs.loadComplete && (cd.phase.state === 'PropellantLoad' || cd.phase.state === 'Stack');
 }
 
+/** T-0 can still happen inside the window (the T-clock needs −tClock more ticks). */
+const t0Reachable = (world: World, cd: Countdown): boolean => -cd.tClockTicks <= cd.windowCloseTick - world.tick;
+
 /** The director's plan can still happen (or already did). */
-function planAlive(cd: Countdown, st: AnomalyState): boolean {
+function planAlive(world: World, cd: Countdown, st: AnomalyState): boolean {
   const plan = st.director.plan;
   if (!plan || plan.done) return !!plan;
-  if (plan.anomaly === 'A4') return true;
-  if (plan.anomaly === 'A3') return loadUnfinished(cd);
-  return plan.atTClockTicks !== null && plan.atTClockTicks > cd.tClockTicks;
+  if (plan.anomaly === 'A4') return t0Reachable(world, cd);
+  if (plan.anomaly === 'A3') return loadUnfinished(cd) && t0Reachable(world, cd);
+  return (
+    plan.atTClockTicks !== null &&
+    plan.atTClockTicks > cd.tClockTicks &&
+    plan.atTClockTicks - cd.tClockTicks <= cd.windowCloseTick - world.tick
+  );
 }
 
+/**
+ * Fallback: nothing fired by the T-00:30:00 deadline — or `windowCloseLeadS` before the window closes, for a
+ * count frozen at a poll — and the plan can no longer happen → schedule an eligible anomaly now.
+ */
 function directorFallback(world: World, cd: Countdown, st: AnomalyState): void {
   if (!an.director.guaranteeOne || st.director.fallbackUsed || st.fired.length > 0) return;
-  if (!isPreLiftoff(cd.phase.state) || cd.tClockTicks < DEADLINE || planAlive(cd, st)) return;
+  if (!isPreLiftoff(cd.phase.state)) return;
+  const late = world.tick >= cd.windowCloseTick - CLOSE_LEAD;
+  if ((cd.tClockTicks < DEADLINE && !late) || planAlive(world, cd, st)) return;
   const eligible = ANOMALY_IDS.filter((a) => {
     if (a === 'A1') return st.intruderId === null;
     if (a === 'A2') return LOAD_PHASES.includes(cd.phase.state);
     if (a === 'A3') return loadUnfinished(cd) && st.leakOnsetFraction === null;
-    return true;
+    return cd.pollsPassed.includes('load') && t0Reachable(world, cd);
   });
+  if (eligible.length === 0) return;
   st.director.fallbackUsed = true;
   st.director.plan = drawPlan(world, eligible, cd.tClockTicks);
   if (st.director.plan.anomaly === 'A3') {

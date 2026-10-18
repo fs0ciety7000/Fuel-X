@@ -347,6 +347,17 @@ describe('director fallback at T-00:30:00', () => {
     if (st.director.plan?.anomaly !== 'A4') expect(st.fired.length).toBe(1);
   });
 
+  it('a count frozen at a poll (no input) still gets one before the window closes', () => {
+    const s = withPlan(mvpSetup({ startTS: -4_810 }), { anomaly: 'A4', atMissionTicks: T(60) });
+    const log = run(s.world, T(20));
+    expect(s.cd.hold).toMatchObject({ reason: 'POLL', poll: 'load' });
+    expect(fired(log)).toEqual([]);
+    s.cd.windowCloseTick = s.world.tick + T(an.director.windowCloseLeadS) + 3;
+    log.push(...run(s.world, 5));
+    expect(state(s).director.fallbackUsed).toBe(true);
+    expect(fired(log)).toEqual(['A1:DIRECTOR']);
+  });
+
   it('does nothing when an anomaly already fired', () => {
     const s = withPlan(mvpSetup({ prepped: true, startTS: an.director.deadlineTS - 5 }), {
       anomaly: 'A3',

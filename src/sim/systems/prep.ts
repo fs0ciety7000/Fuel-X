@@ -6,7 +6,7 @@
 //            (stackShipS) → `inputs.stackComplete`.
 // Wind: a gust above `windLimit.transporterMPerS` stops SP-41 (WIND_HOLD); above `windLimit.stackMPerS` it
 // pauses the tower task (WIND_HOLD). Timers are progress counters, so a pause delays the task by exactly
-// its length. The countdown clock is not touched (prep continues under holds; wind pauses only the task).
+// its length; it resumes once the gust is `resumeMarginMPerS` below the limit. The countdown clock is not touched (prep continues under holds; wind pauses only the task).
 import { lc1Layout, logistics as ld, vehicles } from '@data/index';
 import type { CommandOf } from '../core/commands';
 import { getEntity } from '../core/entities';
@@ -28,6 +28,8 @@ const STACK_TICKS = { booster: secondsToTicks(ld.tower.stackBoosterS), ship: sec
 /** Prep works in these phases (not before StartRollout, frozen once scrubbed or flown). */
 const PREP_PHASES: readonly Phase[] = ['Rollout', 'Stack', 'PropellantLoad', 'TerminalCount'];
 const PAD = lc1Layout.points.olm1;
+/** Deadband: a wind pause ends once the gust is this far below the limit. */
+const RESUME_MARGIN = ld.windLimit.resumeMarginMPerS;
 const ON_PAD_ROT = headingToQuat(Math.PI);
 
 interface Assets {
@@ -113,7 +115,8 @@ function carry(sp: Transporter, stage: Stage | null): void {
 
 function updateTransporter(world: World, a: Assets): void {
   const { sp } = a;
-  const gusty = world.weather.groundGustMPerS > ld.windLimit.transporterMPerS;
+  const held = sp.fsm.state === 'WIND_HOLD';
+  const gusty = world.weather.groundGustMPerS > ld.windLimit.transporterMPerS - (held ? RESUME_MARGIN : 0);
   switch (sp.fsm.state) {
     case 'MOVING':
     case 'RETURNING': {
@@ -183,7 +186,8 @@ function stageReadyForArms(a: Assets): Stage | null {
 
 function updateTower(world: World, a: Assets): void {
   const { tower } = a;
-  const gusty = world.weather.groundGustMPerS > ld.windLimit.stackMPerS;
+  const held = tower.fsm.state === 'WIND_HOLD';
+  const gusty = world.weather.groundGustMPerS > ld.windLimit.stackMPerS - (held ? RESUME_MARGIN : 0);
   if (tower.fsm.state === 'STACKING' && gusty) {
     fire(world, towerFsm, tower, 'windHigh');
     return;

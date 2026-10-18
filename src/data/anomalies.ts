@@ -70,5 +70,10 @@ export const anomalies = {
      * load fraction (A3 band), A4 during the flight. The deadline rule stays as the fallback.
      */
     a2EarliestTS: -4_500,
+    /**
+     * Sim addition 3.9 (review): the fallback also runs this long before the window closes, for a count that
+     * never reaches the deadline (frozen at a poll, e.g. a run without any input), s.
+     */
+    windowCloseLeadS: 1_800,
   },
 };
