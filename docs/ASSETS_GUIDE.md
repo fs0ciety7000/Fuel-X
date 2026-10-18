@@ -132,7 +132,7 @@ As built (4.5): `MAT_Clay` + `MAT_Glass` (glass, tyres, bumpers — the only dar
 
 ### WX_STATION
 `WX_STATION_Static`; `WX_STATION_Anemometer` (`spin y`); `WX_STATION_Vane` (`rot y`, 0–360°, shows wind direction — gameplay readable). Sockets: `SOCKET_Label`.
-As built (4.5): both rotors are empties at (±1.2, 0, 9.55) with leaf `…Geo` meshes (anemometer L/+X, vane R/−X). **Vane at 0° points its arrow along local −Y (glTF +Z)**; it points into the wind, so render sets `rot y` = the heading the wind blows from (CCW from above, in the asset's frame). Contract class `building` (4 draw calls: Static ×2 materials + 2 rotors) — see §12 Q6.
+As built (4.5): both rotors are empties at (±1.2, 0, 9.55) with leaf `…Geo` meshes (anemometer L/+X, vane R/−X). **Vane at 0° points its arrow along local −Y (glTF +Z)**; it points into the wind, so render sets `rot y` = the heading the wind blows from (CCW from above, in the asset's frame). **Decision (4.7): WX_STATION stays in contract class `building` (cap 4 draw calls: Static ×2 materials + 2 rotors).** Rationale: two independently animated rotors cannot share the static mesh, so the prop cap of 2 is unreachable without dropping gameplay-readable wind direction; only 2 copies exist (WX-1, WX-2), far below the "instance when > 3 copies" rule, so the extra draw calls cost nothing measurable. Revisit only if a placement needs > 3 stations (then: instanced static + instanced rotor meshes).
 
 ### BLDG_HIGHBAY / BLDG_MEGABAY / HANGAR_TENT
 `<ASSET>_Static`; ~~highbay/megabay `<ASSET>_Door` (vertical lift, `trans y` 0 → door height)~~ — see as built. Sockets: `SOCKET_DoorOut` (ground point just outside the door, path waypoint, +Z up), `SOCKET_Label`, `SOCKET_Focus`.
@@ -247,7 +247,8 @@ build/models-raw/       raw exporter output (git-ignored)
 public/models/          optimized GLB + LODs (generated, committed, never hand-edited)
 docs/assets/<asset>.png             preview 1024²
 docs/assets/turntable/<asset>_NN.png  optional 12-frame turntable 512²
-docs/assets/_lineup.png             all assets side by side + 1.8 m human, for scale review
+docs/assets/_lineup.png             all assets side by side + 1.8 m human each, for scale review (blender/scenes/lineup.py, raw GLBs)
+docs/assets/_lineup_small.png       same row re-framed on the small assets (boat → WX station)
 docs/assets/_farm.png               tank farm + tanker + transporter + vans + WX composite (blender/scenes/farm.py, raw GLBs)
 blender/scenes/<scene>.py           preview-only composites (never exported; not picked up by npm run assets)
 src/render/assets/generated/        typed wrappers (generated)
@@ -264,7 +265,7 @@ Matches `template_asset.py` (tested) so previews sit directly on the UI paper su
 - Sun: rotation (50°, 0°, 35°) → elevation 40°, energy 2.2, angle 8° (soft shadow). **The same sun direction must be the game's** — expose it as a shared constant with ARCHITECTURE/render (`SUN_DIR`).
 - Camera: 85 mm (≈ 24° FOV, the game's narrow-FOV feel), direction (1, −1, 0.8) from the bounds center → front-right three-quarter view of the −Y face, pulled back until the bounding-box corners fit 86 % of the frame (capped at 5 × bounding radius). Animated parts may be posed after export for the preview only (tower: arms open 25°, QD engaged).
 - Turntable (optional, review): 12 frames, camera orbit 30° steps, 512².
-- Lineup (`_lineup.png`): all exported LOD0 assets on one ground in a row, orthographic side view, 2048 × 1024.
+- Lineup (`_lineup.png`): all exported LOD0 assets on one ground in a row, orthographic side view, 2048 × 1024. As built (4.7): `blender -b --factory-startup --python-exit-code 1 -P blender/scenes/lineup.py -- --out docs/assets/_lineup.png --detail docs/assets/_lineup_small.png` imports the raw GLBs from `build/models-raw/` (run `npm run assets` first), lines them up along +Y (fronts to the left), camera from +X at zero elevation (no ground shading; an ink ground line), one 1.8 m human just ahead of each asset, name labels below the ground line, and prints every asset's bounds for the §2 check. `lib.preview.add_human(location)` is the shared human helper.
 - No halftone in the committed PNG; the in-game catalog may apply its own dithering.
 
 ## 10. `blender/lib/` helpers (to build in Phase 4)
@@ -300,7 +301,8 @@ validate(asset: str, required_nodes: list[str], tri_budget: int, max_materials: 
 # export.py / preview.py
 export_glb(path: str) -> None                                              # §7 options
 render_preview(path: str, size=1024, turntable: int = 0) -> None           # §9
-render_lineup(paths: list[str], out: str) -> None
+render_lineup(paths: list[str], out: str, detail_out=None, detail_from=None, poses=None) -> list  # 4.7
+add_human(location, suffix="") -> list                                    # 1.8 m preview figure
 ```
 Each asset script declares `ASSET`, `REQUIRED_NODES`, `TRI_BUDGETS` and calls `lod.run_asset(ASSET, build, REQUIRED_NODES, TRI_BUDGETS, lods, preview_pose)`, which for each LOD resets the scene, creates materials, calls `build(lod)`, runs `validate()` and `export_glb()`, then renders the preview from LOD0.
 
@@ -354,5 +356,5 @@ As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face list
 3. Screen-space AO vs baked vertex AO (ARCHITECTURE/render).
 4. ~~Renderer ADR~~ — resolved: R3F + in-house codegen from `<asset>.contract.json` (ADR 0002/0007); no gltfjsx.
 5. Does gameplay need per-engine visuals (33 sockets kept either way), arm shock-absorber carts, or an ocean-landing variant with legs?
-6. `WX_STATION` draw calls: ARCHITECTURE §13.2 lists it as a prop (≤ 2 draw calls) but it has two independently animated rotors plus the static mesh (≥ 3); this guide's table says ≤ 4. Built under class `building` (cap 4) until **systems-architect** reconciles — only 2 copies exist, so no instancing pressure.
+6. ~~`WX_STATION` draw calls~~ — resolved 4.7: class `building` (cap 4), see §4 WX_STATION. ARCHITECTURE §13.2 lists WX_STATION under props; **systems-architect** should move it to the building row there.
 7. `TANK_V` Ø 4.5 × 20 variant (`tank_v_s.glb`) — build when a placement needs it.
