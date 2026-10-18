@@ -22,11 +22,11 @@ FACE_NAMES = ("up-", "side+", "up+", "side-")  # faces between corners (0,1) (1,
 def add_truss(mb: MeshBuilder, start, end, width: float, depth: float, bays: int, section: float = 0.35,
               chord: float | None = None, bracing: str = "X", faces=4, material: str = "MAT_Metal",
               chord_material: str | None = None, lod: int = 0, horizontals: bool = True,
-              up_hint=None, slab_material: str | None = None) -> None:
+              up_hint=None, slab_material: str | None = None, panels: int = 1) -> None:
     """Straight box truss from `start` to `end` (centerline), cross-section width × depth.
 
     bracing: "X" (both diagonals), "Z" (Warren zig-zag), "none". faces: 4 | 2 (the two ±side
-    faces) | iterable of FACE_NAMES. lod >= 2 → one solid slab box (silhouette only).
+    faces) | iterable of FACE_NAMES. panels splits each face into columns (square-ish X panels). lod >= 2 → one solid slab box (silhouette only).
     Members are 4-sided, uncapped (8 tris each)."""
     a, b = Vector(start), Vector(end)
     d, side, up = frame_from_axis(b - a, up_hint)
@@ -50,23 +50,31 @@ def add_truss(mb: MeshBuilder, start, end, width: float, depth: float, bays: int
         mb.beam(corner(i, 0.0), corner(i, 1.0), chord, cm, up_hint=up)
     for fname in faces:
         fi = FACE_NAMES.index(fname)
-        i, j = fi, (fi + 1) % 4
-        normal = (corner_off[i] + corner_off[j]).normalized()
+        ci, cj = fi, (fi + 1) % 4
+        normal = (corner_off[ci] + corner_off[cj]).normalized()
+
+        def pt(col, t, ci=ci, cj=cj):  # point on the face: col in [0, panels]
+            u = col / panels
+            return corner(ci, t) * (1 - u) + corner(cj, t) * u
+
+        for col in range(1, panels):
+            mb.beam(pt(col, 0.0), pt(col, 1.0), section, material, up_hint=normal)
         for k in range(bays + 1):
             t = k / bays
             if horizontals:
-                mb.beam(corner(i, t), corner(j, t), section, material, up_hint=normal)
+                mb.beam(pt(0, t), pt(panels, t), section, material, up_hint=normal)
             if k == bays:
                 break
             t1 = (k + 1) / bays
-            if bracing == "X":
-                mb.beam(corner(i, t), corner(j, t1), section, material, up_hint=normal)
-                mb.beam(corner(j, t), corner(i, t1), section, material, up_hint=normal)
-            elif bracing == "Z":
-                if k % 2 == 0:
-                    mb.beam(corner(i, t), corner(j, t1), section, material, up_hint=normal)
-                else:
-                    mb.beam(corner(j, t), corner(i, t1), section, material, up_hint=normal)
+            for col in range(panels):
+                if bracing == "X":
+                    mb.beam(pt(col, t), pt(col + 1, t1), section, material, up_hint=normal)
+                    mb.beam(pt(col + 1, t), pt(col, t1), section, material, up_hint=normal)
+                elif bracing == "Z":
+                    if (k + col) % 2 == 0:
+                        mb.beam(pt(col, t), pt(col + 1, t1), section, material, up_hint=normal)
+                    else:
+                        mb.beam(pt(col + 1, t), pt(col, t1), section, material, up_hint=normal)
 
 
 def truss(name: str, start, end, width: float, depth: float, bays: int, section: float = 0.35,

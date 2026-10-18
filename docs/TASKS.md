@@ -41,7 +41,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] ⛳ **Gate 3** approved (balancing pass on hold margin, auto catch policy, AC 3 no-input case runs alongside Phase 4) — golden log walkthrough (text timeline of a full launch), bench numbers
 
 ## Phase 4 — Asset pipeline (tower first)
-- [ ] 4.1 `blender/lib/`: materials_from_tokens, socket, parent_keep, truss, tanks, wheel_bogie, railing, export_glb, render_preview (ASSETS_GUIDE §10) — **blender-technical-artist** ← 2.4
+- [x] 4.1 `blender/lib/`: materials_from_tokens, socket, parent_keep, truss, tanks, wheel_bogie, railing, export_glb, render_preview (ASSETS_GUIDE §10) — **blender-technical-artist** ← 2.4
 - [ ] 4.2 `scripts/assets/{build,contract,codegen}.ts`: Blender → verified gltf-transform chain → contract validation → typed wrapper → preview; `--verify` byte-identical rebuild — **blender-technical-artist** + **systems-architect** ← 4.1
 - [ ] 4.3 **TOWER** end to end (carriage, catch arms, QD arm, sockets, LODs) + preview render — pipeline proof — ← 4.2
 - [ ] 4.4 PAD/OLM, BOOSTER, SHIP — ← 4.3

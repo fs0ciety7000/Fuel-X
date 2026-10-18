@@ -9,6 +9,7 @@ from pathlib import Path
 import bpy
 from mathutils import Vector
 
+from . import REPO_ROOT
 from .materials import preview_material, token_linear
 
 # Shared with the game renderer (ARCHITECTURE / render SUN_DIR): elevation 40°, azimuth from rotation.
@@ -94,6 +95,8 @@ def setup_stage(human_at=None):
     ground = bpy.context.active_object
     ground.name = PREVIEW_PREFIX + "Ground"
     ground.data.materials.append(preview_material(PREVIEW_PREFIX + "Ground", "world", "background", 1.0))
+    # Shadow catcher: the ground shows exactly the camera-ray paper color, darkened only by shadows.
+    ground.is_shadow_catcher = True
     if human_at is None:
         human_at = (hi.x + 2.0, lo.y - 2.0)
     _add_human(human_at)
@@ -115,13 +118,26 @@ def setup_stage(human_at=None):
     return cam, center, radius
 
 
-def _aim(cam, center, radius, azimuth_offset: float = 0.0) -> None:
+def _aim(cam, center, radius, azimuth_offset: float = 0.0, margin: float = 0.86) -> None:
+    """Point the camera along CAMERA_DIR (rotated by azimuth_offset) and pull back until the asset's
+    bounding-box corners fit inside `margin` of the frame (falls back to 5 × radius as an upper cap)."""
     d = Vector(CAMERA_DIR).normalized()
     horiz = Vector((d.x, d.y)).length
     az = math.atan2(d.y, d.x) + azimuth_offset
     direction = Vector((math.cos(az) * horiz, math.sin(az) * horiz, d.z))
-    cam.location = center + direction * radius * CAMERA_DISTANCE_FACTOR
-    cam.rotation_euler = (center - cam.location).to_track_quat("-Z", "Y").to_euler()
+    rot = (-direction).to_track_quat("-Z", "Y")
+    cam.rotation_euler = rot.to_euler()
+    right, up, fwd = rot @ Vector((1, 0, 0)), rot @ Vector((0, 1, 0)), rot @ Vector((0, 0, -1))
+    tan_half = math.tan(cam.data.angle / 2) * margin
+    lo, hi, _, _ = asset_bounds()
+    dist = 0.0
+    for x in (lo.x, hi.x):
+        for y in (lo.y, hi.y):
+            for z in (lo.z, hi.z):
+                q = Vector((x, y, z)) - center
+                need = max(abs(q.dot(right)), abs(q.dot(up))) / tan_half - q.dot(fwd)
+                dist = max(dist, need)
+    cam.location = center + direction * min(dist, radius * CAMERA_DISTANCE_FACTOR)
 
 
 def render_preview(path: str | None, size: int = 1024, samples: int = 32, turntable: int = 0,
@@ -136,9 +152,9 @@ def render_preview(path: str | None, size: int = 1024, samples: int = 32, turnta
         scene.render.filepath = str(path)
         bpy.ops.render.render(write_still=True)
     if turntable > 0:
-        out_dir = Path(turntable_dir) if turntable_dir else Path(path).parent / "turntable"
+        out_dir = Path(turntable_dir) if turntable_dir else (Path(path).parent if path else REPO_ROOT / "docs" / "assets") / "turntable"
         out_dir.mkdir(parents=True, exist_ok=True)
-        stem = turntable_name or Path(path).stem
+        stem = turntable_name or (Path(path).stem if path else "asset")
         _setup_render(turntable_size, max(8, samples // 2))
         for i in range(turntable):
             _aim(cam, center, radius, 2 * math.pi * i / turntable)
