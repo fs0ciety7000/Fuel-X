@@ -122,17 +122,27 @@ System order is a constant array in `src/sim/step.ts`; changing it is a golden-l
 - Subscribers must not call back into the sim synchronously; they send commands.
 
 ```ts
+// src/sim/core/events.ts (authoritative; abridged here)
 type SimEvent =
-  | { t: 'PhaseChanged'; tick: number; countdownId: Id; from: Phase; to: Phase }
-  | { t: 'HoldStarted' | 'HoldReleased'; tick: number; countdownId: Id; reason: HoldReason }
-  | { t: 'StationChanged'; tick: number; station: Station; status: GoStatus; driver: string }
-  | { t: 'DecisionRequired'; tick: number; decision: DecisionKind; deadlineTick: number }
-  | { t: 'AnomalyFired'; tick: number; anomaly: AnomalyId; entityId: Id }
-  | { t: 'EntityStateChanged'; tick: number; id: Id; kind: Kind; from: string; to: string }
-  | { t: 'Spawned' | 'Despawned'; tick: number; id: Id; kind: Kind }
-  | { t: 'Milestone'; tick: number; name: MilestoneName }
-  | { t: 'CommandRejected'; tick: number; cmd: Command['t']; reason: string };
+  | { t: 'PhaseChanged'; tick; countdownId; from: Phase; to: Phase; trigger: string }
+  | { t: 'HoldStarted'; tick; countdownId; reason: HoldReason; poll: PollId | null; tClockTicks }
+  | { t: 'HoldReleased'; tick; countdownId; reason: HoldReason; by: 'GO' | 'AUTO' | 'RECYCLE'; tClockTicks }
+  | { t: 'ClockChanged'; tick; countdownId; from: ClockState; to: ClockState; trigger }   // → Stopped
+  | { t: 'PollOpened'; tick; countdownId; poll: PollId }
+  | { t: 'PollPassed'; tick; countdownId; poll; auto: boolean; marginal: Station[] }
+  | { t: 'Recycled'; tick; countdownId; fromTClockTicks; toTClockTicks }
+  | { t: 'WindowMissed'; tick; countdownId; contractId; penaltyCr }
+  | { t: 'StationChanged'; tick; countdownId; station: Station; status: GoStatus; driver: string }
+  | { t: 'DecisionRequired'; tick; countdownId; decision: 'POLL' | 'CATCH' | 'LEAK'; poll: PollId | null; deadlineTick }
+  | { t: 'AnomalyFired'; tick; anomaly: AnomalyId; entityId: Id }
+  | { t: 'EntityStateChanged'; tick; id: Id; kind: Kind; from: string; to: string }
+  | { t: 'Spawned' | 'Despawned'; tick; id: Id; kind: Kind; callSign: string }
+  | { t: 'Milestone'; tick; countdownId; name: MilestoneName }   // T-clock marks from src/data/countdown.ts
+  | { t: 'CommandRejected'; tick; cmd: Command['t']; reason: string };  // reason = UPPER_SNAKE code (i18n key)
 ```
+
+`world.tick` is the index of the **next** tick to execute; events emitted while executing it carry that
+value, and bookkeeping increments it last. `step(world, commands) → SimEvent[]` returns that tick's events.
 
 ## 6. Entity data model (shared types sketch)
 
@@ -171,15 +181,16 @@ export type Entity = Booster | Ship | Tower | Pad | Tank | Tanker | Transporter 
 export interface World {
   schema: number; tick: Tick; seed: number; rng: Record<RngStream, RngState>;
   sites: Record<SiteId, Site>;
-  entities: { byId: Record<Id, Entity>; order: Id[]; nextSerial: number; freeSlots: number[] };
-  countdowns: Record<Id, Countdown>;     // one per flight attempt
+  entities: { byId: Record<Id, Entity>; order: Id[]; nextSerial: number; nextSlot: number; freeSlots: number[] };
+  countdowns: Record<Id, Countdown>;     // one per flight attempt; iterate sorted ids (countdownIds())
   contracts: Record<Id, Contract>; economy: { moneyCr: number; reputation: number };
-  weather: WeatherState; anomalies: AnomalyState; outbox: SimEvent[];
+  weather: WeatherState; anomalies: AnomalyState; outbox: SimEvent[];   // contracts (3.8), weather/anomalies (3.7) not yet in the World
 }
 export type Command =
   | { t: 'StartRollout'; boosterId: Id } | { t: 'Stack'; padId: Id }
   | { t: 'OrderDelivery'; fluid: 'LOX' | 'CH4'; rush: boolean }
-  | { t: 'Go' | 'Hold' | 'Recycle' | 'Scrub'; countdownId: Id }
+  | { t: 'Go'; countdownId: Id } | { t: 'Hold'; countdownId: Id }   // one member per type so Extract<> works
+  | { t: 'Recycle'; countdownId: Id } | { t: 'Scrub'; countdownId: Id }
   | { t: 'CatchDecision'; boosterId: Id; choice: 'CATCH' | 'DIVERT' }
   | { t: 'LeakResponse'; choice: 'DEGRADED' | 'HOLD_FIX' };
 ```
@@ -229,6 +240,17 @@ stateDiagram-v2
 ```
 
 `Holding` stores `resumePhase` and `reason`; the **T-clock** (`tClockTicks`, negative before T-0) stops in `Holding`, while sim time, window time, topping drain and crew shift time continue (GDD AC 12). Phase bar segments map 1:1 to `Rollout … Safing`; `Holding`/`Scrubbed`/`Divert` are overlays (glyphs) on the current segment.
+
+**Implementation (3.3, `src/sim/systems/countdown.ts`)** — the diagram above is realised as **two orthogonal table-driven FSMs** per countdown:
+- **phase**: `Standby` (initial, before `StartRollout`) → `Rollout` → `Stack` → `PropellantLoad` → `TerminalCount` → `Liftoff` → `Boostback` → `TowerCatch | Divert` → `Safing` → `Debrief`, plus `Scrubbed` → `Debrief`.
+- **clock**: `Counting ⇄ Holding → Stopped`; the T-clock advances only while `Counting`. `countdown.hold = { reason: MANUAL | POLL | NO_GO | LOAD_INCOMPLETE, poll }`.
+- `Holding` is therefore not a phase: the phase *is* the `resumePhase`, and its physical work (stacking, loading, topping) continues under a hold — which is what makes the T-00:03:00 load auto-hold resolvable.
+- **Polls** are holds with reason `POLL` opened when the T-clock reaches the poll mark; `Go` (or auto-GO when all 5 stations are GO and `autoGoWhenAllGreen`) passes them. Load poll needs `Stack` + stack complete; final poll needs T-0 inside the window. GO with MARGINAL stations records them in `countdown.goWithMarginal` (3.7 risk multiplier).
+- **Auto-holds**: NO-GO station during `PropellantLoad`/`TerminalCount` (released only by player `Go`); load incomplete at T-00:03:00 (auto-released when complete + all GO).
+- **Recycle** (from `TerminalCount`, past T-00:10:00, window open): T-clock → T-00:10:00, final poll re-run, any hold released (`by: 'RECYCLE'`).
+- **Window close** before liftoff (held or not, any pre-liftoff phase) → `Scrubbed` + `WindowMissed { penaltyCr }`; economy applies it (3.8).
+- Inputs owned by other systems are read from `countdown.inputs` (`stations`, `rolloutComplete`, `stackComplete`, `loadComplete`, `stageSeparated`, `recoveryMode`, `recoveryComplete`, `detankComplete`) — written by 3.4–3.7 before the next countdown tick.
+- `maxTimeScale(world, countdown)` reports the per-phase cap from `src/data/time.ts` (holds ≤ 10×, forced 1× from T-00:03:00 to Safing + 30 s).
 
 ### 7.2 Vehicle classes (states per GDD §5.2)
 
