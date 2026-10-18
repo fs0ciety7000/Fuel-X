@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { canonicalStringify, deserializeWorld, hashWorld, serializeWorld } from './serialize';
-import { createWorld } from './world';
+import { WORLD_SCHEMA, createWorld } from './world';
 import { createCountdown } from '../systems/countdown';
 import { advance } from '../step';
 
@@ -78,6 +78,6 @@ describe('world serialization', () => {
     const w = createWorld({ seed: 1 });
     expect(() => deserializeWorld(JSON.stringify({ ...w, schema: 999 }))).toThrow(/schema/);
     expect(() => deserializeWorld('[]')).toThrow();
-    expect(() => deserializeWorld(JSON.stringify({ schema: 1 }))).toThrow(/missing/);
+    expect(() => deserializeWorld(JSON.stringify({ schema: WORLD_SCHEMA }))).toThrow(/missing/);
   });
 });

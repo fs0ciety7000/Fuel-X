@@ -374,6 +374,22 @@ Measured (§13.4 checks):
 Note: the 15.5 % divert share is close to the lower bound; a later change to the weather or A4 timing could push it
 under. The sweep script now fails on any AC 3c miss, so that will show up.
 
+## 14. Tower mechanisms: `src/data/tower.ts` (5.0)
+
+Geometry mirrors the Blender scripts (ASSETS_GUIDE TOWER / PAD / BOOSTER / SHIP sockets): carriage travel 25–135 m,
+rest 86 m; arms open ±40°; QD hinge 100 m, engaged 90°; mount deck 20 m; booster catch pins 66 m, ship lift pins
+44 m above their origins. Derived carriage heights: booster stack **86 m**, ship stack **135 m**, catch **126 m**.
+QD keep-out band **92–106 m** (ASSETS_GUIDE operational rule).
+
+**Sim additions 5.0 — game-designer to review** (cosmetic: no balance effect, the stack task timers are unchanged and
+the catch outcome does not read them):
+
+| Key | Value | Unit | Why |
+|---|---|---|---|
+| `tower.carriage.speedMPerS` | 1 | m/s | hoist: rest → ship stack (49 m) in 49 s, ship stack → catch (9 m) in 9 s, well inside the 35 s between the last possible CATCH commit (landing burn) and the catch |
+| `tower.arms.rateRadPerS` | 8°/s (0.1396) | rad/s | 40° open ⇄ closed in 5 s, readable from the default camera |
+| `tower.qdArm.rateRadPerS` | 9°/s (0.1571) | rad/s | 90° in 10 s; stowed by T+00:00:10 after the liftoff retract |
+
 ## Sources (brief)
 - [S1] Widely reported public specs for the super-heavy methalox class (booster ~3 400 t, ship ~1 200–1 500 t of propellant). Not re-verified in this pass; used as order of magnitude only.
 - [S2] Teslarati reporting on the Starbase tank farm: ~5 400 t of LOX in the main tanks — https://teslarati.com/spacex-starship-orbital-launch-site-propellant-delivery

@@ -1,6 +1,7 @@
 // Save / load (ARCHITECTURE §10): format, canonical round trip, schema guard, migrations scaffold, frozen fixture.
 import { describe, expect, it } from 'vitest';
 import {
+  MIGRATIONS,
   STANDARD_AUTOPILOT,
   WORLD_SCHEMA,
   autopilotCommands,
@@ -83,6 +84,7 @@ describe('migrations scaffold', () => {
     file.world.schema = 0;
     delete file.world.config;
     const loaded = loadSave(JSON.stringify(file), {
+      ...MIGRATIONS,
       0: (w) => ({ ...w, config: { weather: 'SERIES', stations: 'LIVE', anomalies: true } }),
     });
     expect(loaded.fromSchema).toBe(0);
@@ -99,6 +101,10 @@ describe('fixture tests/fixtures/saves/schema-1.json (frozen)', () => {
     const cd = loaded.world.countdowns.cd01;
     if (!cd) throw new Error('no countdown');
     expect(cd.hold?.reason).toBe('LEAK_FIX');
+    // 1 → 2: ship stacked and loading → carriage at the ship pins (135 m), QD arm engaged, arms open.
+    const tower = Object.values(loaded.world.entities.byId).find((e) => e.kind === 'tower');
+    expect(tower).toMatchObject({ carriageM: 135, carriageTargetM: 135, qd: 'ENGAGED', interlock: 'NONE' });
+    expect(tower?.kind === 'tower' && tower.qdArmRad).toBeCloseTo(Math.PI / 2, 12);
     const before = serializeWorld(loaded.world);
     drive({ world: loaded.world, countdown: cd, ids: {} }, { maxTicks: 100 });
     expect(loaded.world.tick).toBe(540_100);

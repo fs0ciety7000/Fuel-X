@@ -21,6 +21,7 @@ import { commandOrderDelivery, logisticsSystem } from './systems/logistics';
 import { commandStack, prepSystem } from './systems/prep';
 import { propellantSystem } from './systems/propellant';
 import { rangeSystem } from './systems/range';
+import { towerSystem } from './systems/tower';
 
 export interface StepContext {
   /** Commands stamped for this tick, in send order. */
@@ -80,6 +81,7 @@ function bookkeepingSystem(world: World): void {
  *  7 propellant    — farm boil-off, vehicle load + topping, scrub detank (writes loadComplete/detankComplete)
  *  8 flight        — scripted ascent/boostback/landing, S-21 to SECO, catch model, decision, outcome
  *                    (writes stageSeparated / recoveryMode / recoveryComplete)
+ *  8b tower        — carriage / catch arms / ship QD arm toward their targets, carriage ⇄ QD interlock (5.0)
  *  9 anomalies     — director plan + natural rolls A1–A4 (rng 'director' / 'anomaly'), leak timers, engine-outs
  *  9b economy      — books this tick's events: fees, purchases, contract, recovery costs, wear, debrief
  * 10 bookkeeping   — tick++ (RenderSnapshot write in 5.2)
@@ -93,6 +95,7 @@ export const SYSTEMS: readonly SimSystem[] = [
   { name: 'logistics', run: logisticsSystem },
   { name: 'propellant', run: propellantSystem },
   { name: 'flight', run: flightSystem },
+  { name: 'tower', run: towerSystem },
   { name: 'anomalies', run: anomaliesSystem },
   { name: 'economy', run: economySystem },
   { name: 'bookkeeping', run: bookkeepingSystem },

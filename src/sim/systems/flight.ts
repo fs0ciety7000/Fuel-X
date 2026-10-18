@@ -17,6 +17,7 @@ import { countdownIds } from '../core/world';
 import type { World } from '../core/world';
 import { boosterFsm, fire, setArms, shipFsm, towerFsm } from '../entities/machines';
 import { catchProbability } from '../math/catch';
+import { carriageForBoosterM } from '../math/tower';
 import {
   CATCH_PROFILE,
   DIVERT_PROFILE,
@@ -29,6 +30,7 @@ import {
   sampleProfile,
 } from '../math/profile';
 import type { Keyframe } from '../math/profile';
+import { setCarriageTarget } from './tower';
 import type {
   BoosterFlight,
   Countdown,
@@ -93,6 +95,11 @@ function towerOf(world: World, cd: Countdown): EntityOf<'tower'> | null {
   return t?.kind === 'tower' ? t : null;
 }
 
+/** Carriage height for the catch: the catch points meet the booster catch pins at CATCH_POINT (60 + 66 = 126 m). */
+function catchCarriageM(tower: EntityOf<'tower'>): number {
+  return carriageForBoosterM(CATCH_POINT.y - tower.pos.y);
+}
+
 const telemetry = (): FlightTelemetry => ({
   altitudeM: 0,
   downrangeM: 0,
@@ -137,7 +144,10 @@ function commit(world: World, cd: Countdown, b: Booster, mode: RecoveryMode, by:
   if (mode === 'CATCH') {
     f.aimDecision = { profileTimeS: f.profileTimeS, offsetM: f.aimOffsetM };
     const tower = towerOf(world, cd);
-    if (tower) fire(world, towerFsm, tower, 'catchArmed');
+    if (tower) {
+      fire(world, towerFsm, tower, 'catchArmed');
+      setCarriageTarget(world, tower, catchCarriageM(tower));
+    }
   } else {
     fire(world, boosterFsm, b, 'divert');
   }
@@ -176,6 +186,9 @@ function resolveCatch(world: World, cd: Countdown, b: Booster, r: RecoveryState)
   if (roll < r.p) {
     fire(world, boosterFsm, b, 'caught');
     if (tower) {
+      // The booster is caught at CATCH_POINT, so the carriage is there: snap it if the hoist was still moving.
+      tower.carriageM = catchCarriageM(tower);
+      setCarriageTarget(world, tower, tower.carriageM);
       setArms(world, tower, 'CLOSED');
       fire(world, towerFsm, tower, 'caught');
     }

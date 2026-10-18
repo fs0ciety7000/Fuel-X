@@ -67,9 +67,11 @@
 270001 T-03:30:00 ArmsChanged id=TOWER-1 from=CLOSED to=OPEN
 270001 T-03:30:00 EntityStateChanged id=B-09 kind=booster from=STACKING to=STACKED
 270001 T-03:30:00 EntityStateChanged id=TOWER-1 kind=tower from=IDLE to=STACKING
+270001 T-03:30:00 CarriageTargetSet id=TOWER-1 fromM=86 toM=135
 270001 T-03:30:00 ArmsChanged id=TOWER-1 from=OPEN to=CLOSED
 270001 T-03:30:00 EntityStateChanged id=S-21 kind=ship from=ON_TRANSPORTER to=STACKING
 270001 T-03:30:00 EntityStateChanged id=SP-41 kind=transporter from=AT_PAD to=RETURNING
+271471 T-03:29:11 CarriageArrived id=TOWER-1 atM=135
 279001 T-03:25:00 TLM Stack/Counting wind=7.89/9.86/10.25 upper=43.21 stations=GGMGG farm=4027104/1109871 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 288001 T-03:20:00 TLM Stack/Counting wind=10.05/12.56/13.06 upper=45.48 stations=GGMGG farm=4027075/1109867 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 289407 T-03:19:14 EntityStateChanged id=TOWER-1 kind=tower from=STACKING to=WIND_HOLD
@@ -94,6 +96,8 @@
 380671 T-02:28:31 EntityStateChanged id=TOWER-1 kind=tower from=STACKING to=IDLE
 380671 T-02:28:31 ArmsChanged id=TOWER-1 from=CLOSED to=OPEN
 380671 T-02:28:31 EntityStateChanged id=S-21 kind=ship from=STACKING to=STACKED
+380671 T-02:28:31 QdArmChanged id=TOWER-1 from=STOWED to=ENGAGING
+380971 T-02:28:21 QdArmChanged id=TOWER-1 from=ENGAGING to=ENGAGED
 387001 T-02:25:00 TLM Stack/Counting wind=9.78/12.22/12.71 upper=44.17 stations=GGMGG farm=4026757/1109821 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 390870 T-02:22:51 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
 396001 T-02:20:00 TLM Stack/Counting wind=11.72/14.65/15.23 upper=43.79 stations=MGMGG farm=4026728/1109817 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
@@ -217,8 +221,10 @@
 684003 T+00:00:00 EnginesChanged id=B-09 lit=33 failed=0
 684003 T+00:00:00 FlightEvent id=B-09 kind=booster event=LIFTOFF altitudeM=0 speedMPerS=0
 684003 T+00:00:00 EntityStateChanged id=S-21 kind=ship from=LOADED to=ASCENT
+684003 T+00:00:00 QdArmChanged id=TOWER-1 from=ENGAGED to=RETRACTING
 684151 T+00:00:04 TLM Liftoff/Counting wind=5.71/7.14/7.43 upper=45.91 stations=GGMGG farm=119887/34996 B-09 alt=948.4 v=35.6 dr=316.1 prop=3297258 lit=33 p=0.997 S-21 alt=948.4 v=35.6 cr=29959000 rep=50
 684301 T+00:00:09 TLM Liftoff/Counting wind=5.61/7.02/7.30 upper=45.74 stations=GGMGG farm=119887/34996 B-09 alt=1916.1 v=71.9 dr=638.7 prop=3192419 lit=33 p=0.997 S-21 alt=1916.1 v=71.9 cr=29959000 rep=50
+684303 T+00:00:10 QdArmChanged id=TOWER-1 from=RETRACTING to=STOWED
 684451 T+00:00:14 TLM Liftoff/Counting wind=5.77/7.21/7.50 upper=46.37 stations=GGMGG farm=119887/34996 B-09 alt=2883.9 v=108.1 dr=961.3 prop=3087581 lit=33 p=0.997 S-21 alt=2883.9 v=108.1 cr=29959000 rep=50
 684601 T+00:00:19 TLM Liftoff/Counting wind=5.67/7.08/7.37 upper=47.01 stations=GGMGG farm=119887/34996 B-09 alt=3851.6 v=144.4 dr=1283.9 prop=2982742 lit=33 p=0.997 S-21 alt=3851.6 v=144.4 cr=29959000 rep=50
 684751 T+00:00:24 TLM Liftoff/Counting wind=5.64/7.06/7.34 upper=47.70 stations=GGMGG farm=119887/34996 B-09 alt=4819.4 v=180.7 dr=1606.5 prop=2877903 lit=33 p=0.997 S-21 alt=4819.4 v=180.7 cr=29959000 rep=50
@@ -275,9 +281,11 @@
 690453 T+00:03:35 EnginesChanged id=B-09 lit=0 failed=0
 690453 T+00:03:35 FlightEvent id=B-09 kind=booster event=BOOSTBACK_END altitudeM=85000.000 speedMPerS=900.000
 690454 T+00:03:35 EntityStateChanged id=TOWER-1 kind=tower from=IDLE to=CATCH_READY
+690454 T+00:03:35 CarriageTargetSet id=TOWER-1 fromM=135 toM=126
 690454 T+00:03:35 RecoveryCommitted boosterId=B-09 mode=CATCH by=PLAYER p=0.997
 690454 T+00:03:35 PhaseChanged from=Boostback to=TowerCatch trigger=auto
 690601 T+00:03:39 TLM TowerCatch/Counting wind=6.37/7.96/8.28 upper=46.20 stations=GGMGG farm=119886/34996 B-09 alt=86400.0 v=858.0 dr=72134.9 prop=109720 lit=0 p=0.997 S-21 alt=84329.9 v=2511.9 cr=29959000 rep=50
+690724 T+00:03:44 CarriageArrived id=TOWER-1 atM=126
 690751 T+00:03:44 TLM TowerCatch/Counting wind=6.23/7.79/8.10 upper=46.73 stations=GGMGG farm=119885/34996 B-09 alt=87828.6 v=815.1 dr=70374.1 prop=109434 lit=0 p=0.997 S-21 alt=85442.5 v=2593.0 cr=29959000 rep=50
 690901 T+00:03:49 TLM TowerCatch/Counting wind=6.10/7.63/7.93 upper=46.13 stations=GGMGG farm=119885/34996 B-09 alt=89257.1 v=772.3 dr=68613.3 prop=109149 lit=0 p=0.997 S-21 alt=86555.2 v=2674.2 cr=29959000 rep=50
 691051 T+00:03:54 TLM TowerCatch/Counting wind=6.22/7.77/8.08 upper=46.50 stations=GGMGG farm=119885/34996 B-09 alt=90685.7 v=729.4 dr=66852.5 prop=108863 lit=0 p=0.997 S-21 alt=87667.9 v=2755.3 cr=29959000 rep=50

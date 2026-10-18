@@ -135,6 +135,10 @@ export type ShipState =
 export type TankerState = 'OFFMAP' | 'INBOUND' | 'GATE_WAIT' | 'OFFLOADING' | 'OUTBOUND';
 export type TowerState = 'IDLE' | 'STACKING' | 'WIND_HOLD' | 'CATCH_READY' | 'CATCHING' | 'DAMAGED';
 export type ArmsState = 'OPEN' | 'CLOSED';
+/** Ship quick-disconnect arm on TOWER-1 (5.0). Anything but STOWED keeps the carriage out of the keep-out band. */
+export type QdArmState = 'STOWED' | 'ENGAGING' | 'ENGAGED' | 'RETRACTING';
+/** Which side of the carriage ⇄ QD interlock is waiting (5.0). */
+export type TowerInterlock = 'NONE' | 'CARRIAGE_HELD' | 'QD_HELD';
 export type TransporterState = 'IDLE' | 'LOADING' | 'MOVING' | 'WIND_HOLD' | 'AT_PAD' | 'RETURNING';
 export type CraneState = 'IDLE' | 'LIFTING';
 /** Picket: PATROL → INTERCEPT → ESCORT → RETURNING → PATROL (DOCKED unused in the MVP). Recovery: ON_STATION.
@@ -240,10 +244,28 @@ export interface ShipFields {
   engines: Engines;
   flight: ShipFlight | null;
 }
+/**
+ * Tower mechanisms (5.0): render drives `TOWER_Carriage` (trans, m), `TOWER_ArmL/R` (rot, rad) and `TOWER_QDArm`
+ * (rot, rad) directly from these. Heights are above the tower base; angles use the asset signs (ASSETS_GUIDE).
+ */
 export interface TowerFields {
   fsm: FsmState<TowerState>;
+  /** Arms target (OPEN ⇄ CLOSED, `ArmsChanged`); the angles below follow at `tower.arms.rateRadPerS`. */
   arms: ArmsState;
   task: TaskProgress | null;
+  /** `TOWER_Carriage` height, m (25–135). */
+  carriageM: number;
+  /** Where the carriage is going, m; reached at `tower.carriage.speedMPerS` unless the interlock holds it. */
+  carriageTargetM: number;
+  /** `TOWER_ArmL` angle, rad: 0 closed → +openRad open. */
+  armLRad: number;
+  /** `TOWER_ArmR` angle, rad: 0 closed → −openRad open. */
+  armRRad: number;
+  /** QD arm state; engaged while a ship is stacked on this tower's pad, retracted at liftoff. */
+  qd: QdArmState;
+  /** `TOWER_QDArm` angle, rad: 0 stowed → engagedRad (π/2) on the ship. */
+  qdArmRad: number;
+  interlock: TowerInterlock;
 }
 export interface PadFields {
   /** Booster standing on the mount. */

@@ -106,6 +106,7 @@ tick N+1:  1 applyCommands   (validated; rejected → CommandRejected event; acc
            6 logistics       (road closure, tanker orders/routes/gate/offload)
            7 propellant      (transfers farm↔vehicle, boil-off, topping, detank) — mass-conserving
            8 flight          (scripted profile, catch model, decision, outcome)
+          8b tower           (carriage / catch arms / ship QD arm toward targets, carriage ⇄ QD interlock — 5.0)
            9 anomalies       (director + seeded rolls per exposure — rng:'director' / 'anomaly')
           9b economy         (books this tick's events: fees, contract, recovery, wear, debrief)
           10 bookkeeping     (tick++; RenderSnapshot write in 5.2)
@@ -153,6 +154,11 @@ type SimEvent =
   | { t: 'DetankCompleted'; tick; countdownId; returnedKg: {LOX, CH4}; lostKg: {LOX, CH4} }
   // 3.5 prep · 3.6 flight
   | { t: 'ArmsChanged'; tick; id; from: 'OPEN' | 'CLOSED'; to: 'OPEN' | 'CLOSED' }
+  // 5.0 tower mechanisms (heights m above the tower base)
+  | { t: 'CarriageTargetSet'; tick; id; fromM; toM }
+  | { t: 'CarriageArrived'; tick; id; atM }
+  | { t: 'QdArmChanged'; tick; id; from: QdArmState; to: QdArmState }
+  | { t: 'TowerInterlockChanged'; tick; id; from: TowerInterlock; to: TowerInterlock; carriageM }
   | { t: 'FlightEvent'; tick; countdownId; id; kind: 'booster' | 'ship'; event: FlightEventName; altitudeM; speedMPerS }
   | { t: 'EnginesChanged'; tick; id; lit; failed }
   | { t: 'RecoveryCommitted'; tick; countdownId; boosterId; mode: 'CATCH' | 'DIVERT'; by: 'PLAYER' | 'AUTO' | 'FORCED'; p }
@@ -188,7 +194,13 @@ export interface Booster extends Base<'booster'> {
   wear: number; flights: number; history: HistoryEntry[];
 }
 export interface Ship extends Base<'ship'> { fsm: FsmState<ShipState>; prop: Booster['prop']; payloadKg: number }
-export interface Tower extends Base<'tower'> { fsm: FsmState<TowerState>; arms: { angleRad: number; target: 'OPEN' | 'CLOSED' }; carriageM: number }
+export interface Tower extends Base<'tower'> {     // as built 5.0 (src/sim/types.ts TowerFields)
+  fsm: FsmState<TowerState>; arms: 'OPEN' | 'CLOSED'; task: TaskProgress | null;
+  carriageM: number; carriageTargetM: number;      // TOWER_Carriage trans, m above the tower base (25–135)
+  armLRad: number; armRRad: number;                // TOWER_ArmL 0 → +40°, TOWER_ArmR 0 → −40° (0 = closed), rad
+  qd: 'STOWED' | 'ENGAGING' | 'ENGAGED' | 'RETRACTING'; qdArmRad: number;   // TOWER_QDArm 0 → π/2, rad
+  interlock: 'NONE' | 'CARRIAGE_HELD' | 'QD_HELD';
+}
 export interface Tank extends Base<'tank'> { fluid: 'LOX' | 'CH4' | 'LN2'; massKg: number; capKg: number; boilOffKgPerS: number }
 export interface Tanker extends Base<'tanker'> { fluid: 'LOX' | 'CH4'; fsm: FsmState<TankerState>; cargoKg: number; route: RouteState }
 export interface Transporter extends Base<'transporter'> { fsm: FsmState<TransporterState>; cargo: Id | null; route: RouteState }
@@ -279,7 +291,7 @@ stateDiagram-v2
 |---|---|---|
 | Booster `B-` | IN_YARD → ON_TRANSPORTER → STACKING → STACKED → LOADING → LOADED → ASCENT → BOOSTBACK → DESCENT → CAUGHT_SAFING (→ REFURB → IN_YARD, post-MVP) | DIVERTED → LOST, LOST; LOADING/LOADED → DETANKING → STACKED (scrub) |
 | Ship `S-` | IN_YARD → ON_TRANSPORTER → STACKING → STACKED → LOADING → LOADED → ASCENT (attached) → SEPARATED → SECO → OFF_SCENE (despawn) | DETANKING, LOST |
-| Tower `TOWER-` | IDLE → STACKING → IDLE → CATCH_READY → CATCHING → IDLE | STACKING ⇄ WIND_HOLD; DAMAGED; arms OPEN ⇄ CLOSED (`ArmsChanged`; the closing motion is a render animation) |
+| Tower `TOWER-` | IDLE → STACKING → IDLE → CATCH_READY → CATCHING → IDLE | STACKING ⇄ WIND_HOLD; DAMAGED; arms OPEN ⇄ CLOSED (`ArmsChanged`; the angles move in the sim, §7.9); QD arm STOWED → ENGAGING → ENGAGED → RETRACTING → STOWED (`QdArmChanged`) |
 | Transporter `SP-` | IDLE → LOADING → MOVING → AT_PAD → RETURNING → IDLE (MVP: SP-41 parks at the yard pickup) | WIND_HOLD (from MOVING / RETURNING) |
 | Crane `CR-` | IDLE → LIFTING → IDLE (one timed task, `craneLoadTaskS`) | — (no crane wind limit in BALANCING) |
 | Tanker `LX-`/`MX-` | OFFMAP → INBOUND → GATE_WAIT → OFFLOADING → OUTBOUND → OFFMAP | GATE_WAIT held while pad hazard closed (≥ T-00:40:00) |
@@ -396,6 +408,24 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   cases from 6 snapshots), `scripts/sim/anomaly-sweep.ts` (AC 3, 200 full runs × 2 policies, not part of
   `npm run test`: ~4 min on 4 cores).
 
+### 7.9 Tower mechanisms (5.0, `src/sim/systems/tower.ts`, `src/sim/math/tower.ts`, `src/data/tower.ts`)
+
+- **State** (TowerFields): `carriageM` / `carriageTargetM` (m above the tower base), `armLRad` / `armRRad`, `qd` +
+  `qdArmRad`, `interlock`. Render drives `TOWER_Carriage` / `TOWER_ArmL` / `TOWER_ArmR` / `TOWER_QDArm` straight from
+  them (asset signs: L +, R −; QD 0 stowed → π/2 engaged). Each moves toward its target at `tower.{carriage.speedMPerS,
+  arms.rateRadPerS, qdArm.rateRadPerS}` in slot 8b, landing exactly on the target.
+- **Carriage height = pin height** (ASSETS_GUIDE sockets): booster stack `mountDeckM + boosterCatchPinM` = 86 m (=
+  rest), ship stack `mountDeckM + booster.heightM + shipLiftPinM` = 135 m, catch `catchPoint.y + boosterCatchPinM` =
+  126 m (booster origin at the CATCH altitude 60 m). Prep sets the stack target at stack start (`CarriageTargetSet`),
+  a committed CATCH sets 126 m, the catch snaps the carriage there if the hoist was still moving.
+- **QD arm**: target = engaged while a ship of a countdown served by the tower is STACKED / LOADING / LOADED /
+  DETANKING; it therefore swings in after the ship stack and retracts at liftoff.
+- **Interlock** (TOWER as-built): while `qd ≠ STOWED` the carriage stops on the `[keepOutLoM, keepOutHiM]` = 92–106 m
+  band edge (`CARRIAGE_HELD`); the QD arm does not leave STOWED while the carriage is strictly inside the band
+  (`QD_HELD`). QD runs before the carriage each tick, so "QD out ⇒ carriage outside the band" holds at every tick
+  (unit tests + the fast-check property suite). Changes emit `TowerInterlockChanged`.
+- Save schema 2 (migration 1 → 2 infers the mechanism state from the stack / flight progress).
+
 ### 7.7 Economy, contract, debrief (3.8, `src/sim/systems/economy.ts`)
 
 - Runs last before bookkeeping and books **this tick's events** (`eventsThisTick`): `DeliveryOrdered.feeCr` →
@@ -455,7 +485,7 @@ interface FuelxDebug {
 
 ## 10. Save / load
 
-- `save = { format: 'fuelx-save', schema: 1, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream`.
+- `save = { format: 'fuelx-save', schema: 2, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream`.
 - Storage: IndexedDB (thin in-house wrapper, store `saves`, keys `auto-<n>`, `slot-<n>`), plus export/import as `.fuelx.json.gz` file. Autosave on `Milestone` (debrief = natural save point, GDD §3) and on `visibilitychange → hidden`.
 - **Versioning**: `schema` is an integer bumped on any `World` shape change; `src/sim/save/migrations.ts` holds `migrations[n]: (w_n) => w_{n+1}`, applied in order on load. Each migration ships with a fixture save under `tests/fixtures/saves/schema-<n>.json` and a test (load old fixture → migrate → validate → run 100 ticks without error). Saves newer than the app are rejected with a clear message.
 - Equivalence test: run K ticks → save → load → M ticks ≡ K+M ticks (canonical-JSON hash).
@@ -463,7 +493,7 @@ interface FuelxDebug {
 - **Implementation (3.10)**: `src/sim/save/save.ts` — `createSave(world, { game, createdAt, commandLog? })` (canonical
   JSON; `createdAt` comes from the host, the sim has no clock) and `loadSave(json, migrations?)` → `{ world, commandLog,
   game, createdAt, fromSchema }`; errors are codes `SAVE_NOT_JSON`, `SAVE_BAD_FORMAT`, `SAVE_FROM_NEWER_GAME`,
-  `SAVE_MIGRATION_MISSING`, `WORLD_INVALID`. `src/sim/save/migrations.ts` — `MIGRATIONS` (empty at schema 1) +
+  `SAVE_MIGRATION_MISSING`, `WORLD_INVALID`. `src/sim/save/migrations.ts` — `MIGRATIONS` (1 → 2: tower mechanisms, 5.0) +
   `migrateWorld(raw, from, to, table)`. Fixture `tests/fixtures/saves/schema-1.json` (seed 42 at sim tick 540 000, under
   the A3 LEAK_FIX hold), written once by `scripts/sim/make-save-fixture.ts`. Compression / IndexedDB stay in
   `src/app/persistence` (8.3).

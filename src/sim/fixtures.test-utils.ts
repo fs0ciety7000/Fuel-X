@@ -1,10 +1,11 @@
 // Test factories shared by the system tests (not part of the public sim API).
-import { countdown as cdData, lc1Layout } from '@data/index';
+import { countdown as cdData, lc1Layout, tower as td } from '@data/index';
 import { entitiesOfKind } from './core/entities';
 import type { SimEvent } from './core/events';
 import { LIVE_CONFIG, createWorld } from './core/world';
 import type { SimConfig, World } from './core/world';
 import { createMvpFlight } from './entities/flight';
+import { CARRIAGE_STACK_SHIP_M } from './math/tower';
 import { spawnSiteLayout } from './entities/site';
 import { step } from './step';
 import type { Countdown, Entity, EntityOf, Id, Kind, Phase, PollId } from './types';
@@ -43,6 +44,16 @@ export function mvpSetup(opts: MvpOptions = {}): MvpSetup {
     cd.phase.state = 'Stack';
     const prep = world.prep[cd.id];
     if (prep) prep.stackRequested = true;
+    // Tower as left by the ship stack: carriage on the ship lift pins, QD arm on the ship.
+    const t = world.entities.byId[prep?.towerId ?? ''];
+    if (t?.kind === 'tower') {
+      Object.assign(t, {
+        carriageM: CARRIAGE_STACK_SHIP_M,
+        carriageTargetM: CARRIAGE_STACK_SHIP_M,
+        qd: 'ENGAGED',
+        qdArmRad: td.qdArm.engagedRad,
+      });
+    }
     // Past the van departure mark the crews are already at the safe area.
     if ((opts.startTS ?? cdData.scenarioStartTS) >= cdData.crew.vanDepartTS) {
       for (const v of entitiesOfKind(world, 'van')) {

@@ -25,6 +25,7 @@ describe('step pipeline', () => {
       'logistics',
       'propellant',
       'flight',
+      'tower',
       'anomalies',
       'economy',
       'bookkeeping',

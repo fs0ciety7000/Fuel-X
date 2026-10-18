@@ -19,9 +19,11 @@ import type {
   Phase,
   PollId,
   Propellant,
+  QdArmState,
   SiteId,
   Station,
   Tick,
+  TowerInterlock,
 } from '../types';
 import type { CommandType } from './commands';
 import type { AnomalySource, ContractStatus, DebriefOutcome, LedgerItem, World } from './world';
@@ -102,6 +104,11 @@ export type SimEvent =
   | { t: 'RoadClosureChanged'; tick: Tick; siteId: SiteId; closed: boolean }
   // Prep (3.5) and recovery (3.6)
   | { t: 'ArmsChanged'; tick: Tick; id: Id; from: ArmsState; to: ArmsState }
+  // Tower mechanisms (5.0): heights in m above the tower base
+  | { t: 'CarriageTargetSet'; tick: Tick; id: Id; fromM: number; toM: number }
+  | { t: 'CarriageArrived'; tick: Tick; id: Id; atM: number }
+  | { t: 'QdArmChanged'; tick: Tick; id: Id; from: QdArmState; to: QdArmState }
+  | { t: 'TowerInterlockChanged'; tick: Tick; id: Id; from: TowerInterlock; to: TowerInterlock; carriageM: number }
   // Flight (3.6)
   | {
       t: 'FlightEvent';

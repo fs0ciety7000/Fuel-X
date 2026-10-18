@@ -13,5 +13,6 @@ export * from './propellant';
 export * from './site-lc1';
 export * from './stations';
 export * from './time';
+export * from './tower';
 export * from './vehicles';
 export * from './weather';

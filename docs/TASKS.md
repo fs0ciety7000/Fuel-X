@@ -52,7 +52,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] ⛳ **Gate 4** approved — Blender preview renders + lineup
 
 ## Phase 5 — Scene
-- [ ] 5.0 Sim follow-up from TOWER as-built (ASSETS_GUIDE): keep the tower carriage out of 92–106 m while the QD arm is engaged — **simulation-engineer**
+- [x] 5.0 Sim follow-up from TOWER as-built (ASSETS_GUIDE): keep the tower carriage out of 92–106 m while the QD arm is engaged — **simulation-engineer** · done: `src/sim/systems/tower.ts` carriage / arms / QD state at data rates (BALANCING §14, flagged for review), interlock both ways, carriage = pin height (86 / 135 / 126 m), save schema 2 (ARCHITECTURE §7.9)
 - [ ] 5.0b Sim/data follow-up from BOOSTER/SHIP as-built: catch pins are 66 m above the booster origin, so `flightProfile` CATCH altitude 60 m (booster origin) means carriage at 126 m (not the 86 m rest, which is the on-mount pin height); ship stacking = carriage 135 m. Confirm the convention in `site-lc1.catchPoint` — **simulation-engineer** + **game-designer**
 - [ ] 5.1 R3F canvas (`frameloop="never"`, driven by app loop), lights, fog/haze from tokens, adaptive DPR — **three-graphics-engineer** ← 2.6
 - [ ] 5.2 GameLoop + SimHost + RenderSnapshot + RenderSync with interpolation; floating origin — ← 3.9, 5.1

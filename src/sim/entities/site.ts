@@ -1,5 +1,5 @@
 // Entity factories: spawn the LC-1 layout (GDD §13.1) with kind-specific start fields from src/data.
-import { lc1Layout, logistics, propellant, vehicles } from '@data/index';
+import { lc1Layout, logistics, propellant, tower as towerData, vehicles } from '@data/index';
 import type { Fluid, Placement, Propellant } from '@data/index';
 import { spawnEntity } from '../core/entities';
 import type { EntitySpec } from '../core/entities';
@@ -98,7 +98,20 @@ function specFor(world: World, p: Placement): AnyEntitySpec {
       } satisfies EntitySpec<'tanker'>;
     }
     case 'tower':
-      return { ...b, kind: 'tower', fsm: fsm('IDLE'), arms: 'OPEN', task: null } satisfies EntitySpec<'tower'>;
+      return {
+        ...b,
+        kind: 'tower',
+        fsm: fsm('IDLE'),
+        arms: 'OPEN',
+        task: null,
+        carriageM: towerData.carriage.restM,
+        carriageTargetM: towerData.carriage.restM,
+        armLRad: towerData.arms.openRad,
+        armRRad: -towerData.arms.openRad,
+        qd: 'STOWED',
+        qdArmRad: 0,
+        interlock: 'NONE',
+      } satisfies EntitySpec<'tower'>;
     case 'pad':
       return { ...b, kind: 'pad', boosterId: null } satisfies EntitySpec<'pad'>;
     case 'transporter':

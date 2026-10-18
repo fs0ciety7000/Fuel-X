@@ -2,9 +2,11 @@
 // load, terminal count, ascent, descent), reseeds every RNG stream with the case seed, sends random player
 // commands for 100 s of sim time and checks the invariants every tick:
 //   propellant never negative, farm tanks within [0, capacity], mass conserved before liftoff, no NaN (canonical
-//   JSON), phases monotonic except RECYCLE, money and positions finite.
+//   JSON), phases monotonic except RECYCLE, money and positions finite, tower carriage outside the QD keep-out band
+//   while the QD arm is out and within its travel.
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
+import { tower as td } from '@data/index';
 import {
   PHASES,
   canonicalStringify,
@@ -115,6 +117,12 @@ describe('sim invariants over 200 seeded cases (fast-check)', () => {
               if (e.kind === 'tank' && (e.massKg < -1e-6 || e.massKg > e.capKg + 1e-6))
                 throw new Error(`tank ${e.callSign}`);
               if (e.kind === 'tanker' && e.cargoKg < -1e-6) throw new Error(`tanker ${e.callSign}`);
+              if (e.kind === 'tower') {
+                const c = e.carriageM;
+                if (e.qd !== 'STOWED' && c > td.qdArm.keepOutLoM && c < td.qdArm.keepOutHiM)
+                  throw new Error(`carriage ${c} m in the QD band (${e.qd})`);
+                if (c < td.carriage.minM || c > td.carriage.maxM) throw new Error(`carriage ${c} m out of travel`);
+              }
             }
             if (!Number.isFinite(world.economy.moneyCr)) throw new Error('money');
           }

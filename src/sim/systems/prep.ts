@@ -16,7 +16,9 @@ import type { PrepState, World } from '../core/world';
 import { boosterFsm, craneFsm, fire, setArms, shipFsm, towerFsm, transporterFsm } from '../entities/machines';
 import { headingToQuat } from '../math/path';
 import type { Countdown, EntityOf, Id, Phase, TaskProgress } from '../types';
+import { CARRIAGE_STACK_BOOSTER_M, CARRIAGE_STACK_SHIP_M } from '../math/tower';
 import { advanceRoute, startRoute } from './motion';
+import { setCarriageTarget } from './tower';
 
 type Stage = EntityOf<'booster'> | EntityOf<'ship'>;
 type Tower = EntityOf<'tower'>;
@@ -150,6 +152,8 @@ function startStack(world: World, a: Assets, stage: Stage): void {
   const { tower, sp } = a;
   fire(world, towerFsm, tower, 'stackStart');
   tower.task = newTask(stage.id, STACK_TICKS[stage.kind]);
+  // The carriage goes to the stage's pin height on the stack (booster 86 m, ship 135 m; math/tower.ts).
+  setCarriageTarget(world, tower, stage.kind === 'booster' ? CARRIAGE_STACK_BOOSTER_M : CARRIAGE_STACK_SHIP_M);
   setArms(world, tower, 'CLOSED');
   fireStage(world, stage, 'stackStart');
   sp.cargo = null;
