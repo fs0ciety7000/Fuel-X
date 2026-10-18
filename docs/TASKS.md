@@ -51,6 +51,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [ ] ⛳ Gate 4 — Blender preview renders + lineup
 
 ## Phase 5 — Scene
+- [ ] 5.0 Sim follow-up from TOWER as-built (ASSETS_GUIDE): keep the tower carriage out of 92–106 m while the QD arm is engaged — **simulation-engineer**
 - [ ] 5.1 R3F canvas (`frameloop="never"`, driven by app loop), lights, fog/haze from tokens, adaptive DPR — **three-graphics-engineer** ← 2.6
 - [ ] 5.2 GameLoop + SimHost + RenderSnapshot + RenderSync with interpolation; floating origin — ← 3.9, 5.1
 - [ ] 5.3 Point-cloud sea + ground (dithered, GPU-animated, ≤ 300 k points) — ← 5.1
