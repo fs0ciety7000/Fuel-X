@@ -17,17 +17,25 @@ You do not do everything yourself. You **build a team first** (sub-agents + skil
 
 Use original names everywhere (the game designer owns lore & naming). Do not reuse any brand/product name from the reference.
 
-- **Scene**: coastal launch site seen from a high, slightly oblique perspective camera (narrow FOV, near-isometric feel, *not* true orthographic). Everything is matte off-white / light grey clay, soft sun shadows, light haze/fog. The sea and the scrub ground are rendered as dense **white point clouds / dithered particles**, not textured planes. The only saturated color in the whole world is **signal orange-red**: engine exhaust, selected entity, alerts, recovery-zone rings.
+- **Scene**: coastal launch site seen from a high, slightly oblique perspective camera (narrow FOV, near-isometric feel, *not* true orthographic). Everything is matte off-white / light grey clay, soft sun shadows, light haze/fog. The sea and the scrub ground are rendered as dense **white point clouds / dithered particles**, not textured planes. The only saturated color in the whole world is **the accent red** (orange-red in the video; hazard red in Fuel-X, see design direction): engine exhaust, selected entity, alerts, recovery-zone rings.
 - **Entities seen**: launch tower with "chopstick" catch arms, booster + upper stage (stacked / separated), tank farm (vertical cylinders, horizontal tanks, spherical tank), cryo tankers (trucks), transporters (SPMT-style), crawler crane, pad crew vans, range safety boats, recovery vessel, weather/WX stations, build-yard buildings (high bays, mega bay, tent hangar).
 - **Multiple sites** via a breadcrumb switcher: orbital pad (active), second pad *under construction*, suborbital test stand, build yard a few km inland. → This is the strategy layer: you expand the site.
-- **In-world labels**: tiny monospace tags pinned to entities (`TOWER-1`, `B-14`, `WX-1`, `PK-03`…), with a status glyph; the selected one turns orange. A vertical altitude scale on the left, a compass/heading tape at the bottom (e.g. `211°`).
+- **In-world labels**: tiny monospace tags pinned to entities (`TOWER-1`, `B-14`, `WX-1`, `PK-03`…), with a status glyph; the selected one turns accent red. A vertical altitude scale on the left, a compass/heading tape at the bottom (e.g. `211°`).
 - **HUD**:
-  - Top bar: logo · `Org / Region / Site ▾` breadcrumb · global search ("Search vehicles, tanks, tasks") · UTC clock · telemetry latency (`Telemetry 38 ms`) · `Range GO` badge · alerts counter (turns orange: `▲ 1 alert`) · user avatar + role (`Launch director`).
+  - Top bar: logo · `Org / Region / Site ▾` breadcrumb · global search ("Search vehicles, tanks, tasks") · UTC clock · telemetry latency (`Telemetry 38 ms`) · `Range GO` badge · alerts counter (turns accent red: `▲ 1 alert`) · user avatar + role (`Launch director`).
   - Top-left **flight card** `[LC-1 FLIGHT 7]`: next launch T-minus or "days to next launch", propellant loaded % + sparkline, stages ready `3 of 5` with segmented bar, range `GO` + sparkline.
   - Right **inspector card** for the followed entity: name, class, flight, status chip (`↑ Ascent · following`, `Landing burn`, `Caught, safing`, `On station, holding pattern`), grid of metrics (mission clock, altitude, velocity, propellant, engines lit `33 of 33`, catch arms `Open/Closed`, heading, crew/cargo, position), a progress bar (`Flight to tower catch 27.9 %`) and a small line chart (altitude km / propellant %).
-  - Bottom-right **tabbed panel**: `Vehicles · Tanks · Tasks · Range · Events`. Each row: icon, name, sub-status, one key value (`100 % prop`, `9.7 km`, `47 km/h`). Selected row highlighted in pale orange. Clicking a row focuses the camera.
+  - Bottom-right **tabbed panel**: `Vehicles · Tanks · Tasks · Range · Events`. Each row: icon, name, sub-status, one key value (`100 % prop`, `9.7 km`, `47 km/h`). Selected row highlighted with a flat pale-red tint. Clicking a row focuses the camera.
   - Bottom **countdown timeline**: `[COUNTDOWN] LC-1 · B-14 / S-31` + big `T-00:00:04` / `T+00:01:45`, a segmented phase bar with a playhead: `Rollout → Stack → Propellant load → Terminal count → Liftoff → Boostback → Tower catch → Safing`, checkboxes for done phases, half-filled glyph for the current one.
   - Vertical map controls (zoom +/−, rotate ‹ ›, frame, home, recenter).
+- **Design direction — Industrial Brutalism, "Swiss Industrial Print" mode (light)**: the HUD follows the `industrial-brutalist-ui` skill (see Phase 0). Commit to the **light** archetype only — never mix in the dark CRT/terminal mode. Concretely, this *overrides* the softer look of the reference video:
+  - Matte unbleached-paper substrate (`#F4F4F0` / `#EAE8E3`), carbon-ink foreground (`#0A0A0A`–`#111111`), **one single accent: hazard red** (`#E61919` / `#FF2A2A`), used identically in the HUD and in 3D (exhaust core, selection, alerts, recovery rings). No other hue.
+  - **No border-radius, no gradients, no soft drop shadows, no glassmorphism/translucency.** Panels are opaque, compartmentalized by 1–2 px rules; use the `display:grid; gap:1px` trick on a contrasting parent for razor-thin dividers.
+  - **Bimodal type**: monospace micro-type (JetBrains Mono / IBM Plex Mono, 10–14 px, UPPERCASE, tracking 0.05–0.1em, tabular figures) for every label, call-sign, unit and value; heavy neo-grotesque macro-type (Inter Black / Archivo Black, tight negative tracking, leading ~0.9, uppercase) reserved for a few hero numbers — the countdown `T-00:00:04`, the followed vehicle's call-sign, phase name on transitions.
+  - Syntax decoration as structure: `[ LC-1 FLIGHT 7 ]`, `>>>`, `///`, crosshairs `+` at grid intersections, `REV`/`UNIT` stamps, barcode / warning-stripe accents on alerts and hazard zones.
+  - Analog texture: one global, **static** low-opacity noise overlay on the DOM; halftone / 1-bit dithering is welcome and fits the point-cloud sea & ground of the 3D world (can be a cheap postprocessing pass). No scanlines (that's the dark mode).
+  - Semantic DOM for telemetry: `<data>`, `<output>`, `<dl>`, `<samp>`, `<kbd>`.
+  - The 3D scene stays matte clay monochrome so the HUD and world read as one printed technical document.
 - **Behavior**: the camera smoothly *follows* the selected entity (booster climbing, recovery ship, transporter in the yard), lerping between targets. Telemetry ticks live. Exhaust and foam particles. Booster returns and is caught by the tower arms. Logistics keep moving in the background (tankers driving to/from the tank farm, transporters rolling in the yard).
 
 # Non-negotiable principles
@@ -55,7 +63,7 @@ Create these **sub-agents** in `.claude/agents/<name>.md` (frontmatter: `name`, 
 | `simulation-engineer` | `src/sim/**` (or equivalent) + tests | Deterministic fixed-step sim, state machines (countdown, vehicles, logistics), simplified flight physics, event bus, save/load, time scale. No three.js imports. |
 | `blender-technical-artist` | `blender/**`, `docs/ASSETS_GUIDE.md`, `public/models/**` | Procedural bpy modeling, naming/pivots/sockets, LODs, GLB export, Blender preview renders. |
 | `three-graphics-engineer` | `src/render/**` | Scene, camera rig, lighting, point-cloud sea/terrain, particles (exhaust, foam, steam), instancing, postprocessing, labels anchoring, perf. |
-| `ui-design-system` | `docs/DESIGN_SYSTEM.md`, tokens, `src/ui/**` | Tokens, typography, components (cards, chips, tables, timeline, sparkline, tabs), accessibility, density. |
+| `ui-design-system` | `docs/DESIGN_SYSTEM.md`, tokens, `src/ui/**` | Tokens, typography, components (cards, chips, tables, timeline, sparkline, tabs), accessibility, density. Must load and apply the `industrial-brutalist-ui` skill (Swiss Industrial Print mode) for every UI decision. |
 | `qa-perf` | `tests/e2e/**`, `docs/QA.md` | Playwright visual snapshots, FPS / draw-call / memory budgets, sim determinism tests, regression checks. Reviews every PR-sized change. |
 
 Add others only if justified (e.g. `audio-designer` later). Agents run in parallel when their work is independent (e.g. game-designer + architect + design-system in Phase 1).
@@ -64,7 +72,8 @@ Create these **project skills** in `.claude/skills/<skill>/SKILL.md` (frontmatte
 
 - `blender-asset-pipeline` — create/modify an asset: bpy script template, run headless, export GLB, optimize (gltf-transform: dedup, prune, weld, meshopt/Draco, texture compression), generate typed component (gltfjsx or equivalent), render a preview PNG, validate against the asset checklist. One command per asset, e.g. `npm run asset -- tower`.
 - `add-entity` — end-to-end recipe to add a new game entity: sim definition → asset → render component → UI row/inspector → tests.
-- `design-tokens` — how to use/extend tokens; forbids hard-coded colors/sizes in components.
+- `industrial-brutalist-ui` — **import, don't rewrite**: copy the existing skill from `~/Code/phant0mhex/.agents/skills/industrial-brutalist-ui` into `.claude/skills/industrial-brutalist-ui/` (if that path is not reachable in this environment, ask me to provide it rather than inventing a substitute). Add a short project addendum at the end of its `SKILL.md`: "Fuel-X uses Swiss Industrial Print (light) only; the 3D scene must match the substrate and accent tokens; noise overlay must be static (perf)."
+- `design-tokens` — how to use/extend tokens (derived from `industrial-brutalist-ui`); forbids hard-coded colors/sizes, `border-radius`, shadows and gradients in components.
 - `sim-testing` — how to write deterministic sim tests (seeded RNG, fixed dt, golden snapshots of a full launch timeline).
 - `visual-check` — launch the app, drive it with Playwright to a given state (e.g. `T+00:01:45`, entity `B-14` followed), screenshot, compare.
 - `perf-audit` — measure FPS, draw calls, triangles, GPU memory, bundle size against the budget in ARCHITECTURE.md.
@@ -104,17 +113,19 @@ Also: `docs/BALANCING.md` (tunable numbers in data files, not code), naming/lore
 - **Performance budget**: target 60 fps on a mid-range laptop iGPU at 1080p; max draw calls, triangles on screen, per-asset tri/size budget, texture budget, JS bundle budget, sim tick cost.
 - Repo layout & scripts.
 
-### 1c. `ui-design-system` → `docs/DESIGN_SYSTEM.md`
-- Tokens (CSS variables / theme): neutral greyscale ramp (off-white canvas, translucent white panels with subtle border + shadow), **one accent** signal orange-red + its pale tint for selection, semantic success/warn/danger, text tones.
-- Typography: a technical monospace for labels, numbers, call-signs and timers (tabular figures), a clean grotesk for prose if needed; type scale optimized for dense data.
+### 1c. `ui-design-system` → `docs/DESIGN_SYSTEM.md` (applies `industrial-brutalist-ui`, Swiss Industrial Print mode)
+- Tokens (CSS variables / theme, also exported as TS constants for the 3D materials): paper substrate, a short ink/grey ramp for clay shading and rules, **one accent** hazard red + a flat (opaque) pale tint for the selected row, semantic states expressed with ink + red + glyphs/stripes rather than extra hues (decide and justify how "warn" differs from "danger" without adding a color). Radius = 0, shadow = none.
+- Typography: monospace micro-type for labels, numbers, call-signs (tabular figures, uppercase, tracked); heavy grotesk macro-type for the countdown and hero call-sign; type scale for dense data; `clamp()` only on macro-type.
+- Grid: a blueprint grid for the HUD frame (named areas for top bar, flight card, inspector, tabbed panel, timeline), crosshair marks at intersections.
 - Components spec: top bar, breadcrumb site switcher, search, status badge (`Range GO`), alert counter, flight card, metric tile + sparkline, segmented progress, inspector card, status chip, tabbed list, list row, countdown timeline with phase segments & playhead, map controls, in-world label tag, altitude scale, compass tape, toasts/events.
-- Rules: 3D world stays monochrome; orange = attention/selection/thrust only; numbers never jitter in width; panels are `pointer-events: none` containers with interactive children.
-- Motion: camera and value transitions eased, no bouncy UI.
+- Rules: 3D world stays monochrome; red = attention/selection/thrust only; numbers never jitter in width; panels are `pointer-events: none` containers with interactive children; WCAG AA contrast on the paper substrate.
+- Motion: mechanical, not bouncy — stepped/linear value updates, hard cuts or short eased camera moves; a brief "print/stamp" treatment on phase changes is allowed.
+- Deliver a static `/design` route (or Storybook, architect's call) showing every token and component in isolation, screenshotted by `visual-check`.
 
 ### 1d. `blender-technical-artist` → `docs/ASSETS_GUIDE.md`
 - Units (1 BU = 1 m), real-ish dimensions table for every asset, origin at ground contact, forward axis, Z-up in Blender / Y-up export.
 - Node naming contract with code (e.g. `TOWER_Base`, `TOWER_ArmL`, `TOWER_ArmR`, `BOOSTER_Engines`, `SOCKET_Exhaust`, `SOCKET_Label`, `SOCKET_CatchPoint`, `TRANSPORTER_Wheel_*`). Empties as sockets for particles/labels/attachments. Animated parts as separate nodes with correct pivots.
-- Material contract: a tiny shared palette of named materials (`MAT_Clay`, `MAT_ClayDark`, `MAT_Metal`, `MAT_Glass`, `MAT_Accent`), no per-asset textures by default; optional baked AO.
+- Material contract: a tiny shared palette of named materials (`MAT_Clay`, `MAT_ClayDark`, `MAT_Metal`, `MAT_Glass`, `MAT_Accent`) whose colors come from the design tokens (paper/ink/hazard red), no per-asset textures by default; optional baked AO. Blender preview renders use the same substrate color as background so they can sit directly in the UI catalog.
 - LODs, tri budgets per asset, export settings, optimization steps, preview render settings (turntable, consistent lighting matching the game look).
 - Asset list for the MVP with priority order.
 
