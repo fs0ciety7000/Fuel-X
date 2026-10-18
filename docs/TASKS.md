@@ -16,7 +16,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] DESIGN_SYSTEM — **ui-design-system**
 - [x] ASSETS_GUIDE (optimizer chain verified, socket rules) — **blender-technical-artist**
 - [x] Consolidation: paths aligned (tokens JSON, asset scripts, codegen), skill `blender-asset-pipeline` updated, template uses root empty
-- [x] ⛳ **Gate 1** approved (2026-10-18). Decisions: stack as ADR 0001–0007 · accent-text `#B23B0B` · pause always available (MVP) · failed catch shown in debrief only (MVP) · ≥1 anomaly per run OK · English UI, i18n-ready · reference HW = iGPU 1080p, Chrome/Edge first · **deploy on self-hosted Coolify** (`coolify.fs0ciety.org`, ADR 0008 rewritten; app domain TBD)
+- [x] ⛳ **Gate 1** approved (2026-10-18). Decisions: stack as ADR 0001–0007 · accent-text `#B23B0B` · pause always available (MVP) · failed catch shown in debrief only (MVP) · ≥1 anomaly per run OK · English UI, i18n-ready · reference HW = iGPU 1080p, Chrome/Edge first · **deploy on self-hosted Coolify** (`coolify.fs0ciety.org`, ADR 0008 rewritten; app domain `fuelx.fs0ciety.org`)
 
 ## Phase 2 — Scaffold
 - [x] 2.1 `package.json` with pinned versions from ARCHITECTURE §1, Vite 2 entries (`index.html`, `design.html`), TS strict configs, path aliases (`@sim`, `@data`, `@bridge`, `@render`, `@ui`, `@tokens`, `@app`) — **systems-architect**
@@ -25,7 +25,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] 2.4 Token pipeline: `src/tokens/tokens.ts` from DESIGN_SYSTEM §2 → `generated/tokens.css` + `tokens.json` (sRGB + linear); `tokens --check` in lint — **ui-design-system** ← 2.1
 - [x] 2.5 Empty module skeleton per ARCHITECTURE §12 with one boundary-violation test proving lint fails — **systems-architect** ← 2.2
 - [x] 2.6 All npm scripts of the contract exist and pass on the empty app (`dev`, `build`, `preview`, `test`, `typecheck`, `lint`, `e2e`, `asset`, `assets`, `perf`, `tokens`); `docs/QA.md` created — **qa-perf** ← 2.1–2.5
-- [ ] ⛳ **Gate 2** — green checks + blank paper canvas + `/design` page showing tokens (`docs/screens/phase2-*.png`)
+- [x] ⛳ **Gate 2** approved — — green checks + blank paper canvas + `/design` page showing tokens (`docs/screens/phase2-*.png`)
 
 ## Phase 3 — Simulation core (headless, no 3D)
 - [ ] 3.1 Core: world, integer ticks @30 Hz, sfc32 RNG streams, FSM helper, event bus, command queue, canonical serialize — **simulation-engineer**
