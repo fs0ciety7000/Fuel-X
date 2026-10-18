@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npm test*)",
+      "Bash(npm ci*)",
+      "Bash(npm install*)",
+      "Bash(npx gltf-transform *)",
+      "Bash(npx gltfjsx *)",
+      "Bash(npx playwright test*)",
+      "Bash(npx tsc*)",
+      "Bash(npx vitest*)",
+      "Bash(blender -b *)",
+      "Bash(blender --version)",
+      "Bash(scripts/install-blender.sh)",
+      "Bash(scripts/session-start.sh)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ],
+    "deny": [
+      "Bash(npx playwright install*)",
+      "Bash(git push --force*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/session-start.sh",
+            "timeout": 600
+          }
+        ]
+      }
+    ]
+  }
+}

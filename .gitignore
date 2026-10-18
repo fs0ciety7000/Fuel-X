@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.next/
+*.blend1
+test-results/
+playwright-report/
