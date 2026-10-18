@@ -30,8 +30,8 @@ Vehicle class: large fully reusable two-stage methane/LOX rocket, tower-caught b
 | Class | L × W × H (m) | Notes | Phase |
 |---|---|---|---|
 | `TOWER` | 13 × 13 × 146 | Square lattice 0–135 m, gantry + lightning mast to 146. Arms ~36 m long, hinges at front corners (x = ±6.5, y = −6.5). Mount center at y = −26. | MVP |
-| `PAD` | apron 120 × 120 × 0.5; mount 30 × 30 × 20 | Launch mount: 6 legs, deck at 20 m, ring OD 18 / ID 9.5 m, flame trench below. | MVP |
-| `BOOSTER` | Ø 9 × 71 | 33 engines (13 inner gimballed, 20 outer fixed), 4 grid fins (6 × 3 m) at 64–70 m, 2 catch pins at 66 m, hot-stage ring on top (2 m). | MVP |
+| `PAD` | apron 120 × 120 × 0.5; mount 30 × 30 × 20 | Launch mount: 6 legs (hexagon r 12, none on ±Y), table 13.5–18 m, ring OD 18 / ID 9.5 m with its top (deck) at 20 m. Flame trench toward −Y (front), 10 m wide, floor at grade between 3 m berms (a below-grade cut is hidden by the terrain plane). | MVP |
+| `BOOSTER` | Ø 9 × 71 | 33 engines (3 + 10 inner gimballed, 20 outer fixed), 4 grid fins (6 m chord × 3 m span, horizontal lattice) hinged at 68.4 m — above the catch arms, ±30° never reaches them —, 2 catch pins at 66 m (pin lower face = contact plane), hot-stage ring 69–71 m. | MVP |
 | `SHIP` | Ø 9 × 52 | 6 engines (3 SL gimballed, 3 vac fixed), 2 fore flaps (≈ 8 × 3 m), 2 aft flaps (≈ 10 × 4 m), 2 lift pins at 44 m, heat-shield side darker. | MVP |
 | `TANK_V` | Ø 6 × 28 | Vertical cryo tank, 2 m skirt, ellipsoidal head, ladder cage. Variant Ø 4.5 × 20. | MVP |
 | `TANK_H` | 22 × Ø 3.6 (top at 5.2) | Horizontal tank on 2 saddles. | MVP |
@@ -87,11 +87,15 @@ Sockets: `SOCKET_CatchPointL/R` (on the arm rails, where booster pins rest: (±5
 Why the QD hinge moved off the front face (Phase 4): stowed across the front face, the QD arm sits in the carriage/arm travel path at 100 m (the carriage passes it between booster catch ~86 m and ship stacking ~135 m). Operational rule for the sim: keep the carriage out of 92–106 m while the QD arm is engaged.
 
 ### PAD (launch mount + apron)
-`PAD_Static`; `PAD_BQD` (booster quick-disconnect hood, `trans y` 0 → −1.5 m, retracted at liftoff); `PAD_Clamps` (group, `rot` 0 → 20° outwards, cosmetic). Sockets: `SOCKET_VehicleMount` (deck center, z = 20), `SOCKET_FlameTrench` (trench exit, +Z along trench), `SOCKET_Deluge_01..04` (steam/water), `SOCKET_Label`.
+`PAD_Static`; `PAD_BQD` (empty on the ring top at (0, 4.75, 20) → `PAD_BQDGeo`; booster quick-disconnect hood against the skirt on the +Y side, `trans y` 0 → −1.5 m, retracted at liftoff); `PAD_Clamps` (empty at the deck center → `PAD_ClampsGeo`, 20 hold-down clamps every 15° with a ±30° gap at the BQD; `trans y` −0.8 → 0 m, rest 0: they drop into the ring at liftoff, cosmetic). Sockets: `SOCKET_VehicleMount` (deck center, (0, 0, 20) = BOOSTER origin), `SOCKET_FlameTrench` (trench exit (0, −48, 1), +Z along the trench toward −Y), `SOCKET_Deluge_01..04` (ring top at 45/135/225/315°, +Z up), `SOCKET_Label` (z 24), `SOCKET_Focus` (z 10).
+
+As built (4.4): one rigid `rot` cannot move 20 clamps "outwards", so `PAD_Clamps` is a single `trans` (one draw call instead of 20 animated nodes). Draw calls 6 = `PAD_Static` × 3 materials + BQD × 2 + clamps × 1.
 
 ### BOOSTER
-`BOOSTER_Static` (body, chines, hot-stage ring, outer 20 engines); `BOOSTER_EnginesGimbal` (empty at gimbal plane z = 2.5, inner 13 engines as child mesh, `rot x` and `rot z` ±8°); `BOOSTER_GridFin_01..04` (empty at fin hinge on the hull, `rot` about the radial axis ±30°, rest 0; fins at 45°/135°/225°/315°). Landing legs: **none** (tower catch).
-Sockets: `SOCKET_Exhaust` (engine plane center, pointing down), `SOCKET_Engine_01..33` (each bell exit; extras `fx_ring` = inner|outer — lets the renderer drop a plume on engine-out), `SOCKET_CatchPinL/R` (z = 66, must coincide with tower `SOCKET_CatchPointL/R` when caught), `SOCKET_ShipMount` (top of hot-stage ring), `SOCKET_BQD` (base), `SOCKET_Label`, `SOCKET_Focus` (z ≈ 35).
+`BOOSTER_Static` (body, chines, raceways, hot-stage ring, catch pins, outer 20 engines); `BOOSTER_EnginesGimbal` (empty at gimbal plane z = 2.5, `rot x` ±8°, pitch) → `BOOSTER_EnginesGimbalYaw` (empty at the same point, `rot z` ±8°, yaw) → `BOOSTER_EnginesInner` (13 engines) + `SOCKET_Engine_01..13`; `BOOSTER_GridFinMount_01..04` (static empties on the hull at 45°/135°/225°/315°, z 68.4, local +X radial) → `BOOSTER_GridFin_01..04` (`rot x` = about the radial axis, ±30°, rest 0, identity rest rotation) → `BOOSTER_GridFinGeo_01..04` (linked duplicates). Landing legs: **none** (tower catch).
+Sockets: `SOCKET_Exhaust` (engine plane center, pointing down), `SOCKET_Engine_01..33` (each bell exit, pointing down; 01–03 center, 04–13 inner ring — children of the yaw gimbal so plumes follow it —, 14–33 outer ring; extras `fx_ring` = inner|outer — lets the renderer drop a plume on engine-out), `SOCKET_CatchPinL/R` ((±5.4, 0, 66), the pin's lower face; coincides with tower `SOCKET_CatchPointL/R` when the booster sits on the mount and the carriage is at 86 m), `SOCKET_ShipMount` ((0, 0, 71) top of the hot-stage ring = SHIP origin), `SOCKET_BQD` ((0, 4.5, 1.6) on the skirt, +Z toward +Y = the pad BQD hood), `SOCKET_Label` (z 74), `SOCKET_Focus` (z 35).
+
+As built (4.4): one node carries one `fx_anim`, so two-axis gimbals are two nested empties at the same point (pitch outer, yaw inner). Animated nodes always have an identity rest rotation unless their rest is about their own animated axis — azimuth/tilt lives on a static `…Mount` parent — so render code can set `rotation[axis]` directly.
 
 ### SHIP
 `SHIP_Static` (body, nose, heat-shield side in `MAT_ClayDark`, vac engines); `SHIP_FlapFL/FR/AL/AR` (empty on the hinge line parallel to the body axis, `rot` 0° (folded, stowed) → 90° (deployed), rest 45°); `SHIP_EnginesGimbal` (3 SL engines, ±12°).
@@ -309,6 +313,8 @@ As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face list
 | Asset | Script / contract | LOD0 / LOD1 / LOD2 tris | GLB LOD0 / LOD1 / LOD2 | Draw calls | Nodes / sockets | Preview |
 |---|---|---|---|---|---|---|
 | `TOWER` | `tower.py` · `tower.contract.json` | 4 084 / 2 486 / 370 | 67 / 45 / 14 KB | 9 | 17 (9 contract nodes, 7 sockets) | `docs/assets/tower.png`, turntable ×12 |
+| `PAD` | `pad.py` · `pad.contract.json` | 1 970 / 1 004 / 562 | 29 / 19 / 14 KB | 6 | 14 (5 contract nodes, 8 sockets) | `docs/assets/pad.png` |
+| `BOOSTER` | `booster.py` · `booster.contract.json` | 6 952 / 2 608 / 756 | 58 / 33 / 19 KB | 8 | 57 (8 contract nodes, 39 sockets) | `docs/assets/booster.png` |
 | `TANK_V` | `tank_v.py` · `tank_v.contract.json` | 848 / 162 | 12.3 / 5.2 KB | 2 | 6 (`TANK_V_Body`, 4 sockets) | `docs/assets/tank_v.png` |
 | `TANK_H` | `tank_h.py` · `tank_h.contract.json` | 602 / 200 | 9.2 / 5.5 KB | 2 | 6 (`TANK_H_Body`, 4 sockets) | `docs/assets/tank_h.png` |
 | `TANK_SPHERE` | `tank_sphere.py` · `tank_sphere.contract.json` | 1 732 / 378 | 24.3 / 8.1 KB | 2 | 6 (`TANK_SPHERE_Body`, 4 sockets) | `docs/assets/tank_sphere.png` |

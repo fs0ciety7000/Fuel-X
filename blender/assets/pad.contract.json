@@ -1,0 +1,22 @@
+{
+  "asset": "PAD",
+  "file": "pad",
+  "class": "hero-structure",
+  "lods": 3,
+  "nodes": ["PAD_Static", "PAD_BQD", "PAD_BQDGeo", "PAD_Clamps", "PAD_ClampsGeo"],
+  "sockets": [
+    "SOCKET_VehicleMount",
+    "SOCKET_FlameTrench",
+    "SOCKET_Deluge_01",
+    "SOCKET_Deluge_02",
+    "SOCKET_Deluge_03",
+    "SOCKET_Deluge_04",
+    "SOCKET_Label",
+    "SOCKET_Focus"
+  ],
+  "anim": {
+    "PAD_BQD": { "kind": "trans", "axis": "y", "min": -1.5, "max": 0, "rest": 0, "unit": "m" },
+    "PAD_Clamps": { "kind": "trans", "axis": "y", "min": -0.8, "max": 0, "rest": 0, "unit": "m" }
+  },
+  "budget": { "tris": [15000, 5000, 1000], "bytes": 204800, "drawCalls": 6 }
+}
