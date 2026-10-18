@@ -40,9 +40,118 @@ export interface EntityTable {
   freeSlots: number[];
 }
 
-export interface Economy {
+export type LedgerItem =
+  | 'HAULAGE_FEE'
+  | 'PROPELLANT_PURCHASE'
+  | 'PROPELLANT_LOST'
+  | 'CONTRACT_PRICE'
+  | 'SHIP_EXPENDED'
+  | 'BOOSTER_REFURB'
+  | 'BOOSTER_LOST'
+  | 'TOWER_REPAIR'
+  | 'TOWER_DOWNTIME'
+  | 'WINDOW_MISSED'
+  | 'OPS_COST';
+
+/** One money / reputation posting (3.8). `countdownId` = the attempt it is charged to (null: none active). */
+export interface LedgerEntry {
+  tick: Tick;
+  countdownId: Id | null;
+  item: LedgerItem;
+  /** Signed, cr (negative = cost). */
+  amountCr: number;
+  /** Signed reputation points. */
+  reputationDelta: number;
+  /** Order id / call-sign the posting refers to ('' when none). */
+  ref: string;
+}
+
+/** Money, reputation and booster state when an attempt started, and where its count ended (debrief). */
+export interface AttemptStart {
+  tick: Tick;
   moneyCr: number;
   reputation: number;
+  boosterWear: number;
+  boosterFlights: number;
+  /** T-clock when the attempt was first seen, ticks. */
+  tClockTicks: Tick;
+  /** Liftoff or scrub: tick and T-clock (hold time = sim time − T-clock time between start and end). */
+  endTick: Tick | null;
+  endTClockTicks: Tick | null;
+  /** Cumulative detank loss already priced (ledger kg at the attempt start). */
+  lostKgAtStart: Record<Propellant, number>;
+  deliveredKgAtStart: Record<Propellant, number>;
+}
+
+export interface Economy {
+  moneyCr: number;
+  /** 0–100. */
+  reputation: number;
+  ledger: LedgerEntry[];
+  /** Keyed by countdown id. */
+  attempts: Record<Id, AttemptStart>;
+}
+
+export type ContractStatus = 'ACTIVE' | 'FULFILLED' | 'WINDOW_MISSED';
+
+export interface ContractState {
+  id: string;
+  status: ContractStatus;
+  countdownId: Id;
+  /** Tick of fulfilment (ship SECO) or of the miss. */
+  closedTick: Tick | null;
+}
+
+export type DecisionBy = 'PLAYER' | 'AUTO' | 'FORCED';
+
+/** One entry of the timestamped decision log (AC 22). `detail` is a compact machine string for the UI. */
+export interface DecisionEntry {
+  tick: Tick;
+  /** T-clock at the decision (negative before liftoff), ticks. */
+  tClockTicks: Tick;
+  kind: string;
+  detail: string;
+  by: DecisionBy;
+}
+
+export type DebriefOutcome = 'CAUGHT' | 'DIVERTED' | 'CATCH_FAILED' | 'SCRUBBED';
+
+/** Debrief data, built when the attempt enters Debrief (GDD §4.9, §9, AC 22). SI / cr. */
+export interface Debrief {
+  countdownId: Id;
+  flightName: string;
+  contractId: string;
+  outcome: DebriefOutcome;
+  contractStatus: ContractStatus;
+  readyTick: Tick;
+  liftoffTick: Tick | null;
+  /** Sim time spent with the T-clock stopped before liftoff (holds), s. */
+  holdS: number;
+  moneyStartCr: number;
+  moneyEndCr: number;
+  moneyDeltaCr: number;
+  reputationStart: number;
+  reputationEnd: number;
+  reputationDelta: number;
+  /** Postings charged to this attempt, summed per item, in first-posting order. */
+  lines: { item: LedgerItem; amountCr: number; reputationDelta: number }[];
+  booster: {
+    id: Id;
+    callSign: string;
+    state: string;
+    enginesOut: number;
+    wearBefore: number;
+    wearAfter: number;
+    flightsBefore: number;
+    flightsAfter: number;
+  };
+  towerState: string;
+  recovery: { mode: string; result: string; p: number; roll: number | null; decidedBy: string } | null;
+  propellant: { deliveredKg: Record<Propellant, number>; lostKg: Record<Propellant, number> };
+  anomalies: AnomalyRecord[];
+  decisions: DecisionEntry[];
+  /** Until the pad and booster can fly again: refurb (caught), tower repair (damaged), 0 otherwise, s. */
+  turnaroundS: number;
 }
 
 /** Cumulative propellant accounting per fluid, kg (mass-conservation checks, debrief). */
@@ -184,6 +293,12 @@ export interface World {
   /** One per flight attempt; iterate with `countdownIds()` (sorted), never raw key order. */
   countdowns: Record<Id, Countdown>;
   economy: Economy;
+  /** Contract states by contract id (3.8). */
+  contracts: Record<string, ContractState>;
+  /** Timestamped decision log per countdown id (3.8). */
+  decisions: Record<Id, DecisionEntry[]>;
+  /** Debrief per countdown id, set on entering Debrief (3.8). */
+  debriefs: Record<Id, Debrief>;
   logistics: LogisticsState;
   weather: WeatherState;
   config: SimConfig;
@@ -232,7 +347,10 @@ export function createWorld({ seed, config }: CreateWorldOptions): World {
     sites,
     entities: { byId: {}, order: [], nextSerial: 1, nextSlot: 0, freeSlots: [] },
     countdowns: {},
-    economy: { moneyCr: economy.startMoneyCr, reputation: economy.startReputation },
+    economy: { moneyCr: economy.startMoneyCr, reputation: economy.startReputation, ledger: [], attempts: {} },
+    contracts: {},
+    decisions: {},
+    debriefs: {},
     logistics: {
       farm: { LOX: [], CH4: [], LN2: [] },
       roadClosed: false,

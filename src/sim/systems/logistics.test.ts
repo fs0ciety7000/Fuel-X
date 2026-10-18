@@ -60,7 +60,14 @@ describe('OrderDelivery (AC 7)', () => {
         feeCr: ld.delivery.standard.feeCrPerTruck,
         gateEtaTick: T(ld.delivery.standard.leadTimeS),
       },
+      // 3.8 economy charges the haulage fee in the same tick.
+      expect.objectContaining({
+        t: 'LedgerPosted',
+        item: 'HAULAGE_FEE',
+        amountCr: -ld.delivery.standard.feeCrPerTruck,
+      }),
     ]);
+    expect(world.economy.moneyCr).toBe(economy.startMoneyCr - ld.delivery.standard.feeCrPerTruck);
 
     const log: SimEvent[] = [];
     log.push(...runUntil(world, () => lx.route?.pathId === 'tanker.gateToLoxBay'));
@@ -88,12 +95,17 @@ describe('OrderDelivery (AC 7)', () => {
     expect(lx.order).toBeNull();
     expect(lx.cargoKg).toBe(0);
     expect(world.logistics.ledger.LOX.deliveredKg).toBe(ld.tanker.loxCapKg);
+    expect(world.economy.moneyCr).toBeCloseTo(
+      economy.startMoneyCr - ld.delivery.standard.feeCrPerTruck - ld.tanker.loxCapKg * economy.priceCrPerKg.LOX,
+      6,
+    );
   });
 
   it('rush: charters an extra truck with the next serial, arrives after the rush lead time, despawns', () => {
     const { world } = mvpSetup();
     const events = step(world, [{ t: 'OrderDelivery', fluid: 'CH4', rush: true }]);
-    expect(events.map((e) => e.t)).toEqual(['Spawned', 'DeliveryOrdered']);
+    expect(events.map((e) => e.t)).toEqual(['Spawned', 'DeliveryOrdered', 'LedgerPosted']);
+    expect(events[2]).toMatchObject({ item: 'HAULAGE_FEE', amountCr: -ld.delivery.rush.feeCrPerTruck });
     expect(events[0]).toMatchObject({ kind: 'tanker', callSign: 'MX-03' });
     expect(events[1]).toMatchObject({
       callSign: 'MX-03',

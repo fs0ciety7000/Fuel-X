@@ -14,6 +14,7 @@ import {
   countdownSystem,
 } from './systems/countdown';
 import { anomaliesSystem, commandLeakResponse } from './systems/anomalies';
+import { economySystem, pendingDecision, recordCommand } from './systems/economy';
 import { environmentSystem } from './systems/environment';
 import { commandCatchDecision, flightSystem } from './systems/flight';
 import { commandOrderDelivery, logisticsSystem } from './systems/logistics';
@@ -57,8 +58,10 @@ function applyCommand(world: World, cmd: Command): string | null {
 
 function applyCommandsSystem(world: World, ctx: StepContext): void {
   for (const cmd of ctx.commands) {
+    const decision = pendingDecision(world, cmd);
     const reason = applyCommand(world, cmd);
     if (reason !== null) emit(world, { t: 'CommandRejected', cmd: cmd.t, reason });
+    else recordCommand(world, decision);
   }
 }
 
@@ -78,6 +81,7 @@ function bookkeepingSystem(world: World): void {
  *  8 flight        — scripted ascent/boostback/landing, S-21 to SECO, catch model, decision, outcome
  *                    (writes stageSeparated / recoveryMode / recoveryComplete)
  *  9 anomalies     — director plan + natural rolls A1–A4 (rng 'director' / 'anomaly'), leak timers, engine-outs
+ *  9b economy      — books this tick's events: fees, purchases, contract, recovery costs, wear, debrief
  * 10 bookkeeping   — tick++ (RenderSnapshot write in 5.2)
  */
 export const SYSTEMS: readonly SimSystem[] = [
@@ -90,6 +94,7 @@ export const SYSTEMS: readonly SimSystem[] = [
   { name: 'propellant', run: propellantSystem },
   { name: 'flight', run: flightSystem },
   { name: 'anomalies', run: anomaliesSystem },
+  { name: 'economy', run: economySystem },
   { name: 'bookkeeping', run: bookkeepingSystem },
 ];
 

@@ -9,6 +9,7 @@
 import { STATION_IDS, contracts, countdown as cdData, time as timeData } from '@data/index';
 import type { PollId, TimeScale } from '@data/index';
 import { emit } from '../core/events';
+import { ensureAttempt } from './economy';
 import { defineFsm } from '../core/fsm';
 import type { FsmContext } from '../core/fsm';
 import { secondsToTicks } from '../core/time';
@@ -296,6 +297,8 @@ export function createCountdown(world: World, opts: CreateCountdownOptions): Cou
     inputs: defaultCountdownInputs(),
   };
   world.countdowns[id] = cd;
+  world.contracts[contract.id] ??= { id: contract.id, status: 'ACTIVE', countdownId: id, closedTick: null };
+  ensureAttempt(world, cd);
   return cd;
 }
 

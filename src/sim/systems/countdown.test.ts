@@ -424,7 +424,15 @@ describe('launch window', () => {
     const events = runUntil(world, () => cd.phase.state === 'Scrubbed');
     expect(world.tick - 1).toBe(cd.windowCloseTick); // scrubbed on the closing tick itself
     // The scrub also reopens the road into the hazard radius (3.4 logistics).
-    expect(types(events)).toEqual(['PhaseChanged', 'WindowMissed', 'ClockChanged', 'RoadClosureChanged']);
+    // 3.8 economy books the penalty and closes the contract in the same tick.
+    expect(types(events)).toEqual([
+      'PhaseChanged',
+      'WindowMissed',
+      'ClockChanged',
+      'RoadClosureChanged',
+      'LedgerPosted',
+      'ContractUpdated',
+    ]);
     expect(events[0]).toMatchObject({ from: 'TerminalCount', to: 'Scrubbed', trigger: 'WindowClosed' });
     expect(events[1]).toMatchObject({ contractId: 'NRL-3', penaltyCr: mvpContract.penaltyWindowMissedCr });
     expect(cd.scrubReason).toBe('WINDOW_CLOSED');

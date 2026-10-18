@@ -24,7 +24,7 @@ import type {
   Tick,
 } from '../types';
 import type { CommandType } from './commands';
-import type { AnomalySource, World } from './world';
+import type { AnomalySource, ContractStatus, DebriefOutcome, LedgerItem, World } from './world';
 
 export type SimEvent =
   | { t: 'PhaseChanged'; tick: Tick; countdownId: Id; from: Phase; to: Phase; trigger: string }
@@ -55,6 +55,20 @@ export type SimEvent =
     }
   | { t: 'LeakResponded'; tick: Tick; countdownId: Id; choice: LeakChoice }
   | { t: 'LeakCleared'; tick: Tick; countdownId: Id; by: 'FIXED' | 'LIFTOFF' }
+  // Economy and debrief (3.8)
+  | {
+      t: 'LedgerPosted';
+      tick: Tick;
+      countdownId: Id | null;
+      item: LedgerItem;
+      amountCr: number;
+      reputationDelta: number;
+      /** Balances after the posting. */
+      moneyCr: number;
+      reputation: number;
+    }
+  | { t: 'ContractUpdated'; tick: Tick; contractId: string; countdownId: Id; status: ContractStatus }
+  | { t: 'DebriefReady'; tick: Tick; countdownId: Id; outcome: DebriefOutcome; moneyDeltaCr: number }
   | { t: 'EntityStateChanged'; tick: Tick; id: Id; kind: Kind; from: string; to: string }
   | { t: 'Spawned'; tick: Tick; id: Id; kind: Kind; callSign: string }
   | { t: 'Despawned'; tick: Tick; id: Id; kind: Kind; callSign: string }

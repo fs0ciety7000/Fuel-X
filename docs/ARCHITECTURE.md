@@ -98,16 +98,17 @@ function frame(now: number) {
 ```
 UI click ──► commands.send(cmd) ──► SimHost queue ──stamp tick N+1──┐
                                                                     ▼
-tick N+1:  1 applyCommands   (validated; rejected → CommandRejected event)
-           2 environment     (weather series, sea state, forecast — rng:'weather')
-           3 contracts/economy, scheduler (deliveries, tasks, director — rng:'director')
-           4 countdown FSM   (T-clock, polls, holds, recycle/scrub, station GO/NO-GO)
-           5 vehicle FSMs    (booster, ship, tower, transporter, crane, tankers, boats, vans)
-           6 logistics/motion(path following, speeds, gate wait)
-           7 propellant      (transfers farm↔vehicle, boil-off, topping) — mass-conserving
-           8 flight dynamics (thrust, mass flow, drag, gravity; semi-implicit Euler)
-           9 anomalies       (seeded rolls per exposure — rng:'anomaly')
-          10 bookkeeping     (history samples 1 Hz, despawn, RenderSnapshot write, tick++)
+tick N+1:  1 applyCommands   (validated; rejected → CommandRejected event; accepted → decision log)
+           2 environment     (weather series, front, forecast — rng:'weather')
+           3 range           (PICKET patrols/intercepts, crew vans, 5 stations @10 Hz → countdown inputs)
+           4 countdown FSM   (T-clock, polls, holds, recycle/scrub, window)
+           5 prep            (crane, transporter, tower stacking, wind pauses)
+           6 logistics       (road closure, tanker orders/routes/gate/offload)
+           7 propellant      (transfers farm↔vehicle, boil-off, topping, detank) — mass-conserving
+           8 flight          (scripted profile, catch model, decision, outcome)
+           9 anomalies       (director + seeded rolls per exposure — rng:'director' / 'anomaly')
+          9b economy         (books this tick's events: fees, contract, recovery, wear, debrief)
+          10 bookkeeping     (tick++; RenderSnapshot write in 5.2)
                 │ events[]                       │ RenderSnapshot             │ world (read-only)
                 ▼                                ▼                            ▼
           EventBus (after batch)          RenderSync each frame       Projector ≤10 Hz → projectionStore
@@ -137,6 +138,10 @@ type SimEvent =
   | { t: 'AnomalyFired'; tick; countdownId; anomaly: AnomalyId; entityId: Id; source: 'NATURAL' | 'DIRECTOR' }
   | { t: 'LeakResponded'; tick; countdownId; choice: 'DEGRADED' | 'HOLD_FIX' }        // 3.7 A3
   | { t: 'LeakCleared'; tick; countdownId; by: 'FIXED' | 'LIFTOFF' }
+  // 3.8 economy
+  | { t: 'LedgerPosted'; tick; countdownId | null; item: LedgerItem; amountCr; reputationDelta; moneyCr; reputation }
+  | { t: 'ContractUpdated'; tick; contractId; countdownId; status: 'ACTIVE' | 'FULFILLED' | 'WINDOW_MISSED' }
+  | { t: 'DebriefReady'; tick; countdownId; outcome: 'CAUGHT' | 'DIVERTED' | 'CATCH_FAILED' | 'SCRUBBED'; moneyDeltaCr }
   | { t: 'EntityStateChanged'; tick; id: Id; kind: Kind; from: string; to: string }
   | { t: 'Spawned' | 'Despawned'; tick; id: Id; kind: Kind; callSign: string }
   | { t: 'Milestone'; tick; countdownId; name: MilestoneName }   // T-clock marks from src/data/countdown.ts
@@ -196,9 +201,11 @@ export interface World {
   sites: Record<SiteId, Site>;
   entities: { byId: Record<Id, Entity>; order: Id[]; nextSerial: number; nextSlot: number; freeSlots: number[] };
   countdowns: Record<Id, Countdown>;     // one per flight attempt; iterate sorted ids (countdownIds())
-  contracts: Record<Id, Contract>; economy: { moneyCr: number; reputation: number };
+  contracts: Record<string, ContractState>;   // by contract id (3.8)
+  economy: { moneyCr; reputation; ledger: LedgerEntry[]; attempts: Record<Id, AttemptStart> };
+  decisions: Record<Id, DecisionEntry[]>; debriefs: Record<Id, Debrief>;   // by countdown id (3.8)
   weather: WeatherState; config: SimConfig; range: Record<Id, RangeState>; anomalies: Record<Id, AnomalyState>;
-  outbox: SimEvent[];                    // contracts (3.8)
+  outbox: SimEvent[];
 }
 export type Command =
   | { t: 'StartRollout'; boosterId: Id } | { t: 'Stack'; padId: Id }
@@ -374,6 +381,24 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   `marginalRiskMultiplier` (WEATHER, VEHICLE → A4).
 - **Command** `LeakResponse { choice }` → the countdown with an active leak; rejections `NO_ACTIVE_LEAK`,
   `ALREADY_RESPONDED`, `ALREADY_FIXING`.
+
+### 7.7 Economy, contract, debrief (3.8, `src/sim/systems/economy.ts`)
+
+- Runs last before bookkeeping and books **this tick's events** (`eventsThisTick`): `DeliveryOrdered.feeCr` →
+  `HAULAGE_FEE`; `DeliveryCompleted.costCr` → `PROPELLANT_PURCHASE`; `DetankCompleted` → `PROPELLANT_LOST` (vented kg ×
+  price); `WindowMissed` → `WINDOW_MISSED` + reputation, contract `WINDOW_MISSED`; ship `SECO` → contract `FULFILLED`,
+  `CONTRACT_PRICE` + success reputation, `SHIP_EXPENDED`; booster `LIFTOFF` → `flights + 1`; `RecoveryOutcome` → wear
+  (`perNominalFlight + engineOut·failed + highWindCatch`), `BOOSTER_REFURB` (caught) or `BOOSTER_LOST` (+ `TOWER_REPAIR`,
+  `TOWER_DOWNTIME` = repair downtime × ops cost/day, reputation, on a failed catch); entering `Debrief` → `OPS_COST` for
+  the attempt's sim duration and, for a commanded scrub, `WINDOW_MISSED` (the MVP does not play the rebook).
+- Every posting: `economy.ledger` entry + `LedgerPosted` (balances after). Reputation clamped 0–100.
+- **Decision log** `world.decisions[cd]`: accepted player commands (captured pre-apply: e.g. `Go` → `POLL LOAD,
+  MARGINAL PROPELLANT`) plus automatic decisions from events (auto poll GO, AUTO/FORCED recovery, NO_GO /
+  LOAD_INCOMPLETE holds, window-closed scrub), each `{ tick, tClockTicks, kind, detail, by }`.
+- **Debrief** `world.debriefs[cd]` + `DebriefReady` on entering Debrief: outcome, contract status, money/reputation
+  start/end/delta, ledger lines summed per item, booster (wear and flights before/after, engines out, state), tower
+  state, recovery (mode, result, p, roll, decidedBy), propellant delivered/lost, anomalies, decisions, hold time,
+  turnaround (refurb / tower repair / rebook).
 
 ## 8. UI projection contract
 

@@ -35,7 +35,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] 3.5 Prep: CR-77, SP-41 rollout on paths, stacking with TOWER-1 arms, wind limits — AC 4–6 — ← 3.2
 - [x] 3.6 Flight: simplified ascent/MECO/boostback/landing profile, S-21 to SECO, catch probability model, catch/divert outcome — AC 16, 18–21 — ← 3.3
 - [x] 3.7 Range & weather: 5 stations GO/MARGINAL/NO-GO, PICKET patrols, WX series, anomaly director + pool A1–A4 — AC 3, 10, 14 — ← 3.3
-- [ ] 3.8 Economy + debrief data, contract NRL-3 fulfilment — AC 21–22 — ← 3.6
+- [x] 3.8 Economy + debrief data, contract NRL-3 fulfilment — AC 21–22 — ← 3.6
 - [ ] 3.9 Scenario `mvp` + autopilot script; **golden telemetry/event log** test; equivalence (save/load, time scale) and 200-seed property tests — AC 1–3 — **simulation-engineer** + **qa-perf** ← 3.3–3.8
 - [ ] 3.10 Save/load + migrations scaffold + fixture; sim bench in `npm run perf` within budget (§13.3) — ← 3.9
 - [ ] ⛳ Gate 3 — golden log walkthrough (text timeline of a full launch), bench numbers

@@ -26,6 +26,7 @@ describe('step pipeline', () => {
       'propellant',
       'flight',
       'anomalies',
+      'economy',
       'bookkeeping',
     ]);
     const w = createWorld({ seed: 1 });
