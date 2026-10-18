@@ -7,6 +7,8 @@ playwright-report/
 package-lock.json
 src/tokens/generated/
 public/models/
+# Upstream brand blobs (fs0ciety7000/mons-corp). Bytes are the asset; do not reformat.
+public/brand/
 docs/
 *.md
 
