@@ -16,7 +16,7 @@ Start from `template_asset.py` (next to this file). Copy it to `blender/assets/<
 - Start from an empty factory scene; build everything procedurally from helpers in `blender/lib/` (create the helper there if it's reusable: trusses, tanks, wheels, railings…).
 - 1 BU = 1 m, Z-up, origin at ground contact / logical pivot. Parameters as module-level constants (or CLI args after `--`).
 - Node names follow the contract: `<ASSET>_<Part>` for meshes, `SOCKET_<Name>` empties for attachment points (exhaust, labels, catch points, cargo). Animated parts are separate objects with their pivot at the joint.
-- Only shared materials: `MAT_Clay`, `MAT_ClayDark`, `MAT_Metal`, `MAT_Glass`, `MAT_Accent`, colors from the design tokens (`src/ui/tokens` or `docs/DESIGN_SYSTEM.md`). Matte (roughness ≈ 0.9), no textures by default.
+- Only shared materials: `MAT_Clay`, `MAT_ClayDark`, `MAT_Metal`, `MAT_Glass`, `MAT_Accent`, colors from `src/tokens/generated/tokens.json` via `blender/lib` `materials_from_tokens()`. Matte (roughness ≈ 0.9), no textures by default.
 - Apply modifiers and transforms before export; keep the triangle count within the asset's budget.
 
 ## 2. Run headless
@@ -27,10 +27,17 @@ blender -b --factory-startup -P blender/assets/<asset>.py -- --out public/models
 The exporter uses `export_yup=True` — the Z-up → Y-up conversion happens only there.
 
 ## 3. Optimize
-Run the optimizer chosen in the asset-pipeline ADR (default: `gltf-transform` — dedup, prune, weld, quantize, meshopt; Draco only if the ADR says so). Never optimize away named nodes or empties: sockets must survive.
+Use exactly this chain (ADR 0007, ASSETS_GUIDE §7 — verified by experiment):
+```bash
+gltf-transform dedup  build/models-raw/<asset>.glb t1.glb
+gltf-transform prune  t1.glb t2.glb --keep-leaves true   # sockets are empty leaves
+gltf-transform weld   t2.glb t3.glb
+gltf-transform meshopt t3.glb public/models/<asset>.glb --level medium
+```
+**Never `gltf-transform optimize`** (defaults join/flatten everything and delete sockets). No Draco, no simplify. Any node with children must be an empty — geometry only on leaf meshes (meshopt otherwise inserts unnamed nodes).
 
 ## 4. Generate the typed wrapper
-Use the tool chosen in the ADR (e.g. `gltfjsx --types` for R3F) so render code references nodes by typed name. Re-generate on every node change.
+In-house codegen (`scripts/assets/codegen.ts`, ADR 0007) reads the optimized GLB + `blender/assets/<asset>.contract.json` and emits `src/render/assets/generated/<asset>.ts` (url, LODs, node & socket names, anim ranges). It fails if a contract node is missing. No gltfjsx. Re-generate on every node change.
 
 ## 5. Preview render (Blender)
 The template renders a 1024×1024 PNG with Cycles (CPU, low samples + denoise): paper substrate background (`#F4F4F0`), soft sun from the same direction as the game, 3/4 elevated camera auto-framed on the asset bounds. Commit it in `docs/assets/`. Optionally render a 12-frame turntable for the review.

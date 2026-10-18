@@ -3,13 +3,15 @@
 A **live rocket launch site you can play like a strategy game**, in the browser. Every tower, booster, ship, tank farm, transporter and building is modeled and rendered in **Blender from Python scripts**, exported to glTF and run in **three.js**. A deterministic simulation drives the world; a control-room HUD in the *industrial brutalist — Swiss Industrial Print* style (paper, ink, one signal-orange accent) lets you direct it.
 
 - Master brief: [`PROMPT.md`](PROMPT.md) — reference description, principles, phases.
-- Design: [`docs/GDD.md`](docs/GDD.md) · Balancing: [`docs/BALANCING.md`](docs/BALANCING.md) *(Phase 1)*
-- Tech: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · Decisions: [`docs/adr/`](docs/adr/) *(Phase 1)*
-- UI: [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) · Assets: [`docs/ASSETS_GUIDE.md`](docs/ASSETS_GUIDE.md) *(Phase 1)*
-- Plan: [`docs/TASKS.md`](docs/TASKS.md) · QA: [`docs/QA.md`](docs/QA.md) *(Phase 1)*
+- Design: [`docs/GDD.md`](docs/GDD.md) · Balancing: [`docs/BALANCING.md`](docs/BALANCING.md)
+- Tech: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · Decisions: [`docs/adr/`](docs/adr/)
+- UI: [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) · Assets: [`docs/ASSETS_GUIDE.md`](docs/ASSETS_GUIDE.md)
+- Plan: [`docs/TASKS.md`](docs/TASKS.md) · QA: `docs/QA.md` *(Phase 2)*
 
 ## Status
-Phase 0 done (team, skills, tooling). Next: Phase 1 design docs → **gate with the user before any app code**.
+Phase 1 done (design docs). Waiting for **Gate 1** user approval before any app code. Live checklist: `docs/TASKS.md`.
+
+Stack (ADR 0001–0008): Vite SPA · React 19 · TypeScript strict · three (WebGL2) via R3F `frameloop="never"` · plain data-oriented sim @30 Hz on main thread behind `SimHost` · 10 Hz projection → Zustand · CSS Modules + generated CSS vars · Vitest + Playwright · Blender 4.5 → gltf-transform (dedup/prune/weld/meshopt) → in-house codegen · Cloudflare Pages.
 
 ## Commands
 The script names are a contract; the stack ADR decides what they run.
@@ -31,10 +33,12 @@ Blender headless: `blender -b --factory-startup -P blender/assets/<asset>.py -- 
 - `.claude/agents/` — sub-agents (see Workflow) · `.claude/skills/` — project skills
 - `blender/lib/` shared bpy helpers · `blender/assets/` one script per asset
 - `public/models/` generated GLB (never hand-edited) · `docs/assets/` Blender preview renders
-- `src/sim/` deterministic simulation (pure TS) · `src/data/` tunables
-- `src/render/` three.js scene · `src/ui/` HUD + tokens · `tests/e2e/` Playwright
-- `docs/` design & tech docs · `scripts/` tooling
-*(Final layout is fixed by the architecture ADR; update this map when it changes.)*
+- `src/app/` composition root (loop, SimHost, projector, bus, persistence, `window.__fuelx`) — only place wiring sim ↔ render ↔ ui
+- `src/sim/` deterministic simulation (pure TS) · `src/data/` tunables & scenarios
+- `src/bridge/` Zustand stores + command API · `src/render/` R3F scene · `src/ui/` HUD + `/design`
+- `src/tokens/` `tokens.ts` → `generated/{tokens.css,tokens.json}` (CSS, three, Blender)
+- `tests/` golden, sim, perf, fixtures, e2e · `docs/` design & tech docs · `scripts/` tooling (tokens, assets, perf)
+*(Full layout & import matrix: ARCHITECTURE §2 and §12 — boundaries enforced by ESLint.)*
 
 ## Hard rules
 1. **Sim is pure and deterministic**: `src/sim` never imports render/UI/three/React/DOM; no `Math.random()`, `Date.now()`, `performance.now()` — use the injected RNG/clock; fixed timestep; time scale = more steps, never bigger dt.

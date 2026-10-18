@@ -228,7 +228,7 @@ docs/assets/<asset>.png             preview 1024²
 docs/assets/turntable/<asset>_NN.png  optional 12-frame turntable 512²
 docs/assets/_lineup.png             all assets side by side + 1.8 m human, for scale review
 src/render/assets/generated/        typed wrappers (generated)
-scripts/asset.mjs       npm run asset -- <name>: blender → optimize → wrapper → validate
+scripts/assets/build.ts npm run asset -- <name>: blender → optimize → codegen → validate (ADR 0007)
 ```
 Asset scripts import the lib with `sys.path.insert(0, str(Path(__file__).resolve().parents[1]))` (Blender runs them with `-P`, not as a package).
 
@@ -250,7 +250,7 @@ Matches `template_asset.py` (tested) so previews sit directly on the UI paper su
 # cli.py
 parse_args() -> Namespace                      # --out --preview --lod {0,1,2,all} --turntable N
 # materials.py
-materials_from_tokens(tokens_path="src/ui/tokens/tokens.json") -> dict[str, bpy.types.Material]
+materials_from_tokens(tokens_path="src/tokens/generated/tokens.json") -> dict[str, bpy.types.Material]
 hex_to_linear(hex: str) -> tuple[float, float, float, float]
 # nodes.py
 root(asset: str, version: int = 1, lod: int = 0) -> Object                  # root empty <ASSET>
@@ -315,5 +315,5 @@ Each asset script declares `ASSET`, `REQUIRED_NODES`, `TRI_BUDGET` and calls `va
 1. Final token names/values for the five materials (DESIGN_SYSTEM) and a JSON token export Blender can read.
 2. Scene triangle / draw-call budget (ARCHITECTURE) — this guide proposes ≈ 160 k tris / ≈ 120 draw calls for the MVP site.
 3. Screen-space AO vs baked vertex AO (ARCHITECTURE/render).
-4. Renderer ADR: R3F (`gltfjsx` components) or plain three (generated constants only).
+4. ~~Renderer ADR~~ — resolved: R3F + in-house codegen from `<asset>.contract.json` (ADR 0002/0007); no gltfjsx.
 5. Does gameplay need per-engine visuals (33 sockets kept either way), arm shock-absorber carts, or an ocean-landing variant with legs?

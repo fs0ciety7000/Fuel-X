@@ -79,6 +79,11 @@ def socket(name, location, parent=None):
 
 
 def build(mats):
+    # Root empty: nodes with children must be empties (meshopt inserts unnamed
+    # nodes under meshes that have children). Geometry lives only on leaves.
+    root = bpy.data.objects.new(f"{ASSET}_Root", None)
+    bpy.context.collection.objects.link(root)
+
     bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=RADIUS, depth=HEIGHT, location=(0, 0, HEIGHT / 2))
     body = bpy.context.active_object
     body.name = f"{ASSET}_Body"
@@ -91,10 +96,11 @@ def build(mats):
     cap.scale.z = 0.35
     cap.data.materials.append(mats["MAT_ClayDark"])
     bpy.ops.object.shade_smooth()
-    bpy.context.view_layer.update()
-    parent_keep(cap, body)
 
-    socket("Label", (0, 0, HEIGHT + RADIUS * 0.5), parent=body)
+    bpy.context.view_layer.update()
+    for o in (body, cap):
+        parent_keep(o, root)
+    socket("Label", (0, 0, HEIGHT + RADIUS * 0.5), parent=root)
     return [body, cap]
 
 
