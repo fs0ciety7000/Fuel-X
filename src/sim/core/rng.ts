@@ -56,30 +56,48 @@ export interface Rng {
   weightedIndex(weights: readonly number[]): number;
 }
 
+interface RngImpl extends Rng {
+  s: RngState;
+}
+
+// Shared method table: a view is one small object per call (no closures to allocate on the hot path).
+const RNG_METHODS: Omit<RngImpl, 's'> & ThisType<RngImpl> = {
+  u32() {
+    return sfc32Next(this.s);
+  },
+  float() {
+    return sfc32Next(this.s) / 4294967296;
+  },
+  range(lo, hi) {
+    return lo + (hi - lo) * this.float();
+  },
+  int(lo, hi) {
+    return lo + Math.floor(this.float() * (hi - lo + 1));
+  },
+  chance(p) {
+    return this.float() < p;
+  },
+  normal(mean = 0, sd = 1) {
+    const u1 = 1 - this.float(); // (0, 1]
+    const u2 = this.float();
+    return mean + sd * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  },
+  weightedIndex(weights) {
+    const total = weights.reduce((sum, w) => sum + w, 0);
+    if (!(total > 0)) throw new Error('weightedIndex: weights must sum to > 0');
+    let x = this.float() * total;
+    for (let i = 0; i < weights.length; i++) {
+      x -= weights[i] ?? 0;
+      if (x < 0) return i;
+    }
+    return weights.length - 1;
+  },
+};
+
 export function rngFromState(s: RngState): Rng {
-  const float = (): number => sfc32Next(s) / 4294967296;
-  return {
-    u32: () => sfc32Next(s),
-    float,
-    range: (lo, hi) => lo + (hi - lo) * float(),
-    int: (lo, hi) => lo + Math.floor(float() * (hi - lo + 1)),
-    chance: (p) => float() < p,
-    normal: (mean = 0, sd = 1) => {
-      const u1 = 1 - float(); // (0, 1]
-      const u2 = float();
-      return mean + sd * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-    },
-    weightedIndex: (weights) => {
-      const total = weights.reduce((sum, w) => sum + w, 0);
-      if (!(total > 0)) throw new Error('weightedIndex: weights must sum to > 0');
-      let x = float() * total;
-      for (let i = 0; i < weights.length; i++) {
-        x -= weights[i] ?? 0;
-        if (x < 0) return i;
-      }
-      return weights.length - 1;
-    },
-  };
+  const r = Object.create(RNG_METHODS) as RngImpl;
+  r.s = s;
+  return r;
 }
 
 /** The named stream of a world (state lives in `world.rng[stream]`). */

@@ -225,6 +225,7 @@ Rule: the game never auto-raises the rate. It only drops it. Time scale is imple
 - Each anomaly has a **base probability** per exposure (per hour of a phase, or per event), **modifiers** (wear, MARGINAL-GO, weather), a **seeded roll** (deterministic RNG), a **player response** with a trade-off, and an **outcome**.
 - Going GO with a MARGINAL station multiplies ascent anomaly probabilities by `marginalRiskMultiplier` (×2.0) for the matching category.
 - **Anomaly director (MVP)**: if no anomaly has fired by T-00:30:00, the director schedules one from the eligible pool (weighted, seeded) so that every MVP run contains at least one. Toggle: `anomalyDirector.guaranteeOne` (on in MVP, off in campaign sandbox).
+  *Implementation (3.7)*: the director commits its weighted pick at scenario start with a trigger inside that anomaly's window (before T-00:30:00; A4 during the flight), so the weights hold even for A3 (which is rarely still eligible at T-00:30:00); natural anomalies come on top; the T-00:30:00 rule remains as the fallback.
 
 ### 7.2 MVP anomaly pool
 

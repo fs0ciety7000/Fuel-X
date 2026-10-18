@@ -36,14 +36,29 @@ export function getEntity(world: World, id: Id): Entity | null {
   return world.entities.byId[id] ?? null;
 }
 
-/** Entities of one kind, in stable insertion order. */
-export function entitiesOfKind<K extends Kind>(world: World, kind: K): EntityOf<K>[] {
-  const out: EntityOf<K>[] = [];
-  for (const id of world.entities.order) {
-    const e = world.entities.byId[id];
-    if (e?.kind === kind) out.push(e as EntityOf<K>);
+// Per-kind index cache (hot path: several systems walk one kind each tick). Keyed by the entity table object;
+// stale when an entity was spawned (`nextSerial`) or despawned (`order.length`). Not part of the world.
+interface KindIndex {
+  serial: number;
+  count: number;
+  byKind: Partial<Record<Kind, Entity[]>>;
+}
+const KIND_CACHE = new WeakMap<object, KindIndex>();
+
+/** Entities of one kind, in stable insertion order (cached view: do not mutate the array). */
+export function entitiesOfKind<K extends Kind>(world: World, kind: K): readonly EntityOf<K>[] {
+  const table = world.entities;
+  let idx = KIND_CACHE.get(table);
+  if (!idx || idx.serial !== table.nextSerial || idx.count !== table.order.length) {
+    const byKind: Partial<Record<Kind, Entity[]>> = {};
+    for (const id of table.order) {
+      const e = table.byId[id];
+      if (e) (byKind[e.kind] ??= []).push(e);
+    }
+    idx = { serial: table.nextSerial, count: table.order.length, byKind };
+    KIND_CACHE.set(table, idx);
   }
-  return out;
+  return (idx.byKind[kind] ?? []) as EntityOf<K>[];
 }
 
 export function findByCallSign(world: World, callSign: string): Entity | null {

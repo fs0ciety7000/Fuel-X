@@ -18,11 +18,14 @@ describe('step pipeline', () => {
   it('runs systems in a fixed order and increments the tick last', () => {
     expect(SYSTEMS.map((s) => s.name)).toEqual([
       'applyCommands',
+      'environment',
+      'range',
       'countdown',
       'prep',
       'logistics',
       'propellant',
       'flight',
+      'anomalies',
       'bookkeeping',
     ]);
     const w = createWorld({ seed: 1 });
@@ -70,7 +73,7 @@ describe('command queue', () => {
     const q = createCommandQueue();
     enqueueCommand(q, 2, { t: 'LeakResponse', choice: 'DEGRADED' });
     advance(w, 5, q);
-    expect(w.outbox).toEqual([{ t: 'CommandRejected', tick: 2, cmd: 'LeakResponse', reason: 'NOT_IMPLEMENTED' }]);
+    expect(w.outbox).toEqual([{ t: 'CommandRejected', tick: 2, cmd: 'LeakResponse', reason: 'NO_ACTIVE_LEAK' }]);
   });
 });
 

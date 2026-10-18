@@ -48,3 +48,25 @@ export { commandCatchDecision, engineOut } from './systems/flight';
 export { catchProbability, catchSigmaM, erf } from './math/catch';
 export type { CatchDrivers } from './math/catch';
 export { CATCH_PROFILE, DIVERT_PROFILE, sampleProfile } from './math/profile';
+export { LIVE_CONFIG, MANUAL_CONFIG } from './core/world';
+export {
+  environmentSystem,
+  frontBoostAt,
+  peakUpperForecast,
+  startFrontNow,
+  weatherForecast,
+} from './systems/environment';
+export type { WindForecast } from './systems/environment';
+export { crewElapsedS, foulRange, propellantReserve, vehicleHealth } from './systems/range';
+export type { PropellantReserve } from './systems/range';
+export {
+  anomaliesFired,
+  commandLeakResponse,
+  engineOutProbability,
+  marginalMultiplier,
+  newAnomalyState,
+  reliabilityFactor,
+  rollEngineOuts,
+} from './systems/anomalies';
+export { boatFsm, vanFsm } from './entities/machines';
+export { holdForLeakFix } from './systems/countdown';

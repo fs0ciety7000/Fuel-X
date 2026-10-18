@@ -20,46 +20,57 @@ type Stage = EntityOf<'booster'> | EntityOf<'ship'>;
 
 // --- Farm -------------------------------------------------------------------------------------------
 
-function farmTanks(world: World, fluid: Fluid): EntityOf<'tank'>[] {
-  const out: EntityOf<'tank'>[] = [];
-  for (const id of world.logistics.farm[fluid]) {
-    const e = getEntity(world, id);
-    if (e?.kind === 'tank') out.push(e);
-  }
-  return out;
+type Tank = EntityOf<'tank'>;
+
+function tankAt(world: World, id: string): Tank | null {
+  const e = world.entities.byId[id];
+  return e?.kind === 'tank' ? e : null;
 }
 
-const usable = (t: EntityOf<'tank'>): number => Math.max(0, t.massKg - HEEL * t.capKg);
-const free = (t: EntityOf<'tank'>): number => Math.max(0, t.capKg - t.massKg);
+const usable = (t: Tank): number => Math.max(0, t.massKg - HEEL * t.capKg);
+const free = (t: Tank): number => Math.max(0, t.capKg - t.massKg);
+const mass = (t: Tank): number => t.massKg;
+
+/** Σ f(tank) over the farm tanks of a fluid (allocation-free: runs several times per tick). */
+function sumFarm(world: World, fluid: Fluid, f: (t: Tank) => number): number {
+  let sum = 0;
+  for (const id of world.logistics.farm[fluid]) {
+    const t = tankAt(world, id);
+    if (t) sum += f(t);
+  }
+  return sum;
+}
 
 export function farmMassKg(world: World, fluid: Fluid): number {
-  return farmTanks(world, fluid).reduce((s, t) => s + t.massKg, 0);
+  return sumFarm(world, fluid, mass);
 }
 
 /** Farm mass above the heel of every tank, kg. */
 export function farmUsableKg(world: World, fluid: Fluid): number {
-  return farmTanks(world, fluid).reduce((s, t) => s + usable(t), 0);
+  return sumFarm(world, fluid, usable);
 }
 
 export function farmFreeKg(world: World, fluid: Fluid): number {
-  return farmTanks(world, fluid).reduce((s, t) => s + free(t), 0);
+  return sumFarm(world, fluid, free);
 }
 
 /** Moves up to `kg` between the farm and the caller, tank by tank (most available first). */
-function transfer(
-  world: World,
-  fluid: Fluid,
-  kg: number,
-  avail: (t: EntityOf<'tank'>) => number,
-  sign: 1 | -1,
-): number {
-  const tanks = farmTanks(world, fluid);
+function transfer(world: World, fluid: Fluid, kg: number, avail: (t: Tank) => number, sign: 1 | -1): number {
+  const ids = world.logistics.farm[fluid];
   let left = kg;
   while (left > 0) {
-    let best: EntityOf<'tank'> | null = null;
-    for (const t of tanks) if (avail(t) > 0 && (!best || avail(t) > avail(best))) best = t;
+    let best: Tank | null = null;
+    let bestAvail = 0;
+    for (const id of ids) {
+      const t = tankAt(world, id);
+      const a = t ? avail(t) : 0;
+      if (t && a > 0 && (!best || a > bestAvail)) {
+        best = t;
+        bestAvail = a;
+      }
+    }
     if (!best) break;
-    const take = Math.min(left, avail(best));
+    const take = Math.min(left, bestAvail);
     best.massKg += sign * take;
     left = take === left ? 0 : left - take;
   }
@@ -80,7 +91,9 @@ function farmBoilOff(world: World): void {
   for (const fluid of PROPELLANTS) {
     const f = pd.farm.boilOffFractionPerS[fluid] * DT_S;
     const ledger = world.logistics.ledger[fluid];
-    for (const t of farmTanks(world, fluid)) {
+    for (const id of world.logistics.farm[fluid]) {
+      const t = tankAt(world, id);
+      if (!t) continue;
       const loss = t.massKg * f;
       t.massKg -= loss;
       t.boiledOffKg += loss;

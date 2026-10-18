@@ -232,6 +232,35 @@ Nominal flight P&L: +62 M − 20 M (ship) − 1.1 M (prop) − 1.5 M (refurb) �
 3. **Anomaly frequency without the director** is ~45 % per run. The director makes it 100 % in the MVP. Revisit for the campaign.
 4. Rounded figures: no real vehicle is replicated. Prefer round numbers that are easy to read on the HUD.
 
+## 12. Sim additions for game-designer review (Phase 3.7–3.10)
+
+Numbers the sim needed that this document did not specify. Each lives in `src/data/*` with a "Sim addition" comment.
+
+| Key (file) | Value | Why |
+|---|---|---|
+| `weather.groundWind.gustFactor` | 1.25 | gust-inclusive ground wind for the stack / transporter limits |
+| `weather.groundWind.towerFactor` | 1.3 | catch-arm wind (tower top) for the catch model |
+| `weather.front.arrivalEarliestTS / LatestTS` | −21 600 / +4 500 | natural front arrival band (scenario start → window close) |
+| `logistics.picketPatrolSpeedMPerS` | 5 | PICKET cruise on patrol (intercepts use 12 m/s) |
+| `anomalies.A1.escortSpeedMPerS` | 4 | UNK-01 escorted out for `clearAfterIntercept` |
+| `anomalies.A3.onsetLoadFractionMin / Max` | 0.05 / 0.6 | leak starts at a booster-LOX load fraction (always during the load) |
+| `anomalies.A4.ascentWindowS` | 10–150 s | ascent engine-out timing |
+| `anomalies.A4.directorAscentShare` | 0.5 | director A4: ascent vs boostback |
+| `anomalies.director.a2EarliestTS` | −4 500 | director front earliest at load start |
+| `anomalies.marginalCategories` | WEATHER, VEHICLE → A4 | "matching category" of GDD §7.1 |
+| `countdown.crew.vanDepartTS / vanStaggerS` | −5 400 / 30 | crew vans clear the pad before T-01:20:00 |
+| `countdown.stationHysteresisFraction` | 0.03 | station deadband (no GO ⇄ MARGINAL flicker) |
+| `countdown.stationSampleS` | 0.1 | stations evaluated at 10 Hz |
+| `vehicles.healthLossPerWear` | 0.5 | VEHICLE health = 1 − 0.5·wear (B-09 = 0.89, GO) |
+
+**Flagged** (please review):
+1. **Hold margin is ~13 min, not ~38 min.** With the MVP start farm the sim leaves ≈ 31 t LOX / 6 t CH4 usable at T-0
+   after a nominal load (the "88 t" above omits the loaded-vehicle boil-off during the 44-min load, ≈ 51 t LOX). Hence
+   PROPELLANT starts MARGINAL. The golden autopilot orders 3 LX + 1 MX standard deliveries, which restores ≈ 39 min.
+   To restore the design intent without orders: farm LOX ≈ 4 210 000 kg, CH4 ≈ 1 152 000 kg.
+2. Catastrophic ascent failure (`catastrophicAscentPerFlight`) is kept in data but not simulated yet.
+3. Lightning (GDD §4.10) has no numbers here and is not simulated.
+
 ## Sources (brief)
 - [S1] Widely reported public specs for the super-heavy methalox class (booster ~3 400 t, ship ~1 200–1 500 t of propellant). Not re-verified in this pass; used as order of magnitude only.
 - [S2] Teslarati reporting on the Starbase tank farm: ~5 400 t of LOX in the main tanks — https://teslarati.com/spacex-starship-orbital-launch-site-propellant-delivery

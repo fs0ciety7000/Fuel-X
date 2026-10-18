@@ -38,4 +38,9 @@ export const vehicles = {
   },
   /** VEHICLE station GO threshold on vehicle health (0–1). */
   vehicleHealthGoThreshold: 0.8,
+  /**
+   * Sim addition 3.7 (review): vehicle health = 1 − this × booster wear (B-09 at 0.22 wear → 0.89, GO).
+   * Below the GO threshold the VEHICLE station reads MARGINAL.
+   */
+  healthLossPerWear: 0.5,
 };

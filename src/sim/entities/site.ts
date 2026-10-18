@@ -111,8 +111,23 @@ function specFor(world: World, p: Placement): AnyEntitySpec {
       } satisfies EntitySpec<'transporter'>;
     case 'crane':
       return { ...b, kind: 'crane', fsm: fsm('IDLE'), task: null } satisfies EntitySpec<'crane'>;
+    case 'van':
+      return { ...b, kind: 'van', fsm: fsm('AT_PAD'), route: null } satisfies EntitySpec<'van'>;
+    case 'boat': {
+      const patrol = lc1Layout.patrols[p.callSign];
+      return {
+        ...b,
+        kind: 'boat',
+        role: patrol ? 'picket' : 'recovery',
+        fsm: fsm(patrol ? 'PATROL' : 'ON_STATION'),
+        route: patrol ? { pathId: patrol, movedTicks: 0, speedMPerS: logistics.picketPatrolSpeedMPerS } : null,
+        leg: null,
+        targetId: null,
+        escortEndTick: null,
+      } satisfies EntitySpec<'boat'>;
+    }
     default:
-      // Kinds without sim fields yet (vans, boats, weather stations: 3.7; buildings: ambient).
+      // Weather stations (read world.weather) and buildings (ambient) carry no sim fields.
       return b as AnyEntitySpec;
   }
 }

@@ -6,7 +6,7 @@
 // The phase keeps running underneath a hold (stacking, loading and topping continue), which is what
 // ARCHITECTURE calls `Holding` with a `resumePhase`. Polls are holds with reason POLL that need a GO
 // (or pass automatically when every station is GO and `autoGoWhenAllGreen` is on).
-import { contracts, countdown as cdData, time as timeData } from '@data/index';
+import { STATION_IDS, contracts, countdown as cdData, time as timeData } from '@data/index';
 import type { PollId, TimeScale } from '@data/index';
 import { emit } from '../core/events';
 import { defineFsm } from '../core/fsm';
@@ -28,7 +28,7 @@ import type {
   Station,
 } from '../types';
 
-export const STATIONS: readonly Station[] = ['WEATHER', 'RANGE', 'PROPELLANT', 'VEHICLE', 'PAD_CREW'];
+export const STATIONS: readonly Station[] = STATION_IDS;
 export const PHASES: readonly Phase[] = [
   'Standby',
   'Rollout',
@@ -262,6 +262,7 @@ export function defaultCountdownInputs(): CountdownInputs {
     recoveryMode: null,
     recoveryComplete: false,
     detankComplete: false,
+    leakFixActive: false,
   };
 }
 
@@ -280,6 +281,7 @@ export function createCountdown(world: World, opts: CreateCountdownOptions): Cou
     boosterId: opts.boosterId,
     shipId: opts.shipId,
     padId: opts.padId,
+    createdTick: world.tick,
     phase: { state: 'Standby', enteredTick: world.tick },
     clock: { state: 'Counting', enteredTick: world.tick },
     tClockTicks: secondsToTicks(startTS),
@@ -371,6 +373,17 @@ function tryAutoRelease(world: World, cd: Countdown): void {
   }
 }
 
+/** A LEAK_FIX hold resumes the count by itself once the fix is done and no station is NO-GO. */
+function tryReleaseLeakFix(world: World, cd: Countdown): void {
+  if (cd.hold?.reason !== 'LEAK_FIX' || cd.inputs.leakFixActive || anyNoGo(cd)) return;
+  clockFsm.fire(cd.clock, 'AutoRelease', ctx(world, cd));
+}
+
+/** A3 HOLD_FIX: holds the count with reason LEAK_FIX if it is counting; false when it cannot hold. */
+export function holdForLeakFix(world: World, cd: Countdown): boolean {
+  return clockFsm.fire(cd.clock, 'AutoHold', ctx(world, cd, { reason: 'LEAK_FIX', poll: null })) !== null;
+}
+
 /** One tick of T-clock before liftoff: NO-GO auto-hold, polls, load auto-hold, advance, milestones, T-0. */
 function advancePreLiftoff(world: World, cd: Countdown): void {
   if (NO_GO_HOLD_PHASES.includes(cd.phase.state) && anyNoGo(cd)) {
@@ -411,7 +424,10 @@ function updateCountdown(world: World, cd: Countdown): void {
     return;
   }
   phaseFsm.fire(cd.phase, 'auto', ctx(world, cd));
-  if (cd.clock.state === 'Holding') tryAutoRelease(world, cd);
+  if (cd.clock.state === 'Holding') {
+    tryReleaseLeakFix(world, cd);
+    if (cd.clock.state === 'Holding') tryAutoRelease(world, cd);
+  }
   if (cd.clock.state !== 'Counting') return;
   if (isPreLiftoff(cd.phase.state)) advancePreLiftoff(world, cd);
   else cd.tClockTicks++; // mission clock T+ through flight and safing

@@ -134,7 +134,9 @@ type SimEvent =
   | { t: 'WindowMissed'; tick; countdownId; contractId; penaltyCr }
   | { t: 'StationChanged'; tick; countdownId; station: Station; status: GoStatus; driver: string }
   | { t: 'DecisionRequired'; tick; countdownId; decision: 'POLL' | 'CATCH' | 'LEAK'; poll: PollId | null; deadlineTick }
-  | { t: 'AnomalyFired'; tick; anomaly: AnomalyId; entityId: Id }
+  | { t: 'AnomalyFired'; tick; countdownId; anomaly: AnomalyId; entityId: Id; source: 'NATURAL' | 'DIRECTOR' }
+  | { t: 'LeakResponded'; tick; countdownId; choice: 'DEGRADED' | 'HOLD_FIX' }        // 3.7 A3
+  | { t: 'LeakCleared'; tick; countdownId; by: 'FIXED' | 'LIFTOFF' }
   | { t: 'EntityStateChanged'; tick; id: Id; kind: Kind; from: string; to: string }
   | { t: 'Spawned' | 'Despawned'; tick; id: Id; kind: Kind; callSign: string }
   | { t: 'Milestone'; tick; countdownId; name: MilestoneName }   // T-clock marks from src/data/countdown.ts
@@ -195,7 +197,8 @@ export interface World {
   entities: { byId: Record<Id, Entity>; order: Id[]; nextSerial: number; nextSlot: number; freeSlots: number[] };
   countdowns: Record<Id, Countdown>;     // one per flight attempt; iterate sorted ids (countdownIds())
   contracts: Record<Id, Contract>; economy: { moneyCr: number; reputation: number };
-  weather: WeatherState; anomalies: AnomalyState; outbox: SimEvent[];   // contracts (3.8), weather/anomalies (3.7) not yet in the World
+  weather: WeatherState; config: SimConfig; range: Record<Id, RangeState>; anomalies: Record<Id, AnomalyState>;
+  outbox: SimEvent[];                    // contracts (3.8)
 }
 export type Command =
   | { t: 'StartRollout'; boosterId: Id } | { t: 'Stack'; padId: Id }
@@ -273,10 +276,10 @@ stateDiagram-v2
 | Transporter `SP-` | IDLE → LOADING → MOVING → AT_PAD → RETURNING → IDLE (MVP: SP-41 parks at the yard pickup) | WIND_HOLD (from MOVING / RETURNING) |
 | Crane `CR-` | IDLE → LIFTING → IDLE (one timed task, `craneLoadTaskS`) | — (no crane wind limit in BALANCING) |
 | Tanker `LX-`/`MX-` | OFFMAP → INBOUND → GATE_WAIT → OFFLOADING → OUTBOUND → OFFMAP | GATE_WAIT held while pad hazard closed (≥ T-00:40:00) |
-| Picket `PK-` | DOCKED → PATROL → INTERCEPT → ESCORT → PATROL | — |
-| Recovery `RV-` | DOCKED → TRANSIT → ON_STATION → RECOVERING → RETURNING | — |
-| Intruder `UNK-` | SPAWN → IN_AREA → INTERCEPTED → LEAVING → despawn | — |
-| Van `CV-` | PARKED → TO_PAD → AT_PAD → TO_SAFE → PARKED | — |
+| Picket `PK-` | PATROL → INTERCEPT → ESCORT → RETURNING → PATROL (DOCKED → PATROL unused in MVP) | — |
+| Recovery `RV-` | ON_STATION (MVP: ambient, holding at the divert point) | TRANSIT / RECOVERING post-MVP |
+| Intruder `UNK-` | IN_AREA (spawned in AREA BRAVO) → INTERCEPTED → LEAVING → despawn | — |
+| Van `CV-` | AT_PAD (start) → TO_SAFE → PARKED → TO_PAD → AT_PAD | — |
 
 Each FSM has a table-driven test (allowed transitions fire, disallowed don't, each emits its event) per `sim-testing`.
 Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states add `STACKING` (in the tower arms) and
@@ -343,6 +346,34 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   runs every tick before liftoff, so a full line tops exactly its boil-off. `inputs.loadComplete` = all 4 lines full.
 - **Scrub**: stages → `DETANKING`, lines drain at the load rates, `scrubDetankLossFraction` vented, rest returned to
   the farm (overflow vented); when empty → `STACKED`, `inputs.detankComplete = true`, `DetankCompleted`.
+
+### 7.6 Weather, range, anomalies (3.7, `src/sim/systems/{environment,range,anomalies}.ts`)
+
+- **Config**: `world.config = { weather: 'SERIES' | 'MANUAL', stations: 'LIVE' | 'MANUAL', anomalies: boolean }`.
+  `createWorld` defaults to MANUAL/MANUAL/false (unit tests force readings and stations); the `mvp` scenario
+  (3.9) runs everything live.
+- **Environment** (slot 2, rng `weather`): ground and upper wind are exact-discretised Ornstein–Uhlenbeck
+  deviations (one Box–Muller pair per tick); gust = ground × `gustFactor`, tower = ground × `towerFactor`; a front
+  (35 % of runs, arrival uniform scenario start → window close) adds a trapezoid boost to the upper wind.
+  `weatherForecast(world, leadS)` = OU expectation ± `errorGrowth · lead`; a front is only forecast once it blows.
+- **Range** (slot 3, before the countdown): PICKET loops (`lc1Layout.patrols`, patrol speed), A1 intercept
+  (straight leg at `picketSpeed`, escort `clearAfterIntercept` s seaward, UNK-01 despawns, picket returns to its loop),
+  crew vans (leave at `crew.vanDepartTS`, staggered, return after the attempt). Stations are evaluated at 10 Hz
+  (`stationSampleS`) into `world.range[cd].stations[s] = { status, driver, value, limit }` (SI value of the driving
+  quantity, `driver` = machine code for the UI) and copied to `cd.inputs.stations`; a worse status is kept until the
+  value is `stationHysteresisFraction · limit` clear (deadband). `StationChanged` on status changes only.
+  PROPELLANT = `propellantReserve()`: farm usable − (remaining load + boil-off while filling + topping from full to
+  T-0), MARGINAL below 1 hold-hour of topping, NO-GO below 0.
+- **Anomalies** (slot 9, after flight; rng `anomaly` for natural rolls, `director` for the plan): see the header of
+  `anomalies.ts`. The director draws its guaranteed anomaly at the attempt's first tick (weighted) with a trigger
+  inside the anomaly's window before T-00:30:00 (A4: a mission time in ascent or boostback); it is not cancelled by
+  natural anomalies; the deadline rule is a fallback when the plan can no longer happen. A3 sets
+  `logistics.loadRateFactor` (0.5 / 0 under HOLD_FIX) and `inputs.leakFixActive`; HOLD_FIX holds the count with
+  reason `LEAK_FIX`, auto-released when the fix ends and no station is NO-GO. A4 calls `engineOut()`.
+  GO-on-MARGINAL: `anomalies.marginalCategories[station]` lists the anomalies whose probability is ×
+  `marginalRiskMultiplier` (WEATHER, VEHICLE → A4).
+- **Command** `LeakResponse { choice }` → the countdown with an active leak; rejections `NO_ACTIVE_LEAK`,
+  `ALREADY_RESPONDED`, `ALREADY_FIXING`.
 
 ## 8. UI projection contract
 

@@ -6,6 +6,7 @@ import type { World } from '../core/world';
 import { emit } from '../core/events';
 import type {
   ArmsState,
+  BoatState,
   BoosterState,
   CraneState,
   FsmState,
@@ -15,6 +16,7 @@ import type {
   TankerState,
   TowerState,
   TransporterState,
+  VanState,
 } from '../types';
 
 interface StatefulEntity<S extends string> {
@@ -213,4 +215,42 @@ export type CraneTrigger = 'liftStart' | 'liftDone';
 export const craneFsm = entityFsm<CraneState, CraneTrigger>('crane', CRANE_STATES, [
   { from: 'IDLE', to: 'LIFTING', on: 'liftStart' },
   { from: 'LIFTING', to: 'IDLE', on: 'liftDone' },
+]);
+
+// --- Range boats and crew vans (3.7) ----------------------------------------------------------------
+
+export const BOAT_STATES: readonly BoatState[] = [
+  'DOCKED',
+  'PATROL',
+  'INTERCEPT',
+  'ESCORT',
+  'RETURNING',
+  'ON_STATION',
+  'IN_AREA',
+  'INTERCEPTED',
+  'LEAVING',
+];
+export type BoatTrigger = 'undock' | 'dispatch' | 'intercepted' | 'escortDone' | 'onLoop' | 'leave';
+
+/** One table for the three boat roles (states are disjoint per role). */
+export const boatFsm = entityFsm<BoatState, BoatTrigger>('boat', BOAT_STATES, [
+  // PICKET PK-
+  { from: 'DOCKED', to: 'PATROL', on: 'undock' },
+  { from: 'PATROL', to: 'INTERCEPT', on: 'dispatch' },
+  { from: 'INTERCEPT', to: 'ESCORT', on: 'intercepted' },
+  { from: 'ESCORT', to: 'RETURNING', on: 'escortDone' },
+  { from: 'RETURNING', to: 'PATROL', on: 'onLoop' },
+  // Intruder UNK-
+  { from: 'IN_AREA', to: 'INTERCEPTED', on: 'intercepted' },
+  { from: 'INTERCEPTED', to: 'LEAVING', on: 'leave' },
+]);
+
+export const VAN_STATES: readonly VanState[] = ['PARKED', 'TO_PAD', 'AT_PAD', 'TO_SAFE'];
+export type VanTrigger = 'toSafe' | 'toPad' | 'arrived';
+
+export const vanFsm = entityFsm<VanState, VanTrigger>('van', VAN_STATES, [
+  { from: 'AT_PAD', to: 'TO_SAFE', on: 'toSafe' },
+  { from: 'TO_SAFE', to: 'PARKED', on: 'arrived' },
+  { from: 'PARKED', to: 'TO_PAD', on: 'toPad' },
+  { from: 'TO_PAD', to: 'AT_PAD', on: 'arrived' },
 ]);

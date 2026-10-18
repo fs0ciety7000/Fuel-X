@@ -1,7 +1,7 @@
 // Player/host inputs (ADR 0003 §5). The UI sends untimed commands; the host stamps them with the next
 // tick to execute and they are applied at the start of that tick, in send order. The command log +
 // seed reproduces a game.
-import type { Id, Propellant, RecoveryMode, Tick } from '../types';
+import type { Id, LeakChoice, Propellant, RecoveryMode, Tick } from '../types';
 
 export type Command =
   | { t: 'StartRollout'; boosterId: Id }
@@ -12,7 +12,7 @@ export type Command =
   | { t: 'Recycle'; countdownId: Id }
   | { t: 'Scrub'; countdownId: Id }
   | { t: 'CatchDecision'; boosterId: Id; choice: RecoveryMode }
-  | { t: 'LeakResponse'; choice: 'DEGRADED' | 'HOLD_FIX' };
+  | { t: 'LeakResponse'; choice: LeakChoice };
 
 export type CommandType = Command['t'];
 export type CommandOf<T extends CommandType> = Extract<Command, { t: T }>;

@@ -1,7 +1,9 @@
 // Test factories shared by the system tests (not part of the public sim API).
+import { countdown as cdData, lc1Layout } from '@data/index';
+import { entitiesOfKind } from './core/entities';
 import type { SimEvent } from './core/events';
-import { createWorld } from './core/world';
-import type { World } from './core/world';
+import { LIVE_CONFIG, createWorld } from './core/world';
+import type { SimConfig, World } from './core/world';
 import { createMvpFlight } from './entities/flight';
 import { spawnSiteLayout } from './entities/site';
 import { step } from './step';
@@ -19,17 +21,45 @@ export interface MvpOptions {
   startTS?: number;
   phase?: Phase;
   pollsPassed?: PollId[];
+  config?: Partial<SimConfig>;
+  /** Booster + ship already stacked on OLM-1 (phase Stack unless `phase` says otherwise). */
+  prepped?: boolean;
 }
 
 /** LC-1 layout spawned + the MVP flight countdown (Standby at T-06:00:00 unless overridden). */
 export function mvpSetup(opts: MvpOptions = {}): MvpSetup {
-  const world = createWorld({ seed: opts.seed ?? 7 });
+  const world = createWorld({ seed: opts.seed ?? 7, ...(opts.config ? { config: opts.config } : {}) });
   const ids = spawnSiteLayout(world);
   const cd = createMvpFlight(world, ids, opts.startTS === undefined ? {} : { startTS: opts.startTS });
+  if (opts.prepped) {
+    const b = entity(world, cd.boosterId, 'booster');
+    const s = entity(world, cd.shipId, 'ship');
+    b.fsm.state = 'STACKED';
+    s.fsm.state = 'STACKED';
+    b.pos = { x: 0, y: 0, z: 0 };
+    s.pos = { x: 0, y: 71, z: 0 };
+    cd.inputs.rolloutComplete = true;
+    cd.inputs.stackComplete = true;
+    cd.phase.state = 'Stack';
+    const prep = world.prep[cd.id];
+    if (prep) prep.stackRequested = true;
+    // Past the van departure mark the crews are already at the safe area.
+    if ((opts.startTS ?? cdData.scenarioStartTS) >= cdData.crew.vanDepartTS) {
+      for (const v of entitiesOfKind(world, 'van')) {
+        v.fsm.state = 'PARKED';
+        v.pos = { ...lc1Layout.points.crewSafeArea };
+      }
+    }
+  }
   if (opts.phase) cd.phase.state = opts.phase;
   if (opts.pollsPassed) cd.pollsPassed = [...opts.pollsPassed];
   world.outbox.length = 0;
   return { world, cd, ids };
+}
+
+/** `mvpSetup` with everything live (seeded weather, derived stations, anomalies + director). */
+export function liveSetup(opts: Omit<MvpOptions, 'config'> = {}): MvpSetup {
+  return mvpSetup({ ...opts, config: LIVE_CONFIG });
 }
 
 export function id(ids: Record<string, Id>, callSign: string): Id {

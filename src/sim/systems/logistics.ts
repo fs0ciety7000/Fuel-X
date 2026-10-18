@@ -9,7 +9,7 @@
 import { callSignPrefix, economy, lc1Layout, logistics as ld } from '@data/index';
 import type { Lc1PathId, Propellant } from '@data/index';
 import type { CommandOf } from '../core/commands';
-import { despawnEntity, spawnEntity } from '../core/entities';
+import { despawnEntity, entitiesOfKind, spawnEntity } from '../core/entities';
 import { emit } from '../core/events';
 import { DT_S, secondsToTicks } from '../core/time';
 import { countdownIds } from '../core/world';
@@ -56,11 +56,8 @@ function updateRoad(world: World): void {
 // --- Orders -----------------------------------------------------------------------------------------
 
 function freeFleetTanker(world: World, fluid: Propellant): Tanker | null {
-  for (const id of world.entities.order) {
-    const e = world.entities.byId[id];
-    if (e?.kind === 'tanker' && e.fluid === fluid && !e.chartered && e.order === null && e.fsm.state === 'OFFMAP') {
-      return e;
-    }
+  for (const e of entitiesOfKind(world, 'tanker')) {
+    if (e.fluid === fluid && !e.chartered && e.order === null && e.fsm.state === 'OFFMAP') return e;
   }
   return null;
 }
@@ -191,9 +188,6 @@ function updateTanker(world: World, t: Tanker): boolean {
 export function logisticsSystem(world: World): void {
   updateRoad(world);
   let gone: Id[] | null = null;
-  for (const id of world.entities.order) {
-    const e = world.entities.byId[id];
-    if (e?.kind === 'tanker' && updateTanker(world, e)) (gone ??= []).push(id);
-  }
+  for (const e of entitiesOfKind(world, 'tanker')) if (updateTanker(world, e)) (gone ??= []).push(e.id);
   if (gone) for (const id of gone) despawnEntity(world, id);
 }

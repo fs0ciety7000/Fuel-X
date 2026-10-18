@@ -37,5 +37,7 @@ export const logistics = {
   },
   crewVanSpeedMPerS: 11,
   picketSpeedMPerS: 12,
+  /** Sim addition 3.7 (review): PICKET cruise speed on its patrol loop, m/s (intercepts use picketSpeedMPerS). */
+  picketPatrolSpeedMPerS: 5,
   recoveryVesselSpeedMPerS: 6,
 };

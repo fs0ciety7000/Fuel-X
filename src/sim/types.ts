@@ -11,9 +11,10 @@ import type {
   Propellant,
   SiteId,
   SiteStatus,
+  Station,
 } from '@data/index';
 
-export type { AnomalyId, AssetKey, Fluid, Lc1PathId, MilestoneName, PollId, Propellant, SiteId, SiteStatus };
+export type { AnomalyId, AssetKey, Fluid, Lc1PathId, MilestoneName, PollId, Propellant, SiteId, SiteStatus, Station };
 export type {
   World,
   Site,
@@ -23,6 +24,15 @@ export type {
   PrepState,
   PropLedger,
   WeatherReadings,
+  WeatherState,
+  SimConfig,
+  RangeState,
+  AnomalyRecord,
+  AnomalySource,
+  AnomalyState,
+  DirectorPlan,
+  LeakState,
+  PendingEngineOut,
 } from './core/world';
 export type { SimEvent, SimEventInput, SimEventType } from './core/events';
 export type { Command, CommandType, CommandOf, StampedCommand } from './core/commands';
@@ -118,6 +128,21 @@ export type TowerState = 'IDLE' | 'STACKING' | 'WIND_HOLD' | 'CATCH_READY' | 'CA
 export type ArmsState = 'OPEN' | 'CLOSED';
 export type TransporterState = 'IDLE' | 'LOADING' | 'MOVING' | 'WIND_HOLD' | 'AT_PAD' | 'RETURNING';
 export type CraneState = 'IDLE' | 'LIFTING';
+/** Picket: PATROL → INTERCEPT → ESCORT → RETURNING → PATROL (DOCKED unused in the MVP). Recovery: ON_STATION.
+ *  Intruder: IN_AREA → INTERCEPTED → LEAVING (→ despawn). */
+export type BoatState =
+  'DOCKED' | 'PATROL' | 'INTERCEPT' | 'ESCORT' | 'RETURNING' | 'ON_STATION' | 'IN_AREA' | 'INTERCEPTED' | 'LEAVING';
+export type BoatRole = 'picket' | 'recovery' | 'intruder';
+export type VanState = 'PARKED' | 'TO_PAD' | 'AT_PAD' | 'TO_SAFE';
+
+/** Straight-line move at constant speed; arrival exactly `totalTicks` after the start. */
+export interface Leg {
+  from: Vec3;
+  to: Vec3;
+  speedMPerS: number;
+  movedTicks: number;
+  totalTicks: number;
+}
 
 /** A timed prep task; `elapsedTicks` only advances while the task is not paused (wind). */
 export interface TaskProgress {
@@ -241,6 +266,22 @@ export interface DeliveryOrder {
   gateEtaTick: Tick;
   deliveredKg: number;
 }
+export interface BoatFields {
+  role: BoatRole;
+  fsm: FsmState<BoatState>;
+  /** Patrol loop (closed path; `movedTicks` wraps) for pickets on station. */
+  route: RouteState | null;
+  /** Straight-line transit (intercept, escort, return to the loop). */
+  leg: Leg | null;
+  /** Picket: the intruder it intercepts / escorts. Intruder: the picket dispatched to it. */
+  targetId: Id | null;
+  /** Escort ends (intruder despawns, RANGE clears) at this tick. */
+  escortEndTick: Tick | null;
+}
+export interface VanFields {
+  fsm: FsmState<VanState>;
+  route: RouteState | null;
+}
 export interface TankerFields {
   fluid: Propellant;
   fsm: FsmState<TankerState>;
@@ -264,8 +305,8 @@ export interface EntityFields {
   tanker: TankerFields;
   transporter: TransporterFields;
   crane: CraneFields;
-  van: object;
-  boat: object;
+  van: VanFields;
+  boat: BoatFields;
   wxStation: object;
   building: object;
 }
@@ -292,14 +333,40 @@ export type Phase =
 /** Orthogonal clock FSM: the T-clock only advances while `Counting`. */
 export type ClockState = 'Counting' | 'Holding' | 'Stopped';
 
-export type HoldReason = 'MANUAL' | 'POLL' | 'NO_GO' | 'LOAD_INCOMPLETE';
+export type HoldReason = 'MANUAL' | 'POLL' | 'NO_GO' | 'LOAD_INCOMPLETE' | 'LEAK_FIX';
 export type HoldReleasedBy = 'GO' | 'AUTO' | 'RECYCLE';
 export type ScrubReason = 'COMMAND' | 'WINDOW_CLOSED';
 
-export type Station = 'WEATHER' | 'RANGE' | 'PROPELLANT' | 'VEHICLE' | 'PAD_CREW';
 export type GoStatus = 'GO' | 'MARGINAL' | 'NO_GO';
 export type RecoveryMode = 'CATCH' | 'DIVERT';
 export type DecisionKind = 'POLL' | 'CATCH' | 'LEAK';
+export type LeakChoice = 'DEGRADED' | 'HOLD_FIX';
+
+/** Machine code of the value driving a station's status (the UI maps it to a label; SI value alongside). */
+export type StationDriver =
+  | 'NOMINAL'
+  | 'GROUND_WIND'
+  | 'UPPER_WIND'
+  | 'FORECAST_UPPER_WIND'
+  | 'INTRUDER'
+  | 'PICKET_REPOSITIONING'
+  | 'FARM_RESERVE_LOX'
+  | 'FARM_RESERVE_CH4'
+  | 'GSE_LEAK'
+  | 'VEHICLE_HEALTH'
+  | 'CREW_IN_HAZARD'
+  | 'CREW_SHIFT';
+
+/**
+ * One station reading (GDD §4.5, AC 10). `value`/`limit` are SI in the driver's unit: m/s (wind), s (farm
+ * reserve in hold-seconds, crew shift time, intercept ETA), m (crew van distance to OLM-1), unitless (health).
+ */
+export interface StationReading {
+  status: GoStatus;
+  driver: StationDriver;
+  value: number;
+  limit: number;
+}
 
 /**
  * Inputs the countdown reads but does not own. Written by other systems before the countdown runs
@@ -322,6 +389,8 @@ export interface CountdownInputs {
   recoveryComplete: boolean;
   /** Scrub detank finished (3.4; true at once when nothing was loaded). */
   detankComplete: boolean;
+  /** A3 GSE leak being fixed under a LEAK_FIX hold (3.7); the hold auto-releases when this clears. */
+  leakFixActive: boolean;
 }
 
 export interface CountdownHold {
@@ -339,6 +408,8 @@ export interface Countdown {
   boosterId: Id;
   shipId: Id;
   padId: Id;
+  /** Sim tick the attempt was created (crew shift clock, ops cost). */
+  createdTick: Tick;
   phase: FsmState<Phase>;
   clock: FsmState<ClockState>;
   /** T-clock in ticks: negative before T-0, mission time after. Stops while holding. */

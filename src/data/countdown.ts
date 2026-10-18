@@ -26,10 +26,23 @@ export const countdown = {
   autoGoWhenAllGreen: true,
   /** MARGINAL = within this fraction of a limit (unitless). */
   marginalBand: 0.15,
+  /**
+   * Sim addition 3.7 (review): a station only improves once its value is back this fraction of the limit
+   * inside the threshold (deadband, stops GO ⇄ MARGINAL flicker on noisy wind), unitless.
+   */
+  stationHysteresisFraction: 0.03,
+  /** Sim addition 3.7: stations are re-evaluated every this many seconds (10 Hz, the HUD projection rate). */
+  stationSampleS: 0.1,
   crew: {
     shiftLimitS: 43_200,
     marginalFromS: 39_600,
     elapsedAtStartS: 14_400,
+    /**
+     * Sim addition 3.7 (review): crew vans CV-01..03 leave the pad for the safe area at this T-offset
+     * (T-01:30:00, ≈ 5.5 min drive), one every `vanStaggerS`, so the pad is clear by `crewPadClearByTS`.
+     */
+    vanDepartTS: -5_400,
+    vanStaggerS: 30,
   },
   safingDurationS: 1_800,
   /** T-clock marks that emit a `Milestone` event when the clock reaches them (skip-to-milestone stops). */

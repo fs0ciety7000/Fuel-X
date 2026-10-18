@@ -185,6 +185,8 @@ export const lc1Layout = {
   points,
   placements,
   paths,
+  /** PICKET patrol loop per boat (call-sign → closed path); the placement sits on the loop's first vertex. */
+  patrols: { 'PK-03': 'pk03.patrol', 'PK-04': 'pk04.patrol' } as Readonly<Record<string, Lc1PathId>>,
   /** Maritime hazard area (AREA BRAVO) polygon on the sea surface, m. */
   maritimeHazardArea: [v(500, 0, -6_000), v(10_000, 0, -6_000), v(10_000, 0, 6_000), v(500, 0, 6_000)],
 };

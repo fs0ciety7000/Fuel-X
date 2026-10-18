@@ -48,6 +48,7 @@ export const DIVERT_PROFILE: readonly Keyframe[] = [
 export const T_MECO = kf('MECO').tS;
 export const T_SEPARATION = kf('HOT_STAGING').tS;
 export const T_BOOSTBACK_START = kf('BOOSTBACK_START').tS;
+export const T_BOOSTBACK_END = kf('BOOSTBACK_END').tS;
 export const T_LANDING_BURN = kf('LANDING_BURN').tS;
 export const T_CATCH = CATCH_FRAME.tS;
 export const LANDING_BURN_PROP_KG = kf('LANDING_BURN').boosterPropKg;

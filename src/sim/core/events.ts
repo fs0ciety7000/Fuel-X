@@ -14,6 +14,7 @@ import type {
   HoldReleasedBy,
   Id,
   Kind,
+  LeakChoice,
   MilestoneName,
   Phase,
   PollId,
@@ -23,7 +24,7 @@ import type {
   Tick,
 } from '../types';
 import type { CommandType } from './commands';
-import type { World } from './world';
+import type { AnomalySource, World } from './world';
 
 export type SimEvent =
   | { t: 'PhaseChanged'; tick: Tick; countdownId: Id; from: Phase; to: Phase; trigger: string }
@@ -43,7 +44,17 @@ export type SimEvent =
       poll: PollId | null;
       deadlineTick: Tick;
     }
-  | { t: 'AnomalyFired'; tick: Tick; anomaly: AnomalyId; entityId: Id }
+  | {
+      t: 'AnomalyFired';
+      tick: Tick;
+      countdownId: Id;
+      anomaly: AnomalyId;
+      /** Entity at the source: UNK-01 (A1), WX-1 (A2), OLM-1 quick-disconnect (A3), the booster (A4). */
+      entityId: Id;
+      source: AnomalySource;
+    }
+  | { t: 'LeakResponded'; tick: Tick; countdownId: Id; choice: LeakChoice }
+  | { t: 'LeakCleared'; tick: Tick; countdownId: Id; by: 'FIXED' | 'LIFTOFF' }
   | { t: 'EntityStateChanged'; tick: Tick; id: Id; kind: Kind; from: string; to: string }
   | { t: 'Spawned'; tick: Tick; id: Id; kind: Kind; callSign: string }
   | { t: 'Despawned'; tick: Tick; id: Id; kind: Kind; callSign: string }
