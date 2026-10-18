@@ -86,6 +86,8 @@ describe('summarize', () => {
     const s = sum({ quads: 3 });
     expect(s.triangles).toBe(12); // body + arm geo share a 6-tri mesh
     expect(s.drawCalls).toBe(2);
+    expect(s.instancedDrawCalls).toBe(1); // …which an InstancedMesh draws once
+    expect(s.sharedMeshes).toEqual([['DEMO_Body', 'DEMO_ArmGeo']]);
     expect(s.roots).toEqual(['DEMO']);
     expect(s.materials).toEqual(['MAT_Clay']);
   });
@@ -132,6 +134,13 @@ describe('checkContract', () => {
     expect(errors).toContain('LOD0: 50000 B > budget 40000 B');
     expect(checkContract(contract, [sum()])).toContain('expected 2 LOD file(s), got 1');
   });
+
+  it('counts shared meshes once against the draw-call budget only when instanceLinked', () => {
+    const tight = { ...contract, budget: { ...contract.budget, drawCalls: 1 } };
+    expect(checkContract(tight, pair())).toContain('LOD0: 2 draw calls > budget 1');
+    expect(checkContract({ ...tight, instanceLinked: true }, pair())).toEqual([]);
+    expect(() => parseContract({ ...contract, instanceLinked: 'yes' })).toThrow(/instanceLinked must be boolean/);
+  });
 });
 
 describe('codegen', () => {
@@ -151,5 +160,13 @@ describe('codegen', () => {
     expect(code).toContain("lods: ['/models/demo_lod1.glb?v=bbbbbbbb']");
     expect(code).toContain('} as const;');
     expect(code).toContain('export type DemoNode');
+    expect(code).not.toContain('instanced:');
+    const inst = generateAsset({
+      contract: { ...contract, instanceLinked: true },
+      summaries: pair(),
+      hashes: ['a'.repeat(64), 'b'.repeat(64)],
+    });
+    expect(inst).toContain("instanced: [['DEMO_Body', 'DEMO_ArmGeo']],");
+    expect(inst).toContain('drawCalls: 1,');
   });
 });
