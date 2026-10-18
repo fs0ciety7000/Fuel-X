@@ -1,0 +1,46 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--fx-color-paper);
+  color: var(--fx-color-ink);
+  font-family: var(--fx-font-micro);
+  font-size: var(--fx-type-body);
+  line-height: var(--fx-type-body-leading);
+  letter-spacing: var(--fx-type-body-tracking);
+  font-variant-numeric: tabular-nums slashed-zero;
+  text-transform: uppercase;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: var(--fx-space-1);
+}

@@ -20,7 +20,7 @@
 | Tokens | **`src/tokens/tokens.ts` → CSS + JSON (sRGB + linear)** | Two hand-kept copies; Tailwind `@theme` | One source for HUD, three materials, Blender | [0005](adr/0005-styling-and-design-tokens.md) |
 | Tests | **Vitest 5.0.1** (+coverage-v8, fast-check 4.10.2), **Playwright 1.56.1** | Jest, Cypress, Storybook | Shared Vite config; goldens via file snapshots; Playwright pinned to preinstalled Chromium r1194 | [0006](adr/0006-testing-stack.md) |
 | Assets | **Blender 4.5.14 LTS bpy headless → glTF-Transform 4.5.0 + meshopt → codegen** | gltfjsx 6.5.3, Draco, GUI `.blend` | Reproducible from script; sockets preserved; typed node names for instancing/LOD | [0007](adr/0007-asset-pipeline-tooling.md) |
-| Lint / format | ESLint 10.11.0 + typescript-eslint 8.70.1 + boundaries 7.2.0 + react-hooks 7.1.1, Prettier 3.9.9 | Biome | Import-boundary enforcement plugin exists only for ESLint | [0001](adr/0001-app-framework-and-build-tool.md) |
+| Lint / format | ESLint 10.11.0 + typescript-eslint 8.70.1 (`no-restricted-imports` boundary matrix) + react-hooks 7.1.1, Prettier 3.9.9 | Biome, eslint-plugin-boundaries | Alias-aware boundary rules with type-only exceptions (ADR 0001 amendment) | [0001](adr/0001-app-framework-and-build-tool.md) |
 | Scripts | tsx 4.23.15 (Node 22) | ts-node, plain `.mjs` | Run typed build scripts without a compile step | [0001](adr/0001-app-framework-and-build-tool.md) |
 | Deploy | **Static `dist/` in nginx image, Coolify (self-hosted, user decision)** | Cloudflare Pages, GitHub Pages, Vercel | User-owned infra; headers/MIME/caching in committed `deploy/nginx.conf` | [0008](adr/0008-deployment-target.md) |
 
@@ -47,7 +47,7 @@
  └───────────────┘   └──────────────┘        public/models/*.glb ◄── blender/assets/*.py (+ scripts/assets)
 ```
 
-**Import rules** (enforced by `eslint-plugin-boundaries`; violations fail `npm run lint`):
+**Import rules** (enforced by typescript-eslint `no-restricted-imports` in `eslint.config.js`; violations fail `npm run lint`):
 
 | Module | May import | Must never import |
 |---|---|---|
@@ -343,7 +343,7 @@ build/       git-ignored intermediates (models-raw/)
 | `e2e` | `playwright test` (projects `e2e`, `visual`; `perf` project only via `npm run perf -- --browser`) |
 | `asset` | `tsx scripts/assets/build.ts` → `npm run asset -- tower` (Blender → optimize → validate → codegen → preview) |
 | `assets` | `tsx scripts/assets/build.ts --all` (`-- --verify` rebuilds twice, asserts byte-identical GLBs) |
-| `perf` | `vitest bench --run tests/perf && tsx scripts/perf/budgets.ts` (bundle gzip + GLB size/tris vs `budget.json`; `-- --browser` adds the Playwright perf scenes on a production build) |
+| `perf` | `tsx scripts/perf/sim-bench.ts && tsx scripts/perf/budgets.ts` (sim timing harness + bundle gzip / GLB size vs `budget.json`; Playwright perf scenes added in Phase 5) |
 | `tokens` | `tsx scripts/tokens/build.ts` (helper, also run by dev/build/lint) |
 
 ASSETS_GUIDE §8 names `scripts/asset.mjs`; the implementation path is `scripts/assets/build.ts` (TS, same behaviour).

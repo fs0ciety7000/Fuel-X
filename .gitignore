@@ -1,6 +1,7 @@
 node_modules/
 dist/
-.next/
-*.blend1
+build/
+coverage/
 test-results/
 playwright-report/
+*.blend1

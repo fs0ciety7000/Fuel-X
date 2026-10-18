@@ -6,10 +6,10 @@ A **live rocket launch site you can play like a strategy game**, in the browser.
 - Design: [`docs/GDD.md`](docs/GDD.md) · Balancing: [`docs/BALANCING.md`](docs/BALANCING.md)
 - Tech: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · Decisions: [`docs/adr/`](docs/adr/)
 - UI: [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) · Assets: [`docs/ASSETS_GUIDE.md`](docs/ASSETS_GUIDE.md)
-- Plan: [`docs/TASKS.md`](docs/TASKS.md) · QA: `docs/QA.md` *(Phase 2)*
+- Plan: [`docs/TASKS.md`](docs/TASKS.md) · QA: [`docs/QA.md`](docs/QA.md)
 
 ## Status
-Phase 1 done (design docs). Waiting for **Gate 1** user approval before any app code. Live checklist: `docs/TASKS.md`.
+Phase 2 done (scaffold, all checks green). Waiting for **Gate 2** approval before Phase 3 (sim core). Live checklist: `docs/TASKS.md`.
 
 Stack (ADR 0001–0008): Vite SPA · React 19 · TypeScript strict · three (WebGL2) via R3F `frameloop="never"` · plain data-oriented sim @30 Hz on main thread behind `SimHost` · 10 Hz projection → Zustand · CSS Modules + generated CSS vars · Vitest + Playwright · Blender 4.5 → gltf-transform (dedup/prune/weld/meshopt) → in-house codegen · Coolify (nginx image).
 
@@ -25,6 +25,7 @@ The script names are a contract; the stack ADR decides what they run.
 | `npm run e2e` | Playwright visual/e2e (Chromium preinstalled — never `playwright install`) |
 | `npm run asset -- <name>` · `npm run assets` | Blender → GLB → optimize → typed wrapper → preview render |
 | `npm run perf` | sim benchmark + perf audit helpers |
+| `npx -y npm@11.6.2 install <pkg>@<exact>` | add a dependency (npm 10 resolver bug; `npm ci` is fine) |
 | `scripts/install-blender.sh` | portable Blender 4.5 LTS into `~/.local/bin` (auto in cloud sessions) |
 
 Blender headless: `blender -b --factory-startup -P blender/assets/<asset>.py -- --out … --preview …`

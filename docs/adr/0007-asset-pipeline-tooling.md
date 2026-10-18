@@ -1,6 +1,6 @@
 # ADR 0007 — Asset pipeline: Blender 4.5 LTS bpy headless → glTF-Transform (meshopt) → generated typed asset manifests
 
-- **Status**: Proposed (Gate 1)
+- **Status**: Accepted (Gate 1)
 - **Date**: 2026-10-18
 - **Owner**: systems-architect (consulted: blender-technical-artist, three-graphics-engineer)
 - **Related**: skill `blender-asset-pipeline`, `docs/ASSETS_GUIDE.md` (naming, sockets, dimensions), `docs/ARCHITECTURE.md` §Asset pipeline, §Performance budget

@@ -1,6 +1,6 @@
 # ADR 0004 — State → UI binding: 10 Hz throttled projection in Zustand stores
 
-- **Status**: Proposed (Gate 1)
+- **Status**: Accepted (Gate 1)
 - **Date**: 2026-10-18
 - **Owner**: systems-architect (consulted: ui-design-system)
 - **Related**: ADR 0003, `docs/ARCHITECTURE.md` §UI projection contract

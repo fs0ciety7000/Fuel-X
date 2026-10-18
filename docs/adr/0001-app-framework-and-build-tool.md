@@ -1,6 +1,6 @@
 # ADR 0001 — App framework & build tool: Vite SPA + React + TypeScript
 
-- **Status**: Proposed (Gate 1)
+- **Status**: Accepted (Gate 1); amended in Phase 2 (boundary enforcement, see below)
 - **Date**: 2026-10-18
 - **Owner**: systems-architect
 - **Related**: ADR 0002 (renderer), ADR 0004 (UI binding), ADR 0008 (deployment), `docs/ARCHITECTURE.md` §Repo layout, §Scripts
@@ -57,6 +57,14 @@ not be driven by component re-renders.
 | `@eslint/js` | 10.0.1 | Base recommended rules |
 | `typescript-eslint` | 8.70.1 | TS-aware lint rules |
 | `eslint-plugin-react-hooks` | 7.1.1 | Hooks correctness (stale closures in frame loops are a classic R3F bug) |
-| `eslint-plugin-boundaries` | 7.2.0 | Enforces sim/render/ui/bridge/app import rules mechanically |
 | `prettier` | 3.9.9 | Formatting |
 | `tsx` | 4.23.15 | Runs TS build scripts (`scripts/**`) under Node without a compile step |
+
+## Amendment (Phase 2)
+`eslint-plugin-boundaries` 7.x does not resolve TS path aliases without an extra import resolver, so
+aliased imports (`@sim/*`) would silently pass. The boundary matrix is enforced instead with
+typescript-eslint's `no-restricted-imports` (patterns match aliases **and** relative paths, and
+`allowTypeImports` expresses "type-only from sim"), plus `no-restricted-properties` /
+`no-restricted-globals` for sim purity. `tests/scaffold/boundaries.test.ts` proves the rules fire.
+One dependency fewer. Fonts are self-hosted through `@fontsource/jetbrains-mono` and
+`@fontsource/inter-tight` 5.3.0 (Latin subsets bundled by Vite) instead of hand-copied WOFF2.

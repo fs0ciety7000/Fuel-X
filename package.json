@@ -1,0 +1,58 @@
+{
+  "name": "fuel-x",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "tokens": "tsx scripts/tokens/build.ts",
+    "dev": "tsx scripts/tokens/build.ts && vite",
+    "build": "tsx scripts/tokens/build.ts && vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit",
+    "lint": "eslint . && stylelint \"src/**/*.css\" && prettier --check . && tsx scripts/tokens/build.ts --check",
+    "format": "prettier --write .",
+    "e2e": "playwright test",
+    "asset": "tsx scripts/assets/build.ts",
+    "assets": "tsx scripts/assets/build.ts --all",
+    "perf": "tsx scripts/perf/sim-bench.ts && tsx scripts/perf/budgets.ts"
+  },
+  "dependencies": {
+    "@fontsource/inter-tight": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@react-three/drei": "10.7.8",
+    "@react-three/fiber": "9.8.1",
+    "postprocessing": "6.39.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "three": "0.186.1",
+    "zustand": "5.0.15"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@gltf-transform/cli": "4.5.0",
+    "@gltf-transform/core": "4.5.0",
+    "@gltf-transform/functions": "4.5.0",
+    "@playwright/test": "1.56.1",
+    "@types/node": "22.20.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/three": "0.186.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "@vitest/coverage-v8": "5.0.1",
+    "eslint": "10.11.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "fast-check": "4.10.2",
+    "meshoptimizer": "1.2.0",
+    "prettier": "3.9.9",
+    "stylelint": "17.15.0",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.1",
+    "vite": "8.3.1",
+    "vitest": "5.0.1"
+  }
+}

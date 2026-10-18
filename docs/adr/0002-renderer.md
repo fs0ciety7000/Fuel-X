@@ -1,6 +1,6 @@
 # ADR 0002 — Renderer: three.js WebGLRenderer (WebGL2) via React Three Fiber, imperative frame sync
 
-- **Status**: Proposed (Gate 1)
+- **Status**: Accepted (Gate 1)
 - **Date**: 2026-10-18
 - **Owner**: systems-architect (consulted: three-graphics-engineer)
 - **Related**: ADR 0003 (sim), ADR 0007 (assets), `docs/ARCHITECTURE.md` §Render sync, §Performance budget

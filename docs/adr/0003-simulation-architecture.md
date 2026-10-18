@@ -1,6 +1,6 @@
 # ADR 0003 — Simulation: plain data-oriented TS world, fixed 30 Hz step, main thread behind a worker-ready host
 
-- **Status**: Proposed (Gate 1)
+- **Status**: Accepted (Gate 1)
 - **Date**: 2026-10-18
 - **Owner**: systems-architect (consulted: simulation-engineer)
 - **Related**: ADR 0002, ADR 0004, `docs/ARCHITECTURE.md` §Loop, §Data model, §State machines, §Save format

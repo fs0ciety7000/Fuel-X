@@ -1,0 +1,9 @@
+/* Static global grain (DESIGN_SYSTEM §2.1 pattern-noise). Never animated. Alpha is baked into the SVG. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: var(--fx-z-noise);
+  pointer-events: none;
+  background-image: var(--fx-pattern-noise);
+}

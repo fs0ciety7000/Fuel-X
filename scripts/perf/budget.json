@@ -1,0 +1,6 @@
+{
+  "$source": "docs/ARCHITECTURE.md §13 — update in the same commit as the table",
+  "bundle": { "initialJsGzipKB": 450, "cssGzipKB": 25, "fontsKB": 150 },
+  "assets": { "totalGlbKB": 4096 },
+  "sim": { "mvpTickMeanUs": 50, "mvpTickP95Us": 150, "stressTickMeanUs": 400 }
+}

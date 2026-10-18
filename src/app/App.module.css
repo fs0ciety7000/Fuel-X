@@ -1,0 +1,35 @@
+.shell {
+  display: grid;
+  place-items: center;
+  height: 100%;
+}
+
+.plate {
+  display: grid;
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+}
+
+.plate > * {
+  background: var(--fx-color-paper);
+  padding: var(--fx-space-3) var(--fx-space-5);
+}
+
+.title {
+  font-family: var(--fx-font-macro);
+  font-size: var(--fx-type-macro-stamp);
+  font-weight: var(--fx-type-macro-stamp-weight);
+  line-height: var(--fx-type-macro-stamp-leading);
+  letter-spacing: var(--fx-type-macro-stamp-tracking);
+}
+
+.meta {
+  font-size: var(--fx-type-label);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+}
+
+.accent {
+  color: var(--fx-color-accent-text);
+}

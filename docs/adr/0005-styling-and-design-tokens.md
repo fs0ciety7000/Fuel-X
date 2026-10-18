@@ -1,6 +1,6 @@
 # ADR 0005 — Styling: CSS Modules + generated CSS custom properties, Stylelint-enforced brutalist rules
 
-- **Status**: Proposed (Gate 1)
+- **Status**: Accepted (Gate 1)
 - **Date**: 2026-10-18
 - **Owner**: systems-architect (consulted: ui-design-system)
 - **Related**: `docs/DESIGN_SYSTEM.md` (token values, authoritative), skills `design-tokens`, `industrial-brutalist-ui`; `docs/ARCHITECTURE.md` §Token pipeline

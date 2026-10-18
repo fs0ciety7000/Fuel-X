@@ -1,6 +1,6 @@
 # ADR 0006 — Testing: Vitest (unit, sim, golden, property, bench) + Playwright (e2e, visual, perf scenes)
 
-- **Status**: Proposed (Gate 1)
+- **Status**: Accepted (Gate 1); amended in Phase 2 (benchmarks)
 - **Date**: 2026-10-18
 - **Owner**: systems-architect (consulted: qa-perf, simulation-engineer)
 - **Related**: skills `sim-testing`, `visual-check`, `perf-audit`; `docs/QA.md`; `docs/ARCHITECTURE.md` §Debug hooks
@@ -47,3 +47,8 @@ downloaded (`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`).
 | `@vitest/coverage-v8` | 5.0.1 | Coverage gate on the sim |
 | `fast-check` | 4.10.2 | Property-based invariant tests for the sim |
 | `@playwright/test` | 1.56.1 | E2E + screenshot baselines + perf scenes; matches preinstalled Chromium r1194 |
+
+## Amendment (Phase 2)
+Vitest 5 replaced the `bench()` API. Sim benchmarks run in a small timing harness
+(`scripts/perf/sim-bench.ts`, warm-up + mean/p95 over N iterations) invoked by `npm run perf`;
+no extra dependency. Revisit Vitest's new benchmark API when it stabilises.
