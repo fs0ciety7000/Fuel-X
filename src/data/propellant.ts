@@ -16,8 +16,11 @@ export const propellant = {
     /** Farm boil-off, fraction of tank mass per second: LOX 0.20 %/day, CH4 0.10 %/day. */
     boilOffFractionPerS: { LOX: 2.3e-8, CH4: 1.2e-8 } satisfies Record<Propellant, number>,
   },
-  /** MVP start inventories (main D1 lever): usable margin ≈ 88 t LOX / 17 t CH4 after a nominal load. */
-  mvpStart: { farmLoxKg: 4_150_000, farmCh4Kg: 1_140_000 },
+  /**
+   * MVP start inventories (main D1 lever, BALANCING §13.1): after a nominal load (incl. loaded-vehicle boil-off)
+   * the farm can top for ≈ 31 min LOX / ≈ 49 min CH4, so PROPELLANT opens MARGINAL on LOX on purpose.
+   */
+  mvpStart: { farmLoxKg: 4_190_000, farmCh4Kg: 1_155_000 },
   /** Vehicle load rates, kg/s (≈ 44 min booster, ≈ 43 min ship). */
   loadRateKgPerS: {
     booster: { LOX: 1_000, CH4: 280 } satisfies Record<Propellant, number>,

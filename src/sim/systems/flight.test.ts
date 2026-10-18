@@ -127,14 +127,24 @@ describe('catch model (BALANCING §7)', () => {
 
   it.each<[string, number, number, number, number, number]>([
     // name, engines out, tower wind m/s, landing prop kg, σ m, p
+    // BALANCING §7 reference cases (pass 1, §13): σ reference is tower wind 11 m/s.
     ['nominal', 0, 0, 90_000, 0.6, 0.997],
-    ['one engine out', 1, 0, 90_000, 1.5, 0.77],
-    ['1 out + 14 m/s tower wind', 1, 14, 90_000, 2.22, 0.58],
-    ['same + low landing propellant', 1, 14, 40_000, 2.62, 0.51],
+    ['nominal, tower wind 14.3 m/s', 0, 14.3, 90_000, 1.095, 0.9],
+    ['nominal, tower wind 16.9 m/s (ground launch limit)', 0, 16.9, 90_000, 1.485, 0.775],
+    ['ascent engine-out (65 t), calm', 1, 0, 65_000, 1.6, 0.74],
+    ['ascent engine-out, tower wind 14 m/s', 1, 14, 65_000, 2.05, 0.62],
+    ['boostback engine-out (55 t, low prop), calm', 1, 0, 55_000, 2.0, 0.63],
+    ['boostback engine-out, tower wind 14 m/s', 1, 14, 55_000, 2.45, 0.537],
+    ['boostback engine-out, tower wind 16 m/s', 1, 16, 55_000, 2.75, 0.49],
   ])('%s', (_n, enginesOut, towerWindMPerS, landingPropKg, sigma, p) => {
     const r = catchProbability({ enginesOut, towerWindMPerS, landingPropKg });
     expect(r.sigmaM).toBeCloseTo(sigma, 9);
     expect(r.p).toBeCloseTo(p, 2);
+  });
+
+  it('a boostback engine-out is low-prop, an ascent one is not (lowPropRefKg between 55 t and 65 t)', () => {
+    expect(cm.lowPropRefKg).toBeGreaterThan(55_000);
+    expect(cm.lowPropRefKg).toBeLessThanOrEqual(65_000);
   });
 });
 
@@ -181,7 +191,7 @@ describe('nominal flight, no input (AC 16, 19–21)', () => {
     expect(req?.t === 'DecisionRequired' && req.deadlineTick).toBe(f.liftoff + at(f, 'LANDING_BURN'));
   });
 
-  it('auto policy catches at the deadline (p ≈ 0.997 ≥ 0.90); arms close; booster CAUGHT_SAFING', () => {
+  it('auto policy catches at the deadline (p ≈ 0.997 ≥ autoCatchThreshold); arms close; booster CAUGHT_SAFING', () => {
     const c = f.log.find((e) => e.t === 'RecoveryCommitted');
     expect(c).toMatchObject({ mode: 'CATCH', by: 'AUTO' });
     expect(c?.tick).toBe(f.liftoff + at(f, 'LANDING_BURN'));
@@ -292,12 +302,27 @@ describe('auto policy without input (AC 19)', () => {
   it.each<[string, (f: FlightSetup, tS: number) => void, 'CATCH' | 'DIVERT', 'AUTO' | 'FORCED']>([
     ['nominal → catch', () => {}, 'CATCH', 'AUTO'],
     [
-      'one ascent engine-out (p ≈ 0.77) → divert',
+      'one ascent engine-out, calm (p ≈ 0.74, LEAN) → catch',
       (f, tS) => void (tS === 30 && engineOut(f.world, f.booster.id)),
+      'CATCH',
+      'AUTO',
+    ],
+    ['tower wind 14 m/s, no engine-out (p ≈ 0.91) → catch', (f) => void (f.world.weather.towerWindMPerS = 14), 'CATCH', 'AUTO'],
+    [
+      'ascent engine-out + tower wind 14 m/s (p ≈ 0.62, CONTESTED) → divert',
+      (f, tS) => {
+        f.world.weather.towerWindMPerS = 14;
+        if (tS === 30) engineOut(f.world, f.booster.id);
+      },
       'DIVERT',
       'AUTO',
     ],
-    ['tower wind 14 m/s (p ≈ 0.83) → divert', (f) => void (f.world.weather.towerWindMPerS = 14), 'DIVERT', 'AUTO'],
+    [
+      'boostback engine-out, calm (p ≈ 0.63, low prop, CONTESTED) → divert',
+      (f) => void (f.booster.fsm.state === 'BOOSTBACK' && f.booster.engines.failed === 0 && engineOut(f.world, f.booster.id)),
+      'DIVERT',
+      'AUTO',
+    ],
     [
       'tower wind above the catch limit → forced divert',
       (f) => void (f.world.weather.towerWindMPerS = cm.towerWindLimitCatchMPerS + 1),
@@ -332,7 +357,7 @@ describe('engineOut hook (A4, fired by 3.7)', () => {
     expect(f.booster.engines).toMatchObject({ lit: vehicles.booster.engines - 1, failed: 1 });
     f.log.push(...run(f.world, 1));
     expect(f.booster.recovery?.p).toBeLessThan(p0);
-    expect(f.booster.recovery?.p).toBeCloseTo(0.77, 2);
+    expect(f.booster.recovery?.p).toBeCloseTo(0.74, 2);
     expect(f.booster.recovery?.landingPropKg).toBe(
       (fp.booster.find((k) => k.event === 'LANDING_BURN')?.boosterPropKg ?? 0) -
         fp.engineOut.ascentLandingPropPenaltyKg,
@@ -367,7 +392,7 @@ describe('engineOut hook (A4, fired by 3.7)', () => {
 // --- Seeded outcome (AC 20) ----------------------------------------------------------------------
 
 describe('catch outcome', () => {
-  /** GO FOR CATCH with 1 engine-out + 14 m/s tower wind (p ≈ 0.58). */
+  /** GO FOR CATCH with 1 ascent engine-out + 14 m/s tower wind (p ≈ 0.62). */
   function contested(seed: number): FlightSetup {
     const f = toLiftoff(seed);
     f.world.weather.towerWindMPerS = 14;
@@ -389,7 +414,7 @@ describe('catch outcome', () => {
       expect(o?.t === 'RecoveryOutcome' && o.result).toBe(
         firstDraw < (f.booster.recovery?.p ?? 0) ? 'CAUGHT' : 'CATCH_FAILED',
       );
-      expect(f.booster.recovery?.p).toBeCloseTo(0.58, 2);
+      expect(f.booster.recovery?.p).toBeCloseTo(0.62, 2);
       results.add(o?.t === 'RecoveryOutcome' ? o.result : '');
       if (seed <= 2) expect(contested(seed).log).toEqual(f.log);
     }

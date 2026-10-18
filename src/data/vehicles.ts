@@ -31,8 +31,8 @@ export const vehicles = {
     perNominalFlight: 0.06,
     engineOut: 0.1,
     highWindCatch: 0.04,
-    /** Tower wind above which a catch counts as high-wind, m/s. */
-    highWindCatchAboveMPerS: 10,
+    /** Tower wind above which a catch counts as high-wind, m/s (same reference as catch σ, BALANCING §13). */
+    highWindCatchAboveMPerS: 11,
     /** reliabilityFactor = 1 + reliabilityPerWear × wear (multiplies all booster failure probabilities). */
     reliabilityPerWear: 2,
   },

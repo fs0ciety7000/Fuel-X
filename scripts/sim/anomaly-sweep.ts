@@ -1,11 +1,13 @@
 // AC 3 sweep (GDD §13.3): 200 seeded headless runs of scenario `mvp` from T-06:00:00 to Debrief, in 4 worker
 // processes. Policies: `none` = no input at all (the count freezes at the load poll and the window closes),
 // `hands-off` = the standard autopilot's prep + orders + GO, but no anomaly / catch decisions.
-// Reports the share of runs with ≥ 1 anomaly and the anomaly distribution vs the director weights.
+// Reports the share of runs with ≥ 1 anomaly and the anomaly distribution vs the director weights (AC 3a/b), and
+// under `hands-off` the recovery split: diverted share in [15 %, 25 %] of flights, none at p ≥ autoCatchThreshold
+// (AC 3c, BALANCING §13.4).
 // Usage: npx tsx scripts/sim/anomaly-sweep.ts [runs=200]
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { anomalies as an } from '../../src/data/index.ts';
+import { anomalies as an, catchModel as cm } from '../../src/data/index.ts';
 import { STANDARD_AUTOPILOT, autopilotCommands, createMvpScenario, step } from '../../src/sim/index.ts';
 import type { AutopilotOptions } from '../../src/sim/index.ts';
 
@@ -17,6 +19,7 @@ interface RunReport {
   plan: string;
   fallback: boolean;
   outcome: string;
+  recovery: { mode: string; result: string; p: number; decidedBy: string } | null;
 }
 
 const HANDS_OFF: AutopilotOptions = { ...STANDARD_AUTOPILOT, leakResponse: null, catchDecision: false };
@@ -35,6 +38,7 @@ function runOne(seed: number, policy: Policy): RunReport {
     plan: st?.director.plan?.anomaly ?? '-',
     fallback: st?.director.fallbackUsed ?? false,
     outcome: world.debriefs[cd.id]?.outcome ?? cd.phase.state,
+    recovery: world.debriefs[cd.id]?.recovery ?? null,
   };
 }
 
@@ -90,6 +94,22 @@ if (workerIdx >= 0) {
     }
     console.log(`  outcomes: ${JSON.stringify(outcomes)}`);
     if (withOne < runs) failed = true;
+    const flights = reports.flatMap((r) => (r.recovery ? [r.recovery] : []));
+    const diverted = flights.filter((f) => f.mode === 'DIVERT');
+    const failedCatch = flights.filter((f) => f.result === 'CATCH_FAILED').length;
+    const highPDivert = diverted.filter((f) => f.p >= cm.autoCatchThreshold).length;
+    const pct = (n: number): string => ((100 * n) / Math.max(1, flights.length)).toFixed(1);
+    const by: Record<string, number> = {};
+    for (const f of diverted) by[f.decidedBy] = (by[f.decidedBy] ?? 0) + 1;
+    console.log(
+      `  flights ${flights.length}: diverted ${diverted.length} (${pct(diverted.length)} %, ${JSON.stringify(by)}), ` +
+        `failed catches ${failedCatch} (${pct(failedCatch)} %), diverted at p ≥ ${cm.autoCatchThreshold}: ${highPDivert}`,
+    );
+    if (policy === 'hands-off') {
+      // AC 3c: diverted share 15–25 % of flights; none diverted at p ≥ autoCatchThreshold.
+      const share = diverted.length / Math.max(1, flights.length);
+      if (flights.length === 0 || share < 0.15 || share > 0.25 || highPDivert > 0) failed = true;
+    }
   }
   console.log(`\nsweep ${((performance.now() - t0) / 1000).toFixed(1)} s — ${failed ? 'FAIL' : 'ok'}`);
   process.exit(failed ? 1 : 0);
