@@ -26,7 +26,7 @@ short caching for HTML, HTTPS, optional custom headers (COOP/COEP only if we eve
   - `deploy/nginx.conf`: `/assets/*` and `/models/*` → `Cache-Control: public, max-age=31536000, immutable`; `*.html` → `no-cache`; `types { model/gltf-binary glb; }`; gzip for js/css/json/svg; `design.html` served as-is; no SPA catch-all needed (two real entries), 404 → `index.html` acceptable.
   - Healthcheck: `GET /` returns 200 (Coolify healthcheck on port 80).
   - The Blender step is **not** run in the image: GLBs and generated tokens/wrappers are committed (ADR 0007), so the image only needs Node.
-- Coolify app: source = GitHub repo `fs0ciety7000/Fuel-X`, branch to be chosen by the user (default `main`), auto-deploy on push, domain **`fuelx.fs0ciety.org`** (user decision) configured in Coolify; `coolify.fs0ciety.org` is the Coolify dashboard.
+- Coolify app: source = GitHub repo `fs0ciety7000/Fuel-X`, branch to be chosen by the user (default the repo default branch), auto-deploy on push, domain **`fuel.fs0ciety.org`** (user decision, 2026-10-18; replaces the earlier `fuelx` name) configured in Coolify; `coolify.fs0ciety.org` is the Coolify dashboard. DNS: explicit record on `fs0ciety.org` pointing at the same origin as the other Coolify apps (`152.53.176.13`). Traefik issues the origin certificate; Cloudflare proxy is optional once that certificate exists (zone SSL is Full strict).
 - Release check before deploy: `npm run build && npm run preview` locally, and `docker build .` must succeed (added to Phase 8.4).
 
 ## Consequences

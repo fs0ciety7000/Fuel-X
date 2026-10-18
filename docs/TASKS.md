@@ -16,7 +16,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] DESIGN_SYSTEM — **ui-design-system**
 - [x] ASSETS_GUIDE (optimizer chain verified, socket rules) — **blender-technical-artist**
 - [x] Consolidation: paths aligned (tokens JSON, asset scripts, codegen), skill `blender-asset-pipeline` updated, template uses root empty
-- [x] ⛳ **Gate 1** approved (2026-10-18). Decisions: stack as ADR 0001–0007 · accent-text `#B23B0B` · pause always available (MVP) · failed catch shown in debrief only (MVP) · ≥1 anomaly per run OK · English UI, i18n-ready · reference HW = iGPU 1080p, Chrome/Edge first · **deploy on self-hosted Coolify** (`coolify.fs0ciety.org`, ADR 0008 rewritten; app domain `fuelx.fs0ciety.org`)
+- [x] ⛳ **Gate 1** approved (2026-10-18). Decisions: stack as ADR 0001–0007 · accent-text `#B23B0B` · pause always available (MVP) · failed catch shown in debrief only (MVP) · ≥1 anomaly per run OK · English UI, i18n-ready · reference HW = iGPU 1080p, Chrome/Edge first · **deploy on self-hosted Coolify** (`coolify.fs0ciety.org`, ADR 0008 rewritten; app domain `fuelx.fs0ciety.org`, later renamed to `fuel.fs0ciety.org`)
 
 ## Phase 2 — Scaffold
 - [x] 2.1 `package.json` with pinned versions from ARCHITECTURE §1, Vite 2 entries (`index.html`, `design.html`), TS strict configs, path aliases (`@sim`, `@data`, `@bridge`, `@render`, `@ui`, `@tokens`, `@app`) — **systems-architect**
@@ -86,5 +86,5 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [ ] 8.1 Perf against full budget on production build; fixes
 - [ ] 8.2 Accessibility & keyboard map audit (DESIGN_SYSTEM)
 - [ ] 8.3 Autosave/IndexedDB + export/import
-- [ ] 8.4 Deploy on Coolify (ADR 0008): `Dockerfile` + `deploy/nginx.conf`, `docker build .` green, Coolify app wired to the repo + README
+- [~] 8.4 Deploy on Coolify (ADR 0008): `Dockerfile` + `deploy/nginx.conf`, `docker build .` green, Coolify app wired to the repo, domain `fuel.fs0ciety.org`
 - [ ] ⛳ Gate 8 — release candidate
