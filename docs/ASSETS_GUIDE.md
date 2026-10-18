@@ -1,0 +1,319 @@
+# Fuel-X — Assets Guide
+
+Owner: `blender-technical-artist` · Status: **Phase 1 draft** (budgets to be reconciled with `docs/ARCHITECTURE.md`, entity names with `docs/GDD.md`, colors with `docs/DESIGN_SYSTEM.md`).
+Procedure for producing an asset: skill `blender-asset-pipeline`. This document is the **contract** between Blender scripts and render code.
+
+Class names below (`TOWER`, `BOOSTER`, `TANK_V`…) are technical asset classes, not lore names. Call-signs (`TOWER-1`, `B-14`) are runtime data and never appear in node names.
+
+---
+
+## 1. Space, units, pivots
+
+| Rule | Value |
+|---|---|
+| Unit | 1 Blender unit = **1 m**. Scene unit scale 1.0. No scaling at runtime except deliberate variants. |
+| Up axis | Blender **+Z up**. Conversion to glTF/three **+Y up happens only in the exporter** (`export_yup=True`). Never rotate objects by hand to compensate. |
+| Forward | Every asset **faces Blender −Y** (Blender "Front" view looks at this face). The exporter maps Blender −Y → glTF **+Z**, which is the axis `Object3D.lookAt()` aims for non-camera objects. Verified: a node at Blender `(0, 5, 0)` exports to glTF `(0, 0, −5)`. |
+| Left / Right | `L` = Blender **+X** side, `R` = Blender **−X** side (explicit, not "viewer's left"). |
+| Origin | Ground contact, centered on footprint, at Z = 0 (vehicles: under the wheels/tracks; boats: at the **waterline**; booster/ship: center of the engine plane, i.e. the bottom of the vehicle). |
+| Transforms | Applied before export (`transform_apply` rot+scale). Nodes keep only translation, plus rotation where the pivot frame requires it. |
+| Pivots | Every animated part is a node whose origin is the physical joint (hinge, slew ring, axle, gimbal plane). |
+| Socket frame | A socket's local **+Z (Blender) = emission / attach direction**. After export that is local **+Y** in three. Exhaust sockets therefore point down (rotated 180° about X). |
+| Scale reference | Previews and the lineup render include a 1.8 m human silhouette (preview-only, never exported). |
+
+Axis mapping cheat sheet (Blender → three): `X → X`, `Y → −Z`, `Z → Y`. A rotation about Blender +Z equals a rotation about three +Y with the same sign. **Motion ranges in this guide and in node extras are given in three (Y-up) local space.**
+
+## 2. Dimensions (real-ish, MVP and later)
+
+Vehicle class: large fully reusable two-stage methane/LOX rocket, tower-caught booster. Sanity check of the stack: mount deck 20 m + booster 71 m + ship 52 m = **143 m**, under the 146 m tower tip; catch pins at ~66 m on the booster put the carriage at ~86 m when the booster sits on the mount, well inside its 25–135 m travel.
+
+| Class | L × W × H (m) | Notes | Phase |
+|---|---|---|---|
+| `TOWER` | 13 × 13 × 146 | Square lattice 0–135 m, gantry + lightning mast to 146. Arms ~36 m long, hinges at front corners (x = ±6.5, y = −6.5). Mount center at y = −26. | MVP |
+| `PAD` | apron 120 × 120 × 0.5; mount 30 × 30 × 20 | Launch mount: 6 legs, deck at 20 m, ring OD 18 / ID 9.5 m, flame trench below. | MVP |
+| `BOOSTER` | Ø 9 × 71 | 33 engines (13 inner gimballed, 20 outer fixed), 4 grid fins (6 × 3 m) at 64–70 m, 2 catch pins at 66 m, hot-stage ring on top (2 m). | MVP |
+| `SHIP` | Ø 9 × 52 | 6 engines (3 SL gimballed, 3 vac fixed), 2 fore flaps (≈ 8 × 3 m), 2 aft flaps (≈ 10 × 4 m), 2 lift pins at 44 m, heat-shield side darker. | MVP |
+| `TANK_V` | Ø 6 × 28 | Vertical cryo tank, 2 m skirt, ellipsoidal head, ladder cage. Variant Ø 4.5 × 20. | MVP |
+| `TANK_H` | 22 × Ø 3.6 (top at 5.2) | Horizontal tank on 2 saddles. | MVP |
+| `TANK_SPHERE` | Ø 18, top at 24 | Sphere on 8 legs, equatorial ring, stair. | MVP |
+| `TANKER` | 21 × 2.6 × 4.0 | Tractor 7 m + cryo trailer 14 m, 5 axles, articulated at the fifth wheel. | MVP |
+| `TRANSPORTER` | 16 × 14 × 1.6 deck (+3 m stand) | SPMT-style: 2 lines × 8 bogies, carries booster or ship vertically on a stand. | MVP |
+| `VAN` | 6.0 × 2.1 × 2.7 | Pad crew / shift / patrol vans (one mesh, variants by label only). | MVP |
+| `BOAT_RANGE` | 26 × 6.5 × 9 (above WL) | Range safety boat, mast + radar. | MVP |
+| `VESSEL_RECOVERY` | 72 × 16 × 24 (above WL) | Offshore support vessel, aft cargo deck 30 × 14 m, deck crane, radar. | MVP |
+| `WX_STATION` | 3 × 3 × 10 | Mast, instrument box, anemometer, wind vane. | MVP |
+| `BLDG_HIGHBAY` | 32 × 32 × 85 | Tall bay for stacking ships; vertical door 18 × 60 m on −Y face. | MVP (yard) |
+| `BLDG_MEGABAY` | 70 × 50 × 90 | Booster integration bay; door 22 × 80 m. | MVP (yard) |
+| `HANGAR_TENT` | 45 × 30 × 18 | Barrel-vault tent hangar. | MVP (yard) |
+| `CRANE` | tracks 12 × 10; boom 96 | Crawler crane, superstructure 14 m, lattice boom. | MVP-nice |
+| `PAD_UC` | as `PAD` + scaffolds | Second pad under construction (parameter variant of `PAD`/`TOWER` partial height). | Later |
+| `STAND_TEST` | 20 × 20 × 30 | Suborbital test stand. | Later |
+| `PROP_LandingFrame` | 12 × 12 × 4 | Cargo on the recovery deck. | Later |
+| `PROP_*` | — | Fences, lights masts, road barriers, cones, piping runs. | Later |
+
+## 3. Node naming contract
+
+Node names are **API**. Renaming = breaking change: grep `src/` and update callers in the same commit.
+
+- File: `public/models/<class_lower>.glb` (`tower.glb`, `tank_v.glb`, `vessel_recovery.glb`), LODs `<class_lower>_lod1.glb`, `_lod2.glb`.
+- Root: exactly one root empty named `<ASSET>` (e.g. `TOWER`) at the origin, with extras `{ fx_asset, fx_version, fx_lod }`.
+- Meshes: `<ASSET>_<Part>` — Part is PascalCase ASCII, indices two digits from 01 (`TRANSPORTER_Wheel_03`), sides suffix `L`/`R` (`TOWER_ArmL`). Mesh data name = object name.
+- Sockets: empties `SOCKET_<Name>` (indices `SOCKET_Engine_07`). Socket names are unique inside a GLB, not globally; code always resolves them under an asset instance.
+- Forbidden: `.` in names (Blender `.001` duplicates), spaces, non-ASCII, LOD suffixes in node names (each LOD file has the same names).
+- Parse with the known class prefix (class names contain `_`, e.g. `TANK_V_Body`); never split on the first underscore.
+- **Hierarchy rule: a node with children is an empty** (pivot/group); geometry lives in leaf meshes (`TOWER_Carriage` empty → `TOWER_CarriageGeo` mesh + children). Reason (verified by experiment): `meshopt` quantization moves the mesh of any node that has children into a new **unnamed** child node, so `nodes.X.geometry` would break. Render code animates the named empty as an `Object3D`.
+- Static geometry is merged per material into as few leaf meshes as possible (`<ASSET>_Static`, or a few descriptive parts if code needs them).
+
+### Animation metadata in extras (machine-readable)
+Every animated node carries custom properties exported as glTF `extras` (verified to survive the 4.5 exporter and `gltf-transform`):
+`fx_anim` = `rot` | `trans` | `spin`, `fx_axis` = `x|y|z` (three local space), `fx_min`, `fx_max`, `fx_rest`, `fx_unit` = `deg|m`. The typed-wrapper generator (§7) turns these into constants so the sim/render never hard-code ranges. **No baked animation clips** (unless an ADR says otherwise); motion is driven by sim state.
+
+## 4. Per-asset node & socket contract
+
+Common sockets for every entity: `SOCKET_Label` (tag anchor, 2–4 m above the top), `SOCKET_Focus` (camera follow target, ≈ visual center). Below: additional required nodes. Ranges are in three local space; rotation signs are positive = counter-clockwise looking down the axis.
+
+### TOWER
+| Node | Type | Pivot | Motion |
+|---|---|---|---|
+| `TOWER_Static` | mesh | origin | lattice, gantry, lightning mast, stairs (merged) |
+| `TOWER_Carriage` | empty | carriage center on the front face | `trans y` 25 → 135 m, rest 86 |
+| `TOWER_ArmL` / `TOWER_ArmR` (children of carriage) | empty | hinge axis at (±6.5, −6.5) | `rot y` 0° (closed, parallel, 9.6 m gap) → open ±40° (L +, R −) |
+| `TOWER_ArmLGeo`, `TOWER_ArmRGeo` | mesh | — | arm geometry incl. catch rails |
+| `TOWER_QDArm` | empty | hinge on front face, h = 100 m | `rot y` 0° (stowed along tower face) → 90° (engaged with ship) |
+| Later: `TOWER_ArmL_Cart` / `R` | empty | on arm rail | `trans` along arm 0 → 4 m (shock absorber) |
+
+Sockets: `SOCKET_CatchPointL/R` (on the arm rails, where booster pins rest), `SOCKET_ShipQD` (QD arm tip), `SOCKET_Mount` (= where `PAD` origin goes, (0, −26, 0)), `SOCKET_Label`, `SOCKET_Focus` (h ≈ 70 m).
+
+### PAD (launch mount + apron)
+`PAD_Static`; `PAD_BQD` (booster quick-disconnect hood, `trans y` 0 → −1.5 m, retracted at liftoff); `PAD_Clamps` (group, `rot` 0 → 20° outwards, cosmetic). Sockets: `SOCKET_VehicleMount` (deck center, z = 20), `SOCKET_FlameTrench` (trench exit, +Z along trench), `SOCKET_Deluge_01..04` (steam/water), `SOCKET_Label`.
+
+### BOOSTER
+`BOOSTER_Static` (body, chines, hot-stage ring, outer 20 engines); `BOOSTER_EnginesGimbal` (empty at gimbal plane z = 2.5, inner 13 engines as child mesh, `rot x` and `rot z` ±8°); `BOOSTER_GridFin_01..04` (empty at fin hinge on the hull, `rot` about the radial axis ±30°, rest 0; fins at 45°/135°/225°/315°). Landing legs: **none** (tower catch).
+Sockets: `SOCKET_Exhaust` (engine plane center, pointing down), `SOCKET_Engine_01..33` (each bell exit; extras `fx_ring` = inner|outer — lets the renderer drop a plume on engine-out), `SOCKET_CatchPinL/R` (z = 66, must coincide with tower `SOCKET_CatchPointL/R` when caught), `SOCKET_ShipMount` (top of hot-stage ring), `SOCKET_BQD` (base), `SOCKET_Label`, `SOCKET_Focus` (z ≈ 35).
+
+### SHIP
+`SHIP_Static` (body, nose, heat-shield side in `MAT_ClayDark`, vac engines); `SHIP_FlapFL/FR/AL/AR` (empty on the hinge line parallel to the body axis, `rot` 0° (folded, stowed) → 90° (deployed), rest 45°); `SHIP_EnginesGimbal` (3 SL engines, ±12°).
+Sockets: `SOCKET_Exhaust`, `SOCKET_Engine_01..06`, `SOCKET_LiftPinL/R` (z = 44), `SOCKET_QD` (z ≈ 8, faces the tower QD arm), `SOCKET_Label`, `SOCKET_Focus`.
+
+### TANK_V / TANK_H / TANK_SPHERE (instancing-friendly)
+Single leaf mesh `<ASSET>_Body` (≤ 2 materials), no animated parts. Sockets: `SOCKET_Fill` (pipe connection, faces −Y), `SOCKET_Vent` (boil-off steam, +Z up), `SOCKET_Label`.
+
+### TANKER
+`TANKER_Tractor` (empty) → `TANKER_TractorGeo`, `TANKER_Axle_01..02` (`spin x`), `TANKER_Steer` (front axle, `rot y` ±35°); `TANKER_Trailer` (empty at fifth wheel, `rot y` ±70°) → `TANKER_TrailerGeo`, `TANKER_Axle_03..05`. Sockets: `SOCKET_Hose` (trailer rear valve box), `SOCKET_Label`, `SOCKET_Focus`.
+
+### TRANSPORTER
+`TRANSPORTER_Static` (chassis, power pack); `TRANSPORTER_Deck` (empty, `trans y` 0 → 0.6 m) → deck + stand; `TRANSPORTER_Bogie_01..16` (empty at king pin, `rot y` ±90° — SPMTs crab and pivot) → each `TRANSPORTER_Wheel_01..16` (one mesh per wheel pair, pivot on axle, `spin x`). Wheels are linked duplicates of one mesh. Sockets: `SOCKET_Cargo` (stand top center — booster/ship origin goes here), `SOCKET_Label`, `SOCKET_Focus`.
+
+### CRANE
+`CRANE_Static` (tracks, carbody); `CRANE_Upper` (empty at slew ring, z = 3, `rot y` −180° → 180°); `CRANE_Boom` (empty at boom foot, `rot x` 20° → 85° luff, rest 70°); `CRANE_Cable` (unit-length 1 m mesh hanging from the tip, render scales `y` to cable length); `CRANE_Hook` (empty, `trans y` along the cable). Sockets: `SOCKET_Hook` (load attach), `SOCKET_BoomTip`, `SOCKET_Label`, `SOCKET_Focus`.
+
+### BOAT_RANGE / VESSEL_RECOVERY
+`<ASSET>_Static`; `<ASSET>_Radar` (`spin y`, continuous); recovery vessel also `VESSEL_RECOVERY_DeckCrane` (`rot y` ±150°). Sockets: `SOCKET_Wake` (stern, waterline, +Z aft), `SOCKET_Bow` (foam), `SOCKET_Deck` (cargo mount, vessel only), `SOCKET_Label`, `SOCKET_Focus`.
+
+### VAN (instanced)
+Single mesh `VAN_Body`, wheels merged, no animated parts (not visible at game scale). Sockets: `SOCKET_Label`.
+
+### WX_STATION
+`WX_STATION_Static`; `WX_STATION_Anemometer` (`spin y`); `WX_STATION_Vane` (`rot y`, 0–360°, shows wind direction — gameplay readable). Sockets: `SOCKET_Label`.
+
+### BLDG_HIGHBAY / BLDG_MEGABAY / HANGAR_TENT
+`<ASSET>_Static`; highbay/megabay `<ASSET>_Door` (vertical lift, `trans y` 0 → door height). Sockets: `SOCKET_DoorOut` (ground point just outside the door, path waypoint), `SOCKET_Label`.
+
+## 5. Material contract
+
+Only these five shared materials may exist in a GLB. Colors come from the design-token export (`materials_from_tokens()` reads it; no hex literal in asset scripts). Proposed mapping — final token names belong to `docs/DESIGN_SYSTEM.md`:
+
+| Material | Token (proposed) | ≈ sRGB | Roughness | Metallic | Use |
+|---|---|---|---|---|---|
+| `MAT_Clay` | `clay.base` | `#E9E8E3` | 0.9 | 0 | default for everything |
+| `MAT_ClayDark` | `clay.shade` | `#B9B8B2` | 0.9 | 0 | engine bells, heat shield, tracks/tyres, doors, trench, contrast details |
+| `MAT_Metal` | `clay.metal` | `#CFCFCB` | 0.6 | 0.3 | lattices, rails, piping. Metallic kept ≤ 0.3: without an env map, three renders metals dark |
+| `MAT_Glass` | `ink.glass` | neutral grey ≈ `#8E8E8A` | 0.25 | 0 | windows, bridge glazing. **Opaque**, no transmission. (The template's `#9DA3A6` is slightly blue — replace by a neutral ink token: one hue only.) |
+| `MAT_Accent` | `accent` | `#FF5A1F` | 0.8 | 0 | see below |
+
+- Colors are converted sRGB → linear in Blender (`hex_to_linear`); glTF stores linear factors; three's GLTFLoader reads them correctly with sRGB output.
+- **`MAT_Accent` on models is the exception**: orange means thrust, selection, alerts, hazard/recovery zones, which are runtime states. MVP assets ship with **no** `MAT_Accent`. Allowed only on assets whose sole purpose is a hazard/signal marker (e.g. later `PROP_HazardBuoy`), after design review. Parts that may turn orange at runtime (engine bells, selection) are separate nodes so the renderer can swap their material.
+- Keep the five materials **numerically distinct**: `gltf-transform dedup` merges identical materials and keeps only one name (verified).
+- Render code dedupes materials by name across all GLBs (one shader program per `MAT_*`) and may replace them with its own token-driven materials.
+- No textures, no UVs exported (`export_texcoords=False`), no vertex colors by default.
+- **Baked AO policy**: off in MVP. If ARCHITECTURE rejects screen-space AO for budget reasons, bake Cycles AO into `COLOR_0` (vertex color, single channel replicated) for large static structures only (`TOWER_Static`, `PAD_Static`, buildings), multiplied in the shader. Never on instanced assets.
+
+## 6. Geometry rules
+
+- **Trusses/lattices** (tower, crane boom, gantries): procedural `truss()` with square-section members (4 sides, no bevel, no end caps where hidden), merged into the static mesh — one draw call per material, not instanced nodes. Budget check: a 135 m tower with 6 m bays, 4 faces, legs + X-bracing + horizontals ≈ 400 members ≈ 5k tris. Lower LODs replace lattice faces with solid slab boxes.
+- **Bevel policy** (clay look needs soft edge highlights): bevel only primary forms (building edges, tank heads/skirts, hull rims, decks): width 0.05–0.3 m scaled to object size, 1–2 segments, limit by angle 30°, followed by a Weighted Normal modifier. Never bevel truss members, wheels or small parts.
+- **Normals/shading**: `shade_smooth_by_angle(angle=30°)` (4.1+ operator, verified in 4.5), export normals, no tangents. Cylinders: 24 segments for Ø ≥ 6 m at LOD0, 16 for smaller, 8–12 at LOD1.
+- No hidden interior faces, no zero-area faces, no n-gons left after export (exporter triangulates; keep quads clean). Watertight is not required.
+- **Instancing-friendly assets** (`TANK_*`, `VAN`, later props): one leaf mesh, ≤ 2 materials, origin on the ground, no animated parts, no per-instance geometry. Variants are separate files (`tank_v_s.glb`), not non-uniform runtime scaling (it distorts heads).
+- Repeated parts inside one asset (wheels, grid fins, flaps) are **linked duplicates** of one mesh — the exporter keeps one shared glTF mesh (verified: 3 linked duplicates → 1 mesh). Do not rely on `EXT_mesh_gpu_instancing` (the 4.5 exporter did not emit it for linked duplicates); the renderer builds `InstancedMesh` where useful.
+
+### LODs
+Produced by the **same script** with lower parameters (segments, truss → slabs, details dropped), not by decimation — decimation ruins clean clay silhouettes. Every LOD file keeps the **same animated nodes and all sockets**; LOD2 may merge everything else into `<ASSET>_Static`. Switch on projected screen height (independent of FOV); reference distances below assume a 30° vertical FOV.
+
+| Level | Projected height | Tower | Booster | Tank V | Van |
+|---|---|---|---|---|---|
+| LOD0 | ≥ 15 % of viewport | < 1.8 km | < 0.9 km | < 350 m | — |
+| LOD1 | 3–15 % | < 9 km | < 4.4 km | < 1.7 km | < 1.7 km (only LOD) |
+| LOD2 | 0.3–3 % | beyond | beyond | beyond | — |
+| hidden | < 0.3 % (label stays) | — | — | > 17 km | > 1.7 km |
+
+### Budgets (proposal — ARCHITECTURE reconciles)
+Triangles after export; GLB size after optimization (meshopt ≈ 7–10 B/tri). Draw calls = mesh nodes × materials at LOD0.
+
+| Class | LOD0 tris | LOD1 | LOD2 | GLB LOD0 | Draw calls |
+|---|---|---|---|---|---|
+| TOWER | 40 k | 12 k | 3 k | ≤ 500 KB | ≤ 10 |
+| PAD | 15 k | 5 k | 1 k | ≤ 200 KB | ≤ 6 |
+| BOOSTER | 20 k | 6 k | 1.5 k | ≤ 250 KB | ≤ 10 |
+| SHIP | 15 k | 5 k | 1 k | ≤ 200 KB | ≤ 10 |
+| TANK_V / TANK_H / TANK_SPHERE | 1.5 k / 1.2 k / 2.5 k | 400 / 300 / 600 | — | ≤ 40 KB | ≤ 2 |
+| TANKER | 5 k | 1.2 k | — | ≤ 70 KB | ≤ 8 |
+| TRANSPORTER | 8 k | 2 k | — | ≤ 100 KB | ≤ 40 (wheels; instance if hot) |
+| CRANE | 20 k | 6 k | 1.5 k | ≤ 250 KB | ≤ 8 |
+| VESSEL_RECOVERY | 15 k | 4 k | 1 k | ≤ 200 KB | ≤ 8 |
+| BOAT_RANGE | 4 k | 1 k | — | ≤ 60 KB | ≤ 4 |
+| VAN | 1.5 k | 400 | — | ≤ 25 KB | ≤ 2 |
+| WX_STATION | 1 k | 300 | — | ≤ 20 KB | ≤ 4 |
+| BLDG_HIGHBAY / MEGABAY / HANGAR_TENT | 3 k / 5 k / 2 k | 800 / 1.2 k / 600 | — | ≤ 70 KB | ≤ 4 |
+
+MVP site estimate at typical framing (tower + pad + booster + ship at LOD0, ~12 tanks, 4 tankers, 2 transporters, 6 vans, 3 boats/vessels, 3 WX, 3 buildings at LOD1/2): ≈ **160 k tris, ≈ 120 draw calls** for assets, before point clouds and particles. Total GLB payload ≈ 2.5 MB.
+
+## 7. Export, optimization, wrappers
+
+### glTF export (Blender 4.5.14 LTS — every option name below verified)
+```python
+bpy.ops.export_scene.gltf(
+    filepath=path, export_format="GLB",
+    export_yup=True, export_apply=True, export_extras=True,
+    export_texcoords=False, export_normals=True, export_tangents=False,
+    export_materials="EXPORT", export_vertex_color="NONE",  # "ACTIVE" only if baked AO
+    export_attributes=False, export_animations=False, export_skins=False, export_morph=False,
+    export_cameras=False, export_lights=False,
+    export_draco_mesh_compression_enable=False, export_gpu_instances=False,
+    export_hierarchy_flatten_objs=False, use_selection=False, use_visible=True,
+)
+```
+Export **before** adding preview-only objects (ground, camera, sun, human). Re-running a script produces a byte-identical GLB (verified md5).
+
+### Optimization (`gltf-transform`, version pinned in `package.json`)
+Verified chain — keeps every named node, socket empty and extras:
+```bash
+gltf-transform dedup  raw.glb   t1.glb
+gltf-transform prune  t1.glb    t2.glb --keep-leaves true     # sockets are empty leaves!
+gltf-transform weld   t2.glb    t3.glb
+gltf-transform meshopt t3.glb   public/models/<asset>.glb --level medium
+```
+**Never run `gltf-transform optimize` with defaults**: verified, it joined and flattened the whole test asset into a single node and deleted the sockets. Even with `--join false --flatten false --instance false`, its prune step deletes socket empties unless `--prune false`. No `--simplify`, no `--palette`, no Draco (meshopt decodes faster and is enough; the renderer must register `MeshoptDecoder` on `GLTFLoader`). Raw GLBs go to a git-ignored `build/models-raw/`. Optimized output is deterministic (verified md5). `npx` resolved a newer `@gltf-transform/core` than the CLI version asked for, so the version **must** be pinned by the lockfile.
+
+### Typed wrapper generation
+Default (works whatever the renderer ADR picks): `scripts/gen-asset-types.mjs` reads each optimized GLB with `@gltf-transform/core` and emits `src/render/assets/generated/<asset>.ts`:
+```ts
+export const TOWER = {
+  url: '/models/tower.glb', lods: ['/models/tower_lod1.glb', '/models/tower_lod2.glb'],
+  nodes: { Carriage: 'TOWER_Carriage', ArmL: 'TOWER_ArmL', /* … */ },
+  sockets: { CatchPointL: 'SOCKET_CatchPointL', Label: 'SOCKET_Label', /* … */ },
+  anim: { Carriage: { kind: 'trans', axis: 'y', min: 25, max: 135, rest: 86, unit: 'm' } },
+} as const;
+```
+If the ADR picks R3F, `gltfjsx --types` may generate components in addition, **without `--transform`** (it re-optimizes and would break the contract). The generator fails the build if a required node from §4 is missing.
+
+## 8. File layout
+
+```
+blender/lib/            shared helpers (importable package, see §10)
+blender/assets/<asset>.py   one script per class (tower.py, tank_v.py…) — params as constants / CLI args
+build/models-raw/       raw exporter output (git-ignored)
+public/models/          optimized GLB + LODs (generated, committed, never hand-edited)
+docs/assets/<asset>.png             preview 1024²
+docs/assets/turntable/<asset>_NN.png  optional 12-frame turntable 512²
+docs/assets/_lineup.png             all assets side by side + 1.8 m human, for scale review
+src/render/assets/generated/        typed wrappers (generated)
+scripts/asset.mjs       npm run asset -- <name>: blender → optimize → wrapper → validate
+```
+Asset scripts import the lib with `sys.path.insert(0, str(Path(__file__).resolve().parents[1]))` (Blender runs them with `-P`, not as a package).
+
+## 9. Preview render spec
+
+Matches `template_asset.py` (tested) so previews sit directly on the UI paper substrate:
+- Cycles CPU, 32 samples + denoise, `cycles.seed = 0`, view transform **Standard** (keeps the paper hex exact), 1024 × 1024 PNG, RGB 8-bit, no alpha.
+- World: camera rays see exactly paper `#F4F4F0` (from tokens); lighting uses the same paper color at strength 0.25 as fill.
+- Ground: 500 m plane, paper color, roughness 1, catches the shadow.
+- Sun: rotation (50°, 0°, 35°) → elevation 40°, energy 2.2, angle 8° (soft shadow). **The same sun direction must be the game's** — expose it as a shared constant with ARCHITECTURE/render (`SUN_DIR`).
+- Camera: 85 mm (≈ 24° FOV, the game's narrow-FOV feel), direction (1, −1, 0.8) from the bounds center → front-right three-quarter view of the −Y face, distance 5 × bounding radius.
+- Turntable (optional, review): 12 frames, camera orbit 30° steps, 512².
+- Lineup (`_lineup.png`): all exported LOD0 assets on one ground in a row, orthographic side view, 2048 × 1024.
+- No halftone in the committed PNG; the in-game catalog may apply its own dithering.
+
+## 10. `blender/lib/` helpers (to build in Phase 4)
+
+```python
+# cli.py
+parse_args() -> Namespace                      # --out --preview --lod {0,1,2,all} --turntable N
+# materials.py
+materials_from_tokens(tokens_path="src/ui/tokens/tokens.json") -> dict[str, bpy.types.Material]
+hex_to_linear(hex: str) -> tuple[float, float, float, float]
+# nodes.py
+root(asset: str, version: int = 1, lod: int = 0) -> Object                  # root empty <ASSET>
+pivot(name: str, location, rotation=(0, 0, 0), parent=None, anim: dict | None = None) -> Object
+socket(name: str, location, rotation=(0, 0, 0), parent=None, extras: dict | None = None) -> Object
+parent_keep(child: Object, parent: Object) -> None                         # keeps world transform
+merge_static(objs: list[Object], name: str) -> Object                      # join, one primitive per material
+linked_copy(src: Object, name: str, location, rotation=(0, 0, 0), parent=None) -> Object
+# prims.py
+truss(name, start, end, width, depth, bays, section=0.35, bracing="X", faces=4,
+      material="MAT_Metal", lod=0) -> Object                               # lod>=2 → slab box
+tank_vertical(name, radius, height, head="ellipsoidal", skirt=2.0, segments=24,
+              ladder=True, material="MAT_Clay") -> Object
+tank_horizontal(name, radius, length, saddles=2, head="ellipsoidal", segments=20) -> Object
+tank_sphere(name, radius, legs=8, leg_height=None, segments=24, rings=12) -> Object
+wheel_bogie(name, wheel_radius, wheel_width, track, wheels=2, segments=12) -> tuple[Object, Object]  # (pivot, wheel)
+railing(name, points, height=1.1, post_spacing=2.0, section=0.05) -> Object
+engine_bell(name, exit_radius, length, segments=16) -> Object
+bevel_soft(obj, width, segments=2, angle_deg=30) -> None                   # bevel + weighted normal
+shade(obj, angle_deg=30) -> None                                           # shade_smooth_by_angle
+# validate.py
+validate(asset: str, required_nodes: list[str], tri_budget: int, max_materials: int = 5) -> None
+    # fails on missing nodes, '.' in names, foreign materials, over-budget tris, unapplied scale
+# export.py / preview.py
+export_glb(path: str) -> None                                              # §7 options
+render_preview(path: str, size=1024, turntable: int = 0) -> None           # §9
+render_lineup(paths: list[str], out: str) -> None
+```
+Each asset script declares `ASSET`, `REQUIRED_NODES`, `TRI_BUDGET` and calls `validate()` before `export_glb()`.
+
+## 11. MVP asset list (priority order)
+
+| # | Asset | Why this order |
+|---|---|---|
+| 1 | `TOWER` | **Pipeline proof**: lattice helper, pivots (carriage → arms), sockets, LODs, export → optimize → wrapper → preview → in-scene. |
+| 2 | `PAD` | Tower and vehicles are placed relative to it; flame trench/deluge sockets for liftoff particles. |
+| 3 | `BOOSTER` | Hero vehicle: exhaust, engines, grid fins, catch pins validated against tower catch points. |
+| 4 | `SHIP` | Stack + QD arm validation. |
+| 5 | `TANK_V`, `TANK_H`, `TANK_SPHERE` | Tank farm, instancing path proven. |
+| 6 | `TANKER` | Background logistics loop (articulation, wheels). |
+| 7 | `TRANSPORTER` | Rollout phase. |
+| 8 | `VAN` | Instanced background traffic. |
+| 9 | `WX_STATION` | Weather go/no-go readability. |
+| 10 | `BOAT_RANGE` | Range violations / hazard line. |
+| 11 | `VESSEL_RECOVERY` | Recovery fleet, wake sockets. |
+| 12 | `BLDG_HIGHBAY`, `BLDG_MEGABAY`, `HANGAR_TENT` | Small yard. |
+| 13 | `CRANE` | Stacking/yard flavor (MVP-nice; the tower stacks in the MVP). |
+
+### Acceptance checklist (per asset)
+- [ ] Script runs headless (`--factory-startup`), no Python errors; re-run → identical GLB md5.
+- [ ] Dimensions match §2 within 5 %; origin, forward (−Y) and L/R per §1; lineup render checked against the 1.8 m human.
+- [ ] Single root `<ASSET>`; all §4 nodes and sockets present after optimization; no `.` in names; nodes with children are empties.
+- [ ] Animated nodes: pivot at the joint, `fx_*` extras present, motion range exercised in a preview pose (e.g. arms open/closed) without clipping.
+- [ ] Only `MAT_*` materials, colors from tokens, no `MAT_Accent` (unless approved), no UVs/textures/vertex colors (unless baked AO approved).
+- [ ] Tris, GLB size and draw calls within §6 budgets for every LOD; LOD files share node/socket names.
+- [ ] Preview PNG (and turntable if any) committed and looked at; background reads as paper.
+- [ ] Typed wrapper regenerated; render code references only existing names; in-scene at correct scale via `visual-check`.
+- [ ] Asset-specific: TOWER `SOCKET_CatchPointL/R` coincide with BOOSTER `SOCKET_CatchPinL/R` when the carriage is at the catch height and the booster is at `SOCKET_Mount` + catch offset; TOWER `SOCKET_ShipQD` reaches SHIP `SOCKET_QD` at 90°; TRANSPORTER `SOCKET_Cargo` carries BOOSTER and SHIP without intersecting the stand.
+- [ ] This guide's tables updated if a dimension, node or budget changed.
+
+## 12. Open questions
+1. Final token names/values for the five materials (DESIGN_SYSTEM) and a JSON token export Blender can read.
+2. Scene triangle / draw-call budget (ARCHITECTURE) — this guide proposes ≈ 160 k tris / ≈ 120 draw calls for the MVP site.
+3. Screen-space AO vs baked vertex AO (ARCHITECTURE/render).
+4. Renderer ADR: R3F (`gltfjsx` components) or plain three (generated constants only).
+5. Does gameplay need per-engine visuals (33 sockets kept either way), arm shock-absorber carts, or an ocean-landing variant with legs?
