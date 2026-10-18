@@ -86,5 +86,5 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [ ] 8.1 Perf against full budget on production build; fixes
 - [ ] 8.2 Accessibility & keyboard map audit (DESIGN_SYSTEM)
 - [ ] 8.3 Autosave/IndexedDB + export/import
-- [~] 8.4 Deploy on Coolify (ADR 0008): `Dockerfile` + `deploy/nginx.conf`, `docker build .` green, Coolify app wired to the repo, domain `fuel.fs0ciety.org`
+- [x] 8.4 Deploy on Coolify (ADR 0008): `Dockerfile` + `deploy/nginx.conf`, `docker build .` green, Coolify app `fuel-x` on `coolify.fs0ciety.org`, domain `https://fuel.fs0ciety.org`
 - [ ] ⛳ Gate 8 — release candidate
