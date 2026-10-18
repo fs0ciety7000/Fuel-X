@@ -1,0 +1,89 @@
+{
+  "asset": "SHIP",
+  "file": "ship",
+  "class": "hero-vehicle",
+  "lods": 3,
+  "nodes": [
+    "SHIP_Static",
+    "SHIP_EnginesGimbal",
+    "SHIP_EnginesGimbalYaw",
+    "SHIP_EnginesSL",
+    "SHIP_FlapFL",
+    "SHIP_FlapFR",
+    "SHIP_FlapAL",
+    "SHIP_FlapAR",
+    "SHIP_FlapFLGeo",
+    "SHIP_FlapFRGeo",
+    "SHIP_FlapALGeo",
+    "SHIP_FlapARGeo"
+  ],
+  "sockets": [
+    "SOCKET_Exhaust",
+    "SOCKET_Engine_01",
+    "SOCKET_Engine_02",
+    "SOCKET_Engine_03",
+    "SOCKET_Engine_04",
+    "SOCKET_Engine_05",
+    "SOCKET_Engine_06",
+    "SOCKET_LiftPinL",
+    "SOCKET_LiftPinR",
+    "SOCKET_QD",
+    "SOCKET_Label",
+    "SOCKET_Focus"
+  ],
+  "anim": {
+    "SHIP_EnginesGimbal": {
+      "kind": "rot",
+      "axis": "x",
+      "min": -12,
+      "max": 12,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "SHIP_EnginesGimbalYaw": {
+      "kind": "rot",
+      "axis": "z",
+      "min": -12,
+      "max": 12,
+      "rest": 0,
+      "unit": "deg"
+    },
+    "SHIP_FlapFL": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 0,
+      "rest": -45,
+      "unit": "deg"
+    },
+    "SHIP_FlapFR": {
+      "kind": "rot",
+      "axis": "y",
+      "min": 0,
+      "max": 90,
+      "rest": 45,
+      "unit": "deg"
+    },
+    "SHIP_FlapAL": {
+      "kind": "rot",
+      "axis": "y",
+      "min": -90,
+      "max": 0,
+      "rest": -45,
+      "unit": "deg"
+    },
+    "SHIP_FlapAR": {
+      "kind": "rot",
+      "axis": "y",
+      "min": 0,
+      "max": 90,
+      "rest": 45,
+      "unit": "deg"
+    }
+  },
+  "budget": {
+    "tris": [15000, 5000, 1000],
+    "bytes": 204800,
+    "drawCalls": 10
+  }
+}

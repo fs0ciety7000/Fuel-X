@@ -44,7 +44,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] 4.1 `blender/lib/`: materials_from_tokens, socket, parent_keep, truss, tanks, wheel_bogie, railing, export_glb, render_preview (ASSETS_GUIDE §10) — **blender-technical-artist** ← 2.4
 - [x] 4.2 `scripts/assets/{build,contract,codegen}.ts`: Blender → verified gltf-transform chain → contract validation → typed wrapper → preview; `--verify` byte-identical rebuild — **blender-technical-artist** + **systems-architect** ← 4.1
 - [x] 4.3 **TOWER** end to end (carriage, catch arms, QD arm, sockets, LODs) + preview render — pipeline proof — ← 4.2
-- [ ] 4.4 PAD/OLM, BOOSTER, SHIP — ← 4.3
+- [x] 4.4 PAD/OLM, BOOSTER, SHIP + `_stack.png` socket-alignment check (`blender/lib/composite.py`) — ← 4.3
 - [ ] 4.5 TANK_V/H/SPHERE (instancing-ready), TANKER (LX/MX), TRANSPORTER, VAN, WX_STATION — ← 4.3
 - [ ] 4.6 BOAT_RANGE, VESSEL_RECOVERY, CRANE, yard buildings (HB, TH) — ← 4.3
 - [ ] 4.7 `_lineup.png` scale review render; GLB payload vs budget (≤ 4 MB) — **qa-perf** ← 4.4–4.6
@@ -52,6 +52,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 
 ## Phase 5 — Scene
 - [ ] 5.0 Sim follow-up from TOWER as-built (ASSETS_GUIDE): keep the tower carriage out of 92–106 m while the QD arm is engaged — **simulation-engineer**
+- [ ] 5.0b Sim/data follow-up from BOOSTER/SHIP as-built: catch pins are 66 m above the booster origin, so `flightProfile` CATCH altitude 60 m (booster origin) means carriage at 126 m (not the 86 m rest, which is the on-mount pin height); ship stacking = carriage 135 m. Confirm the convention in `site-lc1.catchPoint` — **simulation-engineer** + **game-designer**
 - [ ] 5.1 R3F canvas (`frameloop="never"`, driven by app loop), lights, fog/haze from tokens, adaptive DPR — **three-graphics-engineer** ← 2.6
 - [ ] 5.2 GameLoop + SimHost + RenderSnapshot + RenderSync with interpolation; floating origin — ← 3.9, 5.1
 - [ ] 5.3 Point-cloud sea + ground (dithered, GPU-animated, ≤ 300 k points) — ← 5.1

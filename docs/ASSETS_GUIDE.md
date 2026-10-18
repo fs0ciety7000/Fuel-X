@@ -32,7 +32,7 @@ Vehicle class: large fully reusable two-stage methane/LOX rocket, tower-caught b
 | `TOWER` | 13 × 13 × 146 | Square lattice 0–135 m, gantry + lightning mast to 146. Arms ~36 m long, hinges at front corners (x = ±6.5, y = −6.5). Mount center at y = −26. | MVP |
 | `PAD` | apron 120 × 120 × 0.5; mount 30 × 30 × 20 | Launch mount: 6 legs (hexagon r 12, none on ±Y), table 13.5–18 m, ring OD 18 / ID 9.5 m with its top (deck) at 20 m. Flame trench toward −Y (front), 10 m wide, floor at grade between 3 m berms (a below-grade cut is hidden by the terrain plane). | MVP |
 | `BOOSTER` | Ø 9 × 71 | 33 engines (3 + 10 inner gimballed, 20 outer fixed), 4 grid fins (6 m chord × 3 m span, horizontal lattice) hinged at 68.4 m — above the catch arms, ±30° never reaches them —, 2 catch pins at 66 m (pin lower face = contact plane), hot-stage ring 69–71 m. | MVP |
-| `SHIP` | Ø 9 × 52 | 6 engines (3 SL gimballed, 3 vac fixed), 2 fore flaps (≈ 8 × 3 m), 2 aft flaps (≈ 10 × 4 m), 2 lift pins at 44 m, heat-shield side darker. | MVP |
+| `SHIP` | Ø 9 × 52 | Barrel 0–37 m, blunted nose 37–52 m. 6 engines (3 SL gimballed on r 1.3, 3 vac fixed on r 3.25), 2 fore flaps (6.2 m root along the nose line × 3 m, hinges 45.2–51 m), 2 aft flaps (10 × 4 m, hinges 1.5–11.5 m), 2 lift pins at 44 m (just below the fore flaps), heat shield on the −Y half (belly), QD plate at 9 m on the leeward side. | MVP |
 | `TANK_V` | Ø 6 × 28 | Vertical cryo tank, 2 m skirt, ellipsoidal head, ladder cage. Variant Ø 4.5 × 20. | MVP |
 | `TANK_H` | 22 × Ø 3.6 (top at 5.2) | Horizontal tank on 2 saddles. | MVP |
 | `TANK_SPHERE` | Ø 18, top at 24 | Sphere on 8 legs, equatorial ring, stair. | MVP |
@@ -98,8 +98,11 @@ Sockets: `SOCKET_Exhaust` (engine plane center, pointing down), `SOCKET_Engine_0
 As built (4.4): one node carries one `fx_anim`, so two-axis gimbals are two nested empties at the same point (pitch outer, yaw inner). Animated nodes always have an identity rest rotation unless their rest is about their own animated axis — azimuth/tilt lives on a static `…Mount` parent — so render code can set `rotation[axis]` directly.
 
 ### SHIP
-`SHIP_Static` (body, nose, heat-shield side in `MAT_ClayDark`, vac engines); `SHIP_FlapFL/FR/AL/AR` (empty on the hinge line parallel to the body axis, `rot` 0° (folded, stowed) → 90° (deployed), rest 45°); `SHIP_EnginesGimbal` (3 SL engines, ±12°).
-Sockets: `SOCKET_Exhaust`, `SOCKET_Engine_01..06`, `SOCKET_LiftPinL/R` (z = 44), `SOCKET_QD` (z ≈ 8, faces the tower QD arm), `SOCKET_Label`, `SOCKET_Focus`.
+`SHIP_Static` (hull, nose, heat shield on the −Y half in `MAT_ClayDark`, lift pins, QD plate, vac engines); `SHIP_FlapMountFL/FR/AL/AR` (static empties on the hinge line at the ±X tile line, 0.3 m off the hull; fore mounts tilted 21° to follow the nose) → `SHIP_FlapFL/FR/AL/AR` (`rot y` about the hinge line: 0° folded along +Y (leeward) → 90° deployed radially; **L negative (−90 → 0), R positive (0 → 90)** like `TOWER_ArmL/R`, rest ±45°, exported at rest) → `SHIP_Flap…Geo`; `SHIP_EnginesGimbal` (empty at the gimbal plane z 2.4, `rot x` ±12°) → `SHIP_EnginesGimbalYaw` (`rot z` ±12°) → `SHIP_EnginesSL` (3 SL engines) + `SOCKET_Engine_01..03`.
+Sockets: `SOCKET_Exhaust` (origin, down), `SOCKET_Engine_01..06` (bell exits, down; 01–03 SL `fx_ring = inner`, 04–06 vac `fx_ring = outer`), `SOCKET_LiftPinL/R` ((±5.4, 0, 44); on the stack they coincide with TOWER `SOCKET_CatchPointL/R` at carriage 135 m = its max travel), `SOCKET_QD` ((−2.30, 3.87, 9) on the hull radius toward the TOWER QD hinge, +Z outward; coincides with TOWER `SOCKET_ShipQD` at 90°, directions opposed), `SOCKET_Label` (z 55), `SOCKET_Focus` (z 26).
+
+### Stack alignment check (`_stack.png`)
+`blender -b --factory-startup --python-exit-code 1 -P blender/lib/composite.py -- --out docs/assets/_stack.png` builds TOWER, PAD, BOOSTER and SHIP from their scripts, places them **only through sockets** (PAD at the site origin, TOWER at PAD − `SOCKET_Mount` = site-lc1 `(0, 0, −26)` three, BOOSTER on `SOCKET_VehicleMount`, SHIP on `SOCKET_ShipMount`) and fails unless: catch points = catch pins (carriage 86 m, arms closed), `SOCKET_ShipQD` = `SOCKET_QD` with opposed +Z (QD arm 90°), catch points = lift pins at carriage 135 m, stack top (143 m) < tower tip (146 m). As built 4.4: all Δ = 0.000 m. Re-run it whenever one of the four scripts changes.
 
 ### TANK_V / TANK_H / TANK_SPHERE (instancing-friendly)
 Single leaf mesh `<ASSET>_Body` (≤ 2 materials), no animated parts. Sockets: `SOCKET_Fill` (pipe connection, faces −Y), `SOCKET_Vent` (boil-off steam, +Z up), `SOCKET_Label`, `SOCKET_Focus`.
@@ -295,9 +298,9 @@ As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face list
 | # | Asset | Why this order |
 |---|---|---|
 | 1 | `TOWER` ✅ | **Pipeline proof**: lattice helper, pivots (carriage → arms), sockets, LODs, export → optimize → wrapper → preview → in-scene. |
-| 2 | `PAD` | Tower and vehicles are placed relative to it; flame trench/deluge sockets for liftoff particles. |
-| 3 | `BOOSTER` | Hero vehicle: exhaust, engines, grid fins, catch pins validated against tower catch points. |
-| 4 | `SHIP` | Stack + QD arm validation. |
+| 2 | `PAD` ✅ | Tower and vehicles are placed relative to it; flame trench/deluge sockets for liftoff particles. |
+| 3 | `BOOSTER` ✅ | Hero vehicle: exhaust, engines, grid fins, catch pins validated against tower catch points. |
+| 4 | `SHIP` ✅ | Stack + QD arm validation. |
 | 5 | `TANK_V`, `TANK_H`, `TANK_SPHERE` | Tank farm, instancing path proven. |
 | 6 | `TANKER` | Background logistics loop (articulation, wheels). |
 | 7 | `TRANSPORTER` | Rollout phase. |
@@ -313,8 +316,9 @@ As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face list
 | Asset | Script / contract | LOD0 / LOD1 / LOD2 tris | GLB LOD0 / LOD1 / LOD2 | Draw calls | Nodes / sockets | Preview |
 |---|---|---|---|---|---|---|
 | `TOWER` | `tower.py` · `tower.contract.json` | 4 084 / 2 486 / 370 | 67 / 45 / 14 KB | 9 | 17 (9 contract nodes, 7 sockets) | `docs/assets/tower.png`, turntable ×12 |
-| `PAD` | `pad.py` · `pad.contract.json` | 1 970 / 1 004 / 562 | 29 / 19 / 14 KB | 6 | 14 (5 contract nodes, 8 sockets) | `docs/assets/pad.png` |
-| `BOOSTER` | `booster.py` · `booster.contract.json` | 6 952 / 2 608 / 756 | 58 / 33 / 19 KB | 8 | 57 (8 contract nodes, 39 sockets) | `docs/assets/booster.png` |
+| `PAD` | `pad.py` · `pad.contract.json` | 1 970 / 1 004 / 562 | 29 / 19 / 14 KB | 6 | 14 (5 contract nodes, 8 sockets) | `docs/assets/pad.png`, `docs/assets/_stack.png` |
+| `BOOSTER` | `booster.py` · `booster.contract.json` | 6 952 / 2 608 / 756 | 58 / 33 / 19 KB | 8 | 57 (8 contract nodes, 39 sockets) | `docs/assets/booster.png`, `docs/assets/_stack.png` |
+| `SHIP` | `ship.py` · `ship.contract.json` | 2 582 / 912 / 276 | 27 / 18 / 13 KB | 8 | 29 (12 contract nodes, 12 sockets) | `docs/assets/ship.png`, `docs/assets/_stack.png` |
 | `TANK_V` | `tank_v.py` · `tank_v.contract.json` | 848 / 162 | 12.3 / 5.2 KB | 2 | 6 (`TANK_V_Body`, 4 sockets) | `docs/assets/tank_v.png` |
 | `TANK_H` | `tank_h.py` · `tank_h.contract.json` | 602 / 200 | 9.2 / 5.5 KB | 2 | 6 (`TANK_H_Body`, 4 sockets) | `docs/assets/tank_h.png` |
 | `TANK_SPHERE` | `tank_sphere.py` · `tank_sphere.contract.json` | 1 732 / 378 | 24.3 / 8.1 KB | 2 | 6 (`TANK_SPHERE_Body`, 4 sockets) | `docs/assets/tank_sphere.png` |
