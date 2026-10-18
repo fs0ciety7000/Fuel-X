@@ -1,0 +1,10 @@
+{
+  "asset": "TANK_SPHERE",
+  "file": "tank_sphere",
+  "class": "prop",
+  "lods": 2,
+  "nodes": ["TANK_SPHERE_Body"],
+  "sockets": ["SOCKET_Fill", "SOCKET_Vent", "SOCKET_Label", "SOCKET_Focus"],
+  "anim": {},
+  "budget": { "tris": [2500, 600], "bytes": 40960, "drawCalls": 2 }
+}

@@ -98,7 +98,8 @@ Sockets: `SOCKET_Exhaust` (engine plane center, pointing down), `SOCKET_Engine_0
 Sockets: `SOCKET_Exhaust`, `SOCKET_Engine_01..06`, `SOCKET_LiftPinL/R` (z = 44), `SOCKET_QD` (z ≈ 8, faces the tower QD arm), `SOCKET_Label`, `SOCKET_Focus`.
 
 ### TANK_V / TANK_H / TANK_SPHERE (instancing-friendly)
-Single leaf mesh `<ASSET>_Body` (≤ 2 materials), no animated parts. Sockets: `SOCKET_Fill` (pipe connection, faces −Y), `SOCKET_Vent` (boil-off steam, +Z up), `SOCKET_Label`.
+Single leaf mesh `<ASSET>_Body` (≤ 2 materials), no animated parts. Sockets: `SOCKET_Fill` (pipe connection, faces −Y), `SOCKET_Vent` (boil-off steam, +Z up), `SOCKET_Label`, `SOCKET_Focus`.
+As built (4.5): `MAT_Clay` shell + `MAT_ClayDark` details (`TANK_SPHERE`: `MAT_Metal` legs/stairs), 2 LODs (LOD1 drops ladders, rails, stiffeners). One GLB per class → one `InstancedMesh` per class and LOD in the farm. The Ø 4.5 × 20 `TANK_V` variant is not built yet (no placement uses it).
 
 ### TANKER
 `TANKER_Tractor` (empty) → `TANKER_TractorGeo`, `TANKER_Axle_01..02` (`spin x`), `TANKER_Steer` (front axle, `rot y` ±35°); `TANKER_Trailer` (empty at fifth wheel, `rot y` ±70°) → `TANKER_TrailerGeo`, `TANKER_Axle_03..05`. Sockets: `SOCKET_Hose` (trailer rear valve box), `SOCKET_Label`, `SOCKET_Focus`.
@@ -308,6 +309,9 @@ As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face list
 | Asset | Script / contract | LOD0 / LOD1 / LOD2 tris | GLB LOD0 / LOD1 / LOD2 | Draw calls | Nodes / sockets | Preview |
 |---|---|---|---|---|---|---|
 | `TOWER` | `tower.py` · `tower.contract.json` | 4 084 / 2 486 / 370 | 67 / 45 / 14 KB | 9 | 17 (9 contract nodes, 7 sockets) | `docs/assets/tower.png`, turntable ×12 |
+| `TANK_V` | `tank_v.py` · `tank_v.contract.json` | 848 / 162 | 12.3 / 5.2 KB | 2 | 6 (`TANK_V_Body`, 4 sockets) | `docs/assets/tank_v.png` |
+| `TANK_H` | `tank_h.py` · `tank_h.contract.json` | 602 / 200 | 9.2 / 5.5 KB | 2 | 6 (`TANK_H_Body`, 4 sockets) | `docs/assets/tank_h.png` |
+| `TANK_SPHERE` | `tank_sphere.py` · `tank_sphere.contract.json` | 1 732 / 378 | 24.3 / 8.1 KB | 2 | 6 (`TANK_SPHERE_Body`, 4 sockets) | `docs/assets/tank_sphere.png` |
 
 ### Acceptance checklist (per asset)
 - [ ] Script runs headless (`--factory-startup`), no Python errors; re-run → identical GLB md5.

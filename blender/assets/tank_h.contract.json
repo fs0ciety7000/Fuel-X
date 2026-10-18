@@ -1,0 +1,10 @@
+{
+  "asset": "TANK_H",
+  "file": "tank_h",
+  "class": "prop",
+  "lods": 2,
+  "nodes": ["TANK_H_Body"],
+  "sockets": ["SOCKET_Fill", "SOCKET_Vent", "SOCKET_Label", "SOCKET_Focus"],
+  "anim": {},
+  "budget": { "tris": [1200, 300], "bytes": 40960, "drawCalls": 2 }
+}
