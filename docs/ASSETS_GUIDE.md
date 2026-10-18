@@ -1,6 +1,6 @@
 # Fuel-X — Assets Guide
 
-Owner: `blender-technical-artist` · Status: **Phase 4** — pipeline live (`npm run asset -- <name>`), TOWER shipped. Budgets per ARCHITECTURE §13.2, colors from `src/tokens/generated/tokens.json`.
+Owner: `blender-technical-artist` · Status: **Phase 4** — pipeline live (`npm run asset -- <name>`), TOWER shipped; tank farm, TANKER, TRANSPORTER, VAN, WX_STATION shipped (4.5). Budgets per ARCHITECTURE §13.2, colors from `src/tokens/generated/tokens.json`.
 Procedure for producing an asset: skill `blender-asset-pipeline`. This document is the **contract** between Blender scripts and render code.
 
 Class names below (`TOWER`, `BOOSTER`, `TANK_V`…) are technical asset classes, not lore names. Call-signs (`TOWER-1`, `B-14`) are runtime data and never appear in node names.
@@ -309,11 +309,11 @@ As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face list
 | 2 | `PAD` ✅ | Tower and vehicles are placed relative to it; flame trench/deluge sockets for liftoff particles. |
 | 3 | `BOOSTER` ✅ | Hero vehicle: exhaust, engines, grid fins, catch pins validated against tower catch points. |
 | 4 | `SHIP` ✅ | Stack + QD arm validation. |
-| 5 | `TANK_V`, `TANK_H`, `TANK_SPHERE` | Tank farm, instancing path proven. |
-| 6 | `TANKER` | Background logistics loop (articulation, wheels). |
-| 7 | `TRANSPORTER` | Rollout phase. |
-| 8 | `VAN` | Instanced background traffic. |
-| 9 | `WX_STATION` | Weather go/no-go readability. |
+| 5 | `TANK_V`, `TANK_H`, `TANK_SPHERE` ✅ | Tank farm, instancing path proven. |
+| 6 | `TANKER` ✅ | Background logistics loop (articulation, wheels). |
+| 7 | `TRANSPORTER` ✅ | Rollout phase. |
+| 8 | `VAN` ✅ | Instanced background traffic. |
+| 9 | `WX_STATION` ✅ | Weather go/no-go readability. |
 | 10 | `BOAT_RANGE` | Range violations / hazard line. |
 | 11 | `VESSEL_RECOVERY` | Recovery fleet, wake sockets. |
 | 12 | `BLDG_HIGHBAY`, `BLDG_MEGABAY`, `HANGAR_TENT` | Small yard. |

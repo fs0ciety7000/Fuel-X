@@ -45,7 +45,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] 4.2 `scripts/assets/{build,contract,codegen}.ts`: Blender → verified gltf-transform chain → contract validation → typed wrapper → preview; `--verify` byte-identical rebuild — **blender-technical-artist** + **systems-architect** ← 4.1
 - [x] 4.3 **TOWER** end to end (carriage, catch arms, QD arm, sockets, LODs) + preview render — pipeline proof — ← 4.2
 - [x] 4.4 PAD/OLM, BOOSTER, SHIP + `_stack.png` socket-alignment check (`blender/lib/composite.py`) — ← 4.3
-- [ ] 4.5 TANK_V/H/SPHERE (instancing-ready), TANKER (LX/MX), TRANSPORTER, VAN, WX_STATION — ← 4.3
+- [x] 4.5 TANK_V/H/SPHERE (instancing-ready), TANKER (LX/MX share one GLB), TRANSPORTER, VAN, WX_STATION + `_farm.png` composite (`blender/scenes/farm.py`); contract `instanceLinked` (shared meshes = one draw call); MeshBuilder winding fix (beam/cylinder/pole fan were inside-out) — ← 4.3
 - [ ] 4.6 BOAT_RANGE, VESSEL_RECOVERY, CRANE, yard buildings (HB, TH) — ← 4.3
 - [ ] 4.7 `_lineup.png` scale review render; GLB payload vs budget (≤ 4 MB) — **qa-perf** ← 4.4–4.6
 - [ ] ⛳ Gate 4 — Blender preview renders + lineup

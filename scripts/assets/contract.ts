@@ -113,7 +113,8 @@ export function parseContract(json: unknown, source = 'contract'): AssetContract
   if (!isStringArray(nodes)) errors.push('nodes must be a string array');
   if (!isStringArray(sockets)) errors.push('sockets must be a string array');
   if (allowAccent !== undefined && typeof allowAccent !== 'boolean') errors.push('allowAccent must be boolean');
-  if (instanceLinked !== undefined && typeof instanceLinked !== 'boolean') errors.push('instanceLinked must be boolean');
+  if (instanceLinked !== undefined && typeof instanceLinked !== 'boolean')
+    errors.push('instanceLinked must be boolean');
   if (isStringArray(nodes) && typeof asset === 'string') {
     for (const n of nodes) if (!n.startsWith(`${asset}_`)) errors.push(`node ${n} must start with ${asset}_`);
   }
