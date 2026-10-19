@@ -2,11 +2,13 @@
 // RenderPass → one EffectPass with SMAA + halftone/dither; skipped under `controls.lowFx`), then records renderer.info for `__fuelx.stats()`.
 // renderer.info is reset once per frame (not per render call) so the stats cover shadow + main + post passes.
 import { useFrame, useThree } from '@react-three/fiber';
+import type { RootState } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
 import type { Camera, Scene, WebGLRenderer } from 'three';
 import type { RenderControls } from '../controls';
 import type { FrameShared } from '../frame';
 import { PostPipeline } from '../post/pipeline';
+import { DPR_RANGE } from './AdaptiveDpr';
 
 export const RENDER_PASS_PRIORITY = 1;
 
@@ -31,8 +33,12 @@ export function renderFrame(gl: WebGLRenderer, scene: Scene, camera: Camera, sha
   recordStats(gl, shared);
 }
 
+/** Device pixel ratio under `controls.lowFx` (software GL): a quarter of the pixels at DPR 1. */
+export const LOW_FX_DPR = 0.5;
+
 class PostRunner {
   private pipeline: PostPipeline | null = null;
+  private low = false;
 
   constructor(
     private readonly shared: FrameShared,
@@ -47,8 +53,16 @@ class PostRunner {
     };
   }
 
-  frame(gl: WebGLRenderer, scene: Scene, camera: Camera): void {
-    if (!this.pipeline || this.controls.lowFx) {
+  frame(state: RootState): void {
+    const { gl, scene, camera } = state;
+    if (this.controls.lowFx !== this.low) {
+      // Rare (debug toggle): one store update, no per-frame React. AdaptiveDpr never raises a DPR below 1.
+      this.low = this.controls.lowFx;
+      state.setDpr(this.low ? LOW_FX_DPR : DPR_RANGE[0]);
+    }
+    // Low fx: shadows freeze at their last update (a 2048² depth pass per moving frame is seconds in software GL).
+    if (this.low) gl.shadowMap.needsUpdate = false;
+    if (!this.pipeline || this.low) {
       renderFrame(gl, scene, camera, this.shared);
       return;
     }
@@ -65,6 +79,6 @@ export function RenderPass({ shared, controls }: { shared: FrameShared; controls
   const camera = useThree((s) => s.camera);
   const [runner] = useState(() => new PostRunner(shared, controls));
   useEffect(() => runner.mount(gl, scene, camera), [runner, gl, scene, camera]);
-  useFrame((state) => runner.frame(state.gl, state.scene, state.camera), RENDER_PASS_PRIORITY);
+  useFrame((state) => runner.frame(state), RENDER_PASS_PRIORITY);
   return null;
 }
