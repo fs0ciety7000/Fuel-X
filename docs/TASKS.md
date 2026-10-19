@@ -54,14 +54,14 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 ## Phase 5 — Scene
 - [x] 5.0 Sim follow-up from TOWER as-built (ASSETS_GUIDE): keep the tower carriage out of 92–106 m while the QD arm is engaged — **simulation-engineer** · done: `src/sim/systems/tower.ts` carriage / arms / QD state at data rates (BALANCING §14, flagged for review), interlock both ways, carriage = pin height (86 / 135 / 126 m), save schema 2 (ARCHITECTURE §7.9)
 - [ ] 5.0b Sim/data follow-up from BOOSTER/SHIP as-built: catch pins are 66 m above the booster origin, so `flightProfile` CATCH altitude 60 m (booster origin) means carriage at 126 m (not the 86 m rest, which is the on-mount pin height); ship stacking = carriage 135 m. Confirm the convention in `site-lc1.catchPoint` — **simulation-engineer** + **game-designer**
-- [ ] 5.1 R3F canvas (`frameloop="never"`, driven by app loop), lights, fog/haze from tokens, adaptive DPR — **three-graphics-engineer** ← 2.6
-- [ ] 5.2 GameLoop + SimHost + RenderSnapshot + RenderSync with interpolation; floating origin — ← 3.9, 5.1
+- [x] 5.1 R3F canvas (`frameloop="never"`, driven by app loop), lights, fog/haze from tokens, adaptive DPR — **three-graphics-engineer** ← 2.6
+- [x] 5.2 GameLoop + SimHost + RenderSnapshot + RenderSync with interpolation; floating origin — ← 3.9, 5.1
 - [ ] 5.3 Point-cloud sea + ground (dithered, GPU-animated, ≤ 300 k points) — ← 5.1
 - [ ] 5.4 Entity views from generated wrappers (placeholders behind same API until GLB exists), animated nodes from sim state — ← 4.x, 5.2
 - [ ] 5.5 Camera rig: follow/focus/frame/home, clamps, lerp, `snap` for screenshots — AC 25 — ← 5.2
 - [ ] 5.6 FX: exhaust, deluge/steam, foam/wake, recovery rings — ← 5.2
 - [ ] 5.7 Post: single EffectPass (SMAA + halftone/dither); `freezeVisuals` — ← 5.1
-- [ ] 5.8 `window.__fuelx` debug hooks (ARCHITECTURE §9) + first visual baselines — **qa-perf** ← 5.2
+- [x] 5.8 `window.__fuelx` debug hooks (ARCHITECTURE §9) + first visual baselines — **qa-perf** ← 5.2
 - [ ] 5.9 `perf-audit` on the 3 reference scenes — **qa-perf** ← 5.3–5.7
 - [ ] ⛳ Gate 5 — screenshots: terminal count, ascent follow, catch
 

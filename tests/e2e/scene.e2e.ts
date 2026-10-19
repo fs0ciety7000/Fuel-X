@@ -130,16 +130,18 @@ test.describe('scene', () => {
       await fx.frames(90);
       const at100 = fx.stats();
       fx.pause();
+      const tSave = fx.state().tick;
       const json = fx.save();
       fx.step(90);
       await fx.load(json);
       const t2 = fx.state().tick;
-      return { t0, t1, t2, scale, version: fx.version, at100 };
+      return { t0, t1, t2, tSave, scale, version: fx.version, at100 };
     });
     console.log('100x live', JSON.stringify(r.at100));
     expect(r.t1 - r.t0).toBe(30);
     expect(r.scale.requested).toBe(10);
-    expect(r.t2).toBe(r.t1);
+    expect(r.tSave).toBeGreaterThan(r.t1); // ran live at 100×
+    expect(r.t2).toBe(r.tSave);
     expect(r.version).toMatch(/^\d+\.\d+\.\d+\+schema\.\d+$/);
     expect(errors).toEqual([]);
   });

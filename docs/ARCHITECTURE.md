@@ -93,6 +93,14 @@ function frame(now: number) {
 - **Pause**: sim stops; camera, labels, map controls and HUD interaction keep running.
 - **Background tab**: rAF stops → `MAX_FRAME_DT` clamp → on return the game resumes, it does not fast-forward.
 
+**As built (5.1/5.2/5.8)** — `src/app/{loop.ts, game.ts, bus.ts, jump.ts, debug.ts, time/time-control.ts, sim-host/}`, `src/render/{Scene.tsx, snapshot.ts, systems/, views/, world/}`. No new dependencies (three's own `GLTFLoader` + `MeshoptDecoder` via R3F `useLoader`; drei not used; adaptive DPR is in-house).
+- **Entry**: the game is `play.html` → `src/main.tsx` (`index.html` is the public showcase). `Game` is built once outside React; `App` renders `<Scene>` once + a temporary readout written imperatively at 4 Hz.
+- **SimHost**: `InlineSimHost` implements the worker-ready `SimHost` (`send`, `advance({maxSteps, budgetMs, stopOn})`, `drainEvents`, Promise-shaped `newGame/jump/save/load`). Autopilot (= `STANDARD_AUTOPILOT`, default on until the HUD exists) commands are logged with queued commands as session inputs. The outbox is moved into a host buffer every tick and drained to the bus once per frame. `jump` steps headless and writes the snapshot once at the end; a unit test proves it reaches the golden harness world hash.
+- **RenderSnapshot** (`src/render/snapshot.ts`): `prev/curr` are **Float64Array** (x y z qx qy qz qw flags) so the floating origin subtracts before float32; copies touch only `[0, used)`. Flags: `ALIVE, SNAP, HIDDEN, ON_MOUNT, ON_CARGO`. Written per tick by `src/app/sim-host/snapshot-writer.ts` (adapter until the sim's bookkeeping owns it — same contract). Render lifts mounted/carried stages by PAD `SOCKET_VehicleMount` / TRANSPORTER `SOCKET_Cargo` read from the GLBs; boosters in BOOSTBACK/DESCENT/CAUGHT use absolute sim y (see TASKS 5.0b). `anim` arrays are allocated, filled in 5.4.
+- **Render systems** are plain classes driven from `useFrame` (React Compiler lint forbids mutating props in components): RenderSync (−30, lerp/nlerp, floating origin on the followed entity), Camera (−20, interim orbit rig, fov 30°, pitch 8–85°, dist 40 m–30 km), Environment (−10), Ground (−5), RenderPass (+1, renders + copies `renderer.info`, main + shadow passes).
+- **Lighting**: `SUN_DIR` derived from `blender/lib/preview.py` `SUN_ROTATION_DEG` (test parses it), intensity 2.2; hemisphere paper/shadow-tint at π·0.3 (calibrated to `_stack.png`); no tone mapping (`flat`, = Blender Standard). Fog linear to paper, near = 1.1 × camera distance, far = max(6 km, 14 ×). Shadow: one 2048² PCF map, box half = clamp(0.55 × distance, 120, 900 m) texel-snapped on the camera target, re-rendered only when the box/origin moves or something moves within 900 m. Casters: hero structures, vehicles, tanks, buildings (not vans/tankers/boats/WX).
+- **Ground placeholder**: paper land / `seaBase` sea + shadow catcher, re-centred under the target each frame and sized to the fog (two-triangle 400 km planes z-fought the 0.5 m apron).
+
 ## 4. Per-tick data flow
 
 ```
@@ -456,7 +464,7 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
 
 ## 9. Debug hooks — `window.__fuelx`
 
-Installed by `src/app/debug.ts` when `import.meta.env.DEV` **or** the URL has `?debug=1` (so `perf-audit` can use a production build). Every method is safe to call from Playwright `page.evaluate`.
+Installed by `src/app/debug.ts` when `import.meta.env.DEV` **or** the URL has `?debug=1` (so `perf-audit` can use a production build: `/play.html?debug=1`). Every method is safe to call from Playwright `page.evaluate`. As built (5.8): `state()` returns `UiProjectionStub` (`src/app/projection/stub.ts`) until 6.1; `reactCommitsPerS` counts commits of both React roots through a minimal DevTools global hook (works in production); `drawCalls`/`triangles` include the shadow pass; `seed()` defaults `autopilot: true`; jumping to a passed target rejects `JUMP_TARGET_NOT_REACHED`.
 
 ```ts
 interface FuelxDebug {

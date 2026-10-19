@@ -1,11 +1,10 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+// Vite raw import: no Node APIs, so this test type-checks under the browser tsconfig.
+import py from '../../../blender/lib/preview.py?raw';
 import { SUN_DIR, SUN_ROTATION_DEG, sunDirection } from './sun';
 
 describe('SUN_DIR (shared with the Blender previews)', () => {
   it('uses the same rotation as blender/lib/preview.py', () => {
-    const py = readFileSync(resolve(import.meta.dirname, '../../../blender/lib/preview.py'), 'utf8');
     const m = /SUN_ROTATION_DEG\s*=\s*\(([^)]*)\)/.exec(py);
     expect(m).not.toBeNull();
     const rot = (m?.[1] ?? '').split(',').map((v) => Number(v.trim()));
