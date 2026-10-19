@@ -508,7 +508,7 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
 
 ## 9. Debug hooks — `window.__fuelx`
 
-Installed by `src/app/debug.ts` when `import.meta.env.DEV` **or** the URL has `?debug=1` (so `perf-audit` can use a production build: `/play.html?debug=1`). Every method is safe to call from Playwright `page.evaluate`. As built (5.8): `state()` returns `UiProjectionStub` (`src/app/projection/stub.ts`) until 6.1; `reactCommitsPerS` counts commits of both React roots through a minimal DevTools global hook (works in production); `drawCalls`/`triangles` include the shadow pass; `seed()` defaults `autopilot: true`; jumping to a passed target rejects `JUMP_TARGET_NOT_REACHED`.
+Installed by `src/app/debug.ts` when `import.meta.env.DEV` **or** the URL has `?debug=1` (so `perf-audit` can use a production build: `/play.html?debug=1`). Every method is safe to call from Playwright `page.evaluate`. As built (5.8): `state()` returns `UiProjectionStub` (`src/app/projection/stub.ts`) until 6.1; `reactCommitsPerS` counts commits of both React roots through a minimal DevTools global hook (works in production); `drawCalls`/`triangles` include the shadow pass (5.9: `mainDrawCalls` = last frame without its shadow pass, `shadowDrawCalls` = most recent shadow-map refresh, split by wrapping `renderer.shadowMap.render`); `seed()` defaults `autopilot: true`; jumping to a passed target rejects `JUMP_TARGET_NOT_REACHED`.
 
 ```ts
 interface FuelxDebug {
@@ -529,7 +529,8 @@ interface FuelxDebug {
   lowFx(on: boolean): void;                          // software-GL path: no dot screen / point cloud / post (also ?lowfx=1)
   frames(n: number): Promise<void>;                  // resolve after n rendered frames
   state(): UiProjection;                             // assert surface for e2e
-  stats(): { fps: number; frameMs: { median: number; p95: number }; drawCalls: number; triangles: number;
+  stats(): { fps: number; frameMs: { median: number; p95: number }; drawCalls: number; mainDrawCalls: number;
+             shadowDrawCalls: number; triangles: number;
              points: number; geometries: number; textures: number; programs: number;
              particles: number; fxPoints: number;            // 5.6: live FX sprites, FX point vertices in `points`
              simUsPerTick: { mean: number; p95: number }; simMsPerFrame: number; entities: number;
@@ -649,7 +650,7 @@ Total GLB payload for the MVP site ≤ 4 MB (estimate 2.5 MB). Textures: none by
 
 | Metric | Budget |
 |---|---|
-| Initial JS (gzip) | ≤ 450 KB (three ≈ 170, react-dom ≈ 60, R3F+drei subset ≈ 50, postprocessing ≈ 25, app ≤ 145) |
+| Initial JS (gzip) | ≤ 450 KB (three ≈ 170, react-dom ≈ 60, R3F+drei subset ≈ 50, postprocessing ≈ 25, app ≤ 145) — as built 5.9: `postprocessing` is ≈ 63 KB gz (SMAA lookup images inlined) and loads as a lazy chunk with `post/pipeline` (`RenderPass` mounts it; `isReady()` waits for it), initial play.html graph 386 KB |
 | CSS (gzip) | ≤ 25 KB |
 | Fonts | ≤ 150 KB WOFF2 total (subset, ≤ 4 files) |
 | `/design` entry | separate chunk, not loaded by the game |

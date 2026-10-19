@@ -197,6 +197,8 @@ export function createDebugApi(game: Game): FuelxDebug {
       const sim = host.timings();
       const r = game.scene?.stats() ?? {
         drawCalls: 0,
+        mainDrawCalls: 0,
+        shadowDrawCalls: 0,
         triangles: 0,
         points: 0,
         geometries: 0,

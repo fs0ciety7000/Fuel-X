@@ -10,7 +10,12 @@ export interface FrameInput {
 }
 
 export interface RendererStats {
+  /** All draw calls of the last frame: shadow (when the map refreshed) + main + post. */
   drawCalls: number;
+  /** Draw calls of the last frame without its shadow pass (main + post), ARCHITECTURE §13.1 "main pass". */
+  mainDrawCalls: number;
+  /** Draw calls of the most recent shadow-map refresh (the map is static between refreshes), §13.1 "shadow pass". */
+  shadowDrawCalls: number;
   triangles: number;
   points: number;
   geometries: number;
@@ -33,6 +38,10 @@ export interface FrameShared {
   movedNear: boolean;
   /** Frames rendered so far. */
   frames: number;
+  /** Shadow-pass draw calls in the frame being rendered (scratch, reset per frame). */
+  shadowCallsFrame: number;
+  /** The lazily loaded post pipeline (5.9) is mounted, or failed to load and the raw pass stands in. */
+  postReady: boolean;
   /** Stats of the last rendered frame (main + shadow passes). */
   stats: RendererStats;
 }
@@ -48,8 +57,12 @@ export function createFrameShared(): FrameShared {
     camDist: 1000,
     movedNear: true,
     frames: 0,
+    postReady: false,
+    shadowCallsFrame: 0,
     stats: {
       drawCalls: 0,
+      mainDrawCalls: 0,
+      shadowDrawCalls: 0,
       triangles: 0,
       points: 0,
       geometries: 0,

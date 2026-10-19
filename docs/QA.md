@@ -87,7 +87,8 @@ Before pass 1: 105 caught, 82 diverted (p < 0.90), 1 failed, 12 scrubbed.
 | Prerendered markup | — | 29 KB |
 | Game initial JS gzip (play.html graph; the row now follows the entry graph instead of every chunk) | 450 KB | 443.6 KB |
 
-After merging the 5.3–5.7 render commits (2026-10-19): game initial JS gzip (play.html graph) **452.5 KB vs 450 — OVER by 2.5 KB**, from the new FX/post code, not the showcase (showcase rows unchanged). Open for `three-graphics-engineer` / `perf-audit` (8.1).
+After merging the 5.3–5.7 render commits (2026-10-19): game initial JS gzip (play.html graph) **452.5 KB vs 450 — OVER by 2.5 KB**, from the new FX/post code, not the showcase (showcase rows unchanged).
+**Fixed in 5.9**: per-module attribution (sourcemap build) showed `postprocessing` at **62.9 KB gz** of the play chunk (ARCHITECTURE estimated 25; SMAA's lookup images are inlined). `post/pipeline` is now a dynamic import from `RenderPass` (frames before it lands are drawn raw; `isReady()` waits for `shared.postReady`, so `__fuelx.ready()` screenshots always include post): initial JS **452.6 → 386.0 KB gz**, lazy `pipeline` chunk 69.1 KB gz, showcase initial 77.8 → 78.0 KB (shared preload helper).
 
 ## Known flaky areas
 

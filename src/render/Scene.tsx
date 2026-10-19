@@ -28,7 +28,7 @@ export interface SceneApi {
   advance(now: number): void;
   /** Stats of the last rendered frame (renderer.info, main + shadow passes). */
   stats(): Readonly<RendererStats>;
-  /** All GLBs loaded and every indexed entity mounted. */
+  /** All GLBs loaded, the post pipeline mounted and every indexed entity mounted. */
   isReady(): boolean;
   frames(): number;
 }
@@ -76,7 +76,7 @@ class SceneCore implements SceneApi {
   }
 
   isReady(): boolean {
-    if (!this.loaded || this.shared.frames === 0) return false;
+    if (!this.loaded || !this.shared.postReady || this.shared.frames === 0) return false;
     const want = this.snapshot.index.slots.filter((s) => isAssetName(s.asset)).length;
     return this.feed.get() === this.snapshot.index && this.registry.size >= want;
   }
