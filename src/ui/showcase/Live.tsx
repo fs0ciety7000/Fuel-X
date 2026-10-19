@@ -1,7 +1,7 @@
 // Live HUD fragments of the showcase. Scroll-driven values are written straight into the DOM from the story feed's
 // listener (no React render per scroll frame); React re-renders only when the chapter or phase changes.
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import type { RefObject } from 'react';
+import type { CSSProperties, RefObject } from 'react';
 import { chapterAt, formatMissionTime, missionTimeAt, PHASES } from '@data/showcase';
 import type { StoryFeed } from '@data/showcase';
 import styles from './live.module.css';
@@ -157,7 +157,11 @@ export function PhaseBar({ story, onJump }: { story: StoryFeed; onJump: (p: numb
         {PHASES.map((ph, i) => {
           const state = i < phase ? 'done' : i === phase ? 'current' : 'next';
           return (
-            <li key={ph.id} data-state={state} style={{ flexGrow: Math.round((ph.to - ph.from) * 100) }}>
+            <li
+              key={ph.id}
+              data-state={state}
+              style={{ '--grow': Math.round((ph.to - ph.from) * 100) } as CSSProperties}
+            >
               <button type="button" onClick={() => onJump((ph.from + ph.to) / 2)} aria-current={state === 'current'}>
                 <span className={styles.glyph} aria-hidden="true" />
                 <span className={styles.phaseName}>{ph.label}</span>

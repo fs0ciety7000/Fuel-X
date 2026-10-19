@@ -2,11 +2,10 @@
 // story progress (pose.ts via StageDirector). Lazy chunk: three + R3F + this file. The game scene stays on /play;
 // nothing here touches the sim. Story progress is read from a feed in useFrame; React renders this tree once.
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Component, Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { BufferAttribute, BufferGeometry, Color, PointsMaterial, Vector3 } from 'three';
 import type { Points, Object3D } from 'three';
-import { chapterAnchor, chapterAt } from '@data/showcase';
+import { CHAPTER_STILLS, chapterAt } from '@data/showcase';
 import type { StoryFeed } from '@data/showcase';
 import { tokens } from '@tokens/tokens';
 import { useAsset } from '../../assets/useAsset';
@@ -25,6 +24,9 @@ const TANKS: readonly [AssetName, number, number][] = [
   ['tank_sphere', -460, 220],
 ];
 const COAST_X = 175;
+/** 2048² on desktop, 1024² on phones (the stage strip is small and GPUs are weaker). */
+const SHADOW_MAP: [number, number] =
+  typeof window !== 'undefined' && window.innerWidth < 900 ? [1024, 1024] : [2048, 2048];
 const SUN_POS = new Vector3(...SUN_DIR).multiplyScalar(600);
 
 /** A fresh clone of an asset's LOD0 scene (shared geometry + token materials). */
@@ -110,7 +112,7 @@ function Set({ story, reduced, onReady }: { story: StoryFeed; reduced: boolean; 
 
   useFrame(({ clock, camera }, dt) => {
     // Reduced motion: one still per chapter (hard cut), no drift, no damping.
-    const p = reduced ? chapterAnchor(chapterAt(story.p)) : story.p;
+    const p = reduced ? (CHAPTER_STILLS[chapterAt(story.p)] ?? 0) : story.p;
     director.frame(p, clock.elapsedTime, dt, camera, reduced);
   });
 
@@ -124,7 +126,7 @@ function Set({ story, reduced, onReady }: { story: StoryFeed; reduced: boolean; 
         intensity={SUN_INTENSITY}
         color={w.sun}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={SHADOW_MAP}
         shadow-bias={-0.0004}
         shadow-normalBias={0.4}
         shadow-camera-left={-180}
@@ -152,44 +154,42 @@ function Set({ story, reduced, onReady }: { story: StoryFeed; reduced: boolean; 
   );
 }
 
-class StageBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
-  override state = { failed: false };
-
-  static getDerivedStateFromError(): { failed: boolean } {
-    return { failed: true };
-  }
-
-  override render() {
-    return this.state.failed ? this.props.fallback : this.props.children;
-  }
-}
-
 export default function ShowcaseStage({ story, reduced }: { story: StoryFeed; reduced: boolean }) {
   const clear = useMemo(() => new Color(w.background), []);
   // The prerendered still stays visible underneath until every GLB of the set has loaded (no blank paper flash).
   const [ready, setReady] = useState(false);
   const onReady = useMemo(() => () => setReady(true), []);
+  // Stop drawing while the stage is scrolled out of view (the sections below the story).
+  const frame = useRef<HTMLDivElement>(null);
+  const [onScreen, setOnScreen] = useState(true);
+  useEffect(() => {
+    const el = frame.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setOnScreen(entry?.isIntersecting ?? true));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  // Errors (WebGL context, GLB fetch) propagate to the boundary in src/app/showcase: the still stays.
   return (
-    <StageBoundary fallback={null}>
-      <div
-        style={{ position: 'absolute', inset: 0, visibility: ready ? 'visible' : 'hidden' }}
-        data-stage-ready={ready}
+    <div
+      ref={frame}
+      style={{ position: 'absolute', inset: 0, visibility: ready ? 'visible' : 'hidden' }}
+      data-stage-ready={ready}
+    >
+      <Canvas
+        flat
+        shadows="percentage"
+        frameloop={!onScreen ? 'never' : reduced ? 'demand' : 'always'}
+        dpr={[1, 1.5]}
+        camera={{ fov: 30, near: 2, far: 7_000, position: [-300, 175, 430] }}
+        gl={{ antialias: true, powerPreference: 'high-performance' }}
+        onCreated={({ gl }) => gl.setClearColor(clear)}
+        aria-hidden="true"
       >
-        <Canvas
-          flat
-          shadows="percentage"
-          frameloop={reduced ? 'demand' : 'always'}
-          dpr={[1, 1.5]}
-          camera={{ fov: 30, near: 2, far: 7_000, position: [-300, 175, 430] }}
-          gl={{ antialias: true, powerPreference: 'high-performance' }}
-          onCreated={({ gl }) => gl.setClearColor(clear)}
-          aria-hidden="true"
-        >
-          <Suspense fallback={null}>
-            <Set story={story} reduced={reduced} onReady={onReady} />
-          </Suspense>
-        </Canvas>
-      </div>
-    </StageBoundary>
+        <Suspense fallback={null}>
+          <Set story={story} reduced={reduced} onReady={onReady} />
+        </Suspense>
+      </Canvas>
+    </div>
   );
 }

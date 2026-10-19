@@ -131,7 +131,7 @@ export function Hardware() {
       <ul className={styles.plates}>
         {shown.map((p) => (
           <li key={p.asset} className={styles.plate}>
-            <figure tabIndex={0} aria-labelledby={`${base}-${p.asset}`}>
+            <figure tabIndex={0} aria-labelledby={`${base}-${p.asset}`} aria-describedby={`${base}-${p.asset}-sheet`}>
               <img
                 src={publicUrl(`showcase/plates/${p.asset}.webp`)}
                 alt=""
@@ -144,7 +144,7 @@ export function Hardware() {
                 <span className={styles.callSign}>{p.callSign}</span>
                 <span className={styles.plateName}>{p.name}</span>
               </figcaption>
-              <dl className={styles.sheet}>
+              <dl className={styles.sheet} id={`${base}-${p.asset}-sheet`}>
                 <div>
                   <dt>Class</dt>
                   <dd>{p.name}</dd>

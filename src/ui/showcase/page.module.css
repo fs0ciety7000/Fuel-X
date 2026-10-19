@@ -118,7 +118,7 @@
 .cta[data-variant='hero'],
 .cta[data-variant='band'] {
   min-height: var(--fx-space-8);
-  min-width: 18rem;
+  min-width: var(--fx-size-cta-wide);
   font-size: var(--fx-type-title);
 }
 
@@ -363,7 +363,7 @@
 
 .decision li {
   display: grid;
-  grid-template-columns: 11rem minmax(0, 1fr);
+  grid-template-columns: var(--fx-size-label-column) minmax(0, 1fr);
   gap: var(--fx-space-4);
   padding: var(--fx-space-3);
   background: var(--fx-color-paper);

@@ -8,10 +8,14 @@ const base = process.env.VITE_BASE ?? '/';
 
 // The game lives at the clean URL `/play` (ADR 0009); nginx maps it in production, this does it in dev and preview.
 function playRoute(): Plugin {
-  const rewrite: Connect.NextHandleFunction = (req, _res, next) => {
+  const rewrite: Connect.NextHandleFunction = (req, res, next) => {
     const match = req.url?.match(/^([^?]*)(\?.*)?$/);
-    if (match && (match[1] === `${base}play` || match[1] === `${base}play/`))
-      req.url = `${base}play.html${match[2] ?? ''}`;
+    if (match?.[1] === `${base}play/`) {
+      // Same as nginx: one canonical URL.
+      res.writeHead(301, { Location: `${base}play${match[2] ?? ''}` }).end();
+      return;
+    }
+    if (match?.[1] === `${base}play`) req.url = `${base}play.html${match[2] ?? ''}`;
     next();
   };
   return {

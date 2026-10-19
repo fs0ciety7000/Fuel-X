@@ -262,7 +262,7 @@
 
 .sheet > div {
   display: grid;
-  grid-template-columns: 4rem minmax(0, 1fr);
+  grid-template-columns: var(--fx-size-code-column) minmax(0, 1fr);
   gap: var(--fx-space-3);
   padding: var(--fx-space-2) var(--fx-space-3);
   background: var(--fx-color-paper);
@@ -279,7 +279,7 @@
 }
 
 .plate figure:hover .sheet,
-.plate figure:focus-visible .sheet {
+.plate figure:focus .sheet {
   visibility: visible;
   clip-path: inset(0);
   transition:
@@ -288,7 +288,7 @@
 }
 
 .plate figure:hover figcaption,
-.plate figure:focus-visible figcaption {
+.plate figure:focus figcaption {
   background: var(--fx-color-accent-tint);
 }
 
@@ -308,7 +308,7 @@
 
 .site {
   display: grid;
-  grid-template-columns: 4rem minmax(0, 1fr);
+  grid-template-columns: var(--fx-size-code-column) minmax(0, 1fr);
   grid-template-areas:
     'code name'
     'code state';
@@ -328,6 +328,15 @@
 .site[data-state='building'] {
   background: var(--fx-pattern-hatch);
   border-left-color: var(--fx-color-paper-3);
+}
+
+/* Labels over the hatch sit on a paper patch (ink-3 on the ink-5 strokes would drop below AA). */
+.site[data-state='building'] .siteState,
+.site[data-state='building'] .siteName,
+.site[data-state='building'] .siteCode {
+  justify-self: start;
+  padding-inline: var(--fx-space-1);
+  background: var(--fx-color-paper);
 }
 
 .site[aria-selected='true'] {
@@ -354,7 +363,7 @@
 
 .map {
   position: relative;
-  min-height: 22rem;
+  min-height: var(--fx-size-map);
   border-right: var(--fx-rule-frame);
   background: var(--fx-color-paper-2);
   overflow: hidden;
@@ -516,6 +525,6 @@
   }
 
   .map {
-    min-height: 16rem;
+    min-height: var(--fx-size-map-phone);
   }
 }

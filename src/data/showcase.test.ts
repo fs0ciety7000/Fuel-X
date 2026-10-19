@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { chapterAnchor, chapterAt, CHAPTERS, formatMissionTime, missionTimeAt, PHASES } from './showcase';
+import {
+  CHAPTER_STILLS,
+  chapterAnchor,
+  chapterAt,
+  CHAPTERS,
+  formatMissionTime,
+  missionTimeAt,
+  PHASES,
+} from './showcase';
 
 describe('showcase story timeline', () => {
   it('maps progress to chapters and back', () => {
     expect(chapterAt(0)).toBe(0);
     expect(chapterAt(1)).toBe(CHAPTERS.length - 1);
     CHAPTERS.forEach((_, i) => expect(chapterAt(chapterAnchor(i))).toBe(i));
+    CHAPTERS.forEach((_, i) => expect(chapterAt(CHAPTER_STILLS[i] ?? -1)).toBe(i));
   });
 
   it('runs the mission clock forward through liftoff', () => {

@@ -28,5 +28,9 @@ const page = readFileSync(indexPath, 'utf8');
 for (const marker of ['<!--showcase:html-->', '<!--showcase:head-->']) {
   if (!page.includes(marker)) throw new Error(`prerender: ${marker} missing from dist/index.html`);
 }
-writeFileSync(indexPath, page.replace('<!--showcase:head-->', head).replace('<!--showcase:html-->', html));
+// Replacer functions: the markup must not be read as a `$&`-style replacement pattern.
+writeFileSync(
+  indexPath,
+  page.replace('<!--showcase:head-->', () => head).replace('<!--showcase:html-->', () => html),
+);
 console.log(`prerender: dist/index.html (${Math.round(html.length / 1024)} KB markup, ${fonts.length} font preloads)`);

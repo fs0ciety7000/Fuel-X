@@ -19,10 +19,13 @@ export function chapterAt(p: number): number {
   return Math.min(CHAPTERS.length - 1, Math.max(0, Math.floor(p * CHAPTERS.length)));
 }
 
-/** Anchor progress of a chapter (its middle), used for reduced-motion stills and phase-bar jumps. */
+/** Anchor progress of a chapter (its middle): where "frame sheet N" scrolls to. */
 export function chapterAnchor(index: number): number {
   return (index + 0.5) / CHAPTERS.length;
 }
+
+/** Reduced-motion still per chapter (story p): the frame that tells that chapter best. */
+export const CHAPTER_STILLS: readonly number[] = [0.06, 0.25, 0.42, 0.54, 0.8, 0.93];
 
 /** Timeline phases of the game HUD countdown bar (GDD §4, PROMPT HUD), with their story p span. */
 export const PHASES = [

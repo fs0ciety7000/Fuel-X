@@ -37,7 +37,8 @@ scroll listener (`src/app/showcase/story.ts`) that also drives the T-clock and p
   `src/render/systems/showcase/**` (may `useFrame`), composition + scroll driver in `src/app/showcase/**`.
   Story progress travels as a mutable ref (`{ p }`), never React state at frame rate (CLAUDE.md rule 3).
 - The stage reuses `useAsset` (meshopt GLB + token clay materials) and the generated wrappers' node names; no drei.
-- The deferred chunk is requested after `load` + idle, or immediately when the story section nears the viewport.
+- The deferred chunk is requested once the hydrated page is idle (`requestIdleCallback`, ≤ 1.5 s); the canvas stops
+  drawing (`frameloop="never"`) while scrolled out of view, and a chunk/GLB/WebGL failure is caught in `src/app/showcase`.
   If WebGL is missing or the chunk fails, the slot shows a Blender still.
 - Native scrolling only. `prefers-reduced-motion: reduce` → no scrub, chapter stills, clocks frozen.
 - The game moves to the clean URL **`/play`** (`play.html` still served); dev/preview rewrite it with a Vite plugin,

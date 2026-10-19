@@ -41,16 +41,19 @@ One long page, nine blocks. Every block answers "why would I play this?" with th
 
 Story progress `p ∈ [0, 1]` over the pinned dossier. Mission time shown in the T-clock is derived from `p` (piecewise linear per chapter, values from GDD/BALANCING orders of magnitude). Camera moves are eased with `tokens.motion.ease.mech`; nothing overshoots.
 
-| Chapter | p | T-clock | Scene | Camera |
+| Chapter | p | T-clock | Scene (`src/render/systems/showcase/pose.ts`) | Camera |
 |---|---|---|---|---|
-| §01 Contract | 0.00–0.16 | T-06:00:00 | empty mount, tower, tank farm, sea points | wide establishing, slow lateral drift |
-| §02 Prepare | 0.16–0.33 | T-05:15 → T-01:20 | SP-41 rolls B-09 onto OLM-1, carriage lifts S-21 and sets it on the booster | medium, three-quarter |
-| §03 Count down | 0.33–0.50 | T-01:20 → T-00:00:03 | QD arm engaged, vent plume at the ship, stations go GO one by one | low, close on the stack |
-| §04 Fly | 0.50–0.66 | T-0 → T+00:02:40 | liftoff: orange exhaust, stack climbs out of frame, hot-stage | tilts up, then follows |
-| §05 Recover | 0.66–0.83 | T+00:06:00 → T+00:06:55 | B-09 descends with the landing burn, arms close on the catch pins | pinned on the catch point |
-| §06 Turn around | 0.83–1.00 | T+00:07:30 → | booster held in the arms, pull-out to the wide shot | wide, high |
+| Hero | 0 | T-06:00:00 | empty mount, tower, tank farm, road, sea dots; tanker and picket boat move on wall-clock time | wide establishing, slow drift; subject framed right of the macro title |
+| §01 Contract | 0–0.17 | T-06:00 → T-05:30 | SP-41 with B-09 waits on the road (z 260 m) | descends toward the road |
+| §02 Prepare | 0.17–0.33 | T-05:30 → T-01:20 | 0.10–0.20 SP-41 drives onto the mount axis · 0.22–0.27 arms (closed on the pins) lift B-09 4.6 → 20 m · 0.28–0.33 SP-41 leaves · 0.29–0.33 S-21 lowered from above the tower top into the arms and onto the booster (91 m) | medium three-quarter, then up to the tower top |
+| §03 Count down | 0.33–0.50 | T-01:20 → T-00:00:03 | QD arm swings onto the ship (0.34–0.36), retracts at 0.493 | low, close on the stack |
+| §04 Fly | 0.50–0.67 | T-0 → T+00:02:45 | 0.497 ignition · steam rolls out of the trench · stack climbs 1.3 km by 0.6 (accent plume, pale core) · carriage to catch height | tilts up, then follows the booster |
+| §05 Recover | 0.67–0.83 | T+00:06:00 → T+00:06:55 | B-09 falls back over the tower, landing burn 0.70–0.785, arms close on the pins 0.776–0.80 at 60 m | pulls back to frame tower + catch |
+| §06 Turn around | 0.83–1 | → T+00:15:00 | booster held in the arms | wide, high pull-out |
 
-Reduced motion: the stage renders one still per chapter (no scrub interpolation), the clock prints the chapter's anchor time.
+Reduced motion: no scrub, no damping, no drift; the stage shows one still per chapter (`CHAPTER_STILLS` in
+`src/data/showcase.ts`: 0.06, 0.25, 0.42, 0.54, 0.80, 0.93) and changes only when the chapter does; the hero clock is
+frozen. Without WebGL (or before the 3D chunk arrives) the slot shows the Blender `_stack` render.
 
 ## 4. Visual & motion rules (delta to DESIGN_SYSTEM)
 

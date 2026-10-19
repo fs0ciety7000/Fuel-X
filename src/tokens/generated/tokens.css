@@ -104,6 +104,11 @@
   --fx-size-hit-min: 24px;
   --fx-size-measure: 62ch;
   --fx-size-stage-phone: 46svh;
+  --fx-size-cta-wide: 18rem;
+  --fx-size-label-column: 11rem;
+  --fx-size-code-column: 4rem;
+  --fx-size-map: 22rem;
+  --fx-size-map-phone: 16rem;
   --fx-radius: 0;
   --fx-shadow: none;
   --fx-rule-hair: 1px;
@@ -127,6 +132,7 @@
   --fx-dur-base: 200ms;
   --fx-dur-stamp: 640ms;
   --fx-dur-camera: 700ms;
+  --fx-dur-blink: 2000ms;
   --fx-ease-mech: cubic-bezier(0.2, 0, 0, 1);
   --fx-ease-linear: linear;
   --fx-ease-step: steps(3, end);

@@ -25,7 +25,8 @@ The script names are a contract; the stack ADR decides what they run.
 | `npm run typecheck` · `npm run lint` | static checks |
 | `npm run e2e` | Playwright visual/e2e (Chromium preinstalled — never `playwright install`) |
 | `npm run asset -- <name>` · `npm run assets` | Blender → GLB → optimize → typed wrapper → preview render |
-| `npm run perf` | sim benchmark + perf audit helpers |
+| `npm run perf` | sim benchmark + perf audit helpers (incl. showcase budgets) |
+| `npm run showcase:assets` · `npx tsx scripts/showcase/{og,shots}.ts` | showcase plates + ink marks · OG image · screenshots for `showcase-check` |
 | `npx -y npm@11.6.2 install <pkg>@<exact>` | add a dependency (npm 10 resolver bug; `npm ci` is fine) |
 | `scripts/install-blender.sh` | portable Blender 4.5 LTS into `~/.local/bin` (auto in cloud sessions) |
 

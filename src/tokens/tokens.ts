@@ -94,6 +94,11 @@ export const tokens = {
     // Showcase site: reading measure and the sticky stage height on phones.
     measure: '62ch',
     stagePhone: '46svh',
+    ctaWide: '18rem',
+    labelColumn: '11rem',
+    codeColumn: '4rem',
+    map: '22rem',
+    mapPhone: '16rem',
   },
   radius: '0',
   shadow: 'none',
@@ -116,7 +121,15 @@ export const tokens = {
     noise: 70,
   },
   motion: {
-    dur: { instant: '0ms', snap: '80ms', fast: '120ms', base: '200ms', stamp: '640ms', camera: '700ms' },
+    dur: {
+      instant: '0ms',
+      snap: '80ms',
+      fast: '120ms',
+      base: '200ms',
+      stamp: '640ms',
+      camera: '700ms',
+      blink: '2000ms',
+    },
     ease: { mech: 'cubic-bezier(0.2, 0, 0, 1)', linear: 'linear', step: 'steps(3, end)' },
   },
   viewport: { minWidth: 1280, minHeight: 720, compactWidth: 1600, compactHeight: 900, wideWidth: 2560 },

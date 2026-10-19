@@ -27,7 +27,10 @@ Never run `playwright install`; Playwright stays at 1.56.1 until the preinstalle
 | `tests/scaffold/tokens.test.ts` | AA contrast of every allowed text/background pair, single accent family, radius 0 / no shadow |
 | `tokens --check` (lint) | Generated `tokens.css` / `tokens.json` match `src/tokens/tokens.ts` |
 | Stylelint | No hex/named/rgb colors, gradients, shadows, filters, opacity (except noise overlay), radius ≠ 0, non-token font-size/spacing |
-| `tests/e2e/smoke.e2e.ts` | Game + design entries boot without page errors on the paper substrate |
+| `tests/e2e/smoke.e2e.ts` | Showcase, game (`/play`) and design entries boot without page errors on the paper substrate |
+| `tests/e2e/showcase.e2e.ts` | Showcase: prerendered HTML + SEO/OG/JSON-LD + font preloads, hydration without console errors, 3 CTAs → `/play`, story driver (T-clock, phase bar, active sheet), keyboard tabs/filters/sites, `/play` + `/play.html`, phone (no horizontal overflow), reduced motion (frozen clock) |
+| `src/render/systems/showcase/pose.test.ts` · `src/data/showcase.test.ts` | Stage choreography (stack heights, arms on pins, thrust windows, catch pose, mechanism ranges, no NaN) and story timeline (chapters, monotonic clock, phases contiguous) |
+| `scripts/perf/budgets.ts` showcase rows | ADR 0009: initial JS ≤ 90 KB gz, 3D chunk ≤ 300 KB gz, showcase GLB ≤ 350 KB, images ≤ 600 KB |
 
 ## Simulation tests
 
@@ -72,6 +75,17 @@ Weights 30 / 25 / 20 / 25 %; tolerance ±10 points (hands-off policy, where ever
 AC 3c (hands-off, 193 flights): diverted **15.5 %** (target 15–25 %), none diverted at commit-time p ≥ `autoCatchThreshold`
 (0.70); failed catches 5.7 % (target 3–7 %); scrubs 7 (target ≤ 12). The sweep script fails on any AC 3a/3c miss.
 Before pass 1: 105 caught, 82 diverted (p < 0.90), 1 failed, 12 scrubbed.
+
+### Showcase (2026-10-19, `npx tsx scripts/perf/budgets.ts` after `npm run build`)
+
+| Metric | Budget | Measured |
+|---|---|---|
+| Showcase initial JS gzip (index.html graph: React + page) | 90 KB | 77.6 KB |
+| Showcase 3D chunk gzip (three + R3F + stage, lazy) | 300 KB | 264.7 KB |
+| Showcase GLB (9 LOD0 files) | 350 KB | 278.8 KB |
+| Showcase images (plates + OG + marks) | 600 KB | 340.5 KB |
+| Prerendered markup | — | 29 KB |
+| Game initial JS gzip (play.html graph; the row now follows the entry graph instead of every chunk) | 450 KB | 443.6 KB |
 
 ## Known flaky areas
 

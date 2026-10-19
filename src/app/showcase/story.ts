@@ -42,8 +42,12 @@ export function createStory(): StoryDriver {
       };
       window.addEventListener('scroll', schedule, { passive: true });
       window.addEventListener('resize', schedule);
+      // Late layout shifts (font swap, images) move the sheets without a scroll event.
+      const resize = new ResizeObserver(schedule);
+      resize.observe(el);
       measure();
       return () => {
+        resize.disconnect();
         window.removeEventListener('scroll', schedule);
         window.removeEventListener('resize', schedule);
         if (frame !== 0) cancelAnimationFrame(frame);

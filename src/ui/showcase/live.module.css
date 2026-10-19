@@ -95,6 +95,7 @@
 }
 
 .phases li {
+  flex-grow: var(--grow);
   flex-basis: 0;
   min-width: 0;
   background: var(--fx-color-paper);
@@ -178,6 +179,10 @@
     justify-content: center;
   }
 
+  .phases li[data-state='current'] {
+    flex-grow: 60;
+  }
+
   /* Phones: only the current phase prints its name; the others keep it for assistive tech. */
   .phases li:not([data-state='current']) .phaseName {
     position: absolute;
@@ -228,7 +233,7 @@
   width: var(--fx-space-3);
   height: var(--fx-space-3);
   background: var(--fx-color-accent);
-  animation: blink 2s steps(2, jump-none) infinite;
+  animation: blink var(--fx-dur-blink) steps(2, jump-none) infinite;
 }
 
 @keyframes blink {
