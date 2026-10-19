@@ -20,7 +20,7 @@ import { seedAllStreams } from './rng';
 import type { RngState, RngStream } from './rng';
 
 /** Bumped on any World shape change; migrations live in src/sim/save (3.10). */
-export const WORLD_SCHEMA = 2;
+export const WORLD_SCHEMA = 3;
 
 export interface Site {
   id: SiteId;

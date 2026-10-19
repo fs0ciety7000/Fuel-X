@@ -7,7 +7,13 @@
 // `CatchDecision` GO/DIVERT, else the auto policy at the deadline (catch if p ≥ autoCatchThreshold); forced
 // divert on low landing propellant or tower wind over the limit. The outcome is one seeded roll on the
 // 'catch' stream at the catch keyframe. S-21 separates at hot staging, flies to SECO, then leaves the scene.
-import { catchModel as cm, flightProfile as fp, lc1Layout, vehicles } from '@data/index';
+//
+// Positions are asset origins in world metres (5.0b): liftoff from the mount deck (20 m), the stacked ship rides on
+// the booster's `SOCKET_ShipMount` along its tilted axis, the catch puts the booster origin on the catch point so
+// its catch pins meet the carriage at 126 m. Attitude (`tiltRad` → `rot`): rate-limited toward a target per profile
+// phase — vertical rise, prograde (profile climb angle), boostback flip, engines-first entry, upright landing burn;
+// the ship flies prograde on its own after separation (flightProfile.attitude).
+import { catchModel as cm, flightProfile as fp, lc1Layout, siteGeometry as geo, vehicles } from '@data/index';
 import type { CommandOf } from '../core/commands';
 import { despawnEntity, getEntity } from '../core/entities';
 import { emit } from '../core/events';
@@ -16,6 +22,7 @@ import { DT_S, secondsToTicks } from '../core/time';
 import { countdownIds } from '../core/world';
 import type { World } from '../core/world';
 import { boosterFsm, fire, setArms, shipFsm, towerFsm } from '../entities/machines';
+import { ON_PAD_ROT, approachAngle, rotateVec, tiltQuat } from '../math/attitude';
 import { catchProbability } from '../math/catch';
 import { carriageForBoosterM } from '../math/tower';
 import {
@@ -23,6 +30,7 @@ import {
   DIVERT_PROFILE,
   LANDING_BURN_PROP_KG,
   SEPARATION_FRAME,
+  T_BOOSTBACK_END,
   T_BOOSTBACK_START,
   T_CATCH,
   T_LANDING_BURN,
@@ -46,6 +54,7 @@ import type {
   RecoveryMode,
   RecoveryResult,
   RecoveryState,
+  ShipFlight,
 } from '../types';
 
 type Booster = EntityOf<'booster'>;
@@ -59,6 +68,8 @@ const PAD = lc1Layout.points.olm1;
 const CATCH_POINT = lc1Layout.points.catchPoint;
 /** Keyframe crossing tolerance on accumulated profile time, s. */
 const EPS_S = 1e-9;
+const ATT = fp.attitude;
+const SHIP_MOUNT = { x: 0, y: geo.booster.shipMountM, z: 0 };
 
 const clamp01 = (x: number): number => Math.min(1, Math.max(0, x));
 
@@ -100,13 +111,32 @@ function catchCarriageM(tower: EntityOf<'tower'>): number {
   return carriageForBoosterM(CATCH_POINT.y - tower.pos.y);
 }
 
-const telemetry = (): FlightTelemetry => ({
-  altitudeM: 0,
+/** Telemetry at liftoff, origin `altitudeM` above ground (mount deck for the booster). */
+const telemetry = (altitudeM: number): FlightTelemetry => ({
+  altitudeM,
   downrangeM: 0,
   speedMPerS: 0,
   verticalSpeedMPerS: 0,
   headingRad: HEADING,
+  tiltRad: 0,
 });
+
+/** Tilt step toward `target` at `rateRadPerS`; writes `tiltRad` and the entity rotation. */
+function steer(e: Booster | Ship, f: FlightTelemetry, target: number, rateRadPerS: number): void {
+  f.tiltRad = approachAngle(f.tiltRad, target, rateRadPerS * DT_S);
+  e.rot = tiltQuat(ON_PAD_ROT, DIR, f.tiltRad);
+}
+
+/** Booster attitude target and rate at profile time `tS`, from this tick's motion (dh downrange, dAlt up), m. */
+function boosterAttitude(tS: number, dh: number, dAlt: number, current: number): [number, number] {
+  if (tS < ATT.verticalRiseS) return [0, ATT.ascentRateRadPerS];
+  if (tS < T_BOOSTBACK_START - EPS_S) {
+    return [dh === 0 && dAlt === 0 ? current : Math.atan2(dh, dAlt), ATT.ascentRateRadPerS];
+  }
+  if (tS < T_BOOSTBACK_END - EPS_S) return [ATT.boostbackTiltRad, ATT.flipRateRadPerS];
+  if (tS < T_LANDING_BURN - EPS_S) return [Math.atan2(-dh, Math.abs(dAlt)), ATT.entryRateRadPerS];
+  return [0, ATT.entryRateRadPerS];
+}
 
 // --- Catch model inputs -------------------------------------------------------------------------------
 
@@ -193,7 +223,8 @@ function resolveCatch(world: World, cd: Countdown, b: Booster, r: RecoveryState)
       fire(world, towerFsm, tower, 'caught');
     }
     b.pos = { ...CATCH_POINT };
-    if (b.flight) Object.assign(b.flight, { speedMPerS: 0, verticalSpeedMPerS: 0 });
+    b.rot = { ...ON_PAD_ROT };
+    if (b.flight) Object.assign(b.flight, { speedMPerS: 0, verticalSpeedMPerS: 0, tiltRad: 0 });
     finish(world, cd, b, 'CAUGHT', roll);
   } else {
     fire(world, boosterFsm, b, 'lost');
@@ -208,7 +239,7 @@ function liftoffBooster(world: World, cd: Countdown, b: Booster): void {
   fire(world, boosterFsm, b, 'liftoff');
   b.engines.failed = 0;
   b.flight = {
-    ...telemetry(),
+    ...telemetry(b.pos.y - PAD.y),
     profileTimeS: 0,
     profileRate: 1,
     nextKeyframe: 1,
@@ -262,6 +293,8 @@ function sampleBooster(b: Booster, f: BoosterFlight, frames: readonly Keyframe[]
   if (h - prevH > 1e-6) f.headingRad = HEADING;
   else if (h - prevH < -1e-6) f.headingRad = (HEADING + Math.PI) % (2 * Math.PI);
   b.pos = { x: PAD.x + DIR.x * h, y: PAD.y + s.altitudeM, z: PAD.z + DIR.z * h };
+  const [target, rate] = boosterAttitude(f.profileTimeS, h - prevH, s.altitudeM - prevAlt, f.tiltRad);
+  steer(b, f, target, rate);
   splitProp(b.prop, s.boosterPropKg - f.landingPropPenaltyKg);
 }
 
@@ -276,7 +309,7 @@ function onKeyframe(world: World, cd: Countdown, b: Booster, ship: Ship | null, 
       break;
     case 'HOT_STAGING':
       cd.inputs.stageSeparated = true;
-      if (ship) separateShip(world, ship);
+      if (ship) separateShip(world, ship, b);
       break;
     case 'BOOSTBACK_START':
       fire(world, boosterFsm, b, 'boostbackStart');
@@ -337,9 +370,25 @@ function updateBooster(world: World, cd: Countdown, b: Booster, ship: Ship | nul
 
 const SHIP_SECO = fp.ship;
 
-function separateShip(world: World, ship: Ship): void {
+/** Stacked ship: origin on the booster `SOCKET_ShipMount` along the booster's (tilted) axis, same attitude. */
+function rideOnBooster(ship: Ship, f: ShipFlight, b: Booster): void {
+  const off = rotateVec(b.rot, SHIP_MOUNT);
+  ship.pos = { x: b.pos.x + off.x, y: b.pos.y + off.y, z: b.pos.z + off.z };
+  ship.rot = { ...b.rot };
+  if (b.flight) Object.assign(f, telemetryOf(b.flight));
+  f.altitudeM = ship.pos.y - PAD.y;
+  f.downrangeM = (ship.pos.x - PAD.x) * DIR.x + (ship.pos.z - PAD.z) * DIR.z;
+}
+
+function separateShip(world: World, ship: Ship, b: Booster): void {
   fire(world, shipFsm, ship, 'separation');
-  if (ship.flight) ship.flight.profileTimeS = SEPARATION_FRAME.tS;
+  const f = ship.flight;
+  if (f) {
+    rideOnBooster(ship, f, b);
+    f.profileTimeS = SEPARATION_FRAME.tS;
+    f.sepAltitudeM = f.altitudeM;
+    f.sepDownrangeM = f.downrangeM;
+  }
   setLit(world, ship, ship.engines.total);
 }
 
@@ -347,9 +396,7 @@ function updateShip(world: World, cd: Countdown, ship: Ship, b: Booster | null):
   const f = ship.flight;
   if (!f || f.done) return;
   if (ship.fsm.state === 'ASCENT') {
-    // Attached: rides on top of the booster.
-    if (b?.flight) Object.assign(f, telemetryOf(b.flight));
-    if (b) ship.pos = { x: b.pos.x, y: b.pos.y + vehicles.booster.heightM, z: b.pos.z };
+    if (b) rideOnBooster(ship, f, b);
     return;
   }
   if (ship.fsm.enteredTick === world.tick && ship.fsm.state === 'SEPARATED') return; // separated this tick
@@ -363,11 +410,13 @@ function updateShip(world: World, cd: Countdown, ship: Ship, b: Booster | null):
   const k = clamp01((f.profileTimeS - SEPARATION_FRAME.tS) / (SHIP_SECO.secoTS - SEPARATION_FRAME.tS));
   const lerp = (x: number, y: number): number => x + (y - x) * k;
   const prevAlt = f.altitudeM;
-  f.altitudeM = lerp(SEPARATION_FRAME.altitudeM, SHIP_SECO.secoAltitudeM);
-  f.downrangeM = lerp(SEPARATION_FRAME.downrangeM, SHIP_SECO.secoDownrangeM);
+  const prevH = f.downrangeM;
+  f.altitudeM = lerp(f.sepAltitudeM, SHIP_SECO.secoAltitudeM);
+  f.downrangeM = lerp(f.sepDownrangeM, SHIP_SECO.secoDownrangeM);
   f.speedMPerS = lerp(SEPARATION_FRAME.speedMPerS, SHIP_SECO.secoSpeedMPerS);
   f.verticalSpeedMPerS = (f.altitudeM - prevAlt) / DT_S;
   f.headingRad = HEADING;
+  steer(ship, f, Math.atan2(f.downrangeM - prevH, f.altitudeM - prevAlt), ATT.ascentRateRadPerS);
   ship.pos = { x: PAD.x + DIR.x * f.downrangeM, y: PAD.y + f.altitudeM, z: PAD.z + DIR.z * f.downrangeM };
   splitProp(ship.prop, lerp(ship.prop.loxCapKg + ship.prop.ch4CapKg, SHIP_SECO.secoPropKg));
   if (f.profileTimeS >= SHIP_SECO.secoTS - EPS_S) {
@@ -384,6 +433,7 @@ function telemetryOf(f: FlightTelemetry): FlightTelemetry {
     speedMPerS: f.speedMPerS,
     verticalSpeedMPerS: f.verticalSpeedMPerS,
     headingRad: f.headingRad,
+    tiltRad: f.tiltRad,
   };
 }
 
@@ -448,7 +498,13 @@ function updateCountdown(world: World, cd: Countdown): void {
     if (b) liftoffBooster(world, cd, b);
     if (ship) {
       fire(world, shipFsm, ship, 'liftoff');
-      ship.flight = { ...telemetry(), profileTimeS: 0, done: false };
+      ship.flight = {
+        ...telemetry(ship.pos.y - PAD.y),
+        profileTimeS: 0,
+        sepAltitudeM: 0,
+        sepDownrangeM: 0,
+        done: false,
+      };
     }
     return;
   }

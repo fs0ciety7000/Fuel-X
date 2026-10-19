@@ -180,6 +180,12 @@ value, and bookkeeping increments it last. `step(world, commands) → SimEvent[]
 
 Coordinates: **site-local, right-handed, Y-up, metres — identical to glTF/three** (X = east, Y = up, Z = south, so heading 0° = north = −Z). Sim and render therefore share frames; the only axis conversion in the project is Blender's exporter (Z-up → Y-up). Sim math is float64; render uses float32 with a floating origin (§13 risk 4).
 
+**Position convention (5.0b)**: `pos` is the **asset origin in world metres** and `rot` the asset orientation; render
+places the GLB at `pos`/`rot` as-is (no attachment lift). Socket heights the sim needs live in `src/data/siteGeometry.ts`
+(mirrors ASSETS_GUIDE §4): a stage on a transporter sits at transporter y + 4.6 m (`SOCKET_Cargo`), the stacked
+booster at y 20 m (PAD `SOCKET_VehicleMount`), the stacked ship at 20 + 71 = 91 m (BOOSTER `SOCKET_ShipMount`), the
+caught booster at 60 m (catch pins 60 + 66 = carriage 126 m). Flying stages carry their attitude in `rot` (§7.4).
+
 ```ts
 // src/sim/types.ts — imported by render/ui with `import type` only
 export type Id = string;                 // stable, e.g. 'e000123'; never the call-sign
@@ -324,6 +330,9 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   OLM-1 (`stackBoosterS`); SP-41 returns empty, CR-77 lifts S-21, SP-41 brings it; when B-09 is `STACKED` the arms put
   S-21 on top (`stackShipS`) → `inputs.stackComplete`. Rejections: `NO_COUNTDOWN_FOR_PAD`, `NO_PREP_ASSETS`,
   `NOT_IN_STACK_PHASE`, `ROLLOUT_NOT_COMPLETE`, `STACK_ALREADY_STARTED`.
+- **Heights** (5.0b, §6 convention): a stage on SP-41 sits on `SOCKET_Cargo` (+4.6 m, transporter heading); during the
+  tower task it rises linearly with task progress from the deck to the mount (booster origin 20 m) / the booster top
+  (ship origin 91 m), then takes the on-pad rotation.
 - **Wind**: `groundGustMPerS > windLimit.transporterMPerS` → SP-41 `WIND_HOLD`; `> windLimit.stackMPerS` → tower
   `WIND_HOLD`. Tasks are progress counters, so a pause delays them by exactly its length; the T-clock is untouched.
 - Prep runs in `Rollout … TerminalCount` and freezes once scrubbed.
@@ -334,7 +343,16 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   time except between an ascent engine-out and MECO (the remaining burn stretches by `ascentMecoDelayS` per engine).
   Ground track along `launchHeadingRad`; until a CATCH is committed the aim offset ramps to the offshore divert point
   (boostback start → landing burn); a CATCH converges it on the tower by the catch time. Divert profile = same keyframes
-  to landing burn, then `SPLASHDOWN` at `divert.splashdownTS` on the divert point.
+  to landing burn, then `SPLASHDOWN` at `divert.splashdownTS` on the divert point. Keyframe altitudes are the
+  booster origin above site ground (= `pos.y`): LIFTOFF 20 m (mount deck), CATCH 60 m (catch point).
+- **Attitude** (5.0b, `flightProfile.attitude`, `src/sim/math/attitude.ts`): `flight.tiltRad` = long axis tilted from
+  vertical in the launch plane (+ downrange, − back toward the site); `rot` = on-pad rotation composed with that tilt
+  about up × ground-track direction. Each tick the tilt steps toward a target at a rate limit, by profile time:
+  vertical rise (`verticalRiseS`) → prograde = this tick's climb angle `atan2(Δdownrange, Δaltitude)` (1°/s) → boostback
+  flip to `boostbackTiltRad` −75° (15°/s) → engines-first entry `atan2(−Δdownrange, |Δaltitude|)` (3°/s) → upright from
+  landing-burn ignition (tilt 0 at the catch). The stacked ship rides on `SOCKET_ShipMount` along the booster's tilted
+  axis with the same attitude; after separation it flies prograde on its own (≈ 86° by SECO), lerping altitude /
+  downrange from its separation point (`sepAltitudeM`, `sepDownrangeM`) to the SECO values.
 - **Entity fields**: booster `engines {total, lit, failed}`, `flight` (telemetry `altitudeM, downrangeM, speedMPerS,
   verticalSpeedMPerS, headingRad` + profile state), `recovery {p, sigmaM, landingPropKg, towerWindMPerS, forcedDivert,
   decisionRequiredTick, deadlineTick, mode, decidedBy, result, roll}` (live p for the UI); ship `engines`, `flight`.
@@ -432,7 +450,8 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   band edge (`CARRIAGE_HELD`); the QD arm does not leave STOWED while the carriage is strictly inside the band
   (`QD_HELD`). QD runs before the carriage each tick, so "QD out ⇒ carriage outside the band" holds at every tick
   (unit tests + the fast-check property suite). Changes emit `TowerInterlockChanged`.
-- Save schema 2 (migration 1 → 2 infers the mechanism state from the stack / flight progress).
+- Save schema 2 (migration 1 → 2 infers the mechanism state from the stack / flight progress). Catch carriage height
+  is data (`siteGeometry.tower.catchCarriageM` 126 m); `points.catchPoint.y` is derived from it (126 − 66).
 
 ### 7.7 Economy, contract, debrief (3.8, `src/sim/systems/economy.ts`)
 
@@ -493,7 +512,7 @@ interface FuelxDebug {
 
 ## 10. Save / load
 
-- `save = { format: 'fuelx-save', schema: 2, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream`.
+- `save = { format: 'fuelx-save', schema: 3, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream`.
 - Storage: IndexedDB (thin in-house wrapper, store `saves`, keys `auto-<n>`, `slot-<n>`), plus export/import as `.fuelx.json.gz` file. Autosave on `Milestone` (debrief = natural save point, GDD §3) and on `visibilitychange → hidden`.
 - **Versioning**: `schema` is an integer bumped on any `World` shape change; `src/sim/save/migrations.ts` holds `migrations[n]: (w_n) => w_{n+1}`, applied in order on load. Each migration ships with a fixture save under `tests/fixtures/saves/schema-<n>.json` and a test (load old fixture → migrate → validate → run 100 ticks without error). Saves newer than the app are rejected with a clear message.
 - Equivalence test: run K ticks → save → load → M ticks ≡ K+M ticks (canonical-JSON hash).
@@ -501,7 +520,8 @@ interface FuelxDebug {
 - **Implementation (3.10)**: `src/sim/save/save.ts` — `createSave(world, { game, createdAt, commandLog? })` (canonical
   JSON; `createdAt` comes from the host, the sim has no clock) and `loadSave(json, migrations?)` → `{ world, commandLog,
   game, createdAt, fromSchema }`; errors are codes `SAVE_NOT_JSON`, `SAVE_BAD_FORMAT`, `SAVE_FROM_NEWER_GAME`,
-  `SAVE_MIGRATION_MISSING`, `WORLD_INVALID`. `src/sim/save/migrations.ts` — `MIGRATIONS` (1 → 2: tower mechanisms, 5.0) +
+  `SAVE_MIGRATION_MISSING`, `WORLD_INVALID`. `src/sim/save/migrations.ts` — `MIGRATIONS` (1 → 2: tower mechanisms, 5.0; 2 → 3: asset-origin stage heights,
+  `flight.tiltRad`, ship `sepAltitudeM/sepDownrangeM`, 5.0b; fixture `schema-2.json`) +
   `migrateWorld(raw, from, to, table)`. Fixture `tests/fixtures/saves/schema-1.json` (seed 42 at sim tick 540 000, under
   the A3 LEAK_FIX hold), written once by `scripts/sim/make-save-fixture.ts`. Compression / IndexedDB stay in
   `src/app/persistence` (8.3).

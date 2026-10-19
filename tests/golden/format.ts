@@ -55,6 +55,7 @@ export class GoldenLog {
     const b = w.entities.byId[cd.boosterId];
     const s = w.entities.byId[cd.shipId];
     const kg = (x: number): string => String(Math.round(x));
+    const deg = (rad: number): string => ((rad * 180) / Math.PI).toFixed(1);
     const parts = [
       `${pad(w.tick, 6)} ${tClock(cd.tClockTicks)} TLM ${cd.phase.state}/${cd.clock.state}`,
       `wind=${wx.groundWindMPerS.toFixed(2)}/${wx.groundGustMPerS.toFixed(2)}/${wx.towerWindMPerS.toFixed(2)} upper=${wx.upperWindMPerS.toFixed(2)}`,
@@ -65,14 +66,14 @@ export class GoldenLog {
       if (b.flight && !b.flight.done) {
         const f = b.flight;
         parts.push(
-          `B-09 alt=${f.altitudeM.toFixed(1)} v=${f.speedMPerS.toFixed(1)} dr=${f.downrangeM.toFixed(1)} prop=${kg(b.prop.loxKg + b.prop.ch4Kg)} lit=${b.engines.lit} p=${(b.recovery?.p ?? 0).toFixed(3)}`,
+          `B-09 alt=${f.altitudeM.toFixed(1)} v=${f.speedMPerS.toFixed(1)} dr=${f.downrangeM.toFixed(1)} tilt=${deg(f.tiltRad)} prop=${kg(b.prop.loxKg + b.prop.ch4Kg)} lit=${b.engines.lit} p=${(b.recovery?.p ?? 0).toFixed(3)}`,
         );
       } else parts.push(`B-09 ${b.fsm.state} ${kg(b.prop.loxKg)}/${kg(b.prop.ch4Kg)}`);
     }
     if (s?.kind === 'ship') {
       parts.push(
         s.flight && !s.flight.done
-          ? `S-21 alt=${s.flight.altitudeM.toFixed(1)} v=${s.flight.speedMPerS.toFixed(1)}`
+          ? `S-21 alt=${s.flight.altitudeM.toFixed(1)} v=${s.flight.speedMPerS.toFixed(1)} tilt=${deg(s.flight.tiltRad)}`
           : `S-21 ${s.fsm.state} ${kg(s.prop.loxKg)}/${kg(s.prop.ch4Kg)}`,
       );
     }

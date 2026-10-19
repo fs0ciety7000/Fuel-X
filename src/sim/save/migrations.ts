@@ -2,7 +2,9 @@
 // order on load. Every migration ships with a frozen fixture `tests/fixtures/saves/schema-<n>.json` and a test
 // (load → migrate → validate → run 100 ticks). Schema 1 is the first shipped shape.
 //   1 → 2 (5.0): tower carriage / arm / QD arm state (fixture `schema-1.json`).
-import { lc1Layout, tower as td } from '@data/index';
+//   2 → 3 (5.0b): stage positions = asset origins (mount 20 m, cargo deck +4.6 m), flight attitude `tiltRad`, ship
+//                separation start (fixture `schema-2.json`).
+import { flightProfile as fp, lc1Layout, siteGeometry as geo, tower as td } from '@data/index';
 import { CARRIAGE_STACK_BOOSTER_M, CARRIAGE_STACK_SHIP_M, carriageForBoosterM } from '../math/tower';
 
 /** A world as parsed from JSON, before validation (shape of an older schema). */
@@ -50,7 +52,40 @@ function addTowerMechanisms(world: RawWorld): RawWorld {
   return world;
 }
 
-export const MIGRATIONS: Readonly<Record<number, Migration>> = { 1: addTowerMechanisms };
+/** Stage states with the stage on the launch mount (booster) or on the booster (ship). */
+const ON_STACK = ['STACKED', 'LOADING', 'LOADED', 'DETANKING'];
+
+/**
+ * Schema 2 → 3: stages on SP-41 rise to the cargo socket, stacked stages to the mount / booster top (stages in the arms
+ * are re-lifted on the next tick); flights get `tiltRad` 0 (the attitude program steers from there) and the ship
+ * its separation start (the schema-2 ship flew from the booster's hot-staging keyframe).
+ */
+function addMountHeightsAndAttitude(world: RawWorld): RawWorld {
+  const byId = obj(obj(world.entities).byId);
+  const pad = lc1Layout.points.olm1;
+  const sep = fp.booster.find((k) => k.event === 'HOT_STAGING');
+  for (const e of Object.values(byId).map(obj)) {
+    if (e.kind !== 'booster' && e.kind !== 'ship') continue;
+    const pos = obj(e.pos);
+    const s = String(state(e));
+    if (s === 'ON_TRANSPORTER') pos.y = Number(pos.y) + geo.transporter.cargoM;
+    else if (ON_STACK.includes(s)) {
+      pos.y = pad.y + geo.pad.vehicleMountM + (e.kind === 'ship' ? geo.booster.shipMountM : 0);
+    }
+    if (e.flight && typeof e.flight === 'object') {
+      const f = obj(e.flight);
+      f.tiltRad = 0;
+      if (e.kind === 'ship') {
+        const separated = Number(f.profileTimeS) > 0;
+        f.sepAltitudeM = separated ? (sep?.altitudeM ?? 0) : 0;
+        f.sepDownrangeM = separated ? (sep?.downrangeM ?? 0) : 0;
+      }
+    }
+  }
+  return world;
+}
+
+export const MIGRATIONS: Readonly<Record<number, Migration>> = { 1: addTowerMechanisms, 2: addMountHeightsAndAttitude };
 
 /**
  * Migrates `world` from `fromSchema` up to `toSchema` with `table` (default: the shipped migrations). Throws

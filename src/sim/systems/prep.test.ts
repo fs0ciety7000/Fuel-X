@@ -1,4 +1,11 @@
-import { countdown as cdData, lc1Layout, logistics as ld, vehicles } from '@data/index';
+import {
+  countdown as cdData,
+  lc1Layout,
+  logistics as ld,
+  siteGeometry as geo,
+  tower as td,
+  vehicles,
+} from '@data/index';
 import { describe, expect, it } from 'vitest';
 import type { Command } from '../core/commands';
 import type { SimEvent } from '../core/events';
@@ -121,7 +128,9 @@ describe('rollout (AC 4)', () => {
     const exact = (pathLengthM('sp.yardToOlm1') / ld.transporter.speedLoadedMPerS) * 30;
     expect(Math.abs(arrival - CRANE - exact)).toBeLessThanOrEqual(1);
     expect(a.sp.pos).toEqual(lc1Layout.points.olm1);
-    expect(a.booster.pos).toEqual(a.sp.pos);
+    // Stage origin on TRANSPORTER `SOCKET_Cargo` (5.0b).
+    expect(a.booster.pos).toEqual({ ...a.sp.pos, y: a.sp.pos.y + geo.transporter.cargoM });
+    expect(a.booster.rot).toEqual(a.sp.rot);
     log.push(...step(s.world));
     expect(log.at(-1)).toMatchObject({ t: 'PhaseChanged', from: 'Rollout', to: 'Stack' });
   });
@@ -157,8 +166,29 @@ describe('stack (AC 5)', () => {
     expect(a.ship.fsm.state).toBe('STACKED');
     expect(s.cd.inputs.stackComplete).toBe(true);
     expect(a.pad.boosterId).toBe(a.booster.id);
-    expect(a.booster.pos).toEqual(lc1Layout.points.olm1);
-    expect(a.ship.pos.y).toBe(vehicles.booster.heightM);
+    // Asset origins (5.0b): booster on PAD `SOCKET_VehicleMount` (20 m), ship on BOOSTER `SOCKET_ShipMount` (+71 m).
+    const olm = lc1Layout.points.olm1;
+    expect(a.booster.pos).toEqual({ ...olm, y: olm.y + geo.pad.vehicleMountM });
+    expect(a.ship.pos).toEqual({ ...olm, y: olm.y + geo.pad.vehicleMountM + vehicles.booster.heightM });
+    expect(a.ship.pos.y).toBe(91);
+    // The carriage stopped on the ship lift pins (91 + 44 = 135 m) — the same sum the socket composite checks.
+    expect(a.tower.carriageM).toBe(a.ship.pos.y + td.pins.shipLiftPinM);
+  });
+
+  it('the arms lift each stage from the cargo deck to its stacked height with task progress', () => {
+    const m = mvpSetup();
+    const b = prepAssets(m);
+    step(m.world, [{ t: 'StartRollout', boosterId: m.cd.boosterId }]);
+    runUntil(m.world, () => m.cd.inputs.rolloutComplete);
+    step(m.world, [{ t: 'Stack', padId: m.cd.padId }]);
+    runUntil(m.world, () => b.booster.fsm.state === 'STACKING');
+    const y0 = lc1Layout.points.olm1.y + geo.transporter.cargoM;
+    expect(b.booster.pos.y).toBeCloseTo(y0, 9);
+    run(m.world, STACK_B / 2);
+    const k = (b.tower.task?.elapsedTicks ?? 0) / STACK_B;
+    expect(b.booster.pos.y).toBeCloseTo(y0 + (geo.pad.vehicleMountM - y0) * k, 9);
+    expect(b.booster.pos.y).toBeGreaterThan(y0);
+    expect(b.booster.pos.y).toBeLessThan(geo.pad.vehicleMountM);
   });
 
   it('uses the arms (CLOSED while stacking, OPEN after) and frees SP-41', () => {

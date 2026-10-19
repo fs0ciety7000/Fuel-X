@@ -11,6 +11,7 @@ export * from './logistics';
 export * from './names';
 export * from './propellant';
 export * from './site-lc1';
+export * from './siteGeometry';
 export * from './stations';
 export * from './time';
 export * from './tower';

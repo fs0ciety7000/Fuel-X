@@ -1,5 +1,5 @@
 // Test factories shared by the system tests (not part of the public sim API).
-import { countdown as cdData, lc1Layout, tower as td } from '@data/index';
+import { countdown as cdData, lc1Layout, siteGeometry as geo, tower as td } from '@data/index';
 import { entitiesOfKind } from './core/entities';
 import type { SimEvent } from './core/events';
 import { LIVE_CONFIG, createWorld } from './core/world';
@@ -37,8 +37,9 @@ export function mvpSetup(opts: MvpOptions = {}): MvpSetup {
     const s = entity(world, cd.shipId, 'ship');
     b.fsm.state = 'STACKED';
     s.fsm.state = 'STACKED';
-    b.pos = { x: 0, y: 0, z: 0 };
-    s.pos = { x: 0, y: 71, z: 0 };
+    // Asset origins (5.0b): booster on the mount deck, ship on the booster ship mount.
+    b.pos = { x: 0, y: geo.pad.vehicleMountM, z: 0 };
+    s.pos = { x: 0, y: geo.pad.vehicleMountM + geo.booster.shipMountM, z: 0 };
     cd.inputs.rolloutComplete = true;
     cd.inputs.stackComplete = true;
     cd.phase.state = 'Stack';

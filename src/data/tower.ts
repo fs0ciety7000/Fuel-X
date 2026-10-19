@@ -2,6 +2,8 @@
 // Heights are above the tower base (= site ground, y 0). Geometry mirrors the Blender scripts (sockets are an
 // API: change both together); rates are sim additions 5.0 (review).
 
+import { siteGeometry as g } from './siteGeometry';
+
 const DEG = Math.PI / 180;
 
 export const tower = {
@@ -34,12 +36,13 @@ export const tower = {
     keepOutLoM: 92,
     keepOutHiM: 106,
   },
+  /** Pin / mount heights, m: aliases of `siteGeometry` (ASSETS_GUIDE sockets), kept for the tower math. */
   pins: {
     /** PAD `SOCKET_VehicleMount` height = booster origin on the mount, m. */
-    mountDeckM: 20,
+    mountDeckM: g.pad.vehicleMountM,
     /** BOOSTER `SOCKET_CatchPinL/R` above the booster origin, m. */
-    boosterCatchPinM: 66,
+    boosterCatchPinM: g.booster.catchPinM,
     /** SHIP `SOCKET_LiftPinL/R` above the ship origin, m (ship origin = booster origin + booster height). */
-    shipLiftPinM: 44,
+    shipLiftPinM: g.ship.liftPinM,
   },
 };

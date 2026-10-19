@@ -122,7 +122,7 @@ Nominal prep (no holds) from start T-06:00:00: booster lifted → rolled → sta
 
 | Event | T+ (s) | Altitude (m) | Speed (m/s) | Booster prop left (kg) | Source / note |
 |---|---|---|---|---|---|
-| Liftoff | 0 | 0 | 0 | 3 400 000 | |
+| Liftoff | 0 | 20 (mount deck) | 0 | 3 400 000 | altitudes = booster origin above site ground (5.0b): on OLM-1 it sits on the 20 m mount |
 | Max-Q | 62 | 12 000 | 450 | 2 100 000 | |
 | MECO | 155 | 68 000 | 1 550 | 240 000 | MECO ≈ T+2:33, separation ≈ 70–74 km on a real catch flight [S3] |
 | Hot staging | 160 | 71 000 | 1 540 | 235 000 | |
@@ -138,6 +138,17 @@ Sim additions (3.6, plausibility only — **game-designer to review**): ground t
 (liftoff … catch); ship SECO `secoDownrangeM` 1 300 000 m and `secoPropKg` 80 000 kg. The booster aims at the
 offshore divert point until a CATCH is committed. "Landing propellant" (forced-divert and low-prop σ input) =
 predicted booster propellant at landing-burn ignition (90 000 kg nominal − engine-out penalties).
+
+Attitude program (sim addition 5.0b, `flightProfile.attitude` — **game-designer to review**): tilt from vertical,
+rate-limited toward a target per phase.
+
+| Key | Unit | Default | Range | Rationale |
+|---|---|---|---|---|
+| attitude.verticalRise | s | 8 | 5–15 | clear the tower before pitching over |
+| attitude.ascentRate (pitch-over, ship) | °/s | 1 | 0.5–2 | reaches the 18.5° first-segment climb angle by ≈ T+27 s, 45° ≈ 26 s after Max-Q |
+| attitude.flipRate | °/s | 15 | 10–25 | ≈ 9 s boostback flip |
+| attitude.boostbackTilt | ° | −75 | −60 … −95 | nose back toward the site, a little above horizontal (boostback still climbs) |
+| attitude.entryRate | °/s | 3 | 2–5 | entry reorientation; upright well before the catch |
 
 | Key | Unit | Default | Range | Rationale |
 |---|---|---|---|---|

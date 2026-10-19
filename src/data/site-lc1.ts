@@ -5,6 +5,7 @@
 // the bay west; the yard is on the spit west of the pad. `headingRad` is a compass heading
 // (0 = north = −Z, π/2 = east = +X). Assets face glTF +Z, i.e. heading π with no rotation.
 import type { SiteId } from './names';
+import { CATCH_ORIGIN_M } from './siteGeometry';
 
 export type EntityKind =
   | 'booster'
@@ -72,8 +73,11 @@ const W = (3 * Math.PI) / 2;
 const points = {
   /** OLM-1 launch mount centre (origin). */
   olm1: v(0, 0, 0),
-  /** Booster catch point above the mount (flightProfile CATCH altitude). */
-  catchPoint: v(0, 60, 0),
+  /**
+   * Booster origin at the tower catch: catch carriage 126 m − catch pins 66 m = 60 m above ground (siteGeometry,
+   * = flightProfile CATCH altitude).
+   */
+  catchPoint: v(0, CATCH_ORIGIN_M, 0),
   /** SP-41 pickup bay in the yard (CR-77 loads stages here). */
   yardPickup: v(-1_340, 0, 460),
   /** Road gate on the hazard radius: tankers wait here (GATE_WAIT) during road closure. */

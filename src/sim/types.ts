@@ -80,8 +80,12 @@ export interface EntityBase<K extends Kind> {
   kind: K;
   callSign: string;
   siteId: SiteId;
-  /** Site-local position, m (X east, Y up, Z south). */
+  /**
+   * Asset origin in site-local world metres (X east, Y up, Z south; 5.0b): render places the GLB here as-is, e.g. a
+   * stacked booster at y 20 (PAD `SOCKET_VehicleMount`), a stage on a transporter at its y + 4.6 (`SOCKET_Cargo`).
+   */
   pos: Vec3;
+  /** Asset orientation (glTF frame); flying stages carry their attitude here. */
   rot: Quat;
   /** Index into RenderSnapshot arrays, stable while alive. */
   slot: number;
@@ -177,11 +181,18 @@ export type FlightEventName = FlightEvent | 'SECO' | 'SPLASHDOWN';
 
 /** Live flight telemetry, SI (3.6). Heading = compass heading of the ground track, rad. */
 export interface FlightTelemetry {
+  /** Vehicle origin above site ground (= `pos.y`), m: 20 on the mount at liftoff, 60 at the tower catch. */
   altitudeM: number;
   downrangeM: number;
   speedMPerS: number;
   verticalSpeedMPerS: number;
+  /** Ground-track compass heading, rad (flips during boostback). */
   headingRad: number;
+  /**
+   * Attitude (5.0b): long axis tilted from vertical in the launch plane, rad (+ toward downrange, − back toward the
+   * site; 0 = upright). `rot` is the on-pad yaw composed with this tilt, so render only reads `rot`.
+   */
+  tiltRad: number;
 }
 export interface BoosterFlight extends FlightTelemetry {
   /** Time along the nominal profile, s (equals mission time unless an ascent engine-out stretched the burn). */
@@ -203,6 +214,9 @@ export interface BoosterFlight extends FlightTelemetry {
 export interface ShipFlight extends FlightTelemetry {
   /** Profile time; after separation it runs from the hot-staging keyframe to SECO. */
   profileTimeS: number;
+  /** Ship origin altitude / downrange at separation (on top of the tilted booster), m; SECO is lerped from here. */
+  sepAltitudeM: number;
+  sepDownrangeM: number;
   done: boolean;
 }
 

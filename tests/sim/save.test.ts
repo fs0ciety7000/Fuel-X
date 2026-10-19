@@ -15,6 +15,7 @@ import {
 import type { Migration } from '../../src/sim/index';
 import { drive, runMvp } from '../harness';
 import fixture from '../fixtures/saves/schema-1.json?raw';
+import fixture2 from '../fixtures/saves/schema-2.json?raw';
 
 const META = { game: '0.1.0', createdAt: '2026-10-18T12:00:00.000Z' };
 
@@ -105,6 +106,31 @@ describe('fixture tests/fixtures/saves/schema-1.json (frozen)', () => {
     const tower = Object.values(loaded.world.entities.byId).find((e) => e.kind === 'tower');
     expect(tower).toMatchObject({ carriageM: 135, carriageTargetM: 135, qd: 'ENGAGED', interlock: 'NONE' });
     expect(tower?.kind === 'tower' && tower.qdArmRad).toBeCloseTo(Math.PI / 2, 12);
+    const before = serializeWorld(loaded.world);
+    drive({ world: loaded.world, countdown: cd, ids: {} }, { maxTicks: 100 });
+    expect(loaded.world.tick).toBe(540_100);
+    expect(serializeWorld(loaded.world)).not.toBe(before);
+  });
+});
+
+describe('fixture tests/fixtures/saves/schema-2.json (frozen)', () => {
+  it('2 → 3 puts the stacked stages on their asset-origin heights, then runs 100 ticks without error', () => {
+    const old = JSON.parse(fixture2) as {
+      world: { entities: { byId: Record<string, { kind: string; pos: { y: number } }> } };
+    };
+    const oldYs = Object.values(old.world.entities.byId)
+      .filter((e) => e.kind === 'booster' || e.kind === 'ship')
+      .map((e) => e.pos.y);
+    expect(oldYs).toEqual([0, 71]); // schema 2: booster base on the ground under the mount
+    const loaded = loadSave(fixture2);
+    expect(loaded.fromSchema).toBe(2);
+    expect(loaded.world.schema).toBe(WORLD_SCHEMA);
+    const cd = loaded.world.countdowns.cd01;
+    if (!cd) throw new Error('no countdown');
+    const b = loaded.world.entities.byId[cd.boosterId];
+    const ship = loaded.world.entities.byId[cd.shipId];
+    expect(b?.pos.y).toBe(20); // PAD SOCKET_VehicleMount
+    expect(ship?.pos.y).toBe(91); // + BOOSTER SOCKET_ShipMount
     const before = serializeWorld(loaded.world);
     drive({ world: loaded.world, countdown: cd, ids: {} }, { maxTicks: 100 });
     expect(loaded.world.tick).toBe(540_100);

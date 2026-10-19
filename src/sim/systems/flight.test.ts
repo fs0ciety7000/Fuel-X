@@ -1,4 +1,12 @@
-import { catchModel as cm, countdown as cdData, flightProfile as fp, lc1Layout, vehicles } from '@data/index';
+import {
+  catchModel as cm,
+  countdown as cdData,
+  flightProfile as fp,
+  lc1Layout,
+  siteGeometry as geo,
+  tower as td,
+  vehicles,
+} from '@data/index';
 import { describe, expect, it } from 'vitest';
 import type { Command } from '../core/commands';
 import type { SimEvent } from '../core/events';
@@ -8,6 +16,7 @@ import { secondsToTicks as T } from '../core/time';
 import { BOOSTER_STATES, SHIP_STATES, boosterFsm, shipFsm } from '../entities/machines';
 import { entity, id, mvpSetup, rejected, run, runUntil, stateChanges } from '../fixtures.test-utils';
 import type { MvpSetup } from '../fixtures.test-utils';
+import { rotateVec } from '../math/attitude';
 import { catchProbability, erf } from '../math/catch';
 import { step } from '../step';
 import type { BoosterState, EntityOf, FlightEventName, Phase, ShipState } from '../types';
@@ -28,6 +37,8 @@ function toLiftoff(seed = 7): FlightSetup {
   const s = mvpSetup({ seed, startTS: -5, phase: 'TerminalCount', pollsPassed: ['load', 'terminal', 'final'] });
   const booster = entity(s.world, s.cd.boosterId, 'booster');
   const ship = entity(s.world, s.cd.shipId, 'ship');
+  booster.pos = { x: 0, y: geo.pad.vehicleMountM, z: 0 }; // stacked asset origins (5.0b)
+  ship.pos = { x: 0, y: geo.pad.vehicleMountM + geo.booster.shipMountM, z: 0 };
   for (const st of [booster, ship]) {
     st.fsm.state = 'LOADED';
     st.prop.loxKg = st.prop.loxCapKg;
@@ -247,6 +258,88 @@ describe('flight telemetry (AC 17 inputs)', () => {
     expect(samples[300]?.hdg).toBeCloseTo(fp.launchHeadingRad + Math.PI, 9); // returning
     expect(samples[300]?.vz).toBeLessThan(0);
     expect(samples[230]?.x).toBeGreaterThan(samples[300]?.x ?? Infinity);
+  });
+});
+
+describe('mount heights and attitude (5.0b)', () => {
+  const DEG = Math.PI / 180;
+  const f = toLiftoff();
+  interface Sample {
+    tilt: number;
+    shipTilt: number | null;
+    y: number;
+    shipY: number | null;
+    up: { x: number; y: number; z: number };
+    shipGap: number | null;
+  }
+  const at0 = { y: f.booster.pos.y, alt: f.booster.flight?.altitudeM, shipY: f.ship.pos.y };
+  const samples = new Map<number, Sample>();
+  fly(f, (tS) => {
+    const s = Math.round(tS * 30) / 30;
+    if (!Number.isInteger(s)) return;
+    const b = f.booster;
+    const ship = f.world.entities.byId[f.ship.id];
+    const sf = ship?.kind === 'ship' && ship.flight && !ship.flight.done ? ship : null;
+    const top = rotateVec(b.rot, { x: 0, y: geo.booster.shipMountM, z: 0 });
+    samples.set(s, {
+      tilt: b.flight?.tiltRad ?? 0,
+      shipTilt: sf?.flight?.tiltRad ?? null,
+      y: b.pos.y,
+      shipY: sf ? sf.pos.y : null,
+      up: rotateVec(b.rot, { x: 0, y: 1, z: 0 }),
+      shipGap: sf
+        ? Math.hypot(sf.pos.x - b.pos.x - top.x, sf.pos.y - b.pos.y - top.y, sf.pos.z - b.pos.z - top.z)
+        : null,
+    });
+  });
+  const get = (t: number): Sample => {
+    const s = samples.get(t);
+    if (!s) throw new Error(`no sample at T+${t}`);
+    return s;
+  };
+
+  it('lifts off from the mount deck (20 m) with the ship origin on the booster top (91 m)', () => {
+    expect(at0.y).toBe(geo.pad.vehicleMountM);
+    expect(at0.alt).toBe(geo.pad.vehicleMountM);
+    expect(at0.shipY).toBe(geo.pad.vehicleMountM + geo.booster.shipMountM);
+  });
+
+  it('rises vertically, then pitches over toward the profile climb angle (no faster than the rate limit)', () => {
+    expect(get(5).tilt).toBe(0);
+    expect(get(30).tilt).toBeGreaterThan(5 * DEG);
+    // Liftoff → Max-Q climb angle atan2(4 000, 11 980) ≈ 18.5°; Max-Q → MECO 45°.
+    expect(get(60).tilt).toBeCloseTo(Math.atan2(4_000, 12_000 - geo.pad.vehicleMountM), 2);
+    expect(get(150).tilt).toBeCloseTo(45 * DEG, 2);
+    for (let t = 2; t < 160; t++) {
+      expect(Math.abs(get(t).tilt - get(t - 1).tilt)).toBeLessThanOrEqual(fp.attitude.ascentRateRadPerS + 1e-9);
+    }
+    // +Y axis leans east (launch heading π/2 = +X), stays in the launch plane.
+    expect(get(100).up.x).toBeGreaterThan(0);
+    expect(get(100).up.z).toBeCloseTo(0, 12);
+  });
+
+  it('carries the ship on the tilted booster axis until hot staging; the ship then flies its own attitude', () => {
+    for (const t of [10, 80, 159]) expect(get(t).shipGap).toBeCloseTo(0, 6);
+    expect(get(159).shipTilt).toBe(get(159).tilt);
+    const ship = get(400).shipTilt ?? 0;
+    expect(ship).toBeGreaterThan(80 * DEG); // near-horizontal toward SECO (Δdownrange ≫ Δaltitude)
+    expect(ship).toBeLessThan(90 * DEG);
+  });
+
+  it('flips for boostback (nose back toward the site), then rights itself for the landing burn and catch', () => {
+    expect(get(190).tilt).toBeCloseTo(fp.attitude.boostbackTiltRad, 9);
+    expect(get(190).up.x).toBeLessThan(0);
+    expect(get(170).tilt).toBeLessThan(get(165).tilt);
+    expect(get(400).tilt).toBeCloseTo(0, 9);
+    expect(f.booster.flight?.tiltRad).toBe(0);
+    expect(f.booster.rot).toEqual({ x: 0, y: 0, z: 0, w: 1 });
+  });
+
+  it('catches with the booster origin at 60 m, so its catch pins meet the carriage catch points (126 m)', () => {
+    expect(outcome(f)).toMatchObject({ result: 'CAUGHT' });
+    expect(f.booster.pos.y).toBe(geo.tower.catchCarriageM - geo.booster.catchPinM);
+    expect(f.booster.pos.y + td.pins.boosterCatchPinM).toBe(f.tower.carriageM);
+    expect(f.tower.carriageM).toBe(geo.tower.catchCarriageM);
   });
 });
 

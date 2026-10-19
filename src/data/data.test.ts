@@ -8,7 +8,9 @@ import {
   mvpContract,
   mvpFlight,
   propellant,
+  siteGeometry,
   time,
+  tower,
   vehicles,
 } from './index';
 import type { SitePath, V3 } from './index';
@@ -147,5 +149,25 @@ describe('LC-1 layout', () => {
     expect(paths['tanker.gateToLoxBay'].points.at(-1)).toEqual(paths['tanker.loxBayToOffMap'].points[0]);
     expect(paths['pk03.patrol'].closed && paths['pk04.patrol'].closed).toBe(true);
     for (const p of Object.values(paths)) expect(p.points.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('site geometry (5.0b, ASSETS_GUIDE sockets)', () => {
+  const g = siteGeometry;
+  it('mirrors the socket sums the Blender composite checks', () => {
+    expect(g.booster.shipMountM).toBe(vehicles.booster.heightM);
+    expect(g.pad.vehicleMountM + g.booster.catchPinM).toBe(tower.carriage.restM); // 86 m on the mount
+    expect(g.pad.vehicleMountM + g.booster.shipMountM + g.ship.liftPinM).toBe(tower.carriage.maxM); // 135 m
+    expect(tower.pins).toEqual({
+      mountDeckM: g.pad.vehicleMountM,
+      boosterCatchPinM: g.booster.catchPinM,
+      shipLiftPinM: g.ship.liftPinM,
+    });
+  });
+
+  it('flight profile altitudes are booster-origin heights: liftoff from the mount, catch on the carriage', () => {
+    expect(flightProfile.booster[0]?.altitudeM).toBe(g.pad.vehicleMountM);
+    expect(lc1Layout.points.catchPoint.y + g.booster.catchPinM).toBe(g.tower.catchCarriageM);
+    expect(g.tower.catchCarriageM).toBeLessThanOrEqual(tower.carriage.maxM);
   });
 });

@@ -7,14 +7,17 @@
 // Wind: a gust above `windLimit.transporterMPerS` stops SP-41 (WIND_HOLD); above `windLimit.stackMPerS` it
 // pauses the tower task (WIND_HOLD). Timers are progress counters, so a pause delays the task by exactly
 // its length; it resumes once the gust is `resumeMarginMPerS` below the limit. The countdown clock is not touched (prep continues under holds; wind pauses only the task).
-import { lc1Layout, logistics as ld, vehicles } from '@data/index';
+// Heights (5.0b, siteGeometry = ASSETS_GUIDE sockets): `pos` is the asset origin in world metres. On SP-41 a stage
+// sits on `SOCKET_Cargo` (+4.6 m); during the tower task the arms lift it linearly with task progress from the deck to
+// the mount (booster origin 20 m) or the booster top (ship origin 20 + 71 = 91 m).
+import { lc1Layout, logistics as ld, siteGeometry as geo } from '@data/index';
 import type { CommandOf } from '../core/commands';
 import { getEntity } from '../core/entities';
 import { secondsToTicks } from '../core/time';
 import { countdownIds } from '../core/world';
 import type { PrepState, World } from '../core/world';
 import { boosterFsm, craneFsm, fire, setArms, shipFsm, towerFsm, transporterFsm } from '../entities/machines';
-import { headingToQuat } from '../math/path';
+import { ON_PAD_ROT } from '../math/attitude';
 import type { Countdown, EntityOf, Id, Phase, TaskProgress } from '../types';
 import { CARRIAGE_STACK_BOOSTER_M, CARRIAGE_STACK_SHIP_M } from '../math/tower';
 import { advanceRoute, startRoute } from './motion';
@@ -32,7 +35,12 @@ const PREP_PHASES: readonly Phase[] = ['Rollout', 'Stack', 'PropellantLoad', 'Te
 const PAD = lc1Layout.points.olm1;
 /** Deadband: a wind pause ends once the gust is this far below the limit. */
 const RESUME_MARGIN = ld.windLimit.resumeMarginMPerS;
-const ON_PAD_ROT = headingToQuat(Math.PI);
+/** Stage origin heights, m above the pad: on SP-41's deck at the pad, stacked on the mount / on the booster. */
+const CARGO_Y = PAD.y + geo.transporter.cargoM;
+const STACKED_Y = {
+  booster: PAD.y + geo.pad.vehicleMountM,
+  ship: PAD.y + geo.pad.vehicleMountM + geo.booster.shipMountM,
+};
 
 interface Assets {
   cd: Countdown;
@@ -109,10 +117,17 @@ function updateCrane(world: World, a: Assets): void {
   carry(sp, stage);
 }
 
+/** Stage on SP-41: origin on `SOCKET_Cargo`, transporter heading. */
 function carry(sp: Transporter, stage: Stage | null): void {
   if (!stage) return;
-  stage.pos = { ...sp.pos };
+  stage.pos = { x: sp.pos.x, y: sp.pos.y + geo.transporter.cargoM, z: sp.pos.z };
   stage.rot = { ...sp.rot };
+}
+
+/** Stage in the tower arms: lifted from the deck to its stacked height with task progress. */
+function lift(stage: Stage, task: TaskProgress): void {
+  const k = task.durationTicks > 0 ? task.elapsedTicks / task.durationTicks : 1;
+  stage.pos = { x: PAD.x, y: CARGO_Y + (STACKED_Y[stage.kind] - CARGO_Y) * k, z: PAD.z };
 }
 
 function updateTransporter(world: World, a: Assets): void {
@@ -168,11 +183,10 @@ function finishStack(world: World, a: Assets, stage: Stage): void {
   setArms(world, tower, 'OPEN');
   fireStage(world, stage, 'stacked');
   stage.rot = { ...ON_PAD_ROT };
+  stage.pos = { x: PAD.x, y: STACKED_Y[stage.kind], z: PAD.z };
   if (stage.kind === 'booster') {
-    stage.pos = { ...PAD };
     if (a.pad) a.pad.boosterId = stage.id;
   } else {
-    stage.pos = { x: PAD.x, y: PAD.y + vehicles.booster.heightM, z: PAD.z };
     a.cd.inputs.stackComplete = true;
   }
 }
@@ -200,9 +214,13 @@ function updateTower(world: World, a: Assets): void {
     if (gusty) return;
     fire(world, towerFsm, tower, 'windOk');
   }
-  if (tower.fsm.state === 'STACKING' && tower.task && progress(tower.task)) {
+  if (tower.fsm.state === 'STACKING' && tower.task) {
+    const done = progress(tower.task);
     const stage = stageById(a, tower.task.stageId);
-    if (stage) finishStack(world, a, stage);
+    if (stage) {
+      lift(stage, tower.task);
+      if (done) finishStack(world, a, stage);
+    }
   }
   if (tower.fsm.state === 'IDLE') {
     const stage = stageReadyForArms(a);
