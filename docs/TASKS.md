@@ -90,3 +90,17 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [ ] 8.3 Autosave/IndexedDB + export/import
 - [x] 8.4 Deploy on Coolify (ADR 0008): `Dockerfile` + `deploy/nginx.conf`, `docker build .` green, Coolify app `fuel-x` on `coolify.fs0ciety.org`, domain `https://fuel.fs0ciety.org`
 - [ ] ⛳ Gate 8 — release candidate
+
+## Showcase site (public `/`, deploy `fuelx.fs0ciety.org`) — owner **web-showcase**
+Spec: [`SHOWCASE.md`](SHOWCASE.md) · Stack: [ADR 0009](adr/0009-showcase-site.md) · Deploy: [`DEPLOY.md`](DEPLOY.md)
+- [x] S.0 Audit of the PR #1 showcase, trend research, 3 directions → user picks **A "Launch dossier"**, single Coolify app, game at `/play`, English only
+- [x] S.1 Docs: SHOWCASE.md, ADR 0009, `web-showcase` agent, `showcase-check` skill
+- [x] S.2 Build: SSR prerender of `index.html`, `/play` rewrite (dev/preview/nginx), lazy 3D chunk, native scroll driver — **systems-architect**
+- [x] S.3 Sections: top bar, hero + mini flight card, dossier sheets, four calls, hardware catalogue, sites, how it's built, CTA, colophon (logos in ink) — **ui-design-system** ← S.2
+- [x] S.4 Stage: scroll-driven rollout → stack → liftoff → boostback → catch with the game GLBs, reduced-motion stills, no-WebGL still — **three-graphics-engineer** ← S.2
+- [x] S.5 SEO/OG (1200×630 plate), robots/sitemap, JSON-LD; WebP plates from Blender previews ← S.3
+- [x] S.6 Tests: `tests/e2e/showcase.e2e.ts` (structure, links, meta, reduced motion, phone), budgets rows — **qa-perf** ← S.3, S.4
+- [x] S.7 `showcase-check` + `perf-audit` pass; `qa-perf` review ← S.6
+- [ ] ⛳ Gate S1 — screenshots (desktop, phone, story chapters) to the user
+- [~] S.8 Deploy: `DEPLOY.md` ✓, nginx `/play` + `/healthz` ✓ (runtime image verified), full `docker build .` (needs npm network: on Coolify), Coolify domain `fuelx.fs0ciety.org` (user clicks) ← Gate S1
+- [ ] ⛳ Gate S2 — live URL checked

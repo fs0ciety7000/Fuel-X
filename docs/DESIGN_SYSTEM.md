@@ -706,3 +706,35 @@ A static route (or Storybook per ADR), no sim running, fixtures only, screenshot
 3. Poll panel forcing 1× time scale and auto-hold on deadline — GDD to confirm.
 4. Label tags as DOM vs instanced sprites (perf with 100+ entities) — render/architect decision; visual spec unchanged.
 5. Self-hosted fonts vs Google Fonts — styling ADR.
+
+## 12. Showcase addendum (public site, `docs/SHOWCASE.md`)
+
+The showcase reuses every token and rule above; it is a scrolling document, not the fixed-viewport HUD, so it adds:
+
+| Token | Value | Use |
+|---|---|---|
+| `--fx-type-lede` | `clamp(14px, 1.05vw, 17px)`, leading 1.5, sentence case | Reading copy (the one place lowercase is allowed) |
+| `--fx-type-macro-hero` | `clamp(5.5rem, 19vw, 21rem)`, leading 0.8, tracking −0.065em | The hero `FUEL-X` only (may bleed over the stage) |
+| `--fx-type-macro-section` | `clamp(2.75rem, 6.5vw, 7rem)`, leading 0.86 | Section titles, dossier stamps `§01`, call stamps |
+| `--fx-size-measure` | `62ch` | Max reading width |
+| `--fx-size-stage-phone` | `46svh` | Sticky stage strip height below 900 px |
+| `--fx-size-cta-wide` · `--fx-size-label-column` · `--fx-size-code-column` | `18rem` · `11rem` · `4rem` | Hero/band CTA min width · decision option column · site code / spec term column |
+| `--fx-size-map` · `--fx-size-map-phone` | `22rem` · `16rem` | Coast map min height |
+| `--fx-dur-blink` | `2000ms` | `LIVE` square, stepped (2 steps), off with reduced motion |
+
+| Component | Anatomy | States / behaviour |
+|---|---|---|
+| **Top bar (showcase)** | wordmark · breadcrumb · story T-clock · `OPEN THE PAD >>>` (accent fill, ink text) | sticky; breadcrumb hidden < 900 px; CTA hover = ink fill |
+| **Flight card (hero)** | ink header `[ LC-1 FLIGHT 7 ]` + `LIVE` blinking square (stepped, 2 s) · T-minus macro clock · 20-segment propellant bar · 4 metric cells | ticks 1 Hz; frozen with reduced motion |
+| **Stage readout** | `[ LC-1 FLIGHT 7 ]` · story T-clock (macro) · phase word in `accent-text` · ALT / VEL / PROP / ENGINES cells | values written from the story feed (no React render per frame); metrics hidden < 900 px |
+| **Phase bar** | the HUD countdown timeline: 8 phases, glyph empty / half-orange / ink-filled, accent playhead on a `paper-3` track | segments are buttons (scroll to the phase); < 900 px only the current phase prints its name |
+| **Dossier sheet** | stamp `§0N` (ink-5 → ink when active) · title · anchor time · lede · decision box (ink header, two options, the first marked by an accent square) · 4-cell data strip | active sheet = 4 px accent left band + stamp print (clip-path, 640 ms mech, none with reduced motion) |
+| **Calls tabs** | vertical tablist (index, title, phase) + panel (macro stamp, lede, `[ PUSH ]` accent-ruled / `[ PROTECT ]` ink-ruled) | roving tabindex, arrows/Home/End |
+| **Hardware plate** | Blender render (WebP) · call-sign + class caption | hover/focus prints an opaque spec sheet over the render; caption gets `accent-tint`; family filter = pressed ink buttons |
+| **Site selector** | tablist rows (code, name, state) · schematic coast map (sea `3d-sea-base`, ink coast, dashed roads, square markers) · sheet | under construction = `pattern-hatch` row; active marker = accent fill with ink text |
+| **CTA band** | hazard stripe · kicker · macro line · CTA · hazard stripe | — |
+| **Colophon** | studio marks in ink (generated from tokens by `scripts/showcase/brand.ts`) · credit line · links · rev stamp | — |
+
+Rules specific to the showcase: orange stays reserved for CTA, active/selected state, thrust and hazard bands; motion
+is clip-path/translate "printing" (≤ 8 px, no bounce, no fade-only); every scroll-linked value updates in place with
+tabular figures; the page must read completely without JS (prerender) and without WebGL (Blender still).

@@ -17,6 +17,6 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
-# BusyBox wget ships in nginx:alpine. Coolify also probes GET / on port 80.
+# BusyBox wget ships in nginx:alpine. Coolify can probe GET /healthz (or /) on port 80.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1/ || exit 1
+  CMD wget -q -O /dev/null http://127.0.0.1/healthz || exit 1
