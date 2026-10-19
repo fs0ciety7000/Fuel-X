@@ -7,6 +7,7 @@ A **live rocket launch site you can play like a strategy game**, in the browser.
 - Tech: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · Decisions: [`docs/adr/`](docs/adr/)
 - UI: [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) · Assets: [`docs/ASSETS_GUIDE.md`](docs/ASSETS_GUIDE.md)
 - Plan: [`docs/TASKS.md`](docs/TASKS.md) · QA: [`docs/QA.md`](docs/QA.md)
+- Showcase site: [`docs/SHOWCASE.md`](docs/SHOWCASE.md) · [ADR 0009](docs/adr/0009-showcase-site.md) · Deploy: [`docs/DEPLOY.md`](docs/DEPLOY.md)
 
 ## Status
 Phase 5 in progress (3D scene). Live checklist: `docs/TASKS.md`.
@@ -19,7 +20,7 @@ The script names are a contract; the stack ADR decides what they run.
 | Command | Does |
 |---|---|
 | `npm run dev` | dev server (exposes `window.__fuelx` debug hooks) |
-| `npm run build` / `npm run preview` | production build / serve it |
+| `npm run build` / `npm run preview` | production build (incl. showcase SSR prerender) / serve it (`/` showcase, `/play` game) |
 | `npm run test` | unit + sim tests (incl. golden launch log) |
 | `npm run typecheck` · `npm run lint` | static checks |
 | `npm run e2e` | Playwright visual/e2e (Chromium preinstalled — never `playwright install`) |
@@ -58,6 +59,7 @@ Blender headless: `blender -b --factory-startup -P blender/assets/<asset>.py -- 
 | Mechanics, numbers, naming, scope | `game-designer` | — |
 | Stack, boundaries, ADRs, perf budget | `systems-architect` | — |
 | Game logic + tests | `simulation-engineer` | `sim-testing`, `add-entity` |
+| Showcase site (`/`), SEO, deploy | `web-showcase` | `showcase-check`, `industrial-brutalist-ui`, `perf-audit` |
 | 3D assets in Blender | `blender-technical-artist` | `blender-asset-pipeline` |
 | Scene, camera, particles, perf | `three-graphics-engineer` | `visual-check`, `perf-audit`, `design-tokens` |
 | HUD & tokens | `ui-design-system` | `industrial-brutalist-ui`, `design-tokens`, `visual-check` |
