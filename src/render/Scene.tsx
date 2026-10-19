@@ -15,6 +15,7 @@ import type { RenderSnapshot } from './snapshot';
 import { AdaptiveDpr, DPR_RANGE } from './systems/AdaptiveDpr';
 import { CAMERA_FOV_DEG, CameraRig } from './systems/CameraRig';
 import { EnvironmentSystem } from './systems/EnvironmentSystem';
+import { FxSystem } from './systems/FxSystem';
 import { GroundSystem } from './systems/GroundSystem';
 import { RenderPass } from './systems/RenderPass';
 import { RenderSync } from './systems/RenderSync';
@@ -118,7 +119,10 @@ export function Scene({ snapshot, controls, input, onApi, className }: SceneProp
       <EnvironmentSystem shared={core.shared} />
       <AdaptiveDpr input={input} />
       <GroundSystem shared={core.shared} controls={controls} />
-      <RenderPass shared={core.shared} />
+      <RenderPass shared={core.shared} controls={controls} />
+      <Suspense fallback={null}>
+        <FxSystem controls={controls} registry={core.registry} shared={core.shared} snapshot={snapshot} />
+      </Suspense>
       <group ref={world} name="WORLD">
         <Suspense fallback={null}>
           <AssetGate onLoaded={core.markLoaded} />

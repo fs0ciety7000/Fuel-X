@@ -7,7 +7,7 @@
 import { tokens } from '@tokens/tokens';
 import { Color, ShaderChunk, ShaderMaterial, UniformsLib, UniformsUtils, Vector3, Vector4 } from 'three';
 import type { Texture } from 'three';
-import { CONCRETE_FIELD_GLSL } from '../world/concrete-field';
+import { TERRAIN_FIELDS_GLSL } from '../world/terrain-fields';
 
 export interface GroundSurfaceUniforms {
   [name: string]: { value: unknown };
@@ -15,6 +15,8 @@ export interface GroundSurfaceUniforms {
   uOrigin: { value: Vector3 };
   uConcreteTex: { value: Texture | null };
   uConcreteXf: { value: Vector4 };
+  uLandTex: { value: Texture | null };
+  uLandXf: { value: Vector4 };
 }
 
 const VERT = /* glsl */ `
@@ -50,7 +52,7 @@ uniform vec3 uConcrete;
 varying vec2 vW;
 ${ShaderChunk.fog_pars_fragment}
 ${terrain}
-${CONCRETE_FIELD_GLSL}
+${TERRAIN_FIELDS_GLSL}
 
 // One jittered round dot per cell of size c (m), radius rr × c, AA over fp (m/px). x = coverage, y = the cell's
 // hash in [0, 1] (the caller turns it into presence / class), so one lookup serves two dot classes.
@@ -93,20 +95,29 @@ void main() {
   // Sea streak space (derivatives taken here, in uniform control flow).
   vec2 sw = vec2(w.x, w.y * ${f(1 / STREAK)});
   float sfp = max(max(fw.x, ${f(1 / STREAK)} * fw.y), 1e-3);
-  float land = fxLandSdf(w);
+  vec2 lf = fxLand(w);
+  float land = lf.x;
   float isLand = smoothstep(-0.75 * fp, 0.75 * fp, land);
   vec3 col;
 
   if (isLand > 0.0) {
     // Land: scrub patches (denser darker dots) + white flecks; sand band; clean concrete lots/roads.
-    float n = 0.7 * fxNoise(w / 230.0) + 0.3 * fxNoise(w / 55.0);
+    float n = lf.y;
     float scrubN = smoothstep(0.32, 0.72, n);
     vec3 ground = mix(uGroundBase, uGroundPoints, 0.1 * scrubN);
+#ifdef FX_LOW
+    ground = mix(ground, uGroundPoints, 0.3 * scrubN);
+#else
     vec2 d = dots2(w, fp, ${f(DOT_PX)}, mix(0.18, 0.62, scrubN), 0.16, 0.34, 1);
     ground = mix(ground, uGroundPoints, 0.85 * d.x);
     ground = mix(ground, uSeaPoints, 0.9 * d.y);
+#endif
     float sand = 1.0 - smoothstep(${(beachM - 2).toFixed(1)}, ${(beachM + 2).toFixed(1)}, land);
+#ifdef FX_LOW
+    ground = mix(ground, uConcrete, sand);
+#else
     if (sand > 0.0) ground = mix(ground, mix(uConcrete, uGroundPoints, 0.35 * dots(w, fp, ${f(DOT_PX)}, 0.12, 0.3, 5)), sand);
+#endif
     float cd = fxConcrete(w);
     ground = mix(ground, uConcrete, 1.0 - smoothstep(-0.5 * fp, 0.5 * fp, cd));
     col = ground;
@@ -114,6 +125,9 @@ void main() {
   if (isLand < 1.0) {
     // Sea: base + crest lightening + white streaks on crests (cells STREAK× longer along the crest lines) + foam.
     float seaD = max(-land, 0.0);
+#ifdef FX_LOW
+    vec3 sea = mix(uSeaBase, uSeaPoints, 1.0 - smoothstep(0.0, 12.0, seaD));
+#else
     float wave = fxWaves(w, uTime);
     float crest = smoothstep(0.15, 0.95, wave);
     vec3 sea = mix(uSeaBase, uSeaPoints, 0.14 * crest);
@@ -126,6 +140,7 @@ void main() {
       float foamDots = dots(w, fp, ${f(SEA_DOT_PX)}, 0.25 + 0.75 * foam, 0.42, 9);
       sea = mix(sea, uSeaPoints, max(max(foamDots * foam, 0.8 * foam), swash));
     }
+#endif
     col = isLand > 0.0 ? mix(sea, col, isLand) : sea;
   }
 
@@ -135,10 +150,12 @@ void main() {
 }
 `;
 
+/** `low`: flat tones, no dot screen / waves / foam lines (`controls.lowFx`, software GL). */
 export function createGroundSurfaceMaterial(
   terrainGlsl: string,
   beachM: number,
   foamM: number,
+  low = false,
 ): ShaderMaterial & { uniforms: GroundSurfaceUniforms } {
   const w = tokens.world;
   const uniforms = UniformsUtils.merge([
@@ -148,6 +165,8 @@ export function createGroundSurfaceMaterial(
       uOrigin: { value: new Vector3() },
       uConcreteTex: { value: null },
       uConcreteXf: { value: new Vector4(0, 0, 1, 1) },
+      uLandTex: { value: null },
+      uLandXf: { value: new Vector4(0, 0, 1, 1) },
       uSeaBase: { value: new Color(w.seaBase) },
       uSeaPoints: { value: new Color(w.seaPoints) },
       uGroundBase: { value: new Color(w.groundBase) },
@@ -156,8 +175,9 @@ export function createGroundSurfaceMaterial(
     },
   ]);
   const m = new ShaderMaterial({
-    name: 'MAT_GroundSurface',
+    name: low ? 'MAT_GroundSurfaceLow' : 'MAT_GroundSurface',
     uniforms,
+    defines: low ? { FX_LOW: '' } : {},
     vertexShader: VERT,
     fragmentShader: FRAG(terrainGlsl, beachM, foamM),
     fog: true,

@@ -6,7 +6,7 @@
 import { tokens } from '@tokens/tokens';
 import { Color, ShaderChunk, ShaderMaterial, UniformsLib, UniformsUtils, Vector2, Vector3, Vector4 } from 'three';
 import type { Texture } from 'three';
-import { CONCRETE_FIELD_GLSL } from '../world/concrete-field';
+import { TERRAIN_FIELDS_GLSL } from '../world/terrain-fields';
 
 export interface PointCloudUniforms {
   [name: string]: { value: unknown };
@@ -23,6 +23,8 @@ export interface PointCloudUniforms {
   uFwd: { value: Vector2 };
   uConcreteTex: { value: Texture | null };
   uConcreteXf: { value: Vector4 };
+  uLandTex: { value: Texture | null };
+  uLandXf: { value: Vector4 };
 }
 
 /** Largest dot on screen, px: dots stay print-fine; density comes from count, not size. */
@@ -50,7 +52,7 @@ varying vec3 vColor;
 varying float vSize;
 ${ShaderChunk.fog_pars_vertex}
 ${terrain}
-${CONCRETE_FIELD_GLSL}
+${TERRAIN_FIELDS_GLSL}
 
 float band(float r, float R) { return 1.0 - smoothstep(0.55 * R, R, r); }
 
@@ -68,7 +70,8 @@ void main() {
   vec2 w = position.xy * T;
   w += T * floor((C - w) / T + 0.5);
 
-  float land = fxLandSdf(w);
+  vec2 lf = fxLand(w);
+  float land = lf.x;
   float h = position.z;
   float y = 0.0;
   float size = 0.45;
@@ -80,7 +83,7 @@ void main() {
       col = uSand;
       size = 0.35;
     } else {
-      float n = 0.7 * fxNoise(w / 230.0) + 0.3 * fxNoise(w / 55.0);
+      float n = lf.y;
       float scrub = mix(0.3, 0.97, smoothstep(0.32, 0.72, n));
       col = aRand < scrub ? uScrub : uFleck;
       size = aRand < scrub ? 0.5 : 0.38;
@@ -152,6 +155,8 @@ export function createPointCloudMaterial(
       uFwd: { value: new Vector2(0, -1) },
       uConcreteTex: { value: null },
       uConcreteXf: { value: new Vector4(0, 0, 1, 1) },
+      uLandTex: { value: null },
+      uLandXf: { value: new Vector4(0, 0, 1, 1) },
       uScrub: { value: new Color(w.groundPoints) },
       uFleck: { value: new Color(w.seaPoints) },
       uSand: { value: new Color(w.padConcrete) },

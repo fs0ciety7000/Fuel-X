@@ -2,7 +2,7 @@ import { STANDARD_AUTOPILOT, autopilotCommands, createMvpScenario, findByCallSig
 import type { MvpScenario } from '@sim/index';
 import type { World } from '@sim/types';
 import { describe, expect, it } from 'vitest';
-import { ANIM, ANIM_STRIDE, SLOT_STRIDE, createRenderSnapshot } from '@render/snapshot';
+import { ANIM, ANIM_STRIDE, FX_T_MIN_S, RECOVERY_ZONE, SLOT_STRIDE, createRenderSnapshot } from '@render/snapshot';
 import { CRANE_GEOM, craneHookWorld, craneRig, craneTip, quatFromYaw, yawOf } from './anim-writer';
 import { SnapshotWriter } from './snapshot-writer';
 
@@ -125,17 +125,25 @@ describe('AnimWriter', () => {
     expect(y(s.slot)).toBeCloseTo(91, 6);
     expect(a(tower.slot, ANIM.tower.qdArmRad)).toBeCloseTo(Math.PI / 2, 4);
     expect(a(pad.slot, ANIM.pad.bqdM)).toBe(0);
+    // FX inputs (5.6): T-clock clamped before the count's last 30 s, road closed → pad hazard radius
+    expect(a(pad.slot, ANIM.pad.delugeS)).toBe(FX_T_MIN_S);
+    expect(a(pad.slot, ANIM.pad.hazardM)).toBe(3_000);
 
     drive(sc, (w) => b.fsm.state === 'ASCENT' && w.tick > 684_003 + 300, writer); // T+10 s
     expect(a(b.slot, ANIM.booster.litFrac)).toBe(1);
     expect(a(pad.slot, ANIM.pad.clampsM)).toBeCloseTo(-0.8, 6);
     expect(a(pad.slot, ANIM.pad.bqdM)).toBeCloseTo(-1.5, 6);
+    expect(a(pad.slot, ANIM.pad.delugeS)).toBeCloseTo(10, 1);
 
     drive(sc, (w) => b.fsm.state === 'BOOSTBACK' && w.tick > 688_953 + 300, writer); // boostback +10 s
     const fins = Math.abs(a(b.slot, ANIM.booster.finARad)) + Math.abs(a(b.slot, ANIM.booster.finBRad));
     expect(fins).toBeGreaterThan(0.01);
     expect(Math.abs(a(b.slot, ANIM.booster.finARad))).toBeLessThanOrEqual(0.53);
     expect(a(b.slot, ANIM.booster.litFrac)).toBeCloseTo(13 / 33, 5);
+    const rv = findByCallSign(world, 'RV-1');
+    const pk = findByCallSign(world, 'PK-03');
+    if (!rv || !pk) throw new Error('layout');
+    expect(a(rv.slot, ANIM.vessel_recovery.zoneMode)).toBe(RECOVERY_ZONE.STANDBY); // decision open
 
     // a fresh writer (load / jump) starts the rate-limited channels at their targets, not at rest
     writer.invalidate();
@@ -143,5 +151,7 @@ describe('AnimWriter', () => {
     const fins2 = Math.abs(a(b.slot, ANIM.booster.finARad)) + Math.abs(a(b.slot, ANIM.booster.finBRad));
     expect(fins2).toBeGreaterThan(0.05);
     expect(a(pad.slot, ANIM.pad.clampsM)).toBeCloseTo(-0.8, 6);
+    // …and boats at their commanded speed, so a jump shows the patrol wake on the first frame
+    expect(a(pk.slot, ANIM.boat_range.speedMPerS)).toBeGreaterThan(1);
   });
 });

@@ -78,15 +78,32 @@ export function hasFlag(flags: number, bit: number): boolean {
  */
 export const ANIM = {
   tower: { carriageM: 0, armLRad: 1, armRRad: 2, qdArmRad: 3 },
-  pad: { clampsM: 0, bqdM: 1 },
+  /** `delugeS`: T-clock seconds of the countdown on this pad, clamped to [FX_T_MIN_S, FX_T_MAX_S] (deluge / steam, 5.6);
+   * `hazardM`: pad hazard radius while the road is closed, else 0 (dashed hazard zone, 5.6). */
+  pad: { clampsM: 0, bqdM: 1, delugeS: 2, hazardM: 3 },
   booster: { litFrac: 0, gimbalPitchRad: 1, gimbalYawRad: 2, finARad: 3, finBRad: 4 },
   ship: { litFrac: 0, gimbalPitchRad: 1, gimbalYawRad: 2, flapForeRad: 3, flapAftRad: 4 },
   transporter: { deckM: 0, yawRateRadPerS: 1, speedMPerS: 2, wheelRad: 3 },
   tanker: { steerRad: 0, trailerRad: 1, axleRad: 2 },
   crane: { slewRad: 0, luffRad: 1, hookM: 2 },
-  boat_range: { radarRad: 0 },
-  vessel_recovery: { radarRad: 0, deckCraneRad: 1 },
+  /** `speedMPerS`: drawn forward speed (wake / bow foam, 5.6). */
+  boat_range: { radarRad: 0, speedMPerS: 1 },
+  /** `zoneMode` (5.6): `RECOVERY_ZONE` — recovery-zone rings around the vessel. */
+  vessel_recovery: { radarRad: 0, deckCraneRad: 1, speedMPerS: 2, zoneMode: 3 },
   wx_station: { vaneRad: 0, anemometerRad: 1 },
+} as const;
+
+/** Clamp range of `ANIM.pad.delugeS`, s: continuous through the count, so interpolation never jumps through T-0. */
+export const FX_T_MIN_S = -30;
+export const FX_T_MAX_S = 900;
+
+/** `ANIM.vessel_recovery.zoneMode` values. */
+export const RECOVERY_ZONE = {
+  OFF: 0,
+  /** Catch/divert decision open: the vessel's holding station is the fallback aim point. */
+  STANDBY: 1,
+  /** Divert committed / in progress, and for a while after the splashdown. */
+  ACTIVE: 2,
 } as const;
 
 export type AnimatedAsset = keyof typeof ANIM;

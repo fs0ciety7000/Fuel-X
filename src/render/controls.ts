@@ -26,6 +26,11 @@ export interface RenderControls {
   frozen: boolean;
   /** Seconds of visual time when frozen (particles/noise seeded from it in 5.6/5.7). */
   frozenTimeS: number;
+  /**
+   * Low-cost visuals for software GL (headless e2e): flat-toned ground without the dot screen, no point cloud, no
+   * post pass. Off by default; set by `?debug=1&lowfx=1` or `__fuelx.lowFx(true)`. Never used for screenshots.
+   */
+  lowFx: boolean;
 }
 
 export function createRenderControls(siteId: string): RenderControls {
@@ -36,5 +41,6 @@ export function createRenderControls(siteId: string): RenderControls {
     snapCamera: true,
     frozen: false,
     frozenTimeS: 0,
+    lowFx: false,
   };
 }

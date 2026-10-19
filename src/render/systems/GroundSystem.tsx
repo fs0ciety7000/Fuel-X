@@ -46,7 +46,7 @@ class GroundRunner {
   frame(state: { camera: Camera; gl: WebGLRenderer }, delta: number): void {
     this.sync();
     const t = this.clock.frame(this.controls, delta);
-    this.ground?.frame(state.camera, state.gl, t);
+    this.ground?.frame(state.camera, state.gl, t, this.controls.lowFx);
   }
 }
 

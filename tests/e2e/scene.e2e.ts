@@ -36,12 +36,12 @@ declare global {
   }
 }
 
-async function boot(page: Page, errors: string[]): Promise<void> {
+async function boot(page: Page, errors: string[], query = ''): Promise<void> {
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
-  await page.goto('/play.html?debug=1');
+  await page.goto(`/play.html?debug=1${query}`);
   await page.waitForFunction(() => window.__fuelx !== undefined);
   await page.evaluate(async () => {
     const fx = window.__fuelx;
@@ -117,7 +117,9 @@ test.describe('scene', () => {
 
   test('debug hooks: step, time scale, save/load round trip', async ({ page }) => {
     const errors: string[] = [];
-    await boot(page, errors);
+    // No screenshot here: low-cost visuals (no dot screen / point cloud / post) keep 90 frames at 100× within the
+    // timeout under SwiftShader (~1.4 s → ~0.3 s per frame).
+    await boot(page, errors, '&lowfx=1');
     const r = await page.evaluate(async () => {
       const fx = window.__fuelx;
       if (!fx) throw new Error('no __fuelx');

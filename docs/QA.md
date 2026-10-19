@@ -87,6 +87,11 @@ Before pass 1: 105 caught, 82 diverted (p < 0.90), 1 failed, 12 scrubbed.
 | Prerendered markup | — | 29 KB |
 | Game initial JS gzip (play.html graph; the row now follows the entry graph instead of every chunk) | 450 KB | 443.6 KB |
 
+After merging the 5.3–5.7 render commits (2026-10-19): game initial JS gzip (play.html graph) **452.5 KB vs 450 — OVER by 2.5 KB**, from the new FX/post code, not the showcase (showcase rows unchanged). Open for `three-graphics-engineer` / `perf-audit` (8.1).
+
 ## Known flaky areas
+
+- `tests/e2e/scene.e2e.ts` › "debug hooks: step, time scale, save/load round trip" can time out when the whole e2e suite runs in parallel under SwiftShader (~1 fps); it passes alone (~1.7 min).
+
 
 None yet.
