@@ -96,7 +96,7 @@ Format for each: **Decision** · **Inputs** · **Outputs** · **Trade-off** · *
 - **HUD**: Tanks tab (each tank: level %, tonnes, boil-off rate), Vehicles tab (tankers: state, ETA, km/h), flight card propellant sparkline, Tasks tab (Order delivery action).
 
 ### 4.4 Propellant load (vehicle fuelling)
-- **Decision**: (a) when to give GO for propellant load (it starts a commitment, because from then on the vehicle boils off and is topped from the farm); (b) during a load anomaly (GSE leak): continue at reduced rate or hold to fix.
+- **Decision**: (a) when to give GO for propellant load (it starts a commitment, because from then on the vehicle boils off and is topped from the farm); (b) during a load anomaly (GSE leak, D3b): continue at reduced rate or hold to fix. D3b is one-shot; with no answer the load continues degraded (auto policy, §13.2).
 - **Inputs**: vehicle tank capacities, load rates per stage and per propellant, farm inventories, GO poll at T-01:20:00.
 - **Outputs**: vehicle loaded % rises (booster and ship separately, LOX and CH4 separately). After 100 %, topping replaces boil-off and drains the farm.
 - **Trade-off**: an early load gives schedule slack but burns farm margin through topping. A late load risks not finishing before the window closes.
@@ -123,6 +123,8 @@ Format for each: **Decision** · **Inputs** · **Outputs** · **Trade-off** · *
 - **Trade-off**: hold for the weather to clear while the window shrinks and the farm drains, versus GO on MARGINAL for a raised anomaly risk, versus scrub (certain penalty, safe vehicle).
 - **Failure mode**: the window closes during a hold → automatic scrub + penalty. Going on MARGINAL raises the chance of an ascent anomaly.
 - **HUD**: top bar `Range GO` badge (aggregate of the five stations), flight card `STATIONS GO 4 of 5` segmented bar, **Range tab** (one row per station with its driving value), **decision strip** (new component, see §10), countdown timeline with hold glyph.
+- **Vocabulary (fixed)**: a *station* is only ever **GO / MARGINAL / NO-GO** (plus `POLLING` while a poll resolves). **HOLD / HOLDING** is only ever a state of the *T-clock* (with a reason: `POLL`, `NO_GO`, `LOAD_INCOMPLETE`, `LEAK_FIX`, `MANUAL`), never a station status. The top-bar badge is the worst of the five stations: `RANGE GO | MARGINAL | NO-GO`.
+- **One command surface per moment (fixed)**: while the clock is **counting**, the only count button is **HOLD**, in the countdown timeline header. While the clock is **holding** (pre-liftoff, any reason), the only count buttons are **GO / RECYCLE / SCRUB**, in the D2 decision strip; the timeline header shows the hold glyph and reason, no buttons. The Range tab and the poll panel are evidence only. To scrub from a running count: HOLD, then SCRUB.
 
 ### 4.6 Terminal count and liftoff
 - **Decision**: none new (polls continue). Automatic hold point at T-00:00:40 for a final poll. An auto-abort after T-00:00:10 (vehicle fault) forces a RECYCLE if the window allows.
@@ -214,10 +216,18 @@ Rates: **PAUSE · 1× · 10× · 100×**, plus **SKIP TO NEXT MILESTONE** (deter
 | Count before T-00:03:00 (incl. holds) | 10× | holds drain the window and the farm, which the player should *feel* |
 | **T-00:03:00 → catch/divert + 30 s** | **1× (forced)** | terminal count, ascent, catch: the spectacle and the catch call |
 | Safing | 100× | |
-| Any **decision prompt open** | drops to 1×, does not auto-pause | player reads it at a readable pace and can pause |
-| Any NO-GO appearing | drops to 1× | same |
+| A **blocking** decision opens (D2, D3, D3b; see §13.2) | **drops** to 1× once, does not auto-pause | player reads it at a readable pace and can pause |
+| Any station turns NO-GO | **drops** to 1× once | same |
+| While holding, the last non-GO station turns GO (GO is now possible) | **drops** to 1× once | the hold can end: the player must notice |
+| D1 (propellant margin) open | **no rate change** (advisory) | D1 is open for most of the ~5 h of prep; forcing 1× would break compression |
+| Debrief | paused (rate control disabled, reason `RUN ENDED`) | the run is over; camera stays free |
 
-Rule: the game never auto-raises the rate. It only drops it. Time scale is implemented as more fixed steps, never a bigger dt (CLAUDE.md rule 1).
+**Cap vs drop (precise rule).** Two different mechanisms, never mixed:
+- A **cap** (`maxTimeScale` from the phase table above: forced 1× window, 10× during load and pre-T-00:03:00 count incl. holds) limits the *effective* rate while it applies. The player's requested rate is remembered and applies again when the cap lifts (the player asked for it; this is not an auto-raise).
+- A **drop** is a one-shot reset of the *requested* rate to 1×, fired by the triggers marked *drops* above. Afterwards the player may raise the rate again, up to the current cap, even while the decision is still open (e.g. a 14 min A1 hold runs at 10× once the player has read the D2 strip). A drop never fires twice for the same trigger instance; HOLD and LEAK_FIX holds started by the player do not fire a drop.
+- **Skip to next milestone** is disabled while a blocking decision is open and is interrupted (stops at the current tick, rate 1×) by any drop trigger.
+
+Rule: the game never auto-raises the rate. It only drops it. Time scale is implemented as more fixed steps, never a bigger dt (CLAUDE.md rule 1). Drop triggers are evaluated in `src/app` from sim events (`DecisionRequired`, `StationChanged`, `HoldStarted`), never inside the sim.
 
 ## 7. Risk and anomalies
 
@@ -302,9 +312,10 @@ The MVP has no "game over". It ends every run with a **debrief**: outcome, money
 | In-world labels | identify, select | keep |
 | Altitude scale | catch call (where is the booster) | keep, shown only while a vehicle flies |
 | Compass / heading tape | none in MVP | **FLAG: ambience**, cheap. Keep, low priority |
-| **NEW: decision strip** | Go/No-Go, catch/divert, load-leak | **ADD** (not in PROMPT): one opaque strip above the timeline with the question, the deadline, the predicted consequences and 2–4 buttons. Hand-off to `ui-design-system` |
-| **NEW: debrief panel** | learning / next turnaround | **ADD** |
-| **NEW: time-rate control** | time compression | **ADD** (top bar or timeline): pause / 1× / 10× / 100× / skip |
+| **NEW: decision strip** | all four MVP decisions: D1 propellant margin (advisory, collapsed), D2 Go/No-Go, D3 catch/divert, D3b load-leak | **ADD** (not in PROMPT): one opaque strip above the timeline with the question, the deadline, the auto policy, the consequence preview of each option (§13.2) and 2–4 buttons. One decision shown at a time, priority **D3 > D3b > D2 > D1**. Hand-off to `ui-design-system` |
+| Tasks tab order rows | D1 (detailed order surface) | keep: same `OrderDelivery` commands as the D1 strip; the only decision allowed two surfaces, because orders are additive (each press = one truck) and the strip is a shortcut to the same rows |
+| **NEW: debrief panel** | learning / next run | **ADD**: exit actions REPLAY SAME SEED / NEW SEED / EXPORT LOG / VIEW SITE (§13.2.3) |
+| **NEW: time-rate control** | time compression | **ADD** (top bar or timeline): pause / 1× / 10× / 100× / skip; cap vs drop rules in §6 |
 
 ## 11. Multi-site and expansion layer (post-MVP, designed now)
 
@@ -364,6 +375,51 @@ Tone: matter-of-fact, procedural, a little dry. Event log lines read like a real
 
 D1, D2 and D3 are always presented, so the slice always has ≥ 2 meaningful decisions even before anomalies.
 
+#### 13.2.1 Decision rules (open, block, default, log)
+
+| | D1 Propellant margin | D2 Go / No-Go | D3 Catch or divert | D3b GSE leak |
+|---|---|---|---|---|
+| **Kind** | **advisory** (non-blocking) | blocking | blocking | blocking |
+| **Open while** | PROPELLANT ≠ GO **and** road open (T-clock before T-00:40:00) **and** not in terminal count. Opens at scenario start in the MVP (PROPELLANT starts MARGINAL, §13.1) | the T-clock is holding before liftoff, any hold reason | from `DecisionRequired{CATCH}` (≤ boostback end) until committed or the landing-burn deadline | from `DecisionRequired{LEAK}` until answered or its deadline |
+| **Rate effect (§6)** | none | drop to 1× when opened by a POLL, NO_GO or LOAD_INCOMPLETE hold; no drop for a MANUAL or LEAK_FIX hold | drop to 1× (already inside the forced-1× window) | drop to 1× |
+| **Deadline** | road closure T-00:40:00; per option cut-off = closure − lead time (standard 4 h → T-04:40:00, rush 1.5 h → T-02:10:00); an option past its cut-off is disabled with reason `ARRIVES AFTER ROAD CLOSURE` | window close (keeps moving closer during the hold) | landing-burn ignition | `min(onset + anomalies.A3.decisionTimeoutS, window close)`; default 300 s sim |
+| **Default with no input** | nothing ordered | the hold continues; auto-GO only at a poll hold when all five are GO and `autoGoWhenAllGreen`; window close → auto-scrub | catch if *p* ≥ `autoCatchThreshold` (0.65), else divert; forced divert if landing prop < min | **CONTINUE DEGRADED**, committed by the sim at the deadline (`by: AUTO`) |
+| **Commit** | each press = one `OrderDelivery` (one truck); repeatable until fleet cap / cut-off | `Go` / `Recycle` / `Scrub` (SCRUB confirms) | `CatchDecision` (one-shot) | `LeakResponse` (**one-shot**: after a DEGRADED answer, player or auto, the fix option is gone) |
+| **Decision log entry** | one per order (`ORDER 1× LX STANDARD`) | each GO / RECYCLE / SCRUB, each auto-GO (`AUTO`), auto-scrub (`AUTO`) | the commit (`PLAYER`, `AUTO` or `FORCED`) + the roll | the answer (`PLAYER` or `AUTO`) |
+
+Priority when several are open: **D3 > D3b > D2 > D1**; the others queue (`+n QUEUED`). D3b outranks D2 because its deadline is at most `decisionTimeoutS` away while D2 only has the window; in the MVP D3b and a D2 hold overlap rarely (the leak fires during the load, between the T-01:20:00 and T-00:10:00 polls).
+
+Why D3b defaults to DEGRADED: holding is the costly, explicit act (20 min of window and farm, ≈ 2/3 of the starting LOX reserve); continuing is what the pad does if nobody speaks. The cost of DEGRADED is carried by the rest of the count: VEHICLE stays MARGINAL until liftoff, so every later poll needs a manual GO on MARGINAL (auto-GO never fires) and the ascent/boostback engine-out probability gets `marginalRiskMultiplier`.
+
+#### 13.2.2 Consequence preview per option (no recommendation)
+
+Only D3 has a probability for both branches, so **only D3 shows an expected value**. D1, D2 and D3b show *certain* consequences and the *budgets* each option spends (money, window minutes, hold-minutes of farm reserve, risk multiplier), never a made-up probability. The auto/default option is tagged `AUTO`, never styled as recommended. All values come from the projection (no client maths).
+
+| Decision | Option | Preview lines (all required) |
+|---|---|---|
+| D1 | STANDARD ×n / RUSH ×n (per fluid) | cost = n × (fee + cargo × price); **hold-minutes bought** = n × cargo ÷ current topping drain of that fluid; gate ETA T-clock (warn if after closure); reserve after all open orders (`LOX 0.6 → 1.1 HOLD-H`); trucks booked `3 OF 4` |
+| D1 | NO ORDER | reserve stays (`LOX 0.6 HOLD-H`) vs the 75 min hold window |
+| D2 | strip header (evidence) | **cost of staying held** per 10 min: window −10 min (`WINDOW LEFT 52 MIN`), LOX / CH4 reserve left in hold-minutes, crew shift left; earliest liftoff if GO now vs window close |
+| D2 | GO | MARGINAL stations passed and their risk line (`VEHICLE MARGINAL · ENGINE-OUT RISK ×2.0`); disabled with the blocking station when any NO-GO |
+| D2 | RECYCLE | T-clock back to T-00:10:00; earliest liftoff after recycle vs window close; reserve left at that liftoff |
+| D2 | SCRUB | certain: window-miss penalty (24 % of price = −14.9 M cr), reputation −10, detank loss (t LOX / CH4), `NEXT ATTEMPT REBOOK +24 H (NOT PLAYED IN MVP)`, run ends at debrief |
+| D3 | GO FOR CATCH / DIVERT | *p* + band + break-even tick, drivers with σ contribution, success/fail amounts, **EV in cr for both options** (§4.8) |
+| D3b | CONTINUE DEGRADED (`AUTO`) | load-complete T-clock per stage at ×0.5 (warn if after T-00:03:00 → auto-hold); `VEHICLE MARGINAL UNTIL LIFTOFF · ENGINE-OUT RISK ×2.0 IF GO` |
+| D3b | HOLD 20 MIN TO FIX | hold duration; window left after the fix; LOX / CH4 reserve left after the fix (hold-minutes); load-complete T-clock at full rate after the fix |
+
+#### 13.2.3 Debrief exit actions (MVP)
+
+The debrief is the end of the run (no turnaround, no rebook played, no campaign carry-over). The sim stays paused; four actions:
+
+| Action | Effect |
+|---|---|
+| **REPLAY SAME SEED** | fresh world from scenario `mvp` with the **same seed**, empty command log, money/reputation reset to the scenario start. Same seed + same inputs = same run (AC 1). Not a playback of the previous inputs |
+| **NEW SEED** | same as replay with a new seed drawn by `src/app` (entropy is allowed outside the sim); the seed is shown in the debrief header and the URL (`/play?seed=N`) so a run can be shared |
+| **EXPORT LOG** | downloads the session file (scenario id, seed, data revision, command log, event log, debrief) as JSON. Loading it back is post-MVP |
+| **VIEW SITE** (Esc) | closes the sheet to a `DEBRIEF READY` badge (reopen with `B`); camera and selection work, rate control disabled with reason `RUN ENDED` |
+
+Post-MVP: CONTINUE → turnaround (refurb level choice, §4.9), rebook flow, campaign.
+
 ### 13.3 Acceptance criteria (numbered, testable)
 
 **Scenario and determinism**
@@ -400,11 +456,19 @@ D1, D2 and D3 are always presented, so the slice always has ≥ 2 meaningful dec
 22. Safing runs (configured duration), after which the debrief shows outcome, money and reputation delta, booster wear/flight count, and a timestamped decision log.
 
 **Time and HUD**
-23. Time rates PAUSE/1×/10×/100×/skip work. The rate is forced to 1× from T-00:03:00 until catch/divert + 30 s and when a decision strip or NO-GO appears. The game never auto-increases the rate.
+23. Time rates PAUSE/1×/10×/100×/skip work. The effective rate is **capped** at 1× from T-00:03:00 until catch/divert + 30 s (and at the phase caps of §6). The requested rate is **dropped** once to 1× when a blocking decision (D2, D3, D3b) opens, a station turns NO-GO, or the last non-GO station turns GO during a hold; after a drop the player can raise the rate again up to the cap. D1 never changes the rate. The game never auto-increases the requested rate (test: scripted input sequence, assert requested/effective rate per tick).
 24. All HUD panels are live off the sim projection: top bar (clock, Range badge, alerts, rate), flight card, inspector (for any selected entity), tabbed panel (all 5 tabs populated), countdown timeline (phases, playhead, hold, window markers), labels, altitude scale during flight, map controls.
 25. Clicking a list row or a label selects the entity, turns its label orange and makes the camera follow it. During flight the camera auto-follows the booster unless the player has selected something else.
 26. Background logistics are visible during the whole run: at least one tanker or transporter is moving at all times outside T-00:40:00 → safing end, and PICKET boats patrol during the count.
 27. Each widget in §10 marked keep/add is present and none of the cut ones are. Every decision in §13.2 is reachable from the HUD without the console.
+
+**Decision rules (§13.2.1–13.2.3)**
+28. At any tick, each count command has at most one enabled button on screen: counting → HOLD (timeline header) only; holding → GO / RECYCLE / SCRUB (D2 strip) only. The poll panel and Range tab contain no count buttons. No station chip ever reads HOLD.
+29. With A3 forced (director plan) and no `LeakResponse`, the sim commits DEGRADED at `min(onset + anomalies.A3.decisionTimeoutS, window close)`, emits `LeakResponded{choice: DEGRADED, by: AUTO}`, logs a D3b `AUTO` decision entry, and VEHICLE stays MARGINAL until liftoff. A `LeakResponse` after any committed answer is rejected (`CommandRejected`, reason `ALREADY_RESPONDED`).
+30. When several decisions are open the strip shows the highest of D3 > D3b > D2 > D1 and counts the others as queued.
+31. Every strip option shows the preview lines of §13.2.2; EV appears on D3 options only. Values match the projection (fixture test per decision kind).
+32. Debrief REPLAY SAME SEED reproduces the first 10 min of sim of the previous run's event log exactly when given the same inputs; NEW SEED starts a run with a different seed shown in the header and URL; EXPORT LOG downloads JSON that contains the seed and the full command log; VIEW SITE closes the sheet, leaves the sim paused and the rate control disabled (`RUN ENDED`).
+33. The debrief decision log lists every D1 order, every D2 GO/RECYCLE/SCRUB (incl. auto-GO and auto-scrub), the D3 commit and the D3b answer, each tagged PLAYER / AUTO / FORCED.
 
 ### 13.4 Not in MVP
 - Multiple sites, site switching, LC-2 construction, TS-1 test campaigns, BY-1 production, road convoys between sites.

@@ -921,3 +921,12 @@ Severity everywhere is the §2.3 vocabulary `neutral | info | ok | active | warn
 6. **Debrief exit actions** are not defined for the MVP (no rebook played). Spec proposes REPLAY SAME SEED / NEW SEED / EXPORT LOG / VIEW SITE; confirm with the architect (7.x) and designer.
 7. **EV per option** is required by GDD §14 risk 2 for D3 only; D2 (SCRUB penalty) and D1 (cost vs hold-minutes bought) consequences are spec'd as plain consequences, not EV, because the sim has no probability for "hold succeeds". Designer to confirm that's enough.
 8. **Telemetry latency** repurposed as `SIM n×` readout (GDD §10 recommendation adopted); the user avatar is dropped, role label kept.
+
+**Resolutions (game-designer, 6.0):**
+1. RESOLVED — D1 is advisory, no rate change; blocking = D2/D3/D3b. Note: a decision is a one-shot **drop** of the requested rate, not a cap, so `⊘ 1× · DECISION OPEN` must not hatch 10× (holds stay compressible up to the 10× cap). → GDD §6 (cap vs drop), AC 23.
+2. RESOLVED — D1 is in the strip (collapsed) and on Tasks rows; the only decision allowed two surfaces (orders are additive). Priority is **D3 > D3b > D2 > D1** (matches the projection; §6.28 says D3 > D2 > D3b, please align). → GDD §10, §13.2.1, AC 30.
+3. RESOLVED — D3b default = CONTINUE DEGRADED, committed by the sim at `min(onset + 300 s, window close)` (`by: AUTO`); one-shot. → GDD §13.2.1, AC 29 (sim follow-up).
+4. RESOLVED — stations GO / MARGINAL / NO-GO (+ POLLING); HOLD only on the T-clock. → GDD §4.5 Vocabulary, AC 28.
+5. RESOLVED — counting: HOLD only, in the timeline header; holding: GO / RECYCLE / SCRUB only, in the D2 strip. → GDD §4.5 One command surface, AC 28.
+6. RESOLVED — REPLAY SAME SEED / NEW SEED / EXPORT LOG / VIEW SITE confirmed; no continue/turnaround in MVP. → GDD §13.2.3, AC 32 (app follow-up).
+7. RESOLVED — EV on D3 only; D1/D2/D3b show certain consequences + budgets (window minutes, hold-minutes, risk ×). D2 strip adds a "cost of staying held" evidence line. → GDD §13.2.2, AC 31.

@@ -219,6 +219,7 @@ Reference cases (tower wind V<sub>t</sub>; §13): nominal calm 0.997 · nominal 
 | A2 upperWindSpike | – | = front arrival inside load → T-0 | — | |
 | A3 gseLeak.perLoad | – | 0.10 | 0.05–0.2 | |
 | A3 fixDuration | s | 1 200 | 600–2 400 | |
+| A3 decisionTimeoutS (`anomalies.A3.decisionTimeoutS`, **new 6.0**, sim follow-up) | s | 300 | 120–600 | D3b deadline = min(onset + this, window close); no answer → DEGRADED by AUTO (GDD §13.2.1). 300 s = 30 s real at the 10× load cap, a quarter of a fix, short enough not to hide a queued D2 for long |
 | A4 engineOut.perEngine.ascent | – | 6e-4 | 2e-4–1.5e-3 | × 33 ≈ 2.0 % |
 | A4 engineOut.perEngine.boostback | – | 1.5e-3 | 5e-4–3e-3 | × 13 ≈ 1.9 % |
 | catastrophic.ascent | per flight | 0.004 | 0.001–0.01 | base only, never scheduled by the director |
@@ -257,6 +258,8 @@ Nominal flight P&L: +62 M − 20 M (ship) − 1.1 M (prop) − 1.5 M (refurb) �
 | rates | × | 0, 1, 10, 100 + skip-to-milestone | 100× runs 6 h of prep in ~3.6 min of real time |
 | maxRate by phase | × | see GDD §6 | |
 | force1x.until | s after catch/divert | 30 | |
+| holdMaxTimeScale | × | 10 | cap while holding before T-00:03:00: holds stay compressible, so the drain is felt but a 14 min hold costs ~84 s real |
+| dropTriggers (app, `src/app/time/rules.ts`) | — | blocking decision opens (D2 via POLL / NO_GO / LOAD_INCOMPLETE hold, D3, D3b) · station → NO-GO · last non-GO station → GO while holding | one-shot reset of the *requested* rate to 1× (GDD §6 cap vs drop). D1 and player-started holds (MANUAL, LEAK_FIX) never drop |
 | uiProjection.maxAge | s | 0.25 | acceptance criterion 17 |
 | sim dt | s | *architect's call* (ADR) | must not change with the rate |
 
