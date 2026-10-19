@@ -26,7 +26,10 @@ import type {
   TowerInterlock,
 } from '../types';
 import type { CommandType } from './commands';
-import type { AnomalySource, ContractStatus, DebriefOutcome, LedgerItem, World } from './world';
+import type { AnomalySource, ContractStatus, DebriefOutcome, DecisionBy, LedgerItem, World } from './world';
+
+/** Who committed the D3b answer (6.8): the player's `LeakResponse`, or the sim's DEGRADED default at the deadline. */
+export type LeakRespondedBy = Extract<DecisionBy, 'PLAYER' | 'AUTO'>;
 
 export type SimEvent =
   | { t: 'PhaseChanged'; tick: Tick; countdownId: Id; from: Phase; to: Phase; trigger: string }
@@ -55,7 +58,7 @@ export type SimEvent =
       entityId: Id;
       source: AnomalySource;
     }
-  | { t: 'LeakResponded'; tick: Tick; countdownId: Id; choice: LeakChoice }
+  | { t: 'LeakResponded'; tick: Tick; countdownId: Id; choice: LeakChoice; by: LeakRespondedBy }
   | { t: 'LeakCleared'; tick: Tick; countdownId: Id; by: 'FIXED' | 'LIFTOFF' }
   // Economy and debrief (3.8)
   | {

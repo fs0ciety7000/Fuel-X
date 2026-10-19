@@ -20,7 +20,7 @@ import { seedAllStreams } from './rng';
 import type { RngState, RngStream } from './rng';
 
 /** Bumped on any World shape change; migrations live in src/sim/save (3.10). */
-export const WORLD_SCHEMA = 4;
+export const WORLD_SCHEMA = 5;
 
 /** Mean ground wind direction (meteorological, from), rad. */
 export const WIND_FROM_MEAN_RAD = (wx.groundWind.fromDeg * Math.PI) / 180;
@@ -256,6 +256,11 @@ export interface DirectorPlan {
 export interface LeakState {
   active: boolean;
   response: LeakChoice | null;
+  /**
+   * D3b deadline (6.8): min(onset + A3.decisionTimeoutS, window close). Unanswered at this tick → DEGRADED by AUTO.
+   * Null when no leak has started.
+   */
+  deadlineTick: Tick | null;
   /** HOLD_FIX: load paused until this tick, then full rate. */
   fixEndTick: Tick | null;
 }

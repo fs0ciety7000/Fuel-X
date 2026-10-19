@@ -33,9 +33,14 @@ export function dv(value: number | null, text: string, unit: string): ValueVM {
 }
 
 /** Generic: SI value × scale shown with fixed decimals. */
+/**
+ * Generic: SI value × scale shown with fixed decimals. The machine `value` is quantised to the display resolution
+ * (in SI) so an unchanged display keeps the same ValueVM (structural sharing, no 10 Hz re-render for jitter).
+ */
 export function num(si: number | null | undefined, decimals: number, unit: string, scale = 1): ValueVM {
   if (si === null || si === undefined || !Number.isFinite(si)) return dv(null, MISSING, unit);
-  return dv(si, fixed(si * scale, decimals), unit);
+  const q = Math.round(si * scale * 10 ** decimals) / 10 ** decimals / scale;
+  return dv(Number(q.toPrecision(12)), fixed(si * scale, decimals), unit);
 }
 
 /** m → `8.3 KM` (1 decimal). */

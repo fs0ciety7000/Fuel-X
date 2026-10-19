@@ -1,0 +1,3851 @@
+{
+ "version": 1,
+ "seq": 1,
+ "tick": 683884,
+ "simTimeS": 22796.13333333333,
+ "clock": {
+  "utc": "13:34:56",
+  "utcS": 48896,
+  "tClock": "T−00:00:04",
+  "tClockS": -4,
+  "missionClock": null,
+  "phase": "TerminalCount",
+  "phaseLabel": "TERMINAL COUNT",
+  "holding": false,
+  "holdReason": null,
+  "holdLabel": "",
+  "windowOpenAt": "13:00:00",
+  "windowCloseAt": "14:30:00",
+  "windowState": "OPEN",
+  "windowRemaining": {
+   "text": "00:55:03",
+   "unit": "",
+   "value": 3303.866666666667
+  }
+ },
+ "timeScale": {
+  "requested": 1,
+  "resumeRate": 1,
+  "effective": 1,
+  "maxAllowed": 1,
+  "paused": false,
+  "forced1x": true,
+  "lagging": false,
+  "effectiveRate": "1×",
+  "lockReason": "TERMINAL COUNT",
+  "lockCode": "TERMINAL_COUNT",
+  "lockLabel": "1× LOCKED · TERMINAL COUNT",
+  "readout": "SIM 1×",
+  "skip": {
+   "enabled": false,
+   "target": "T−00:00:03 ENGINE IGNITION",
+   "reason": "SKIP NOT AVAILABLE YET",
+   "active": false
+  }
+ },
+ "economy": {
+  "money": {
+   "text": "29.96",
+   "unit": "M CR",
+   "value": 29959000
+  },
+  "reputation": {
+   "text": "50",
+   "unit": "REP",
+   "value": 50
+  }
+ },
+ "range": {
+  "aggregate": "MARGINAL",
+  "state": "warn",
+  "glyph": "warn",
+  "label": "RANGE MARGINAL",
+  "reason": "PROPELLANT · LOX 0.87 H RESERVE",
+  "goCount": 4,
+  "total": 5,
+  "stations": [
+   {
+    "id": "WEATHER",
+    "code": "WX",
+    "label": "WEATHER",
+    "status": "GO",
+    "state": "ok",
+    "glyph": "ok",
+    "driver": "NOMINAL",
+    "driverCode": "NOMINAL",
+    "value": {
+     "text": "46.4",
+     "unit": "M/S",
+     "value": 46.42904575609568
+    },
+    "limit": {
+     "text": "60.0",
+     "unit": "M/S",
+     "value": 60
+    },
+    "detail": "UPPER 46.4 M/S",
+    "sourceId": "e000028",
+    "sourceCode": "WX-1"
+   },
+   {
+    "id": "RANGE",
+    "code": "RNG",
+    "label": "RANGE",
+    "status": "GO",
+    "state": "ok",
+    "glyph": "ok",
+    "driver": "NOMINAL",
+    "driverCode": "NOMINAL",
+    "value": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "limit": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "detail": "PICKETS ON STATION",
+    "sourceId": null,
+    "sourceCode": null
+   },
+   {
+    "id": "PROPELLANT",
+    "code": "PRP",
+    "label": "PROPELLANT",
+    "status": "MARGINAL",
+    "state": "warn",
+    "glyph": "warn",
+    "driver": "FARM RESERVE LOX",
+    "driverCode": "FARM_RESERVE_LOX",
+    "value": {
+     "text": "0.87",
+     "unit": "H",
+     "value": 3126.909034954651
+    },
+    "limit": {
+     "text": "1.00",
+     "unit": "H",
+     "value": 3600
+    },
+    "detail": "LOX 0.87 H RESERVE",
+    "sourceId": "e000003",
+    "sourceCode": "LOX-1"
+   },
+   {
+    "id": "VEHICLE",
+    "code": "VEH",
+    "label": "VEHICLE",
+    "status": "GO",
+    "state": "ok",
+    "glyph": "ok",
+    "driver": "NOMINAL",
+    "driverCode": "NOMINAL",
+    "value": {
+     "text": "0.89",
+     "unit": "",
+     "value": 0.89
+    },
+    "limit": {
+     "text": "0.80",
+     "unit": "",
+     "value": 0.8
+    },
+    "detail": "HEALTH 0.89",
+    "sourceId": "e000011",
+    "sourceCode": "B-09"
+   },
+   {
+    "id": "PAD_CREW",
+    "code": "CRW",
+    "label": "PAD/CREW",
+    "status": "GO",
+    "state": "ok",
+    "glyph": "ok",
+    "driver": "NOMINAL",
+    "driverCode": "NOMINAL",
+    "value": {
+     "text": "10:19",
+     "unit": "H",
+     "value": 37196.1
+    },
+    "limit": {
+     "text": "12:00",
+     "unit": "H",
+     "value": 43200
+    },
+    "detail": "SHIFT 10:19 H",
+    "sourceId": null,
+    "sourceCode": null
+   }
+  ],
+  "weather": {
+   "groundWind": {
+    "text": "5.6",
+    "unit": "M/S",
+    "value": 5.566176102249333
+   },
+   "groundGust": {
+    "text": "7.0",
+    "unit": "M/S",
+    "value": 6.957720127811666
+   },
+   "towerWind": {
+    "text": "7.2",
+    "unit": "M/S",
+    "value": 7.236028932924133
+   },
+   "upperWind": {
+    "text": "46.4",
+    "unit": "M/S",
+    "value": 46.42904575609568
+   },
+   "windFrom": {
+    "text": "182",
+    "unit": "°",
+    "value": 3.171165346558903
+   },
+   "upperForecastPeak": {
+    "text": "46.4",
+    "unit": "M/S",
+    "value": 46.42904575609568
+   },
+   "groundLimit": {
+    "text": "13.0",
+    "unit": "M/S",
+    "value": 13
+   },
+   "upperLimit": {
+    "text": "60.0",
+    "unit": "M/S",
+    "value": 60
+   },
+   "marginSeries": [
+    0.22931047246096903,
+    0.22854381650621958,
+    0.2266369166818315,
+    0.22399886850072726,
+    0.222084447180805,
+    0.2186198557800637,
+    0.2153569166825705,
+    0.21472662085625793,
+    0.21752835851338193,
+    0.21208983741749987,
+    0.20830032234233642,
+    0.20592409414508606,
+    0.20931608107902588,
+    0.21331616509052687,
+    0.21313284610304417,
+    0.20818303521037462,
+    0.20415031445883758,
+    0.206816155961134,
+    0.20360797335601422,
+    0.2034445371662984,
+    0.19482230278166357,
+    0.1951979028958276,
+    0.2012880819363888,
+    0.2029188648121265,
+    0.20107128144525566,
+    0.20216599761885867,
+    0.20203202132313358,
+    0.20425912235699184,
+    0.1995748454291455,
+    0.20431070503724558,
+    0.20625759928479848,
+    0.20781763441307433,
+    0.2078053433537076,
+    0.20976670681442589,
+    0.20929748704786577,
+    0.20769549828047273,
+    0.20832743708752788,
+    0.21401236005669255,
+    0.2121993324852639,
+    0.20754761428433732,
+    0.21013416452071898,
+    0.20968136810182691,
+    0.2186301911373032,
+    0.2151465537944247,
+    0.21652132502070232,
+    0.21364824271684713,
+    0.21496604970366495,
+    0.21645809979267405,
+    0.21402979796070454,
+    0.21974188855854948,
+    0.21948712191496278,
+    0.21823055735087327,
+    0.22011638981626902,
+    0.2248528277932491,
+    0.22387630085110333,
+    0.22714762927925924,
+    0.22433544572374864,
+    0.22687424463093964,
+    0.23036535579314532,
+    0.2318996848094952,
+    0.23738348484471505,
+    0.23944894170765318,
+    0.23702583053931292,
+    0.2372989245168179,
+    0.24121113436342356,
+    0.24161827537604608,
+    0.23682244301165045,
+    0.2341641810420747,
+    0.23143543196056482,
+    0.23482900989309152,
+    0.24250629275585345,
+    0.23812563158432998,
+    0.23537856380170585,
+    0.23084565276675595,
+    0.22580909008068462,
+    0.22596691182210193,
+    0.22524542895779598,
+    0.2206701714711019,
+    0.21795513348162843,
+    0.21326714427505733,
+    0.21043947957560827,
+    0.20972267233156539,
+    0.20795745386391284,
+    0.20751380616127524,
+    0.2079542739133441,
+    0.2065352899116708,
+    0.2059725052977105,
+    0.20102927132297432,
+    0.1970359002534009,
+    0.19589700908412366,
+    0.19373900685189527,
+    0.19985310840024684,
+    0.19909892754837866,
+    0.20377725422107307,
+    0.197689850959757,
+    0.20122060377310658,
+    0.20742605760525445,
+    0.20301573855700872,
+    0.20599806741625082,
+    0.20410022684524753,
+    0.2059462459308975,
+    0.20560097532693056,
+    0.210897644189447,
+    0.2135715488851445,
+    0.2106170549686368,
+    0.21338570108250243,
+    0.2121044303811639,
+    0.21048966558416005,
+    0.21219800730903404,
+    0.21618330263131302,
+    0.2198587789907911,
+    0.21795324996256615,
+    0.22268815860570212,
+    0.2234594935805021,
+    0.22268683770431352,
+    0.22150831579108465,
+    0.22518003513500273,
+    0.22867967552480406,
+    0.2297140385735894,
+    0.22717863124311333
+   ]
+  }
+ },
+ "alerts": {
+  "open": 1,
+  "fresh": 1,
+  "state": "warn",
+  "label": "1 ALERT",
+  "items": [
+   {
+    "id": "station:PROPELLANT",
+    "time": "13:34:56",
+    "tClock": "",
+    "tick": 683884,
+    "code": "STATION",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": "e000003",
+    "entityCode": "LOX-1",
+    "message": "PROPELLANT MARGINAL · LOX 0.87 H RESERVE",
+    "acked": false
+   }
+  ]
+ },
+ "flightCard": {
+  "countdownId": "cd01",
+  "boosterId": "e000011",
+  "shipId": "e000012",
+  "title": "LC-1 FLIGHT 7",
+  "nextLaunch": {
+   "key": "nextLaunch",
+   "label": "NEXT LAUNCH",
+   "value": {
+    "text": "T−00:00:04",
+    "unit": "",
+    "value": -4
+   },
+   "state": "neutral"
+  },
+  "vehicles": "B-09 / S-21",
+  "propellant": {
+   "key": "propellant",
+   "label": "PROPELLANT LOADED",
+   "value": {
+    "text": "100.0",
+    "unit": "%",
+    "value": 1
+   },
+   "state": "neutral",
+   "series": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "seriesLabel": "VEHICLE LOADED, LAST 2 MIN"
+  },
+  "farmReserve": 0.8685858414763392,
+  "farmReserveTime": {
+   "text": "0.87",
+   "unit": "H",
+   "value": 3126.909029314821
+  },
+  "farmReserveFluid": "LOX",
+  "stations": {
+   "key": "stations",
+   "label": "STATIONS GO",
+   "value": {
+    "text": "4 OF 5",
+    "unit": "",
+    "value": 4
+   },
+   "state": "warn",
+   "segments": {
+    "value": 4,
+    "max": 5,
+    "label": "STATIONS GO 4 OF 5",
+    "states": [
+     "ok",
+     "ok",
+     "warn",
+     "ok",
+     "ok"
+    ]
+   }
+  },
+  "range": {
+   "key": "range",
+   "label": "RANGE",
+   "value": {
+    "text": "MARGINAL",
+    "unit": "",
+    "value": null
+   },
+   "state": "warn",
+   "series": [
+    0.22931047246096903,
+    0.22854381650621958,
+    0.2266369166818315,
+    0.22399886850072726,
+    0.222084447180805,
+    0.2186198557800637,
+    0.2153569166825705,
+    0.21472662085625793,
+    0.21752835851338193,
+    0.21208983741749987,
+    0.20830032234233642,
+    0.20592409414508606,
+    0.20931608107902588,
+    0.21331616509052687,
+    0.21313284610304417,
+    0.20818303521037462,
+    0.20415031445883758,
+    0.206816155961134,
+    0.20360797335601422,
+    0.2034445371662984,
+    0.19482230278166357,
+    0.1951979028958276,
+    0.2012880819363888,
+    0.2029188648121265,
+    0.20107128144525566,
+    0.20216599761885867,
+    0.20203202132313358,
+    0.20425912235699184,
+    0.1995748454291455,
+    0.20431070503724558,
+    0.20625759928479848,
+    0.20781763441307433,
+    0.2078053433537076,
+    0.20976670681442589,
+    0.20929748704786577,
+    0.20769549828047273,
+    0.20832743708752788,
+    0.21401236005669255,
+    0.2121993324852639,
+    0.20754761428433732,
+    0.21013416452071898,
+    0.20968136810182691,
+    0.2186301911373032,
+    0.2151465537944247,
+    0.21652132502070232,
+    0.21364824271684713,
+    0.21496604970366495,
+    0.21645809979267405,
+    0.21402979796070454,
+    0.21974188855854948,
+    0.21948712191496278,
+    0.21823055735087327,
+    0.22011638981626902,
+    0.2248528277932491,
+    0.22387630085110333,
+    0.22714762927925924,
+    0.22433544572374864,
+    0.22687424463093964,
+    0.23036535579314532,
+    0.2318996848094952,
+    0.23738348484471505,
+    0.23944894170765318,
+    0.23702583053931292,
+    0.2372989245168179,
+    0.24121113436342356,
+    0.24161827537604608,
+    0.23682244301165045,
+    0.2341641810420747,
+    0.23143543196056482,
+    0.23482900989309152,
+    0.24250629275585345,
+    0.23812563158432998,
+    0.23537856380170585,
+    0.23084565276675595,
+    0.22580909008068462,
+    0.22596691182210193,
+    0.22524542895779598,
+    0.2206701714711019,
+    0.21795513348162843,
+    0.21326714427505733,
+    0.21043947957560827,
+    0.20972267233156539,
+    0.20795745386391284,
+    0.20751380616127524,
+    0.2079542739133441,
+    0.2065352899116708,
+    0.2059725052977105,
+    0.20102927132297432,
+    0.1970359002534009,
+    0.19589700908412366,
+    0.19373900685189527,
+    0.19985310840024684,
+    0.19909892754837866,
+    0.20377725422107307,
+    0.197689850959757,
+    0.20122060377310658,
+    0.20742605760525445,
+    0.20301573855700872,
+    0.20599806741625082,
+    0.20410022684524753,
+    0.2059462459308975,
+    0.20560097532693056,
+    0.210897644189447,
+    0.2135715488851445,
+    0.2106170549686368,
+    0.21338570108250243,
+    0.2121044303811639,
+    0.21048966558416005,
+    0.21219800730903404,
+    0.21618330263131302,
+    0.2198587789907911,
+    0.21795324996256615,
+    0.22268815860570212,
+    0.2234594935805021,
+    0.22268683770431352,
+    0.22150831579108465,
+    0.22518003513500273,
+    0.22867967552480406,
+    0.2297140385735894,
+    0.22717863124311333
+   ],
+   "threshold": 0,
+   "seriesLabel": "WEATHER MARGIN"
+  },
+  "contract": {
+   "id": "NRL-3",
+   "customer": "NORRLAND RELAY",
+   "status": "ACTIVE",
+   "state": "active"
+  }
+ },
+ "countdown": {
+  "countdownId": "cd01",
+  "title": "LC-1 · B-09 / S-21",
+  "tClock": "T−00:00:04",
+  "tClockS": -4,
+  "state": "neutral",
+  "phases": [
+   {
+    "id": "Rollout",
+    "label": "ROLLOUT",
+    "short": "ROLLOUT",
+    "state": "done",
+    "glyph": "done",
+    "share": 0.15116523199664078,
+    "progress": 1,
+    "startS": -21600,
+    "endS": -18000
+   },
+   {
+    "id": "Stack",
+    "label": "STACK",
+    "short": "STACK",
+    "state": "done",
+    "glyph": "done",
+    "share": 0.5542725173210161,
+    "progress": 1,
+    "startS": -18000,
+    "endS": -4800
+   },
+   {
+    "id": "PropellantLoad",
+    "label": "PROPELLANT LOAD",
+    "short": "PROP LOAD",
+    "state": "done",
+    "glyph": "done",
+    "share": 0.17635943732941423,
+    "progress": 1,
+    "startS": -4800,
+    "endS": -600
+   },
+   {
+    "id": "TerminalCount",
+    "label": "TERMINAL COUNT",
+    "short": "TERMINAL",
+    "state": "current",
+    "glyph": "current",
+    "share": 0.025194205332773462,
+    "progress": 0.9933333333333333,
+    "startS": -600,
+    "endS": 0
+   },
+   {
+    "id": "Liftoff",
+    "label": "LIFTOFF",
+    "short": "LIFTOFF",
+    "state": "pending",
+    "glyph": "pending",
+    "share": 0.006718454755406256,
+    "progress": 0,
+    "startS": 0,
+    "endS": 160
+   },
+   {
+    "id": "Boostback",
+    "label": "BOOSTBACK",
+    "short": "BOOSTBACK",
+    "state": "pending",
+    "glyph": "pending",
+    "share": 0.009237875288683603,
+    "progress": 0,
+    "startS": 160,
+    "endS": 380
+   },
+   {
+    "id": "TowerCatch",
+    "label": "TOWER CATCH",
+    "short": "CATCH",
+    "state": "pending",
+    "glyph": "pending",
+    "share": 0.0014696619777451185,
+    "progress": 0,
+    "startS": 380,
+    "endS": 415
+   },
+   {
+    "id": "Safing",
+    "label": "SAFING",
+    "short": "SAFING",
+    "state": "pending",
+    "glyph": "pending",
+    "share": 0.07558261599832039,
+    "progress": 0,
+    "startS": 415,
+    "endS": 2215
+   }
+  ],
+  "playhead": 0.9068234306109595,
+  "polls": [
+   {
+    "id": "load",
+    "at": "T−01:20:00",
+    "position": 0.7054377493176569,
+    "label": "LOAD POLL",
+    "state": "passed"
+   },
+   {
+    "id": "terminal",
+    "at": "T−00:10:00",
+    "position": 0.8817971866470712,
+    "label": "TERMINAL POLL",
+    "state": "passed"
+   },
+   {
+    "id": "final",
+    "at": "T−00:00:40",
+    "position": 0.9053117782909931,
+    "label": "FINAL POLL",
+    "state": "passed"
+   }
+  ],
+  "windowOpen": 0.8188060746028414,
+  "windowClose": 1,
+  "holding": false,
+  "scrubbed": false,
+  "actions": [
+   {
+    "id": "GO",
+    "label": "GO",
+    "enabled": false,
+    "variant": "primary",
+    "command": {
+     "t": "Go",
+     "countdownId": "cd01"
+    },
+    "key": "⏎",
+    "reason": "COUNT IS RUNNING",
+    "reasonCode": "NOT_HOLDING"
+   },
+   {
+    "id": "HOLD",
+    "label": "HOLD",
+    "enabled": true,
+    "variant": "secondary",
+    "command": {
+     "t": "Hold",
+     "countdownId": "cd01"
+    },
+    "key": "H"
+   },
+   {
+    "id": "RECYCLE",
+    "label": "RECYCLE",
+    "enabled": true,
+    "variant": "secondary",
+    "command": {
+     "t": "Recycle",
+     "countdownId": "cd01"
+    },
+    "key": "R",
+    "confirm": [
+     {
+      "label": "T-CLOCK BACK TO",
+      "value": {
+       "text": "T−00:10:00",
+       "unit": "",
+       "value": null
+      },
+      "state": "neutral"
+     },
+     {
+      "label": "COST",
+      "value": {
+       "text": "TIME ONLY",
+       "unit": "",
+       "value": null
+      },
+      "state": "neutral"
+     }
+    ]
+   },
+   {
+    "id": "SCRUB",
+    "label": "SCRUB",
+    "enabled": true,
+    "variant": "danger",
+    "command": {
+     "t": "Scrub",
+     "countdownId": "cd01"
+    },
+    "confirm": [
+     {
+      "label": "DETANK",
+      "value": {
+       "text": "PART OF THE LOAD IS LOST",
+       "unit": "",
+       "value": null
+      },
+      "state": "warn"
+     },
+     {
+      "label": "NEXT ATTEMPT",
+      "value": {
+       "text": "REBOOK +24 H",
+       "unit": "",
+       "value": null
+      },
+      "state": "neutral"
+     },
+     {
+      "label": "WINDOW-MISS PENALTY",
+      "value": {
+       "text": "−15.00",
+       "unit": "M CR",
+       "value": -15000000
+      },
+      "state": "danger"
+     }
+    ]
+   }
+  ]
+ },
+ "decision": null,
+ "inspector": {
+  "id": "e000011",
+  "callSign": "B-09",
+  "kind": "booster",
+  "classLabel": "BOOSTER",
+  "className": "BULWARK",
+  "sub": "BOOSTER · LC-1 FLIGHT 7 · 4 FLIGHTS",
+  "status": {
+   "code": "LOADED",
+   "glyph": "stacked",
+   "label": "LOADED",
+   "meta": "FOLLOWING",
+   "state": "ok"
+  },
+  "selected": true,
+  "following": true,
+  "metrics": [
+   {
+    "key": "clock",
+    "label": "MISSION CLOCK",
+    "value": {
+     "text": "T−00:00:04",
+     "unit": "",
+     "value": null
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "altitude",
+    "label": "ALTITUDE",
+    "value": {
+     "text": "0.0",
+     "unit": "KM",
+     "value": 20
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "velocity",
+    "label": "VELOCITY",
+    "value": {
+     "text": "0",
+     "unit": "KM/H",
+     "value": 0
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "prop",
+    "label": "PROPELLANT",
+    "value": {
+     "text": "100.0",
+     "unit": "%",
+     "value": 1
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "engines",
+    "label": "ENGINES LIT",
+    "value": {
+     "text": "0 OF 33",
+     "unit": "",
+     "value": 0
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "heading",
+    "label": "HEADING",
+    "value": {
+     "text": "—",
+     "unit": "°",
+     "value": null
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "downrange",
+    "label": "DOWNRANGE",
+    "value": {
+     "text": "—",
+     "unit": "KM",
+     "value": null
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "arms",
+    "label": "CATCH ARMS",
+    "value": {
+     "text": "OPEN",
+     "unit": "",
+     "value": null
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "landingProp",
+    "label": "LANDING PROP",
+    "value": {
+     "text": "—",
+     "unit": "T",
+     "value": null
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "towerWind",
+    "label": "TOWER WIND",
+    "value": {
+     "text": "7.2",
+     "unit": "M/S",
+     "value": 7.236028932924133
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "catchP",
+    "label": "CATCH P",
+    "value": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "state": "neutral"
+   },
+   {
+    "key": "wear",
+    "label": "WEAR",
+    "value": {
+     "text": "22.0",
+     "unit": "%",
+     "value": 0.22
+    },
+    "state": "neutral"
+   }
+  ],
+  "progress": null,
+  "chart": null,
+  "actions": [],
+  "lost": false
+ },
+ "lists": {
+  "vehicles": [
+   {
+    "id": "e000011",
+    "kind": "booster",
+    "glyph": "stacked",
+    "name": "B-09",
+    "sub": "BOOSTER · LOADED · TERMINAL COUNT",
+    "status": "LOADED",
+    "keyValue": {
+     "text": "100",
+     "unit": "% PROP",
+     "value": 1
+    },
+    "state": "ok",
+    "selected": true,
+    "following": true
+   },
+   {
+    "id": "e000012",
+    "kind": "ship",
+    "glyph": "stacked",
+    "name": "S-21",
+    "sub": "SHIP · LOADED · TERMINAL COUNT",
+    "status": "LOADED",
+    "keyValue": {
+     "text": "100",
+     "unit": "% PROP",
+     "value": 1
+    },
+    "state": "ok",
+    "selected": false,
+    "following": false
+   },
+   {
+    "id": "e000013",
+    "kind": "transporter",
+    "glyph": "idle",
+    "name": "SP-41",
+    "sub": "TRANSPORTER · IDLE",
+    "status": "IDLE",
+    "keyValue": {
+     "text": "0",
+     "unit": "KM/H",
+     "value": 0
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false
+   },
+   {
+    "id": "e000014",
+    "kind": "transporter",
+    "glyph": "idle",
+    "name": "SP-42",
+    "sub": "TRANSPORTER · IDLE",
+    "status": "IDLE",
+    "keyValue": {
+     "text": "0",
+     "unit": "KM/H",
+     "value": 0
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false
+   },
+   {
+    "id": "e000015",
+    "kind": "crane",
+    "glyph": "idle",
+    "name": "CR-77",
+    "sub": "CRANE · IDLE",
+    "status": "IDLE",
+    "keyValue": {
+     "text": "—",
+     "unit": "KM/H",
+     "value": null
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false
+   },
+   {
+    "id": "e000022",
+    "kind": "van",
+    "glyph": "parked",
+    "name": "CV-01",
+    "sub": "CREW VAN · PARKED",
+    "status": "PARKED",
+    "keyValue": {
+     "text": "0",
+     "unit": "KM/H",
+     "value": 0
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false
+   },
+   {
+    "id": "e000023",
+    "kind": "van",
+    "glyph": "parked",
+    "name": "CV-02",
+    "sub": "CREW VAN · PARKED",
+    "status": "PARKED",
+    "keyValue": {
+     "text": "0",
+     "unit": "KM/H",
+     "value": 0
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false
+   },
+   {
+    "id": "e000024",
+    "kind": "van",
+    "glyph": "parked",
+    "name": "CV-03",
+    "sub": "CREW VAN · PARKED",
+    "status": "PARKED",
+    "keyValue": {
+     "text": "0",
+     "unit": "KM/H",
+     "value": 0
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false
+   }
+  ],
+  "tanks": [
+   {
+    "id": "e000003",
+    "kind": "tank",
+    "glyph": "idle",
+    "name": "LOX-1",
+    "sub": "LIQUID OXYGEN",
+    "status": "STORING",
+    "keyValue": {
+     "text": "5",
+     "unit": "%",
+     "value": 0.05222952460905747
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false,
+    "fluid": "LOX",
+    "fill": 0.05222952460905747,
+    "reserve": null,
+    "rate": {
+     "text": "−0.0004",
+     "unit": "%/H",
+     "value": -0.0000043246046376299586
+    },
+    "mass": {
+     "text": "94",
+     "unit": "T",
+     "value": 94013.14429630345
+    }
+   },
+   {
+    "id": "e000004",
+    "kind": "tank",
+    "glyph": "idle",
+    "name": "LOX-2",
+    "sub": "LIQUID OXYGEN",
+    "status": "STORING",
+    "keyValue": {
+     "text": "5",
+     "unit": "%",
+     "value": 0.052229542356817454
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false,
+    "fluid": "LOX",
+    "fill": 0.052229542356817454,
+    "reserve": null,
+    "rate": {
+     "text": "−0.0004",
+     "unit": "%/H",
+     "value": -0.0000043246061071444855
+    },
+    "mass": {
+     "text": "94",
+     "unit": "T",
+     "value": 94013.17624227142
+    }
+   },
+   {
+    "id": "e000005",
+    "kind": "tank",
+    "glyph": "idle",
+    "name": "LOX-3",
+    "sub": "LIQUID OXYGEN",
+    "status": "STORING",
+    "keyValue": {
+     "text": "5",
+     "unit": "%",
+     "value": 0.05222929535853077
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false,
+    "fluid": "LOX",
+    "fill": 0.05222929535853077,
+    "reserve": null,
+    "rate": {
+     "text": "−0.0004",
+     "unit": "%/H",
+     "value": -0.000004324585655686348
+    },
+    "mass": {
+     "text": "94",
+     "unit": "T",
+     "value": 94012.73164535538
+    }
+   },
+   {
+    "id": "e000006",
+    "kind": "tank",
+    "glyph": "idle",
+    "name": "CH4-1",
+    "sub": "LIQUID METHANE",
+    "status": "STORING",
+    "keyValue": {
+     "text": "5",
+     "unit": "%",
+     "value": 0.05334952660799613
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false,
+    "fluid": "CH4",
+    "fill": 0.05334952660799613,
+    "reserve": null,
+    "rate": {
+     "text": "−0.0002",
+     "unit": "%/H",
+     "value": -0.0000023046995494654324
+    },
+    "mass": {
+     "text": "40",
+     "unit": "T",
+     "value": 40012.14495599709
+    }
+   },
+   {
+    "id": "e000007",
+    "kind": "tank",
+    "glyph": "idle",
+    "name": "CH4-2",
+    "sub": "LIQUID METHANE",
+    "status": "STORING",
+    "keyValue": {
+     "text": "5",
+     "unit": "%",
+     "value": 0.053349546109897776
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false,
+    "fluid": "CH4",
+    "fill": 0.053349546109897776,
+    "reserve": null,
+    "rate": {
+     "text": "−0.0002",
+     "unit": "%/H",
+     "value": -0.0000023047003919475838
+    },
+    "mass": {
+     "text": "40",
+     "unit": "T",
+     "value": 40012.15958242333
+    }
+   },
+   {
+    "id": "e000008",
+    "kind": "tank",
+    "glyph": "idle",
+    "name": "LN2-1",
+    "sub": "LIQUID NITROGEN",
+    "status": "STORING",
+    "keyValue": {
+     "text": "100",
+     "unit": "%",
+     "value": 1
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false,
+    "fluid": "LN2",
+    "fill": 1,
+    "reserve": null,
+    "rate": {
+     "text": "—",
+     "unit": "%/H",
+     "value": null
+    },
+    "mass": {
+     "text": "600",
+     "unit": "T",
+     "value": 600000
+    }
+   }
+  ],
+  "tasks": [
+   {
+    "id": "rollout:e000011",
+    "kind": "task",
+    "glyph": "done",
+    "name": "ROLLOUT B-09",
+    "sub": "DONE",
+    "status": "DONE",
+    "keyValue": {
+     "text": "100",
+     "unit": "%",
+     "value": 1
+    },
+    "state": "ok",
+    "selected": false,
+    "following": false,
+    "progress": 1,
+    "eta": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "assigneeId": null,
+    "actions": []
+   },
+   {
+    "id": "stack:e000011",
+    "kind": "task",
+    "glyph": "done",
+    "name": "STACK B-09",
+    "sub": "TOWER-1 · DONE",
+    "status": "DONE",
+    "keyValue": {
+     "text": "100",
+     "unit": "%",
+     "value": 1
+    },
+    "state": "ok",
+    "selected": false,
+    "following": false,
+    "progress": 1,
+    "eta": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "assigneeId": "e000002",
+    "actions": []
+   },
+   {
+    "id": "rollout:e000012",
+    "kind": "task",
+    "glyph": "done",
+    "name": "ROLLOUT S-21",
+    "sub": "DONE",
+    "status": "DONE",
+    "keyValue": {
+     "text": "100",
+     "unit": "%",
+     "value": 1
+    },
+    "state": "ok",
+    "selected": false,
+    "following": false,
+    "progress": 1,
+    "eta": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "assigneeId": null,
+    "actions": []
+   },
+   {
+    "id": "stack:e000012",
+    "kind": "task",
+    "glyph": "done",
+    "name": "STACK S-21",
+    "sub": "TOWER-1 · DONE",
+    "status": "DONE",
+    "keyValue": {
+     "text": "100",
+     "unit": "%",
+     "value": 1
+    },
+    "state": "ok",
+    "selected": false,
+    "following": false,
+    "progress": 1,
+    "eta": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "assigneeId": "e000002",
+    "actions": []
+   },
+   {
+    "id": "load",
+    "kind": "task",
+    "glyph": "done",
+    "name": "PROPELLANT LOAD",
+    "sub": "DONE",
+    "status": "DONE",
+    "keyValue": {
+     "text": "100",
+     "unit": "%",
+     "value": 1
+    },
+    "state": "ok",
+    "selected": false,
+    "following": false,
+    "progress": 1,
+    "eta": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "assigneeId": null,
+    "actions": []
+   },
+   {
+    "id": "order",
+    "kind": "task",
+    "glyph": "pending",
+    "name": "ORDER DELIVERY",
+    "sub": "QUEUED",
+    "status": "QUEUED",
+    "keyValue": {
+     "text": "0",
+     "unit": "%",
+     "value": 0
+    },
+    "state": "info",
+    "selected": false,
+    "following": false,
+    "progress": null,
+    "eta": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "assigneeId": null,
+    "actions": [
+     {
+      "id": "ORDER_LOX_STANDARD",
+      "label": "LX STANDARD",
+      "enabled": false,
+      "variant": "primary",
+      "command": {
+       "t": "OrderDelivery",
+       "fluid": "LOX",
+       "rush": false
+      },
+      "reason": "ROAD CLOSED",
+      "reasonCode": "ROAD_CLOSED",
+      "confirm": [
+       {
+        "label": "CARGO",
+        "value": {
+         "text": "20",
+         "unit": "T LOX",
+         "value": 20000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "FEE",
+        "value": {
+         "text": "−0.01",
+         "unit": "M CR",
+         "value": -6000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "PROPELLANT",
+        "value": {
+         "text": "0.00",
+         "unit": "M CR",
+         "value": -3000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "AT GATE",
+        "value": {
+         "text": "T+03:59:56",
+         "unit": "",
+         "value": null
+        },
+        "state": "warn"
+       }
+      ]
+     },
+     {
+      "id": "ORDER_LOX_RUSH",
+      "label": "LX RUSH",
+      "enabled": false,
+      "variant": "secondary",
+      "command": {
+       "t": "OrderDelivery",
+       "fluid": "LOX",
+       "rush": true
+      },
+      "reason": "ROAD CLOSED",
+      "reasonCode": "ROAD_CLOSED",
+      "confirm": [
+       {
+        "label": "CARGO",
+        "value": {
+         "text": "20",
+         "unit": "T LOX",
+         "value": 20000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "FEE",
+        "value": {
+         "text": "−0.12",
+         "unit": "M CR",
+         "value": -120000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "PROPELLANT",
+        "value": {
+         "text": "0.00",
+         "unit": "M CR",
+         "value": -3000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "AT GATE",
+        "value": {
+         "text": "T+01:29:56",
+         "unit": "",
+         "value": null
+        },
+        "state": "warn"
+       }
+      ]
+     },
+     {
+      "id": "ORDER_CH4_STANDARD",
+      "label": "MX STANDARD",
+      "enabled": false,
+      "variant": "primary",
+      "command": {
+       "t": "OrderDelivery",
+       "fluid": "CH4",
+       "rush": false
+      },
+      "reason": "ROAD CLOSED",
+      "reasonCode": "ROAD_CLOSED",
+      "confirm": [
+       {
+        "label": "CARGO",
+        "value": {
+         "text": "16",
+         "unit": "T CH4",
+         "value": 16000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "FEE",
+        "value": {
+         "text": "−0.01",
+         "unit": "M CR",
+         "value": -6000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "PROPELLANT",
+        "value": {
+         "text": "−0.01",
+         "unit": "M CR",
+         "value": -8000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "AT GATE",
+        "value": {
+         "text": "T+03:59:56",
+         "unit": "",
+         "value": null
+        },
+        "state": "warn"
+       }
+      ]
+     },
+     {
+      "id": "ORDER_CH4_RUSH",
+      "label": "MX RUSH",
+      "enabled": false,
+      "variant": "secondary",
+      "command": {
+       "t": "OrderDelivery",
+       "fluid": "CH4",
+       "rush": true
+      },
+      "reason": "ROAD CLOSED",
+      "reasonCode": "ROAD_CLOSED",
+      "confirm": [
+       {
+        "label": "CARGO",
+        "value": {
+         "text": "16",
+         "unit": "T CH4",
+         "value": 16000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "FEE",
+        "value": {
+         "text": "−0.12",
+         "unit": "M CR",
+         "value": -120000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "PROPELLANT",
+        "value": {
+         "text": "−0.01",
+         "unit": "M CR",
+         "value": -8000
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "AT GATE",
+        "value": {
+         "text": "T+01:29:56",
+         "unit": "",
+         "value": null
+        },
+        "state": "warn"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "range": [
+   {
+    "id": "WEATHER",
+    "code": "WX",
+    "label": "WEATHER",
+    "status": "GO",
+    "state": "ok",
+    "glyph": "ok",
+    "driver": "NOMINAL",
+    "driverCode": "NOMINAL",
+    "value": {
+     "text": "46.4",
+     "unit": "M/S",
+     "value": 46.42904575609568
+    },
+    "limit": {
+     "text": "60.0",
+     "unit": "M/S",
+     "value": 60
+    },
+    "detail": "UPPER 46.4 M/S",
+    "sourceId": "e000028",
+    "sourceCode": "WX-1"
+   },
+   {
+    "id": "RANGE",
+    "code": "RNG",
+    "label": "RANGE",
+    "status": "GO",
+    "state": "ok",
+    "glyph": "ok",
+    "driver": "NOMINAL",
+    "driverCode": "NOMINAL",
+    "value": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "limit": {
+     "text": "—",
+     "unit": "",
+     "value": null
+    },
+    "detail": "PICKETS ON STATION",
+    "sourceId": null,
+    "sourceCode": null
+   },
+   {
+    "id": "PROPELLANT",
+    "code": "PRP",
+    "label": "PROPELLANT",
+    "status": "MARGINAL",
+    "state": "warn",
+    "glyph": "warn",
+    "driver": "FARM RESERVE LOX",
+    "driverCode": "FARM_RESERVE_LOX",
+    "value": {
+     "text": "0.87",
+     "unit": "H",
+     "value": 3126.909034954651
+    },
+    "limit": {
+     "text": "1.00",
+     "unit": "H",
+     "value": 3600
+    },
+    "detail": "LOX 0.87 H RESERVE",
+    "sourceId": "e000003",
+    "sourceCode": "LOX-1"
+   },
+   {
+    "id": "VEHICLE",
+    "code": "VEH",
+    "label": "VEHICLE",
+    "status": "GO",
+    "state": "ok",
+    "glyph": "ok",
+    "driver": "NOMINAL",
+    "driverCode": "NOMINAL",
+    "value": {
+     "text": "0.89",
+     "unit": "",
+     "value": 0.89
+    },
+    "limit": {
+     "text": "0.80",
+     "unit": "",
+     "value": 0.8
+    },
+    "detail": "HEALTH 0.89",
+    "sourceId": "e000011",
+    "sourceCode": "B-09"
+   },
+   {
+    "id": "PAD_CREW",
+    "code": "CRW",
+    "label": "PAD/CREW",
+    "status": "GO",
+    "state": "ok",
+    "glyph": "ok",
+    "driver": "NOMINAL",
+    "driverCode": "NOMINAL",
+    "value": {
+     "text": "10:19",
+     "unit": "H",
+     "value": 37196.1
+    },
+    "limit": {
+     "text": "12:00",
+     "unit": "H",
+     "value": 43200
+    },
+    "detail": "SHIFT 10:19 H",
+    "sourceId": null,
+    "sourceCode": null
+   }
+  ],
+  "rangeAssets": [
+   {
+    "id": "e000025",
+    "kind": "boat",
+    "glyph": "patrol",
+    "name": "PK-03",
+    "sub": "PICKET · PATROL",
+    "status": "PATROL",
+    "keyValue": {
+     "text": "18",
+     "unit": "KM/H",
+     "value": 5
+    },
+    "state": "active",
+    "selected": false,
+    "following": false
+   },
+   {
+    "id": "e000026",
+    "kind": "boat",
+    "glyph": "patrol",
+    "name": "PK-04",
+    "sub": "PICKET · PATROL",
+    "status": "PATROL",
+    "keyValue": {
+     "text": "18",
+     "unit": "KM/H",
+     "value": 5
+    },
+    "state": "active",
+    "selected": false,
+    "following": false
+   },
+   {
+    "id": "e000027",
+    "kind": "boat",
+    "glyph": "holding",
+    "name": "RV-1",
+    "sub": "RECOVERY VESSEL · ON STATION",
+    "status": "ON STATION",
+    "keyValue": {
+     "text": "0",
+     "unit": "KM/H",
+     "value": 0
+    },
+    "state": "ok",
+    "selected": false,
+    "following": false
+   },
+   {
+    "id": "e000028",
+    "kind": "wxStation",
+    "glyph": "idle",
+    "name": "WX-1",
+    "sub": "WEATHER STATION · NOMINAL · WIND",
+    "status": "NOMINAL",
+    "keyValue": {
+     "text": "5.6",
+     "unit": "M/S GND",
+     "value": 5.566176102249333
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false
+   },
+   {
+    "id": "e000029",
+    "kind": "wxStation",
+    "glyph": "idle",
+    "name": "WX-2",
+    "sub": "WEATHER STATION · NOMINAL · WIND",
+    "status": "NOMINAL",
+    "keyValue": {
+     "text": "5.6",
+     "unit": "M/S GND",
+     "value": 5.566176102249333
+    },
+    "state": "neutral",
+    "selected": false,
+    "following": false
+   }
+  ],
+  "events": [
+   {
+    "id": "125",
+    "time": "13:34:20",
+    "tClock": "T−00:00:40",
+    "tick": 682804,
+    "code": "HoldReleased",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "COUNT RESUMED · GO",
+    "acked": false
+   },
+   {
+    "id": "124",
+    "time": "13:34:20",
+    "tClock": "",
+    "tick": 682804,
+    "code": "PollPassed",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "FINAL POLL PASSED · GO ON MARGINAL PROPELLANT",
+    "acked": false
+   },
+   {
+    "id": "123",
+    "time": "13:34:20",
+    "tClock": "",
+    "tick": 682803,
+    "code": "DecisionRequired",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "DECISION · FINAL POLL",
+    "acked": false
+   },
+   {
+    "id": "122",
+    "time": "13:34:20",
+    "tClock": "T−00:00:40",
+    "tick": 682803,
+    "code": "HoldStarted",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "HOLD · POLL · FINAL POLL",
+    "acked": false
+   },
+   {
+    "id": "121",
+    "time": "13:34:20",
+    "tClock": "",
+    "tick": 682803,
+    "code": "PollOpened",
+    "state": "info",
+    "glyph": "pending",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "FINAL POLL OPEN",
+    "acked": false
+   },
+   {
+    "id": "120",
+    "time": "13:32:00",
+    "tClock": "",
+    "tick": 678602,
+    "code": "Milestone",
+    "state": "info",
+    "glyph": "done",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "TERMINAL FORCE 1X",
+    "acked": false
+   },
+   {
+    "id": "119",
+    "time": "13:25:00",
+    "tClock": "T−00:10:00",
+    "tick": 666003,
+    "code": "HoldReleased",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "COUNT RESUMED · GO",
+    "acked": false
+   },
+   {
+    "id": "118",
+    "time": "13:25:00",
+    "tClock": "",
+    "tick": 666003,
+    "code": "PhaseChanged",
+    "state": "info",
+    "glyph": "current",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "TERMINAL COUNT STARTED",
+    "acked": false
+   },
+   {
+    "id": "117",
+    "time": "13:25:00",
+    "tClock": "",
+    "tick": 666003,
+    "code": "PollPassed",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "TERMINAL POLL PASSED · GO ON MARGINAL PROPELLANT",
+    "acked": false
+   },
+   {
+    "id": "116",
+    "time": "13:25:00",
+    "tClock": "",
+    "tick": 666002,
+    "code": "DecisionRequired",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "DECISION · TERMINAL POLL",
+    "acked": false
+   },
+   {
+    "id": "115",
+    "time": "13:25:00",
+    "tClock": "T−00:10:00",
+    "tick": 666002,
+    "code": "HoldStarted",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "HOLD · POLL · TERMINAL POLL",
+    "acked": false
+   },
+   {
+    "id": "114",
+    "time": "13:25:00",
+    "tClock": "",
+    "tick": 666002,
+    "code": "PollOpened",
+    "state": "info",
+    "glyph": "pending",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "TERMINAL POLL OPEN",
+    "acked": false
+   },
+   {
+    "id": "113",
+    "time": "13:05:03",
+    "tClock": "",
+    "tick": 630111,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000011",
+    "entityCode": "B-09",
+    "message": "LOADED",
+    "acked": false
+   },
+   {
+    "id": "112",
+    "time": "13:04:11",
+    "tClock": "",
+    "tick": 628536,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000012",
+    "entityCode": "S-21",
+    "message": "LOADED",
+    "acked": false
+   },
+   {
+    "id": "111",
+    "time": "12:55:00",
+    "tClock": "",
+    "tick": 612001,
+    "code": "RoadClosureChanged",
+    "state": "info",
+    "glyph": "offline",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "ROAD CLOSED · PAD HAZARD AREA",
+    "acked": false
+   },
+   {
+    "id": "110",
+    "time": "12:55:00",
+    "tClock": "",
+    "tick": 612001,
+    "code": "Milestone",
+    "state": "info",
+    "glyph": "done",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "ROAD CLOSURE",
+    "acked": false
+   },
+   {
+    "id": "109",
+    "time": "12:51:50",
+    "tClock": "",
+    "tick": 606303,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "108",
+    "time": "12:49:23",
+    "tClock": "",
+    "tick": 601896,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · UPPER WIND",
+    "acked": false
+   },
+   {
+    "id": "107",
+    "time": "12:47:28",
+    "tClock": "",
+    "tick": 598452,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "106",
+    "time": "12:44:01",
+    "tClock": "",
+    "tick": 592254,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · UPPER WIND",
+    "acked": false
+   },
+   {
+    "id": "105",
+    "time": "12:41:48",
+    "tClock": "",
+    "tick": 588243,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "104",
+    "time": "12:30:41",
+    "tClock": "T−01:04:19",
+    "tick": 568233,
+    "code": "HoldReleased",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "COUNT RESUMED · AUTO",
+    "acked": false
+   },
+   {
+    "id": "103",
+    "time": "12:30:41",
+    "tClock": "",
+    "tick": 568233,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "VEHICLE GO",
+    "acked": false
+   },
+   {
+    "id": "102",
+    "time": "12:30:41",
+    "tClock": "",
+    "tick": 568232,
+    "code": "LeakCleared",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "LEAK CLEARED · FIXED",
+    "acked": false
+   },
+   {
+    "id": "101",
+    "time": "12:29:39",
+    "tClock": "",
+    "tick": 566385,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · UPPER WIND",
+    "acked": false
+   },
+   {
+    "id": "100",
+    "time": "12:10:41",
+    "tClock": "",
+    "tick": 532233,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "VEHICLE MARGINAL · GSE LEAK",
+    "acked": false
+   },
+   {
+    "id": "99",
+    "time": "12:10:41",
+    "tClock": "",
+    "tick": 532232,
+    "code": "LeakResponded",
+    "state": "info",
+    "glyph": "current",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "LEAK RESPONSE · HOLD FIX",
+    "acked": false
+   },
+   {
+    "id": "98",
+    "time": "12:10:41",
+    "tClock": "T−01:04:19",
+    "tick": 532232,
+    "code": "HoldStarted",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "HOLD · LEAK FIX",
+    "acked": false
+   },
+   {
+    "id": "97",
+    "time": "12:10:41",
+    "tClock": "",
+    "tick": 532231,
+    "code": "DecisionRequired",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "DECISION · GSE LEAK RESPONSE",
+    "acked": false
+   },
+   {
+    "id": "96",
+    "time": "12:10:41",
+    "tClock": "",
+    "tick": 532231,
+    "code": "AnomalyFired",
+    "state": "danger",
+    "glyph": "danger",
+    "entityId": "e000001",
+    "entityCode": "OLM-1",
+    "message": "GSE LEAK · DIRECTOR",
+    "acked": false
+   },
+   {
+    "id": "95",
+    "time": "12:00:00",
+    "tClock": "",
+    "tick": 513000,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000012",
+    "entityCode": "S-21",
+    "message": "LOADING",
+    "acked": false
+   },
+   {
+    "id": "94",
+    "time": "12:00:00",
+    "tClock": "",
+    "tick": 513000,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000011",
+    "entityCode": "B-09",
+    "message": "LOADING",
+    "acked": false
+   },
+   {
+    "id": "93",
+    "time": "11:55:00",
+    "tClock": "T−01:20:00",
+    "tick": 504001,
+    "code": "HoldReleased",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "COUNT RESUMED · GO",
+    "acked": false
+   },
+   {
+    "id": "92",
+    "time": "11:55:00",
+    "tClock": "",
+    "tick": 504001,
+    "code": "PhaseChanged",
+    "state": "info",
+    "glyph": "current",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "PROPELLANT LOAD STARTED",
+    "acked": false
+   },
+   {
+    "id": "91",
+    "time": "11:55:00",
+    "tClock": "",
+    "tick": 504001,
+    "code": "PollPassed",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "LOAD POLL PASSED · GO ON MARGINAL PROPELLANT",
+    "acked": false
+   },
+   {
+    "id": "90",
+    "time": "11:55:00",
+    "tClock": "",
+    "tick": 504000,
+    "code": "DecisionRequired",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "DECISION · LOAD POLL",
+    "acked": false
+   },
+   {
+    "id": "89",
+    "time": "11:55:00",
+    "tClock": "T−01:20:00",
+    "tick": 504000,
+    "code": "HoldStarted",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "HOLD · POLL · LOAD POLL",
+    "acked": false
+   },
+   {
+    "id": "88",
+    "time": "11:55:00",
+    "tClock": "",
+    "tick": 504000,
+    "code": "PollOpened",
+    "state": "info",
+    "glyph": "pending",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "LOAD POLL OPEN",
+    "acked": false
+   },
+   {
+    "id": "87",
+    "time": "11:54:36",
+    "tClock": "",
+    "tick": 503302,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000018",
+    "entityCode": "LX-03",
+    "message": "OFFMAP",
+    "acked": false
+   },
+   {
+    "id": "86",
+    "time": "11:54:36",
+    "tClock": "",
+    "tick": 503302,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000017",
+    "entityCode": "LX-02",
+    "message": "OFFMAP",
+    "acked": false
+   },
+   {
+    "id": "85",
+    "time": "11:54:36",
+    "tClock": "",
+    "tick": 503302,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000016",
+    "entityCode": "LX-01",
+    "message": "OFFMAP",
+    "acked": false
+   },
+   {
+    "id": "84",
+    "time": "11:51:29",
+    "tClock": "",
+    "tick": 497673,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000024",
+    "entityCode": "CV-03",
+    "message": "PARKED",
+    "acked": false
+   },
+   {
+    "id": "83",
+    "time": "11:50:59",
+    "tClock": "",
+    "tick": 496773,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000023",
+    "entityCode": "CV-02",
+    "message": "PARKED",
+    "acked": false
+   },
+   {
+    "id": "82",
+    "time": "11:50:29",
+    "tClock": "",
+    "tick": 495873,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000022",
+    "entityCode": "CV-01",
+    "message": "PARKED",
+    "acked": false
+   },
+   {
+    "id": "81",
+    "time": "11:49:50",
+    "tClock": "",
+    "tick": 494724,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000020",
+    "entityCode": "MX-01",
+    "message": "OFFMAP",
+    "acked": false
+   },
+   {
+    "id": "80",
+    "time": "11:48:03",
+    "tClock": "",
+    "tick": 491493,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "79",
+    "time": "11:46:49",
+    "tClock": "",
+    "tick": 489270,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · GROUND WIND",
+    "acked": false
+   },
+   {
+    "id": "78",
+    "time": "11:46:28",
+    "tClock": "",
+    "tick": 488655,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "77",
+    "time": "11:46:15",
+    "tClock": "",
+    "tick": 488256,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · GROUND WIND",
+    "acked": false
+   },
+   {
+    "id": "76",
+    "time": "11:46:08",
+    "tClock": "",
+    "tick": 488040,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "75",
+    "time": "11:46:00",
+    "tClock": "",
+    "tick": 487800,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000024",
+    "entityCode": "CV-03",
+    "message": "TO SAFE",
+    "acked": false
+   },
+   {
+    "id": "74",
+    "time": "11:45:30",
+    "tClock": "",
+    "tick": 486900,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000023",
+    "entityCode": "CV-02",
+    "message": "TO SAFE",
+    "acked": false
+   },
+   {
+    "id": "73",
+    "time": "11:45:00",
+    "tClock": "",
+    "tick": 486000,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000022",
+    "entityCode": "CV-01",
+    "message": "TO SAFE",
+    "acked": false
+   },
+   {
+    "id": "72",
+    "time": "11:44:45",
+    "tClock": "",
+    "tick": 485571,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · GROUND WIND",
+    "acked": false
+   },
+   {
+    "id": "71",
+    "time": "11:43:00",
+    "tClock": "",
+    "tick": 482410,
+    "code": "DeliveryCompleted",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": "e000018",
+    "entityCode": "LX-03",
+    "message": "DELIVERED 20 T LOX",
+    "acked": false
+   },
+   {
+    "id": "70",
+    "time": "11:43:00",
+    "tClock": "",
+    "tick": 482410,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000018",
+    "entityCode": "LX-03",
+    "message": "OUTBOUND",
+    "acked": false
+   },
+   {
+    "id": "69",
+    "time": "11:43:00",
+    "tClock": "",
+    "tick": 482410,
+    "code": "DeliveryCompleted",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": "e000017",
+    "entityCode": "LX-02",
+    "message": "DELIVERED 20 T LOX",
+    "acked": false
+   },
+   {
+    "id": "68",
+    "time": "11:43:00",
+    "tClock": "",
+    "tick": 482410,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000017",
+    "entityCode": "LX-02",
+    "message": "OUTBOUND",
+    "acked": false
+   },
+   {
+    "id": "67",
+    "time": "11:43:00",
+    "tClock": "",
+    "tick": 482410,
+    "code": "DeliveryCompleted",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": "e000016",
+    "entityCode": "LX-01",
+    "message": "DELIVERED 20 T LOX",
+    "acked": false
+   },
+   {
+    "id": "66",
+    "time": "11:43:00",
+    "tClock": "",
+    "tick": 482410,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000016",
+    "entityCode": "LX-01",
+    "message": "OUTBOUND",
+    "acked": false
+   },
+   {
+    "id": "65",
+    "time": "11:38:24",
+    "tClock": "",
+    "tick": 474121,
+    "code": "DeliveryCompleted",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": "e000020",
+    "entityCode": "MX-01",
+    "message": "DELIVERED 16 T CH4",
+    "acked": false
+   },
+   {
+    "id": "64",
+    "time": "11:38:24",
+    "tClock": "",
+    "tick": 474121,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000020",
+    "entityCode": "MX-01",
+    "message": "OUTBOUND",
+    "acked": false
+   },
+   {
+    "id": "63",
+    "time": "11:20:47",
+    "tClock": "",
+    "tick": 442410,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000018",
+    "entityCode": "LX-03",
+    "message": "OFFLOADING",
+    "acked": false
+   },
+   {
+    "id": "62",
+    "time": "11:20:47",
+    "tClock": "",
+    "tick": 442410,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000017",
+    "entityCode": "LX-02",
+    "message": "OFFLOADING",
+    "acked": false
+   },
+   {
+    "id": "61",
+    "time": "11:20:47",
+    "tClock": "",
+    "tick": 442410,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000016",
+    "entityCode": "LX-01",
+    "message": "OFFLOADING",
+    "acked": false
+   },
+   {
+    "id": "60",
+    "time": "11:20:37",
+    "tClock": "",
+    "tick": 442121,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000020",
+    "entityCode": "MX-01",
+    "message": "OFFLOADING",
+    "acked": false
+   },
+   {
+    "id": "59",
+    "time": "11:09:10",
+    "tClock": "",
+    "tick": 421518,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000020",
+    "entityCode": "MX-01",
+    "message": "INBOUND",
+    "acked": false
+   },
+   {
+    "id": "58",
+    "time": "11:09:10",
+    "tClock": "",
+    "tick": 421518,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000018",
+    "entityCode": "LX-03",
+    "message": "INBOUND",
+    "acked": false
+   },
+   {
+    "id": "57",
+    "time": "11:09:10",
+    "tClock": "",
+    "tick": 421518,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000017",
+    "entityCode": "LX-02",
+    "message": "INBOUND",
+    "acked": false
+   },
+   {
+    "id": "56",
+    "time": "11:09:10",
+    "tClock": "",
+    "tick": 421518,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000016",
+    "entityCode": "LX-01",
+    "message": "INBOUND",
+    "acked": false
+   },
+   {
+    "id": "55",
+    "time": "11:04:13",
+    "tClock": "",
+    "tick": 412608,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "54",
+    "time": "11:00:21",
+    "tClock": "",
+    "tick": 405633,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · GROUND WIND",
+    "acked": false
+   },
+   {
+    "id": "53",
+    "time": "10:59:53",
+    "tClock": "",
+    "tick": 404817,
+    "code": "StationChanged",
+    "state": "danger",
+    "glyph": "danger",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER NO-GO · GROUND WIND",
+    "acked": false
+   },
+   {
+    "id": "52",
+    "time": "10:59:37",
+    "tClock": "",
+    "tick": 404337,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · GROUND WIND",
+    "acked": false
+   },
+   {
+    "id": "51",
+    "time": "10:59:27",
+    "tClock": "",
+    "tick": 404019,
+    "code": "StationChanged",
+    "state": "danger",
+    "glyph": "danger",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER NO-GO · GROUND WIND",
+    "acked": false
+   },
+   {
+    "id": "50",
+    "time": "10:59:11",
+    "tClock": "",
+    "tick": 403539,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · GROUND WIND",
+    "acked": false
+   },
+   {
+    "id": "49",
+    "time": "10:58:34",
+    "tClock": "",
+    "tick": 402423,
+    "code": "StationChanged",
+    "state": "danger",
+    "glyph": "danger",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER NO-GO · GROUND WIND",
+    "acked": false
+   },
+   {
+    "id": "48",
+    "time": "10:52:09",
+    "tClock": "",
+    "tick": 390870,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · GROUND WIND",
+    "acked": false
+   },
+   {
+    "id": "47",
+    "time": "10:46:29",
+    "tClock": "",
+    "tick": 380671,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000012",
+    "entityCode": "S-21",
+    "message": "STACKED",
+    "acked": false
+   },
+   {
+    "id": "46",
+    "time": "10:46:29",
+    "tClock": "",
+    "tick": 380671,
+    "code": "ArmsChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000002",
+    "entityCode": "TOWER-1",
+    "message": "CATCH ARMS OPEN",
+    "acked": false
+   },
+   {
+    "id": "45",
+    "time": "10:46:29",
+    "tClock": "",
+    "tick": 380671,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000002",
+    "entityCode": "TOWER-1",
+    "message": "IDLE",
+    "acked": false
+   },
+   {
+    "id": "44",
+    "time": "10:46:07",
+    "tClock": "",
+    "tick": 380025,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "43",
+    "time": "10:45:26",
+    "tClock": "",
+    "tick": 378795,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · UPPER WIND",
+    "acked": false
+   },
+   {
+    "id": "42",
+    "time": "10:19:43",
+    "tClock": "",
+    "tick": 332508,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "41",
+    "time": "10:19:20",
+    "tClock": "",
+    "tick": 331800,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · UPPER WIND",
+    "acked": false
+   },
+   {
+    "id": "40",
+    "time": "10:12:25",
+    "tClock": "",
+    "tick": 319359,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "39",
+    "time": "10:07:18",
+    "tClock": "",
+    "tick": 310146,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · UPPER WIND",
+    "acked": false
+   },
+   {
+    "id": "38",
+    "time": "10:00:00",
+    "tClock": "",
+    "tick": 297001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000013",
+    "entityCode": "SP-41",
+    "message": "IDLE",
+    "acked": false
+   },
+   {
+    "id": "37",
+    "time": "09:57:15",
+    "tClock": "",
+    "tick": 292077,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000002",
+    "entityCode": "TOWER-1",
+    "message": "STACKING",
+    "acked": false
+   },
+   {
+    "id": "36",
+    "time": "09:55:46",
+    "tClock": "",
+    "tick": 289407,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000002",
+    "entityCode": "TOWER-1",
+    "message": "WIND HOLD",
+    "acked": false
+   },
+   {
+    "id": "35",
+    "time": "09:45:00",
+    "tClock": "",
+    "tick": 270001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000013",
+    "entityCode": "SP-41",
+    "message": "RETURNING",
+    "acked": false
+   },
+   {
+    "id": "34",
+    "time": "09:45:00",
+    "tClock": "",
+    "tick": 270001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000012",
+    "entityCode": "S-21",
+    "message": "STACKING",
+    "acked": false
+   },
+   {
+    "id": "33",
+    "time": "09:45:00",
+    "tClock": "",
+    "tick": 270001,
+    "code": "ArmsChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000002",
+    "entityCode": "TOWER-1",
+    "message": "CATCH ARMS CLOSED",
+    "acked": false
+   },
+   {
+    "id": "32",
+    "time": "09:45:00",
+    "tClock": "",
+    "tick": 270001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000002",
+    "entityCode": "TOWER-1",
+    "message": "STACKING",
+    "acked": false
+   },
+   {
+    "id": "31",
+    "time": "09:45:00",
+    "tClock": "",
+    "tick": 270001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000011",
+    "entityCode": "B-09",
+    "message": "STACKED",
+    "acked": false
+   },
+   {
+    "id": "30",
+    "time": "09:45:00",
+    "tClock": "",
+    "tick": 270001,
+    "code": "ArmsChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000002",
+    "entityCode": "TOWER-1",
+    "message": "CATCH ARMS OPEN",
+    "acked": false
+   },
+   {
+    "id": "29",
+    "time": "09:45:00",
+    "tClock": "",
+    "tick": 270001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000002",
+    "entityCode": "TOWER-1",
+    "message": "IDLE",
+    "acked": false
+   },
+   {
+    "id": "28",
+    "time": "09:43:52",
+    "tClock": "",
+    "tick": 267981,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "27",
+    "time": "09:43:22",
+    "tClock": "",
+    "tick": 267078,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · UPPER WIND",
+    "acked": false
+   },
+   {
+    "id": "26",
+    "time": "09:41:04",
+    "tClock": "",
+    "tick": 262941,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "25",
+    "time": "09:40:26",
+    "tClock": "",
+    "tick": 261780,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER MARGINAL · UPPER WIND",
+    "acked": false
+   },
+   {
+    "id": "24",
+    "time": "09:30:00",
+    "tClock": "",
+    "tick": 243001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000013",
+    "entityCode": "SP-41",
+    "message": "AT PAD",
+    "acked": false
+   },
+   {
+    "id": "23",
+    "time": "09:00:00",
+    "tClock": "",
+    "tick": 189001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000013",
+    "entityCode": "SP-41",
+    "message": "MOVING",
+    "acked": false
+   },
+   {
+    "id": "22",
+    "time": "09:00:00",
+    "tClock": "",
+    "tick": 189001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000012",
+    "entityCode": "S-21",
+    "message": "ON TRANSPORTER",
+    "acked": false
+   },
+   {
+    "id": "21",
+    "time": "09:00:00",
+    "tClock": "",
+    "tick": 189001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000015",
+    "entityCode": "CR-77",
+    "message": "IDLE",
+    "acked": false
+   },
+   {
+    "id": "20",
+    "time": "08:30:00",
+    "tClock": "",
+    "tick": 135001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000013",
+    "entityCode": "SP-41",
+    "message": "LOADING",
+    "acked": false
+   },
+   {
+    "id": "19",
+    "time": "08:30:00",
+    "tClock": "",
+    "tick": 135001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000015",
+    "entityCode": "CR-77",
+    "message": "LIFTING",
+    "acked": false
+   },
+   {
+    "id": "18",
+    "time": "08:30:00",
+    "tClock": "",
+    "tick": 135001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000013",
+    "entityCode": "SP-41",
+    "message": "IDLE",
+    "acked": false
+   },
+   {
+    "id": "17",
+    "time": "08:15:00",
+    "tClock": "",
+    "tick": 108001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000013",
+    "entityCode": "SP-41",
+    "message": "RETURNING",
+    "acked": false
+   },
+   {
+    "id": "16",
+    "time": "08:15:00",
+    "tClock": "",
+    "tick": 108001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000011",
+    "entityCode": "B-09",
+    "message": "STACKING",
+    "acked": false
+   },
+   {
+    "id": "15",
+    "time": "08:15:00",
+    "tClock": "",
+    "tick": 108001,
+    "code": "ArmsChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000002",
+    "entityCode": "TOWER-1",
+    "message": "CATCH ARMS CLOSED",
+    "acked": false
+   },
+   {
+    "id": "14",
+    "time": "08:15:00",
+    "tClock": "",
+    "tick": 108001,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000002",
+    "entityCode": "TOWER-1",
+    "message": "STACKING",
+    "acked": false
+   },
+   {
+    "id": "13",
+    "time": "08:15:00",
+    "tClock": "",
+    "tick": 108001,
+    "code": "PhaseChanged",
+    "state": "info",
+    "glyph": "current",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "STACK STARTED",
+    "acked": false
+   },
+   {
+    "id": "12",
+    "time": "08:15:00",
+    "tClock": "",
+    "tick": 108000,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000013",
+    "entityCode": "SP-41",
+    "message": "AT PAD",
+    "acked": false
+   },
+   {
+    "id": "11",
+    "time": "07:45:00",
+    "tClock": "",
+    "tick": 54000,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000013",
+    "entityCode": "SP-41",
+    "message": "MOVING",
+    "acked": false
+   },
+   {
+    "id": "10",
+    "time": "07:45:00",
+    "tClock": "",
+    "tick": 54000,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000011",
+    "entityCode": "B-09",
+    "message": "ON TRANSPORTER",
+    "acked": false
+   },
+   {
+    "id": "9",
+    "time": "07:45:00",
+    "tClock": "",
+    "tick": 54000,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000015",
+    "entityCode": "CR-77",
+    "message": "IDLE",
+    "acked": false
+   },
+   {
+    "id": "8",
+    "time": "07:15:00",
+    "tClock": "",
+    "tick": 0,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000013",
+    "entityCode": "SP-41",
+    "message": "LOADING",
+    "acked": false
+   },
+   {
+    "id": "7",
+    "time": "07:15:00",
+    "tClock": "",
+    "tick": 0,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000015",
+    "entityCode": "CR-77",
+    "message": "LIFTING",
+    "acked": false
+   },
+   {
+    "id": "6",
+    "time": "07:15:00",
+    "tClock": "",
+    "tick": 0,
+    "code": "StationChanged",
+    "state": "warn",
+    "glyph": "warn",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "PROPELLANT MARGINAL · FARM RESERVE LOX",
+    "acked": false
+   },
+   {
+    "id": "5",
+    "time": "07:15:00",
+    "tClock": "",
+    "tick": 0,
+    "code": "DeliveryOrdered",
+    "state": "info",
+    "glyph": "pending",
+    "entityId": "e000020",
+    "entityCode": "MX-01",
+    "message": "ORDER DO-004 · CH4 STANDARD · FEE 0.01 M CR",
+    "acked": false
+   },
+   {
+    "id": "4",
+    "time": "07:15:00",
+    "tClock": "",
+    "tick": 0,
+    "code": "DeliveryOrdered",
+    "state": "info",
+    "glyph": "pending",
+    "entityId": "e000018",
+    "entityCode": "LX-03",
+    "message": "ORDER DO-003 · LOX STANDARD · FEE 0.01 M CR",
+    "acked": false
+   },
+   {
+    "id": "3",
+    "time": "07:15:00",
+    "tClock": "",
+    "tick": 0,
+    "code": "DeliveryOrdered",
+    "state": "info",
+    "glyph": "pending",
+    "entityId": "e000017",
+    "entityCode": "LX-02",
+    "message": "ORDER DO-002 · LOX STANDARD · FEE 0.01 M CR",
+    "acked": false
+   },
+   {
+    "id": "2",
+    "time": "07:15:00",
+    "tClock": "",
+    "tick": 0,
+    "code": "DeliveryOrdered",
+    "state": "info",
+    "glyph": "pending",
+    "entityId": "e000016",
+    "entityCode": "LX-01",
+    "message": "ORDER DO-001 · LOX STANDARD · FEE 0.01 M CR",
+    "acked": false
+   },
+   {
+    "id": "1",
+    "time": "07:15:00",
+    "tClock": "",
+    "tick": 0,
+    "code": "PhaseChanged",
+    "state": "info",
+    "glyph": "current",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "ROLLOUT STARTED",
+    "acked": false
+   }
+  ],
+  "badges": {
+   "vehicles": {
+    "warn": 0,
+    "danger": 0
+   },
+   "tanks": {
+    "warn": 0,
+    "danger": 0
+   },
+   "tasks": {
+    "warn": 0,
+    "danger": 0
+   },
+   "range": {
+    "warn": 1,
+    "danger": 0
+   },
+   "events": {
+    "warn": 8,
+    "danger": 0
+   }
+  }
+ },
+ "labels": [
+  {
+   "id": "e000001",
+   "callSign": "OLM-1",
+   "kind": "pad",
+   "glyph": "stacked",
+   "state": "ok",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000002",
+   "callSign": "TOWER-1",
+   "kind": "tower",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000003",
+   "callSign": "LOX-1",
+   "kind": "tank",
+   "glyph": "warn",
+   "state": "warn",
+   "selected": false,
+   "following": false,
+   "priority": 4
+  },
+  {
+   "id": "e000004",
+   "callSign": "LOX-2",
+   "kind": "tank",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 0
+  },
+  {
+   "id": "e000005",
+   "callSign": "LOX-3",
+   "kind": "tank",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 0
+  },
+  {
+   "id": "e000006",
+   "callSign": "CH4-1",
+   "kind": "tank",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 0
+  },
+  {
+   "id": "e000007",
+   "callSign": "CH4-2",
+   "kind": "tank",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 0
+  },
+  {
+   "id": "e000008",
+   "callSign": "LN2-1",
+   "kind": "tank",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 0
+  },
+  {
+   "id": "e000009",
+   "callSign": "HB-1",
+   "kind": "building",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000010",
+   "callSign": "TH-1",
+   "kind": "building",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000011",
+   "callSign": "B-09",
+   "kind": "booster",
+   "glyph": "stacked",
+   "state": "ok",
+   "selected": true,
+   "following": true,
+   "priority": 5
+  },
+  {
+   "id": "e000012",
+   "callSign": "S-21",
+   "kind": "ship",
+   "glyph": "stacked",
+   "state": "ok",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000013",
+   "callSign": "SP-41",
+   "kind": "transporter",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000014",
+   "callSign": "SP-42",
+   "kind": "transporter",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000015",
+   "callSign": "CR-77",
+   "kind": "crane",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000022",
+   "callSign": "CV-01",
+   "kind": "van",
+   "glyph": "parked",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 0
+  },
+  {
+   "id": "e000023",
+   "callSign": "CV-02",
+   "kind": "van",
+   "glyph": "parked",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 0
+  },
+  {
+   "id": "e000024",
+   "callSign": "CV-03",
+   "kind": "van",
+   "glyph": "parked",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 0
+  },
+  {
+   "id": "e000025",
+   "callSign": "PK-03",
+   "kind": "boat",
+   "glyph": "patrol",
+   "state": "active",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000026",
+   "callSign": "PK-04",
+   "kind": "boat",
+   "glyph": "patrol",
+   "state": "active",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000027",
+   "callSign": "RV-1",
+   "kind": "boat",
+   "glyph": "holding",
+   "state": "ok",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000028",
+   "callSign": "WX-1",
+   "kind": "wxStation",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  },
+  {
+   "id": "e000029",
+   "callSign": "WX-2",
+   "kind": "wxStation",
+   "glyph": "idle",
+   "state": "neutral",
+   "selected": false,
+   "following": false,
+   "priority": 1
+  }
+ ],
+ "sites": [
+  {
+   "id": "LC-1",
+   "code": "LC-1",
+   "name": "BRACKWATER",
+   "kind": "ORBITAL PAD",
+   "status": "ACTIVE",
+   "state": "ok",
+   "glyph": "ok",
+   "interactive": true,
+   "current": true,
+   "alertCount": 1
+  },
+  {
+   "id": "LC-2",
+   "code": "LC-2",
+   "name": "COBBLE REACH",
+   "kind": "ORBITAL PAD",
+   "status": "UNDER CONSTRUCTION",
+   "state": "disabled",
+   "glyph": "build",
+   "interactive": false,
+   "current": false,
+   "alertCount": 0
+  },
+  {
+   "id": "TS-1",
+   "code": "TS-1",
+   "name": "FLINT HOLLOW",
+   "kind": "SUBORBITAL TEST STAND",
+   "status": "OPERATIONAL",
+   "state": "disabled",
+   "glyph": "offline",
+   "interactive": false,
+   "current": false,
+   "alertCount": 0
+  },
+  {
+   "id": "BY-1",
+   "code": "BY-1",
+   "name": "KILNMOOR WORKS",
+   "kind": "BUILD YARD",
+   "status": "OPERATIONAL",
+   "state": "disabled",
+   "glyph": "offline",
+   "interactive": false,
+   "current": false,
+   "alertCount": 0
+  }
+ ],
+ "debrief": null,
+ "view": {
+  "siteId": "LC-1",
+  "selectedId": "e000011",
+  "followId": "e000011",
+  "selected": "B-09",
+  "follow": "B-09",
+  "tab": "vehicles"
+ }
+}

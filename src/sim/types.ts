@@ -43,7 +43,7 @@ export type {
   DebriefOutcome,
   Debrief,
 } from './core/world';
-export type { SimEvent, SimEventInput, SimEventType } from './core/events';
+export type { LeakRespondedBy, SimEvent, SimEventInput, SimEventType } from './core/events';
 export type { Command, CommandType, CommandOf, StampedCommand } from './core/commands';
 export type { RngState, RngStream } from './core/rng';
 

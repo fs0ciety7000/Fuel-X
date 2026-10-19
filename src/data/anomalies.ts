@@ -24,6 +24,11 @@ export const anomalies = {
     probabilityPerLoad: 0.1,
     fixDurationS: 1_200,
     /**
+     * 6.8 (GDD §13.2.1 D3b): the leak decision's deadline is min(onset + this, window close), s; with no answer by
+     * then the sim commits CONTINUE DEGRADED (`by: 'AUTO'`).
+     */
+    decisionTimeoutS: 300,
+    /**
      * Sim addition 3.7 (review): the leak starts when the booster LOX line reaches a uniform fraction of
      * its capacity in this band (so it always hits an active load).
      */
