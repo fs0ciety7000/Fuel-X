@@ -97,7 +97,7 @@ export function Scene({ snapshot, controls, input, onApi, className }: SceneProp
       flat
       shadows="percentage"
       dpr={[DPR_RANGE[0], DPR_RANGE[1]]}
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
+      gl={{ antialias: false, powerPreference: 'high-performance' }}
       camera={{ fov: CAMERA_FOV_DEG, near: 1, far: 60_000, position: [800, 600, 900] }}
       onCreated={onCreated}
     >
@@ -113,7 +113,7 @@ export function Scene({ snapshot, controls, input, onApi, className }: SceneProp
       <CameraSystem controls={controls} registry={core.registry} shared={core.shared} />
       <EnvironmentSystem shared={core.shared} />
       <AdaptiveDpr input={input} />
-      <GroundSystem shared={core.shared} siteId={controls.siteId} />
+      <GroundSystem shared={core.shared} controls={controls} />
       <RenderPass shared={core.shared} />
       <group ref={world} name="WORLD">
         <Suspense fallback={null}>

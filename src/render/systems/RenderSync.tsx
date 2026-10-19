@@ -10,9 +10,9 @@ import type { RenderControls } from '../controls';
 import type { FrameInput, FrameShared } from '../frame';
 import type { IndexFeed } from '../index-feed';
 import type { EntityRegistry } from '../registry';
-import { SLOT_STRIDE, SlotFlag } from '../snapshot';
+import { ANIM_STRIDE, ANIM_WRAP, SLOT_STRIDE, SlotFlag, isAnimatedAsset } from '../snapshot';
 import type { RenderSnapshot } from '../snapshot';
-import { createPose, samplePose } from './interpolate';
+import { createPose, sampleAnim, samplePose } from './interpolate';
 
 export const RENDER_SYNC_PRIORITY = -30;
 /** Radius around the camera target inside which motion refreshes the shadow map, m. */
@@ -73,11 +73,17 @@ export class RenderSyncSystem {
             : 0;
       o.position.set(pose.x, pose.y + lift, pose.z);
       o.quaternion.set(pose.qx, pose.qy, pose.qz, pose.qw);
+      const animated = isAnimatedAsset(h.asset);
+      if (animated) sampleAnim(snapshot, h.slot, input.alpha, ANIM_WRAP[h.asset] ?? 0, h.anim);
       if (ticked && !movedNear) {
         const i = h.slot * SLOT_STRIDE;
         const p = snapshot.prev;
         const c = snapshot.curr;
-        const moved = p[i] !== c[i] || p[i + 1] !== c[i + 1] || p[i + 2] !== c[i + 2] || p[i + 6] !== c[i + 6];
+        let moved = p[i] !== c[i] || p[i + 1] !== c[i + 1] || p[i + 2] !== c[i + 2] || p[i + 6] !== c[i + 6];
+        if (!moved && animated) {
+          const a = h.slot * ANIM_STRIDE;
+          for (let k = 0; k < ANIM_STRIDE && !moved; k++) moved = snapshot.animPrev[a + k] !== snapshot.animCurr[a + k];
+        }
         const dx = pose.x - t.x;
         const dz = pose.z - t.z;
         if (moved && dx * dx + dz * dz < r2) movedNear = true;

@@ -39,6 +39,16 @@ const SHADOW_CASTERS: ReadonlySet<AssetName> = new Set<AssetName>([
   'vessel_recovery',
 ]);
 
+export function castsShadow(name: AssetName): boolean {
+  return SHADOW_CASTERS.has(name);
+}
+
+/** Every GLB of an asset, LOD0 first (`url`, then the wrapper `lods`). */
+export function assetUrls(name: AssetName): string[] {
+  const a = ASSETS[name];
+  return [a.url, ...a.lods].map((u) => assetUrl(u));
+}
+
 export interface AssetInfo {
   name: AssetName;
   /** Rest-pose position of each socket in asset space (Y-up), by socket node name. */
@@ -75,11 +85,18 @@ export function useAsset(name: AssetName): { gltf: GLTF; info: AssetInfo } {
   return { gltf, info: prepare(name, gltf) };
 }
 
-/** Suspends until every listed GLB is loaded (LOD0; LOD switching arrives in 5.4). */
+/** All LOD files of an asset (LOD0 first), prepared; `info` (sockets) comes from LOD0. */
+export function useAssetLods(name: AssetName): { gltfs: GLTF[]; info: AssetInfo } {
+  const gltfs = useLoader(GLTFLoader, assetUrls(name), extendLoader);
+  const infos = gltfs.map((g) => prepare(name, g));
+  return { gltfs, info: infos[0] as AssetInfo };
+}
+
+/** Suspends until every listed GLB is loaded, LODs included (all 16 assets ≈ 740 KB). */
 export function useAssets(names: readonly AssetName[]): void {
   useLoader(
     GLTFLoader,
-    names.map((n) => assetUrl(ASSETS[n].url)),
+    names.flatMap((n) => assetUrls(n)),
     extendLoader,
   );
 }

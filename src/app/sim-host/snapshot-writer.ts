@@ -5,9 +5,8 @@
 import type { Entity, Id, World } from '@sim/types';
 import { ANIM_STRIDE, SLOT_STRIDE, SlotFlag } from '@render/snapshot';
 import type { RenderSnapshot, SnapshotSlot } from '@render/snapshot';
-
-/** A move longer than this in one tick is a teleport (fastest sim body ≈ 1.6 km/s ≈ 53 m/tick). */
-const TELEPORT_M = 250;
+import { AnimWriter, TELEPORT_M } from './anim-writer';
+import type { PoseOut } from './anim-writer';
 
 const MOUNT_STATES: ReadonlySet<string> = new Set([
   'STACKING',
@@ -45,6 +44,8 @@ export class SnapshotWriter {
   private serial = -1;
   private count = -1;
   private forceSnap = true;
+  private readonly anim = new AnimWriter();
+  private readonly pose: PoseOut = { x: 0, y: 0, z: 0, q: { x: 0, y: 0, z: 0, w: 1 } };
 
   constructor(readonly snap: RenderSnapshot) {}
 
@@ -53,6 +54,18 @@ export class SnapshotWriter {
     this.serial = -1;
     this.count = -1;
     this.forceSnap = true;
+    this.anim.reset();
+  }
+
+  /** Teleport / attach / respawn: prev = curr, never interpolated across. */
+  private baseSnap(e: Entity, flags: number): boolean {
+    const prevFlags = this.snap.prev[e.slot * SLOT_STRIDE + 7] ?? 0;
+    return (
+      this.forceSnap ||
+      this.occupant[e.slot] !== e.id ||
+      (prevFlags & SlotFlag.ALIVE) === 0 ||
+      (prevFlags & ATTACH_MASK) !== (flags & ATTACH_MASK)
+    );
   }
 
   write(world: World): void {
@@ -66,9 +79,16 @@ export class SnapshotWriter {
 
     if (table.nextSerial !== this.serial || table.order.length !== this.count) this.rebuildIndex(world);
 
+    // Pass 1: derived motion (movers, crane rig) for every entity before any pose is written.
+    for (const id of table.order) {
+      const e = table.byId[id];
+      if (e) this.anim.update(world, e, this.baseSnap(e, entityFlags(e)));
+    }
+
     let used = 0;
     const c = s.curr;
     const p = s.prev;
+    const pose = this.pose;
     for (const id of table.order) {
       const e = table.byId[id];
       if (!e) continue;
@@ -76,26 +96,36 @@ export class SnapshotWriter {
       if (o + SLOT_STRIDE > c.length) throw new Error(`RenderSnapshot capacity exceeded (slot ${e.slot})`);
       used = Math.max(used, e.slot + 1);
       const flags = entityFlags(e);
-      const prevFlags = p[o + 7] ?? 0;
-      c[o] = e.pos.x;
-      c[o + 1] = e.pos.y;
-      c[o + 2] = e.pos.z;
-      c[o + 3] = e.rot.x;
-      c[o + 4] = e.rot.y;
-      c[o + 5] = e.rot.z;
-      c[o + 6] = e.rot.w;
+      const base = this.baseSnap(e, flags);
+      pose.x = e.pos.x;
+      pose.y = e.pos.y;
+      pose.z = e.pos.z;
+      pose.q = e.rot;
+      this.anim.write(
+        world,
+        e,
+        pose,
+        s.animCurr,
+        e.slot * ANIM_STRIDE,
+        (flags & SlotFlag.ON_MOUNT) !== 0,
+        (flags & SlotFlag.ON_CARGO) !== 0,
+      );
+      c[o] = pose.x;
+      c[o + 1] = pose.y;
+      c[o + 2] = pose.z;
+      c[o + 3] = pose.q.x;
+      c[o + 4] = pose.q.y;
+      c[o + 5] = pose.q.z;
+      c[o + 6] = pose.q.w;
       const jump =
-        Math.abs(e.pos.x - (p[o] ?? 0)) + Math.abs(e.pos.y - (p[o + 1] ?? 0)) + Math.abs(e.pos.z - (p[o + 2] ?? 0)) >
+        Math.abs(pose.x - (p[o] ?? 0)) + Math.abs(pose.y - (p[o + 1] ?? 0)) + Math.abs(pose.z - (p[o + 2] ?? 0)) >
         TELEPORT_M;
-      const snap =
-        this.forceSnap ||
-        this.occupant[e.slot] !== id ||
-        (prevFlags & SlotFlag.ALIVE) === 0 ||
-        (prevFlags & ATTACH_MASK) !== (flags & ATTACH_MASK) ||
-        jump;
+      const snap = base || jump;
       c[o + 7] = SlotFlag.ALIVE | flags | (snap ? SlotFlag.SNAP : 0);
       if (snap) {
         for (let k = 0; k < 7; k++) p[o + k] = c[o + k] ?? 0;
+        const a = e.slot * ANIM_STRIDE;
+        for (let k = 0; k < ANIM_STRIDE; k++) s.animPrev[a + k] = s.animCurr[a + k] ?? 0;
         this.occupant[e.slot] = id;
       }
     }

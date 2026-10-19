@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SLOT_STRIDE, SlotFlag, createRenderSnapshot } from '../snapshot';
-import { createPose, samplePose } from './interpolate';
+import { ANIM_STRIDE, SLOT_STRIDE, SlotFlag, createRenderSnapshot } from '../snapshot';
+import { createPose, sampleAnim, samplePose } from './interpolate';
 
 function put(arr: Float64Array, slot: number, v: readonly number[]): void {
   arr.set(v, slot * SLOT_STRIDE);
@@ -37,5 +37,27 @@ describe('samplePose', () => {
     s.curr[7] = SlotFlag.ALIVE;
     expect(samplePose(s, 0, 2, createPose()).x).toBe(100);
     expect(samplePose(s, 0, -1, createPose()).x).toBe(0);
+  });
+});
+
+describe('sampleAnim', () => {
+  it('lerps plain channels and takes the shortest arc on wrapped ones', () => {
+    const s = createRenderSnapshot(4);
+    s.curr[2 * SLOT_STRIDE + 7] = SlotFlag.ALIVE;
+    s.animPrev.set([0, 6.2, 1], 2 * ANIM_STRIDE);
+    s.animCurr.set([10, 0.1, 3], 2 * ANIM_STRIDE);
+    const out = sampleAnim(s, 2, 0.5, 0b10, new Float32Array(ANIM_STRIDE));
+    expect(out[0]).toBeCloseTo(5, 6);
+    // 6.2 → 0.1 (+0.183 rad across 2π): halfway ≈ 6.2 + 0.0916
+    expect(out[1]).toBeCloseTo(6.2 + (0.1 + Math.PI * 2 - 6.2) / 2, 5);
+    expect(out[2]).toBeCloseTo(2, 6);
+  });
+
+  it('uses curr only on a SNAP slot', () => {
+    const s = createRenderSnapshot(4);
+    s.curr[SLOT_STRIDE + 7] = SlotFlag.ALIVE | SlotFlag.SNAP;
+    s.animPrev.set([0], ANIM_STRIDE);
+    s.animCurr.set([4], ANIM_STRIDE);
+    expect(sampleAnim(s, 1, 0.25, 0, new Float32Array(ANIM_STRIDE))[0]).toBe(4);
   });
 });

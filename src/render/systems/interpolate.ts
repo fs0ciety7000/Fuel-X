@@ -1,6 +1,6 @@
 // Pure interpolation helpers for RenderSync (ARCHITECTURE §3): lerp positions, nlerp quaternions (shortest arc)
 // between the last two sim ticks. No three.js here so the maths is unit-tested in Node.
-import { SLOT_STRIDE, SlotFlag } from '../snapshot';
+import { ANIM_STRIDE, SLOT_STRIDE, SlotFlag } from '../snapshot';
 import type { RenderSnapshot } from '../snapshot';
 
 export interface Pose {
@@ -57,5 +57,28 @@ export function samplePose(snap: RenderSnapshot, slot: number, alpha: number, ou
   out.qz = qz;
   out.qw = qw;
   out.flags = flags;
+  return out;
+}
+
+const TAU = Math.PI * 2;
+
+/**
+ * Interpolated animation channels of `slot` into `out` (length ≥ ANIM_STRIDE). Bits of `wrapMask` mark channels
+ * that are angles on a circle: those take the shortest arc (a spin from 6.2 to 0.1 rad moves +0.18, not −6.1).
+ * A SNAP slot uses `curr` only, like the pose.
+ */
+export function sampleAnim(snap: RenderSnapshot, slot: number, alpha: number, wrapMask: number, out: Float32Array) {
+  const o = slot * ANIM_STRIDE;
+  const p = snap.animPrev;
+  const c = snap.animCurr;
+  const flags = snap.curr[slot * SLOT_STRIDE + 7] ?? 0;
+  const a = (flags & SlotFlag.SNAP) !== 0 ? 1 : Math.min(1, Math.max(0, alpha));
+  for (let k = 0; k < ANIM_STRIDE; k++) {
+    const pv = p[o + k] ?? 0;
+    const cv = c[o + k] ?? 0;
+    let d = cv - pv;
+    if ((wrapMask & (1 << k)) !== 0) d -= TAU * Math.round(d / TAU);
+    out[k] = pv + d * a;
+  }
   return out;
 }
