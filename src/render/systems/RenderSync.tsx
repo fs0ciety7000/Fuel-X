@@ -5,7 +5,6 @@ import { useFrame } from '@react-three/fiber';
 import { useState } from 'react';
 import type { RefObject } from 'react';
 import type { Group } from 'three';
-import { PAD, TRANSPORTER } from '../assets/generated';
 import type { RenderControls } from '../controls';
 import type { FrameInput, FrameShared } from '../frame';
 import type { IndexFeed } from '../index-feed';
@@ -30,8 +29,6 @@ export interface RenderSyncDeps {
 
 export class RenderSyncSystem {
   private readonly pose = createPose();
-  private mountLift = -1;
-  private cargoLift = -1;
   private seenTick = -1;
   private seenRegistry = -1;
 
@@ -40,13 +37,6 @@ export class RenderSyncSystem {
   frame(): void {
     const { snapshot, controls, input, shared, registry, feed, world } = this.d;
     feed.publish(snapshot.index);
-    // Attachment heights come from the GLB sockets (sockets are API): PAD deck, TRANSPORTER stand top.
-    if (this.mountLift < 0 || this.cargoLift < 0) {
-      for (const h of registry.byId.values()) {
-        if (h.info.name === 'pad') this.mountLift = h.info.sockets.get(PAD.sockets.VehicleMount)?.y ?? -1;
-        if (h.info.name === 'transporter') this.cargoLift = h.info.sockets.get(TRANSPORTER.sockets.Cargo)?.y ?? -1;
-      }
-    }
     const regChanged = registry.version !== this.seenRegistry;
     const ticked = snapshot.tick !== this.seenTick || regChanged;
     this.seenTick = snapshot.tick;
@@ -65,16 +55,11 @@ export class RenderSyncSystem {
         continue;
       }
       o.visible = true;
-      const lift =
-        (f & SlotFlag.ON_MOUNT) !== 0
-          ? Math.max(0, this.mountLift)
-          : (f & SlotFlag.ON_CARGO) !== 0
-            ? Math.max(0, this.cargoLift)
-            : 0;
-      o.position.set(pose.x, pose.y + lift, pose.z);
+      o.position.set(pose.x, pose.y, pose.z);
       o.quaternion.set(pose.qx, pose.qy, pose.qz, pose.qw);
-      const animated = isAnimatedAsset(h.asset);
-      if (animated) sampleAnim(snapshot, h.slot, input.alpha, ANIM_WRAP[h.asset] ?? 0, h.anim);
+      const asset = h.asset;
+      const animated = isAnimatedAsset(asset);
+      if (isAnimatedAsset(asset)) sampleAnim(snapshot, h.slot, input.alpha, ANIM_WRAP[asset] ?? 0, h.anim);
       if (ticked && !movedNear) {
         const i = h.slot * SLOT_STRIDE;
         const p = snapshot.prev;

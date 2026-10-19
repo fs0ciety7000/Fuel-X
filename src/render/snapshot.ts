@@ -20,9 +20,9 @@ export const SlotFlag = {
   SNAP: 2,
   /** Entity exists but is not drawn (tanker off-map, lost stage). */
   HIDDEN: 4,
-  /** Stage stands on the launch mount: render lifts it by PAD `SOCKET_VehicleMount`. */
+  /** Stage stands on the launch mount / stack (attachment marker; `pos` is already the world origin, sim 5.0b). */
   ON_MOUNT: 8,
-  /** Stage rides a transporter: render lifts it by TRANSPORTER `SOCKET_Cargo`. */
+  /** Stage rides a transporter (attachment marker; `pos` already includes the cargo stand height). */
   ON_CARGO: 16,
 } as const;
 

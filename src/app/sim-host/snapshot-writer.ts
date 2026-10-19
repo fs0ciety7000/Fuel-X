@@ -101,15 +101,7 @@ export class SnapshotWriter {
       pose.y = e.pos.y;
       pose.z = e.pos.z;
       pose.q = e.rot;
-      this.anim.write(
-        world,
-        e,
-        pose,
-        s.animCurr,
-        e.slot * ANIM_STRIDE,
-        (flags & SlotFlag.ON_MOUNT) !== 0,
-        (flags & SlotFlag.ON_CARGO) !== 0,
-      );
+      this.anim.write(world, e, pose, s.animCurr, e.slot * ANIM_STRIDE, (flags & SlotFlag.ON_CARGO) !== 0);
       c[o] = pose.x;
       c[o + 1] = pose.y;
       c[o + 2] = pose.z;

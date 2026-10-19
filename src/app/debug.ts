@@ -35,7 +35,10 @@ export interface FuelxDebug {
   step(n?: number): void;
   follow(callSign: string | null, opts?: { snap?: boolean }): void;
   site(code: string): void;
-  camera(preset: 'home' | 'frame' | { yawDeg: number; pitchDeg: number; distM: number }): void;
+  camera(
+    preset: 'home' | 'frame' | { yawDeg: number; pitchDeg: number; distM: number },
+    opts?: { snap?: boolean },
+  ): void;
   freezeVisuals(on: boolean): void;
   frames(n: number): Promise<void>;
   state(): UiProjectionStub;
@@ -136,8 +139,9 @@ export function createDebugApi(game: Game): FuelxDebug {
       controls.cameraRequest = { kind: 'home' };
     },
 
-    camera: (preset) => {
+    camera: (preset, opts) => {
       controls.cameraRequest = typeof preset === 'string' ? { kind: preset } : { kind: 'orbit', ...preset };
+      if (opts?.snap) controls.snapCamera = true;
     },
 
     freezeVisuals: (on) => {

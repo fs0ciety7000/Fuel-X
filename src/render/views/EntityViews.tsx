@@ -42,7 +42,15 @@ function EntityView({ slot, asset, registry }: ViewProps) {
   const { gltfs, info } = useAssetLods(asset);
   const view = useMemo(() => instantiate(gltfs, asset, slot.callSign), [gltfs, asset, slot.callSign]);
   useLayoutEffect(() => {
-    registry.add({ id: slot.id, slot: slot.slot, object: view.root, info, asset, anim: createAnimBuffer(), lod: view.lod });
+    registry.add({
+      id: slot.id,
+      slot: slot.slot,
+      object: view.root,
+      info,
+      asset,
+      anim: createAnimBuffer(),
+      lod: view.lod,
+    });
     return () => registry.remove(slot.id, view.root);
   }, [view, info, registry, slot, asset]);
   return <primitive object={view.root} />;

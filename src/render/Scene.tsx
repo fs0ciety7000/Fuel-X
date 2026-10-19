@@ -13,11 +13,13 @@ import { IndexFeed } from './index-feed';
 import { EntityRegistry } from './registry';
 import type { RenderSnapshot } from './snapshot';
 import { AdaptiveDpr, DPR_RANGE } from './systems/AdaptiveDpr';
-import { CAMERA_FOV_DEG, CameraSystem } from './systems/CameraSystem';
+import { CAMERA_FOV_DEG, CameraRig } from './systems/CameraRig';
 import { EnvironmentSystem } from './systems/EnvironmentSystem';
 import { GroundSystem } from './systems/GroundSystem';
 import { RenderPass } from './systems/RenderPass';
 import { RenderSync } from './systems/RenderSync';
+import { ViewSystem } from './systems/ViewSystem';
+import { InstancePools } from './views/pools';
 import { EntityViews } from './views/EntityViews';
 
 export interface SceneApi {
@@ -48,6 +50,7 @@ function AssetGate({ onLoaded }: { onLoaded: () => void }) {
 class SceneCore implements SceneApi {
   readonly registry = new EntityRegistry();
   readonly feed = new IndexFeed();
+  readonly pools = new InstancePools();
   readonly shared = createFrameShared();
   private loaded = false;
   private advanceFn: ((now: number) => void) | null = null;
@@ -110,7 +113,8 @@ export function Scene({ snapshot, controls, input, onApi, className }: SceneProp
         feed={core.feed}
         world={world}
       />
-      <CameraSystem controls={controls} registry={core.registry} shared={core.shared} />
+      <CameraRig controls={controls} registry={core.registry} shared={core.shared} />
+      <ViewSystem registry={core.registry} pools={core.pools} shared={core.shared} />
       <EnvironmentSystem shared={core.shared} />
       <AdaptiveDpr input={input} />
       <GroundSystem shared={core.shared} controls={controls} />
@@ -118,7 +122,7 @@ export function Scene({ snapshot, controls, input, onApi, className }: SceneProp
       <group ref={world} name="WORLD">
         <Suspense fallback={null}>
           <AssetGate onLoaded={core.markLoaded} />
-          <EntityViews feed={core.feed} registry={core.registry} />
+          <EntityViews feed={core.feed} registry={core.registry} pools={core.pools} />
         </Suspense>
       </group>
     </Canvas>

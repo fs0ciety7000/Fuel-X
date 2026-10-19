@@ -7,8 +7,8 @@
 //     steer and the trailer (kinematic follower) come from that motion.
 //   - stages: gimbal and grid fins from the filtered lateral acceleration; flaps from the flight state.
 //   - CR-77: slew / luff / hook choreography from the lift task progress; the stage hangs from the hook.
-//   - TOWER-1 stacking: the stage rises from the transporter stand to the mount / booster top with task progress.
 // What the sim should eventually expose instead is listed in docs/TASKS.md (5.4 notes).
+import { siteGeometry } from '@data/siteGeometry';
 import { vehicles } from '@data/index';
 import { DT_S } from '@sim/index';
 import type { Entity, EntityOf, Id, Quat, Vec3, World } from '@sim/types';
@@ -17,10 +17,8 @@ import { ANIM, ANIM_STRIDE } from '@render/snapshot';
 const TAU = Math.PI * 2;
 const DEG = Math.PI / 180;
 
-/** PAD `SOCKET_VehicleMount` height and TRANSPORTER `SOCKET_Cargo` rest height, m (ASSETS_GUIDE §4; RenderSync
- *  reads the same sockets from the GLBs and adds them for ON_MOUNT / ON_CARGO stages). */
-export const MOUNT_LIFT_M = 20;
-export const CARGO_LIFT_M = 4.6;
+/** TRANSPORTER `SOCKET_Cargo` at deck rest = stage origin above the transporter, m (sim 5.0b convention). */
+const CARGO_LIFT_M = siteGeometry.transporter.cargoM;
 
 /** CRANE geometry in its root frame (ASSETS_GUIDE §4 CRANE as built): boom foot, boom length, luff and hook range. */
 export const CRANE_GEOM = {
@@ -140,7 +138,11 @@ function aimCrane(crane: { pos: Vec3; rot: Quat }, p: Vec3, hookY: number): Cran
   const r = Math.hypot(l.x, l.z);
   const luff = Math.acos(clamp((r - CRANE_GEOM.footZ) / CRANE_GEOM.boomM, Math.cos(CRANE_GEOM.luffMax), 1));
   const lf = clamp(luff, CRANE_GEOM.luffMin, CRANE_GEOM.luffMax);
-  const hook = clamp(hookY + CRANE_GEOM.socketBelowM - crane.pos.y - craneTip(lf).y, CRANE_GEOM.hookMin, CRANE_GEOM.hookMax);
+  const hook = clamp(
+    hookY + CRANE_GEOM.socketBelowM - crane.pos.y - craneTip(lf).y,
+    CRANE_GEOM.hookMin,
+    CRANE_GEOM.hookMax,
+  );
   return { slew: Math.atan2(l.x, l.z), luff: lf, hook };
 }
 
@@ -226,9 +228,6 @@ interface StageState {
   finB: number;
   flapF: number;
   flapA: number;
-  /** Absolute drawn height of the origin last tick (incl. mount / cargo lifts), m. */
-  absY: number;
-  stackFromY: number | null;
   init: boolean;
 }
 
@@ -282,7 +281,17 @@ export class AnimWriter {
     let m = this.movers.get(e.id);
     const simYaw = yawOf(e.rot);
     if (!m || snap || Math.abs(e.pos.x - m.x) + Math.abs(e.pos.z - m.z) > TELEPORT_M) {
-      m = { x: e.pos.x, z: e.pos.z, yaw: simYaw, speed: 0, yawRate: 0, wheel: m?.wheel ?? 0, trailerYaw: simYaw, steer: 0, deck: m?.deck ?? 0 };
+      m = {
+        x: e.pos.x,
+        z: e.pos.z,
+        yaw: simYaw,
+        speed: 0,
+        yawRate: 0,
+        wheel: m?.wheel ?? 0,
+        trailerYaw: simYaw,
+        steer: 0,
+        deck: m?.deck ?? 0,
+      };
       this.movers.set(e.id, m);
     } else {
       let target = simYaw;
@@ -298,14 +307,18 @@ export class AnimWriter {
       if (spec.wheelR > 0) m.wheel = wrapTau(m.wheel + (m.speed * DT_S) / spec.wheelR);
       if (e.kind === 'tanker') {
         // kinematic trailer pulled at the king pin: dψt/dt = v/L · sin(ψ − ψt)
-        m.trailerYaw += ((m.speed / TANKER_TRAILER_M) * Math.sin(m.yaw - m.trailerYaw)) * DT_S;
+        m.trailerYaw += (m.speed / TANKER_TRAILER_M) * Math.sin(m.yaw - m.trailerYaw) * DT_S;
         const rel = clamp(wrapPi(m.trailerYaw - m.yaw), -TANKER_TRAILER_MAX, TANKER_TRAILER_MAX);
         m.trailerYaw = m.yaw + rel;
         const want = Math.abs(m.speed) > 0.3 ? Math.atan((TANKER_WHEELBASE_M * m.yawRate) / m.speed) : 0;
         m.steer = approach(m.steer, clamp(want, -TANKER_STEER_MAX, TANKER_STEER_MAX), 40 * DEG);
       }
     }
-    if (e.kind === 'transporter') m.deck = approach(m.deck, e.cargo ? DECK_RAISED_M : 0, DECK_RATE_MPS);
+    if (e.kind === 'transporter') {
+      // deck raised to drive loaded, lowered to load / unload so the stage hand-overs stay continuous
+      const driving = e.cargo !== null && (e.fsm.state === 'MOVING' || e.fsm.state === 'WIND_HOLD');
+      m.deck = approach(m.deck, driving ? DECK_RAISED_M : 0, DECK_RATE_MPS);
+    }
   }
 
   /** Transporter carrying `stageId`, if any. */
@@ -317,21 +330,11 @@ export class AnimWriter {
     return null;
   }
 
-  private stageStackTask(world: World, stageId: Id): { p: number } | null {
-    for (const id of world.entities.order) {
-      const t = world.entities.byId[id];
-      if (t?.kind === 'tower' && t.task?.stageId === stageId && t.fsm.state !== 'IDLE') {
-        return { p: t.task.durationTicks > 0 ? t.task.elapsedTicks / t.task.durationTicks : 1 };
-      }
-    }
-    return null;
-  }
-
   /**
    * Pass 2: pose refinements (`out` holds the sim pose on entry) and the channels for `e` into `anim` at offset
-   * `o`. `flags` are the render flags already chosen for the slot (ON_MOUNT / ON_CARGO lifts are added by render).
+   * `o`. `onCargo`: the stage rides a transporter (its deck lift and drawn yaw are applied).
    */
-  write(world: World, e: Entity, out: PoseOut, anim: Float32Array, o: number, onMount: boolean, onCargo: boolean): void {
+  write(world: World, e: Entity, out: PoseOut, anim: Float32Array, o: number, onCargo: boolean): void {
     for (let k = 0; k < ANIM_STRIDE; k++) anim[o + k] = 0;
     const t = world.tick * DT_S;
     const m = this.movers.get(e.id);
@@ -361,7 +364,7 @@ export class AnimWriter {
       }
       case 'booster':
       case 'ship':
-        this.writeStage(world, e, out, anim, o, onMount, onCargo, t);
+        this.writeStage(world, e, out, anim, o, onCargo, t);
         return;
       case 'transporter': {
         const c = ANIM.transporter;
@@ -415,22 +418,33 @@ export class AnimWriter {
     out: PoseOut,
     anim: Float32Array,
     o: number,
-    onMount: boolean,
     onCargo: boolean,
     t: number,
   ): void {
     let s = this.stages.get(e.id);
     if (!s) {
       s = {
-        vx: 0, vy: 0, vz: 0, ax: 0, az: 0, lastX: e.pos.x, lastY: e.pos.y, lastZ: e.pos.z,
-        gimbalP: 0, gimbalY: 0, finA: 0, finB: 0, flapF: 45 * DEG, flapA: 45 * DEG,
-        absY: e.pos.y, stackFromY: null, init: false,
+        vx: 0,
+        vy: 0,
+        vz: 0,
+        ax: 0,
+        az: 0,
+        lastX: e.pos.x,
+        lastY: e.pos.y,
+        lastZ: e.pos.z,
+        gimbalP: 0,
+        gimbalY: 0,
+        finA: 0,
+        finB: 0,
+        flapF: 45 * DEG,
+        flapA: 45 * DEG,
+        init: false,
       };
       this.stages.set(e.id, s);
     }
     const state = e.fsm.state;
 
-    // Pose refinements (positions are absolute here; render adds the mount / cargo socket lift from the flags).
+    // Pose refinements (positions are asset origins in world metres, sim 5.0b).
     if (onCargo) {
       const sp = this.carrier(world, e.id);
       const mv = sp ? this.movers.get(sp.id) : undefined;
@@ -446,18 +460,6 @@ export class AnimWriter {
         out.z = r.hang.pos.z;
       }
     }
-    const stack = state === 'STACKING' ? this.stageStackTask(world, e.id) : null;
-    if (stack) {
-      s.stackFromY ??= s.absY;
-      const final = MOUNT_LIFT_M + (e.kind === 'ship' ? vehicles.booster.heightM : 0);
-      // arms close (first 10 %), hoist, settle (last 10 %)
-      const y = s.stackFromY + (final - s.stackFromY) * smooth((stack.p - 0.1) / 0.8);
-      out.y = y - MOUNT_LIFT_M;
-    } else {
-      s.stackFromY = null;
-    }
-    s.absY = out.y + (onMount ? MOUNT_LIFT_M : 0) + (onCargo ? CARGO_LIFT_M : 0);
-
     // Motion → gimbal / fins (filtered lateral acceleration in the stage frame).
     const vx = (e.pos.x - s.lastX) / DT_S;
     const vy = (e.pos.y - s.lastY) / DT_S;
@@ -491,8 +493,12 @@ export class AnimWriter {
     if (e.kind === 'booster') {
       const steering = state === 'BOOSTBACK' || state === 'DESCENT';
       const finMax = 30 * DEG;
-      const wantA = steering ? clamp(16 * DEG * Math.sin(t * 0.45) + 10 * DEG * Math.tanh(local.z / 20), -finMax, finMax) : 0;
-      const wantB = steering ? clamp(16 * DEG * Math.sin(t * 0.45 + 1.9) - 10 * DEG * Math.tanh(local.x / 20), -finMax, finMax) : 0;
+      const wantA = steering
+        ? clamp(16 * DEG * Math.sin(t * 0.45) + 10 * DEG * Math.tanh(local.z / 20), -finMax, finMax)
+        : 0;
+      const wantB = steering
+        ? clamp(16 * DEG * Math.sin(t * 0.45 + 1.9) - 10 * DEG * Math.tanh(local.x / 20), -finMax, finMax)
+        : 0;
       s.finA = approach(s.finA, wantA, 20 * DEG);
       s.finB = approach(s.finB, wantB, 20 * DEG);
       anim[o + ANIM.booster.finARad] = s.finA;
