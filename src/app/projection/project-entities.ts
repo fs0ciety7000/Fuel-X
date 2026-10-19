@@ -2,41 +2,26 @@
 // tabs (§6.13–6.16) and in-world label states (§6.20). Positions are render-owned (RenderSync), never projected.
 import type {
   ActionVM,
-  DisplayValue,
   InspectorVM,
   LabelVM,
   ListRowVM,
   ListsVM,
   MetricVM,
+  ProgressVM,
   Severity,
-  StatusVM,
   TankRowVM,
   TaskRowVM,
+  ValueVM,
 } from '@bridge/projection-types';
 import { DIVERT_PROFILE, DT_S, pathLengthM } from '@sim/index';
-import { classNames, flightProfile as fp, logistics as ld, mvpFlight, propellant as pd } from '@data/index';
+import { classNames, flightProfile as fp, mvpFlight, propellant as pd } from '@data/index';
 import type { Entity, EntityOf, Id, Kind, RouteState } from '@sim/types';
 import type { Ctx } from './context';
 import { entitiesOf, entity, tClockAt } from './context';
 import { action } from './project-decision';
+import type { StatusVM } from './labels';
 import type { StationVM } from '@bridge/projection-types';
-import {
-  degrees,
-  dv,
-  fixed,
-  km,
-  kmh,
-  metres,
-  missing,
-  mps,
-  num,
-  ofTotal,
-  pct,
-  prob,
-  tClock,
-  tonnes,
-  words,
-} from './format';
+import { degrees, dv, km, kmh, metres, missing, mps, num, ofTotal, pct, prob, tClock, tonnes, words } from './format';
 import { FLUID_LABEL, PHASE_LABEL, entityStatus, kindLabel } from './labels';
 
 type Booster = EntityOf<'booster'>;
@@ -90,13 +75,13 @@ const asStage = (e: Entity | null): Stage | null => (e?.kind === 'booster' || e?
 
 const flying = (e: Entity): boolean => (e.kind === 'booster' || e.kind === 'ship') && !!e.flight && !e.flight.done;
 
-const metric = (key: string, label: string, value: DisplayValue, severity: Severity = 'neutral'): MetricVM => ({
+const metric = (key: string, label: string, value: ValueVM, state: Severity = 'neutral'): MetricVM => ({
   key,
   label,
   value,
-  severity,
+  state,
 });
-const text = (s: string): DisplayValue => ({ text: s, unit: '', si: null });
+const text = (s: string): ValueVM => ({ text: s, unit: '', value: null });
 
 // --- Inspector ---------------------------------------------------------------------------------------------
 
@@ -108,9 +93,9 @@ interface InspectorBody {
   actions: ActionVM[];
 }
 
-function progress(label: string, fraction: number): InspectorVM['progress'] {
+function progress(label: string, fraction: number): ProgressVM {
   const f = Math.max(0, Math.min(1, fraction));
-  return { label, value: pct(f), fraction: f };
+  return { label, value: pct(f), fraction: f, tone: 'ink' };
 }
 
 function stageBody(c: Ctx, e: Stage, decisionActions: ActionVM[]): InspectorBody {
@@ -154,7 +139,8 @@ function stageBody(c: Ctx, e: Stage, decisionActions: ActionVM[]): InspectorBody
   }
   if (!prog && e.fsm.state === 'STACKING' && cd) {
     const t = entity(c, c.world.prep[cd.id]?.towerId);
-    if (t?.kind === 'tower' && t.task?.stageId === e.id) prog = progress('STACKING', t.task.elapsedTicks / t.task.durationTicks);
+    if (t?.kind === 'tower' && t.task?.stageId === e.id)
+      prog = progress('STACKING', t.task.elapsedTicks / t.task.durationTicks);
   }
   const alt = c.env.spark.values(`alt:${e.id}`);
   const actions: ActionVM[] = [];
@@ -169,9 +155,7 @@ function stageBody(c: Ctx, e: Stage, decisionActions: ActionVM[]): InspectorBody
       .join(' · '),
     metrics,
     progress: prog,
-    chart: alt.some((v) => v !== null)
-      ? { label: 'ALTITUDE · KM', spark: { values: alt as (number | null)[], unit: 'M', min: 0, max: 160_000, threshold: null } }
-      : null,
+    chart: alt.some((v) => v !== null) ? { label: 'ALTITUDE · KM', series: alt as (number | null)[], unit: 'M' } : null,
     actions,
   };
 }
@@ -231,7 +215,10 @@ function inspectorBody(c: Ctx, e: Entity, decisionActions: ActionVM[]): Inspecto
       base.sub = `${kindLabel(e)} · ${classNames.transporter}`;
       base.metrics = [metric('speed', 'SPEED', kmh(speed)), metric('cargo', 'CARGO', text(cargo?.callSign ?? 'EMPTY'))];
       if (e.route && (e.fsm.state === 'MOVING' || e.fsm.state === 'RETURNING' || e.fsm.state === 'WIND_HOLD'))
-        base.progress = progress(e.fsm.state === 'RETURNING' ? 'RETURN TO YARD' : 'ROLLOUT TO OLM-1', routeFraction(e.route));
+        base.progress = progress(
+          e.fsm.state === 'RETURNING' ? 'RETURN TO YARD' : 'ROLLOUT TO OLM-1',
+          routeFraction(e.route),
+        );
       return base;
     }
     case 'crane': {
@@ -250,7 +237,10 @@ function inspectorBody(c: Ctx, e: Entity, decisionActions: ActionVM[]): Inspecto
       const tgt = entity(c, e.targetId);
       base.metrics = [metric('speed', 'SPEED', kmh(speed)), metric('target', 'TARGET', text(tgt?.callSign ?? '—'))];
       if (e.leg && e.leg.totalTicks > 0 && e.leg.movedTicks < e.leg.totalTicks)
-        base.progress = progress(e.fsm.state === 'INTERCEPT' ? 'INTERCEPT' : 'TRANSIT', e.leg.movedTicks / e.leg.totalTicks);
+        base.progress = progress(
+          e.fsm.state === 'INTERCEPT' ? 'INTERCEPT' : 'TRANSIT',
+          e.leg.movedTicks / e.leg.totalTicks,
+        );
       return base;
     }
     case 'wxStation': {
@@ -265,7 +255,8 @@ function inspectorBody(c: Ctx, e: Entity, decisionActions: ActionVM[]): Inspecto
       ];
       base.chart = {
         label: 'WEATHER MARGIN',
-        spark: { values: c.env.spark.values('weatherMargin') as (number | null)[], unit: '', min: -1, max: 1, threshold: 0 },
+        series: c.env.spark.values('weatherMargin') as (number | null)[],
+        unit: '',
       };
       return base;
     }
@@ -280,26 +271,35 @@ export function inspectorVM(c: Ctx, decisionActions: ActionVM[]): InspectorVM | 
   if (!e) return null;
   const body = inspectorBody(c, e, decisionActions);
   const cls = e.kind === 'booster' ? classNames.booster : e.kind === 'ship' ? classNames.ship : '';
+  const st = entityStatus(e);
+  const following = c.view.followId === e.id;
   return {
     id: e.id,
     callSign: e.callSign,
     kind: e.kind,
-    kindLabel: kindLabel(e),
+    classLabel: kindLabel(e),
     className: cls,
     sub: body.sub,
-    status: entityStatus(e),
+    status: {
+      code: st.code,
+      glyph: st.glyph,
+      label: st.label,
+      meta: following ? 'FOLLOWING' : 'SELECTED',
+      state: st.severity,
+    },
     selected: c.view.selectedId === e.id,
-    following: c.view.followId === e.id,
+    following,
     metrics: body.metrics,
     progress: body.progress,
     chart: body.chart,
     actions: body.actions,
+    lost: st.code === 'LOST',
   };
 }
 
 // --- Lists ---------------------------------------------------------------------------------------------------
 
-function rowKey(c: Ctx, e: Entity): { key: DisplayValue; keyLabel: string; sub: string } {
+function rowKey(c: Ctx, e: Entity): { key: ValueVM; keyLabel: string; sub: string } {
   const cdPhase = c.cd ? PHASE_LABEL[c.cd.phase.state] : '';
   switch (e.kind) {
     case 'booster':
@@ -312,7 +312,11 @@ function rowKey(c: Ctx, e: Entity): { key: DisplayValue; keyLabel: string; sub: 
       return { key: mps(c.world.weather.groundWindMPerS), keyLabel: 'GND', sub: 'WIND' };
     default: {
       const v = speedMPerS(e);
-      return { key: kmh(v), keyLabel: '', sub: e.kind === 'transporter' && e.cargo ? `CARGO ${entity(c, e.cargo)?.callSign ?? ''}` : '' };
+      return {
+        key: kmh(v),
+        keyLabel: '',
+        sub: e.kind === 'transporter' && e.cargo ? `CARGO ${entity(c, e.cargo)?.callSign ?? ''}` : '',
+      };
     }
   }
 }
@@ -322,17 +326,18 @@ const hiddenState = (e: Entity): boolean =>
 
 function listRow(c: Ctx, e: Entity): ListRowVM {
   const k = rowKey(c, e);
+  const st = entityStatus(e);
   return {
     id: e.id,
-    callSign: e.callSign,
     kind: e.kind,
-    kindLabel: kindLabel(e),
-    status: entityStatus(e),
-    sub: k.sub,
-    key: k.key,
-    keyLabel: k.keyLabel,
+    glyph: st.glyph,
+    name: e.callSign,
+    sub: [kindLabel(e), st.label, k.sub].filter(Boolean).join(' · '),
+    status: st.label,
+    keyValue: k.keyLabel ? { ...k.key, unit: `${k.key.unit ?? ''} ${k.keyLabel}`.trim() } : k.key,
+    state: st.severity,
     selected: c.view.selectedId === e.id,
-    followed: c.view.followId === e.id,
+    following: c.view.followId === e.id,
   };
 }
 
@@ -340,20 +345,28 @@ function tankRow(c: Ctx, e: EntityOf<'tank'>, stations: readonly StationVM[]): T
   const frac = e.capKg > 0 ? e.massKg / e.capKg : 0;
   const prp = stations.find((s) => s.id === 'PROPELLANT');
   const low =
-    prp && prp.status !== 'GO' && prp.driver === (e.fluid === 'LOX' ? 'FARM_RESERVE_LOX' : e.fluid === 'CH4' ? 'FARM_RESERVE_CH4' : '');
+    prp &&
+    prp.status !== 'GO' &&
+    prp.driver === (e.fluid === 'LOX' ? 'FARM_RESERVE_LOX' : e.fluid === 'CH4' ? 'FARM_RESERVE_CH4' : '');
   const rate = e.fluid === 'LN2' ? null : pd.farm.boilOffFractionPerS[e.fluid];
   const boilPctPerH = rate === null || e.capKg <= 0 ? null : -((e.massKg * rate * 3600) / e.capKg);
+  const state: Severity = low ? (prp.status === 'NO_GO' ? 'danger' : 'warn') : 'neutral';
   return {
     id: e.id,
-    callSign: e.callSign,
-    fluid: e.fluid,
-    fluidLabel: FLUID_LABEL[e.fluid],
-    fill: pct(frac, 0),
-    fraction: frac,
-    mass: tonnes(e.massKg),
-    boilOff: num(boilPctPerH, 4, '%/H', 100),
-    severity: low ? (prp.status === 'NO_GO' ? 'danger' : 'warn') : 'neutral',
+    kind: 'tank',
+    glyph: low ? (state === 'danger' ? 'danger' : 'warn') : 'idle',
+    name: e.callSign,
+    sub: FLUID_LABEL[e.fluid],
+    status: low ? 'LOW RESERVE' : 'STORING',
+    keyValue: pct(frac, 0),
+    state,
     selected: c.view.selectedId === e.id,
+    following: c.view.followId === e.id,
+    fluid: e.fluid,
+    fill: frac,
+    reserve: null,
+    rate: num(boilPctPerH, 4, '%/H', 100),
+    mass: tonnes(e.massKg),
   };
 }
 
@@ -374,15 +387,21 @@ function task(
   actions: ActionVM[] = [],
 ): TaskRowVM {
   const f = Math.max(0, Math.min(1, fraction));
+  const st = TASK_STATE[state];
   return {
     id,
-    label,
-    assignee: who?.callSign ?? '',
+    kind: 'task',
+    glyph: st.glyph,
+    name: label,
+    sub: who ? `${who.callSign} · ${st.label}` : st.label,
+    status: st.label,
+    keyValue: pct(f, 0),
+    state: st.severity,
+    selected: false,
+    following: false,
+    progress: state === 'QUEUED' && f === 0 ? null : f,
+    eta: eta ? text(eta) : missing(),
     assigneeId: who?.id ?? null,
-    state: TASK_STATE[state],
-    progress: pct(f, 0),
-    fraction: f,
-    eta,
     actions,
   };
 }
@@ -407,7 +426,15 @@ function tasks(c: Ctx, orderActions: ActionVM[]): TaskRowVM[] {
           ? [action('START_ROLLOUT', 'START ROLLOUT', { t: 'StartRollout', boosterId: st.id })]
           : [];
       out.push(
-        task(`rollout:${st.id}`, `ROLLOUT ${st.callSign}`, lifting ? 'ACTIVE' : 'QUEUED', lifting ? (0.5 * lifting.elapsedTicks) / lifting.durationTicks : 0, lifting ? crane : null, '', actions),
+        task(
+          `rollout:${st.id}`,
+          `ROLLOUT ${st.callSign}`,
+          lifting ? 'ACTIVE' : 'QUEUED',
+          lifting ? (0.5 * lifting.elapsedTicks) / lifting.durationTicks : 0,
+          lifting ? crane : null,
+          '',
+          actions,
+        ),
       );
     } else if (s === 'ON_TRANSPORTER') {
       const paused = sp?.kind === 'transporter' && sp.fsm.state === 'WIND_HOLD';
@@ -427,7 +454,13 @@ function tasks(c: Ctx, orderActions: ActionVM[]): TaskRowVM[] {
       task(
         `stack:${st.id}`,
         `STACK ${st.callSign}`,
-        done ? 'DONE' : stacking ? (tower?.kind === 'tower' && tower.fsm.state === 'WIND_HOLD' ? 'PAUSED' : 'ACTIVE') : 'QUEUED',
+        done
+          ? 'DONE'
+          : stacking
+            ? tower?.kind === 'tower' && tower.fsm.state === 'WIND_HOLD'
+              ? 'PAUSED'
+              : 'ACTIVE'
+            : 'QUEUED',
         done ? 1 : stacking ? stacking.elapsedTicks / stacking.durationTicks : 0,
         tower,
         '',
@@ -454,7 +487,7 @@ function tasks(c: Ctx, orderActions: ActionVM[]): TaskRowVM[] {
     );
   }
   // D1 command row + deliveries in flight.
-  out.push({ ...task('order', 'ORDER DELIVERY', 'QUEUED', 0, null, '', orderActions), state: TASK_STATE.QUEUED });
+  out.push(task('order', 'ORDER DELIVERY', 'QUEUED', 0, null, '', orderActions));
   for (const t of entitiesOf(c, 'tanker')) {
     if (!t.order) continue;
     const st = t.fsm.state;
@@ -468,28 +501,9 @@ function tasks(c: Ctx, orderActions: ActionVM[]): TaskRowVM[] {
       t,
       st === 'OFFMAP' || st === 'INBOUND' || st === 'GATE_WAIT' ? tClock(tClockAt(c, t.order.gateEtaTick)) : '',
     );
-    out.push(st === 'GATE_WAIT' ? { ...row, state: { ...TASK_STATE.PAUSED, label: 'GATE WAIT' } } : row);
+    out.push(st === 'GATE_WAIT' ? { ...row, status: 'GATE WAIT', sub: `${t.callSign} · GATE WAIT` } : row);
   }
   return out;
-}
-
-/** D1 order buttons (Tasks tab); disabled once the road closes. */
-export function orderActions(c: Ctx): ActionVM[] {
-  const closed = c.world.logistics.roadClosed || !c.preLiftoff;
-  const mk = (fluid: 'LOX' | 'CH4', rush: boolean): ActionVM => {
-    const d = rush ? ld.delivery.rush : ld.delivery.standard;
-    return action(
-      `ORDER_${fluid}_${rush ? 'RUSH' : 'STANDARD'}`,
-      `${fluid} ${rush ? 'RUSH' : 'STD'}`,
-      { t: 'OrderDelivery', fluid, rush },
-      {
-        enabled: !closed,
-        reason: c.preLiftoff ? 'ROAD_CLOSED' : 'NO_COUNT',
-        consequences: [`FEE ${fixed(d.feeCrPerTruck / 1e6, 2)} M CR`, `LEAD ${fixed(d.leadTimeS / 3600, 1)} H`],
-      },
-    );
-  };
-  return [mk('LOX', false), mk('LOX', true), mk('CH4', false), mk('CH4', true)];
 }
 
 const badge = (sevs: readonly Severity[]): { warn: number; danger: number } => ({
@@ -497,16 +511,16 @@ const badge = (sevs: readonly Severity[]): { warn: number; danger: number } => (
   danger: sevs.filter((s) => s === 'danger').length,
 });
 
-export function listsVM(c: Ctx, stations: readonly StationVM[], orders: ActionVM[]): ListsVM {
+export function listsVM(c: Ctx, stations: StationVM[], orders: ActionVM[]): ListsVM {
   const vehicles: ListRowVM[] = [];
-  const range: ListRowVM[] = [];
+  const rangeAssets: ListRowVM[] = [];
   const tanks: TankRowVM[] = [];
   for (const id of c.world.entities.order) {
     const e = c.world.entities.byId[id];
     if (!e) continue;
     if (e.kind === 'tank') tanks.push(tankRow(c, e, stations));
     else if (VEHICLE_KINDS.includes(e.kind) && !hiddenState(e)) vehicles.push(listRow(c, e));
-    else if (RANGE_KINDS.includes(e.kind)) range.push(listRow(c, e));
+    else if (RANGE_KINDS.includes(e.kind)) rangeAssets.push(listRow(c, e));
   }
   const taskRows = tasks(c, orders);
   const events = c.env.events as ListsVM['events'];
@@ -514,14 +528,15 @@ export function listsVM(c: Ctx, stations: readonly StationVM[], orders: ActionVM
     vehicles,
     tanks,
     tasks: taskRows,
-    range,
+    range: stations,
+    rangeAssets,
     events,
     badges: {
-      vehicles: badge(vehicles.map((r) => r.status.severity)),
-      tanks: badge(tanks.map((r) => r.severity)),
-      tasks: badge(taskRows.map((r) => r.state.severity)),
-      range: badge(range.map((r) => r.status.severity)),
-      events: badge(events.slice(0, 20).map((r) => r.severity)),
+      vehicles: badge(vehicles.map((r) => r.state)),
+      tanks: badge(tanks.map((r) => r.state)),
+      tasks: badge(taskRows.map((r) => r.state)),
+      range: badge([...stations.map((r) => r.state), ...rangeAssets.map((r) => r.state)]),
+      events: badge(events.slice(0, 20).map((r) => r.state)),
     },
   };
 }
@@ -544,9 +559,9 @@ export function labelsVM(c: Ctx, alertEntityIds: ReadonlySet<Id>): LabelVM[] {
       callSign: e.callSign,
       kind: e.kind,
       glyph: alert && severity === 'danger' ? 'danger' : alert ? 'warn' : st.glyph,
-      severity,
+      state: severity,
       selected,
-      followed,
+      following: followed,
       priority: selected ? 5 : alert ? 4 : followed ? 3 : flying(e) ? 2 : e.kind === 'tank' || e.kind === 'van' ? 0 : 1,
     });
   }

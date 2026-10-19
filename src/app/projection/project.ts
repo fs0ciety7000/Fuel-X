@@ -1,16 +1,17 @@
 // projectUi (ARCHITECTURE §8, ADR 0004): world (SI) + view state → display-ready UiProjection. Pure given its
 // inputs: no wall clock, no mutation of the world; `prev` is only used for structural sharing and alert ages.
 import type {
+  ActionVM,
   ClockVM,
   CountdownVM,
   EconomyVM,
   FlightCardVM,
+  PhaseVM,
+  PollMarkVM,
   SiteVM,
   StationVM,
-  TimeLockReason,
+  TimeLockCode,
   TimeScaleVM,
-  TimelinePhaseVM,
-  TimelinePollVM,
   UiProjection,
 } from '@bridge/projection-types';
 import type { ViewState } from '@bridge/stores';
@@ -22,6 +23,7 @@ import {
   logistics as ld,
   mvpFlight,
   sites as siteDefs,
+  propellant as pd,
   time as timeData,
 } from '@data/index';
 import type { Countdown, Phase, PollId, World } from '@sim/types';
@@ -29,9 +31,9 @@ import type { Ctx, ProjectEnv } from './context';
 import { entity, makeCtx, tClockAt } from './context';
 import { credits, duration, fixed, hours, missing, num, pct, tClock, tClockS, utc, words } from './format';
 import { GO_LABEL, HOLD_LABEL, PHASE_LABEL, POLL_LABEL, goStatus } from './labels';
-import { countdownActions, decisionVM } from './project-decision';
+import { countdownActions, decisionVM, orderActions } from './project-decision';
 import { debriefVM } from './project-debrief';
-import { inspectorVM, labelsVM, listsVM, orderActions } from './project-entities';
+import { inspectorVM, labelsVM, listsVM } from './project-entities';
 import { alertsVM, rangeVM, stationVMs } from './project-range';
 import { share } from './share';
 
@@ -46,13 +48,14 @@ function clockVM(c: Ctx): ClockVM {
     utcS: Math.floor(c.utcS),
     tClock: '—',
     tClockS: null,
+    missionClock: null,
     phase: null,
     phaseLabel: '—',
     holding: false,
     holdReason: null,
     holdLabel: '',
-    windowOpenUtc: '',
-    windowCloseUtc: '',
+    windowOpenAt: '',
+    windowCloseAt: '',
     windowState: 'NONE',
     windowRemaining: missing(),
   };
@@ -64,13 +67,14 @@ function clockVM(c: Ctx): ClockVM {
     ...base,
     tClock: tClock(cd.tClockTicks),
     tClockS: Math.trunc(cd.tClockTicks * DT_S),
+    missionClock: cd.liftoffTick !== null && cd.tClockTicks >= 0 ? tClock(cd.tClockTicks) : null,
     phase: cd.phase.state,
     phaseLabel: PHASE_LABEL[cd.phase.state],
     holding,
     holdReason: holding ? (cd.hold?.reason ?? null) : null,
     holdLabel: holding && cd.hold ? HOLD_LABEL[cd.hold.reason] : '',
-    windowOpenUtc: utc(c.utc0 + cd.windowOpenTick * DT_S),
-    windowCloseUtc: utc(c.utc0 + cd.windowCloseTick * DT_S),
+    windowOpenAt: utc(c.utc0 + cd.windowOpenTick * DT_S),
+    windowCloseAt: utc(c.utc0 + cd.windowCloseTick * DT_S),
     windowState: before ? 'BEFORE' : open ? 'OPEN' : 'CLOSED',
     windowRemaining: before
       ? duration((cd.windowOpenTick - c.tick) * DT_S)
@@ -85,7 +89,7 @@ function clockVM(c: Ctx): ClockVM {
 const FORCE_1X_FROM_TICKS = secondsToTicks(timeData.force1xFromTS);
 const FORCE_1X_AFTER_TICKS = secondsToTicks(timeData.force1xAfterRecoveryS);
 const FLIGHT_PHASES: readonly Phase[] = ['Liftoff', 'Boostback', 'TowerCatch', 'Divert'];
-const LOCK_WORDS: Record<TimeLockReason, string> = {
+const LOCK_WORDS: Record<TimeLockCode, string> = {
   TERMINAL_COUNT: 'TERMINAL COUNT',
   FLIGHT: 'FLIGHT',
   RECOVERY_SETTLE: 'RECOVERY',
@@ -94,7 +98,11 @@ const LOCK_WORDS: Record<TimeLockReason, string> = {
 };
 
 /** Mirrors the sim's `maxTimeScale` rules to name the cap (the cap value itself comes from TimeControl). */
-export function lockReason(world: Readonly<World>, cd: Readonly<Countdown> | null, maxAllowed: number): TimeLockReason | null {
+export function lockReason(
+  world: Readonly<World>,
+  cd: Readonly<Countdown> | null,
+  maxAllowed: number,
+): TimeLockCode | null {
   if (!cd || maxAllowed >= 100) return null;
   const phase = cd.phase.state;
   if (phase === 'Safing' && world.tick - cd.phase.enteredTick < FORCE_1X_AFTER_TICKS) return 'RECOVERY_SETTLE';
@@ -125,17 +133,19 @@ function timeScaleVM(c: Ctx): TimeScaleVM {
   const rate = t.lagging ? t.effectiveRate : t.effective;
   const rateText = fixed(rate, t.lagging ? 1 : 0);
   return {
-    requested: t.requested,
+    requested: t.paused ? 0 : t.requested,
+    resumeRate: t.requested,
     effective: t.effective,
     maxAllowed: t.maxAllowed,
     paused: t.paused,
     forced1x: t.maxAllowed === 1,
-    lockReason: reason,
-    lockLabel,
     lagging: t.lagging,
-    effectiveRate: { text: rateText, unit: '×', si: rate },
+    effectiveRate: `${rateText}×`,
+    lockReason: reason ? word : null,
+    lockCode: reason,
+    lockLabel,
     readout: t.paused ? 'SIM PAUSED' : t.lagging ? `SIM ${rateText}× OF ${t.effective}×` : `SIM ${t.effective}×`,
-    skip: { enabled: false, target: nextMark(c.cd), reason: 'SKIP_NOT_AVAILABLE' },
+    skip: { enabled: false, target: nextMark(c.cd) || null, reason: 'SKIP NOT AVAILABLE YET', active: false },
   };
 }
 
@@ -148,18 +158,16 @@ function economyVM(c: Ctx): EconomyVM {
 function sitesVM(c: Ctx, alertCount: number): SiteVM[] {
   return siteDefs.map((d) => {
     const status = c.world.sites[d.id]?.status ?? d.status;
+    const playable = d.playableInMvp;
     return {
       id: d.id,
       code: d.id,
       name: d.name,
-      role: d.role,
-      status: {
-        code: status,
-        label: words(status),
-        glyph: status === 'UNDER_CONSTRUCTION' ? 'build' : d.playableInMvp ? 'ok' : 'idle',
-        severity: d.playableInMvp ? 'ok' : 'disabled',
-      },
-      interactive: d.playableInMvp,
+      kind: d.role,
+      status: words(status),
+      state: playable ? 'ok' : 'disabled',
+      glyph: status === 'UNDER_CONSTRUCTION' ? 'build' : playable ? 'ok' : 'offline',
+      interactive: playable,
       current: c.view.siteId === d.id,
       alertCount: d.id === mvpFlight.siteId ? alertCount : 0,
     };
@@ -198,42 +206,55 @@ function flightVM(c: Ctx, stations: readonly StationVM[]): FlightCardVM | null {
         ? 'MARGINAL'
         : 'GO'
     : null;
+  const aggSt = agg ? goStatus(agg) : null;
   const flown = cd.liftoffTick !== null;
   const status = contract?.status ?? 'ACTIVE';
+  const scrubbed = cd.phase.state === 'Scrubbed' || cd.scrubReason !== null;
+  const limit = pd.stationMarginalBelowToppingS;
   return {
     countdownId: cd.id,
-    title: cd.flightName,
-    vehicles: `${b?.callSign ?? '—'} / ${s?.callSign ?? '—'}`,
     boosterId: cd.boosterId,
     shipId: cd.shipId,
-    tClock: tClock(cd.tClockTicks),
-    tClockLabel: cd.phase.state === 'Scrubbed' || cd.scrubReason ? 'SCRUBBED' : flown ? 'FLOWN' : 'NEXT LAUNCH',
-    propLoaded: pct(loadedNow),
-    propSpark: { values: propLoaded as (number | null)[], unit: '', min: 0, max: 1, threshold: null },
-    farmReserve: c.preLiftoff ? hours(reserveS) : missing('H'),
+    title: cd.flightName,
+    nextLaunch: {
+      key: 'nextLaunch',
+      label: scrubbed ? 'SCRUBBED' : flown ? 'FLOWN' : 'NEXT LAUNCH',
+      value: { text: tClock(cd.tClockTicks), unit: '', value: cd.tClockTicks * DT_S },
+      state: scrubbed ? 'danger' : cd.clock.state === 'Holding' ? 'warn' : 'neutral',
+    },
+    vehicles: `${b?.callSign ?? '—'} / ${s?.callSign ?? '—'}`,
+    propellant: {
+      key: 'propellant',
+      label: 'PROPELLANT LOADED',
+      value: pct(loadedNow),
+      state: 'neutral',
+      series: propLoaded as (number | null)[],
+      seriesLabel: 'VEHICLE LOADED, LAST 2 MIN',
+    },
+    farmReserve: c.preLiftoff ? Math.max(0, Math.min(1, reserveS / limit)) : null,
+    farmReserveTime: c.preLiftoff ? hours(reserveS) : missing('H'),
     farmReserveFluid: c.preLiftoff ? binding : null,
-    stationsGo: goCount,
-    stationsTotal: 5,
-    stationsLabel: `STATIONS GO ${goCount} OF 5`,
-    stationSegments: stations.map((x) => x.state.severity),
-    range: agg ? { ...goStatus(agg), label: GO_LABEL[agg] } : { code: 'NONE', label: '—', glyph: 'idle', severity: 'neutral' },
-    rangeSpark: {
-      values: c.env.spark.values('weatherMargin') as (number | null)[],
-      unit: '',
-      min: -1,
-      max: 1,
+    stations: {
+      key: 'stations',
+      label: 'STATIONS GO',
+      value: { text: `${goCount} OF 5`, unit: '', value: goCount },
+      state: aggSt?.severity ?? 'neutral',
+      segments: { value: goCount, max: 5, label: `STATIONS GO ${goCount} OF 5`, states: stations.map((x) => x.state) },
+    },
+    range: {
+      key: 'range',
+      label: 'RANGE',
+      value: { text: agg ? GO_LABEL[agg] : '—', unit: '', value: null },
+      state: aggSt?.severity ?? 'neutral',
+      series: c.env.spark.values('weatherMargin') as (number | null)[],
       threshold: 0,
+      seriesLabel: 'WEATHER MARGIN',
     },
     contract: {
       id: cd.contractId,
       customer: k?.customer ?? '',
       status: words(status),
-      state:
-        status === 'FULFILLED'
-          ? { code: status, label: 'FULFILLED', glyph: 'ok', severity: 'ok' }
-          : status === 'WINDOW_MISSED'
-            ? { code: status, label: 'WINDOW MISSED', glyph: 'danger', severity: 'danger' }
-            : { code: status, label: 'ACTIVE', glyph: 'current', severity: 'active' },
+      state: status === 'FULFILLED' ? 'ok' : status === 'WINDOW_MISSED' ? 'danger' : 'active',
     },
   };
 }
@@ -255,6 +276,18 @@ const PLAN: readonly { id: Phase; startS: number; endS: number }[] = [
   { id: 'Safing', startS: CATCH_S, endS: CATCH_S + cdData.safingDurationS },
 ];
 const ORDER: readonly Phase[] = ['Standby', ...PLAN.map((p) => p.id)];
+const PLAN_START_S = PLAN[0]?.startS ?? 0;
+const PLAN_TOTAL_S = (PLAN[PLAN.length - 1]?.endS ?? 1) - PLAN_START_S;
+const SHORT: Partial<Record<Phase, string>> = {
+  PropellantLoad: 'PROP LOAD',
+  TerminalCount: 'TERMINAL',
+  TowerCatch: 'CATCH',
+};
+const clamp01 = (x: number): number => Math.max(0, Math.min(1, x));
+/** T-offset (s) → position on the timeline bar (planned durations), 0–1. */
+export function barPosition(tS: number): number {
+  return clamp01((tS - PLAN_START_S) / PLAN_TOTAL_S);
+}
 
 function timelineVM(c: Ctx): CountdownVM | null {
   const cd = c.cd;
@@ -266,35 +299,63 @@ function timelineVM(c: Ctx): CountdownVM | null {
   const holding = cd.clock.state === 'Holding';
   const tS = cd.tClockTicks * DT_S;
   const curIdx = ORDER.indexOf(phase === 'Divert' ? 'TowerCatch' : phase);
-  const phases: TimelinePhaseVM[] = PLAN.map((p, i) => {
+  const phases: PhaseVM[] = PLAN.map((p, i) => {
     const id: Phase = p.id === 'TowerCatch' && divert ? 'Divert' : p.id;
-    let state: TimelinePhaseVM['state'];
+    let state: PhaseVM['state'];
     if (scrubbed) state = p.endS <= tS ? 'done' : 'skipped';
     else if (phase === 'Debrief') state = 'done';
     else if (i + 1 < curIdx) state = 'done';
     else if (i + 1 === curIdx) state = holding ? 'held' : 'current';
     else state = 'pending';
-    const glyph = state === 'done' ? 'done' : state === 'skipped' ? 'offline' : state === 'pending' ? 'pending' : state === 'held' ? 'holding' : 'current';
-    return { id, label: PHASE_LABEL[id], state, glyph, startS: p.startS, endS: p.endS };
+    const glyph =
+      state === 'done'
+        ? 'done'
+        : state === 'skipped'
+          ? 'offline'
+          : state === 'pending'
+            ? 'pending'
+            : state === 'held'
+              ? 'holding'
+              : 'current';
+    const prog =
+      state === 'done'
+        ? 1
+        : state === 'current' || state === 'held'
+          ? clamp01((tS - p.startS) / (p.endS - p.startS))
+          : 0;
+    return {
+      id,
+      label: PHASE_LABEL[id],
+      short: SHORT[id] ?? PHASE_LABEL[id],
+      state,
+      glyph,
+      share: (p.endS - p.startS) / PLAN_TOTAL_S,
+      progress: prog,
+      startS: p.startS,
+      endS: p.endS,
+    };
   });
-  const polls: TimelinePollVM[] = (Object.entries(cdData.pollTS) as [PollId, number][]).map(([id, atS]) => ({
+  const polls: PollMarkVM[] = (Object.entries(cdData.pollTS) as [PollId, number][]).map(([id, atS]) => ({
     id,
     at: tClockS(atS),
-    atS,
+    position: barPosition(atS),
     label: POLL_LABEL[id],
     state: cd.pollsPassed.includes(id) ? 'passed' : holding && cd.hold?.poll === id ? 'open' : 'pending',
   }));
-  const site = cd.siteId;
   const s = entity(c, cd.shipId);
+  const open = tClockAt(c, cd.windowOpenTick) * DT_S;
+  const close = tClockAt(c, cd.windowCloseTick) * DT_S;
   return {
     countdownId: cd.id,
-    context: `${site} · ${b?.callSign ?? '—'} / ${s?.callSign ?? '—'}`,
+    title: `${cd.siteId} · ${b?.callSign ?? '—'} / ${s?.callSign ?? '—'}`,
     tClock: tClock(cd.tClockTicks),
     tClockS: Math.trunc(tS),
+    state: scrubbed ? 'danger' : holding ? 'warn' : 'neutral',
     phases,
+    playhead: barPosition(tS),
     polls,
-    windowOpenS: Math.round(tClockAt(c, cd.windowOpenTick) * DT_S),
-    windowCloseS: Math.round(tClockAt(c, cd.windowCloseTick) * DT_S),
+    windowOpen: c.preLiftoff ? barPosition(open) : null,
+    windowClose: c.preLiftoff ? barPosition(close) : null,
     holding,
     scrubbed,
     actions: countdownActions(c),
@@ -317,8 +378,25 @@ export function projectUi(
   const stations = stationVMs(c);
   const alerts = alertsVM(c, stations);
   const timeline = timelineVM(c);
-  const decision = decisionVM(c, stations, timeline?.actions ?? []);
-  const decisionActions = decision?.kind === 'CATCH' ? decision.options : [];
+  const orders = orderActions(c);
+  const decision = decisionVM(c, stations, timeline?.actions ?? [], orders);
+  const decisionActions =
+    decision?.kind === 'CATCH'
+      ? decision.options.map((o) => {
+          const a: ActionVM = {
+            id: o.id,
+            label: o.label,
+            enabled: o.enabled,
+            variant: o.variant,
+            command: o.command ?? null,
+          };
+          if (o.key) a.key = o.key;
+          if (o.reason) a.reason = o.reason;
+          if (o.reasonCode) a.reasonCode = o.reasonCode;
+          if (o.confirm) a.confirm = o.consequences;
+          return a;
+        })
+      : [];
   const alertIds = new Set(alerts.items.map((a) => a.entityId).filter((x): x is string => x !== null));
   const sel = view.selectedId ? (world.entities.byId[view.selectedId]?.callSign ?? null) : null;
   const fol = view.followId ? (world.entities.byId[view.followId]?.callSign ?? null) : null;
@@ -332,15 +410,22 @@ export function projectUi(
     economy: economyVM(c),
     range: rangeVM(c, stations),
     alerts,
-    flight: flightVM(c, stations),
+    flightCard: flightVM(c, stations),
     countdown: timeline,
     decision,
     inspector: inspectorVM(c, decisionActions),
-    lists: listsVM(c, stations, orderActions(c)),
+    lists: listsVM(c, stations, orders),
     labels: labelsVM(c, alertIds),
     sites: sitesVM(c, alerts.open),
     debrief: debriefVM(c),
-    view: { siteId: view.siteId, selectedId: view.selectedId, followId: view.followId, selected: sel, follow: fol, tab: view.tab },
+    view: {
+      siteId: view.siteId,
+      selectedId: view.selectedId,
+      followId: view.followId,
+      selected: sel,
+      follow: fol,
+      tab: view.tab,
+    },
   };
   return share(prev, next);
 }

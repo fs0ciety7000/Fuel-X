@@ -97,7 +97,11 @@ export function describeEvent(e: SimEvent): RowText | null {
     case 'LeakCleared':
       return row(`LEAK CLEARED · ${e.by}`, 'ok', 'ok');
     case 'ContractUpdated':
-      return row(`CONTRACT ${e.contractId} ${words(e.status)}`, e.status === 'FULFILLED' ? 'ok' : 'danger', e.status === 'FULFILLED' ? 'ok' : 'danger');
+      return row(
+        `CONTRACT ${e.contractId} ${words(e.status)}`,
+        e.status === 'FULFILLED' ? 'ok' : 'danger',
+        e.status === 'FULFILLED' ? 'ok' : 'danger',
+      );
     case 'DebriefReady':
       return row(`DEBRIEF READY · ${words(e.outcome)}`, 'info', 'done');
     case 'EntityStateChanged':
@@ -121,20 +125,35 @@ export function describeEvent(e: SimEvent): RowText | null {
     }
     case 'DeliveryCompleted': {
       const m = tonnes(e.deliveredKg);
-      return row(`DELIVERED ${m.text} ${m.unit} ${e.fluid}${e.aborted ? ' · CUT SHORT' : ''}`, e.aborted ? 'warn' : 'ok', 'ok', e.tankerId);
+      return row(
+        `DELIVERED ${m.text} ${m.unit} ${e.fluid}${e.aborted ? ' · CUT SHORT' : ''}`,
+        e.aborted ? 'warn' : 'ok',
+        'ok',
+        e.tankerId,
+      );
     }
     case 'RoadClosureChanged':
       return row(e.closed ? 'ROAD CLOSED · PAD HAZARD AREA' : 'ROAD OPEN', 'info', e.closed ? 'offline' : 'ok');
     case 'ArmsChanged':
       return row(`CATCH ARMS ${e.to}`, 'neutral', 'current', e.id);
     case 'FlightEvent':
-      return row(`${words(e.event)} · ${fixed(e.altitudeM / 1000, 1)} KM`, 'active', e.kind === 'ship' ? 'ascent' : 'current', e.id);
+      return row(
+        `${words(e.event)} · ${fixed(e.altitudeM / 1000, 1)} KM`,
+        'active',
+        e.kind === 'ship' ? 'ascent' : 'current',
+        e.id,
+      );
     case 'EnginesChanged':
       return e.failed > 0
         ? row(`ENGINE OUT · ${e.lit} LIT · ${e.failed} OUT`, 'danger', 'danger', e.id)
         : row(`${e.lit} ENGINES LIT`, 'neutral', 'current', e.id);
     case 'RecoveryCommitted':
-      return row(`${e.mode === 'CATCH' ? 'GO FOR CATCH' : 'DIVERT'} · ${e.by} · P ${fixed(e.p, 2)}`, 'active', 'current', e.boosterId);
+      return row(
+        `${e.mode === 'CATCH' ? 'GO FOR CATCH' : 'DIVERT'} · ${e.by} · P ${fixed(e.p, 2)}`,
+        'active',
+        'current',
+        e.boosterId,
+      );
     case 'RecoveryOutcome':
       return row(
         words(e.result),

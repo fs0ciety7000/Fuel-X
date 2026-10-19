@@ -70,7 +70,12 @@ export class Projector {
   onEvents(batch: readonly SimEvent[]): void {
     const { world } = this.deps.inspect();
     this.log.add(world, batch, UTC_AT_TICK0_S);
-    if (!this.dirty) for (const e of batch) if (SALIENT_EVENTS.has(e.t)) { this.dirty = true; break; }
+    if (!this.dirty)
+      for (const e of batch)
+        if (SALIENT_EVENTS.has(e.t)) {
+          this.dirty = true;
+          break;
+        }
   }
 
   /** New game / load: forget sparklines, event log and alert ages. */
@@ -103,7 +108,13 @@ export class Projector {
     if (world.tick < this.lastTick) this.resetHistory();
     this.sampler.sample(world, countdown);
     const t = this.deps.time(world, countdown);
-    this.run(this.deps.now(), world, countdown, t, `${t.paused}|${t.requested}|${t.effective}|${t.maxAllowed}|${t.lagging}`);
+    this.run(
+      this.deps.now(),
+      world,
+      countdown,
+      t,
+      `${t.paused}|${t.requested}|${t.effective}|${t.maxAllowed}|${t.lagging}`,
+    );
     return this.deps.store.getState();
   }
 
@@ -136,7 +147,7 @@ export class Projector {
   ): void {
     const t0 = this.deps.now();
     const prev = this.deps.store.getState();
-    const next = projectUi(world, prev.seq === 0 ? null : prev, this.deps.view.getState(), {
+    const next = projectUi(world, (prev.seq ?? 0) === 0 ? null : prev, this.deps.view.getState(), {
       countdown,
       time,
       spark: this.sampler,

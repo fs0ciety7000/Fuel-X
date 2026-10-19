@@ -9,13 +9,12 @@
 import type { Id } from '@sim/types';
 import { createStore } from 'zustand/vanilla';
 import { emptyProjection } from './empty-projection';
-import type { HudTab, TimeScaleValue, UiProjection } from './projection-types';
+import type { HudTab, Rate, UiProjection } from './projection-types';
 
 export const projectionStore = createStore<UiProjection>(() => emptyProjection());
 
 export type CameraIntent =
-  | { kind: 'home' | 'frame' }
-  | { kind: 'orbit'; yawDeg: number; pitchDeg: number; distM: number };
+  { kind: 'home' | 'frame' } | { kind: 'orbit'; yawDeg: number; pitchDeg: number; distM: number };
 
 export interface ViewState {
   selectedId: Id | null;
@@ -25,7 +24,7 @@ export interface ViewState {
   /** Last camera request; `seq` increments so the same preset twice is two requests. */
   camera: { seq: number; intent: CameraIntent; snap: boolean } | null;
   /** Last time-rate request (0 = pause); `seq` increments per request. */
-  timeScale: { seq: number; scale: TimeScaleValue } | null;
+  timeScale: { seq: number; scale: Rate } | null;
   /** Alert ids the player acknowledged (alerts are condition-based; an id leaves when its condition clears). */
   ackedAlerts: string[];
 }
@@ -77,7 +76,7 @@ export const view = {
     viewStore.setState({ tab });
   },
   /** Request a time rate (0 = pause). Capped rates are remembered (GDD §6: never auto-raised). */
-  timeScale(scale: TimeScaleValue): void {
+  timeScale(scale: Rate): void {
     const s = viewStore.getState();
     viewStore.setState({ timeScale: { seq: (s.timeScale?.seq ?? 0) + 1, scale } });
   },

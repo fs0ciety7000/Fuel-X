@@ -52,7 +52,12 @@ export interface Ctx {
   preLiftoff: boolean;
 }
 
-export function makeCtx(world: Readonly<World>, prev: UiProjection | null, view: Readonly<ViewState>, env: ProjectEnv): Ctx {
+export function makeCtx(
+  world: Readonly<World>,
+  prev: UiProjection | null,
+  view: Readonly<ViewState>,
+  env: ProjectEnv,
+): Ctx {
   const utc0 = env.utcAtTick0S ?? UTC_AT_TICK0_S;
   const cd = env.countdown;
   return {

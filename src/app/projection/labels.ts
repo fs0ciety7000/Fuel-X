@@ -231,7 +231,12 @@ const STATE_STYLE: Partial<Record<Kind, Record<string, S>>> = {
     RETURNING: ['driving', 'active'],
   },
   crane: { IDLE: IDLE, LIFTING: ['current', 'active'] },
-  van: { PARKED: ['parked', 'neutral'], TO_PAD: ['driving', 'active'], AT_PAD: ['parked', 'neutral'], TO_SAFE: ['driving', 'active'] },
+  van: {
+    PARKED: ['parked', 'neutral'],
+    TO_PAD: ['driving', 'active'],
+    AT_PAD: ['parked', 'neutral'],
+    TO_SAFE: ['driving', 'active'],
+  },
   boat: {
     DOCKED: ['parked', 'neutral'],
     PATROL: ['patrol', 'active'],
@@ -245,7 +250,11 @@ const STATE_STYLE: Partial<Record<Kind, Record<string, S>>> = {
   },
 };
 
-const STATE_WORDS: Record<string, string> = { CAUGHT_SAFING: 'CAUGHT, SAFING', OFFMAP: 'OFF-SITE', OFF_SCENE: 'OFF-SCENE' };
+const STATE_WORDS: Record<string, string> = {
+  CAUGHT_SAFING: 'CAUGHT, SAFING',
+  OFFMAP: 'OFF-SITE',
+  OFF_SCENE: 'OFF-SCENE',
+};
 
 /** FSM state of an entity, or a derived state for kinds without one. */
 export function entityStateCode(e: Entity): string {

@@ -76,7 +76,7 @@ test.describe('scene', () => {
       return { stats: fx.stats(), state: fx.state(), jumpUsPerTick };
     });
     console.log(`jumpTo T-00:00:04: ${stats.jumpUsPerTick.toFixed(2)} µs/tick (headless, incl. autopilot)`);
-    expect(stats.state.clock.tClock).toBe('T-00:00:04');
+    expect(stats.state.clock.tClock).toBe('T−00:00:04');
     expect(stats.state.clock.phase).toBe('TerminalCount');
     expect(stats.state.scene.ready).toBe(true);
     expect(stats.stats.drawCalls).toBeGreaterThan(0);

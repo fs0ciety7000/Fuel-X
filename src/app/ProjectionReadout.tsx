@@ -9,7 +9,7 @@ export function ProjectionReadout({ className }: { className?: string | undefine
   const v = useStore(
     projectionStore,
     useShallow((p) => [
-      p.view.siteId,
+      p.view?.siteId ?? '',
       p.clock.tClock,
       p.clock.holding ? p.clock.holdLabel : p.clock.phaseLabel,
       p.timeScale.readout,

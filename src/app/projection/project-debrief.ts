@@ -1,71 +1,86 @@
-// Debrief panel view model (GDD §4.9, AC 22): outcome, money / reputation deltas, booster wear, decision log.
-import type { DebriefVM } from '@bridge/projection-types';
+// Debrief panel view model (GDD §4.9, AC 22; DESIGN_SYSTEM §6.29): outcome, money / reputation deltas, booster
+// wear, ledger, timestamped decision log.
+import type { DebriefVM, ValueVM } from '@bridge/projection-types';
 import { DT_S } from '@sim/index';
 import type { Ctx } from './context';
 import { credits, days, duration, num, pct, prob, signed, tClock, tonnes, utc, words } from './format';
 import { ANOMALY_LABEL, LEDGER_LABEL, OUTCOME_LABEL, OUTCOME_STATUS } from './labels';
 
+const rep = (x: number, delta = false): ValueVM => ({
+  text: delta ? signed(x, 0) : num(x, 0, '').text,
+  unit: 'REP',
+  value: x,
+});
+
 export function debriefVM(c: Ctx): DebriefVM | null {
   const cd = c.cd;
   const d = cd ? c.world.debriefs[cd.id] : undefined;
   if (!cd || !d) return null;
-  const rep = (x: number, delta = false): DebriefVM['reputationStart'] => ({
-    text: delta ? signed(x, 0) : num(x, 0, '').text,
-    unit: 'REP',
-    si: x,
-  });
+  const st = OUTCOME_STATUS[d.outcome];
+  const wearSegs = 10;
+  const facts: { label: string; value: string }[] = [
+    { label: 'CONTRACT', value: `${d.contractId} ${words(d.contractStatus)}` },
+    { label: 'HOLD TIME', value: duration(d.holdS).text },
+    { label: 'LIFTOFF', value: d.liftoffTick !== null ? `${utc(c.utc0 + d.liftoffTick * DT_S)} UTC` : '—' },
+  ];
+  if (d.recovery) {
+    facts.push(
+      { label: 'RECOVERY', value: `${d.recovery.mode} · ${words(d.recovery.result)} · ${d.recovery.decidedBy}` },
+      { label: 'CATCH P / ROLL', value: `${prob(d.recovery.p).text} / ${prob(d.recovery.roll).text}` },
+    );
+  }
+  facts.push(
+    {
+      label: 'LOX DELIVERED / LOST',
+      value: `${tonnes(d.propellant.deliveredKg.LOX).text} / ${tonnes(d.propellant.lostKg.LOX).text} T`,
+    },
+    {
+      label: 'CH4 DELIVERED / LOST',
+      value: `${tonnes(d.propellant.deliveredKg.CH4).text} / ${tonnes(d.propellant.lostKg.CH4).text} T`,
+    },
+  );
   return {
     countdownId: d.countdownId,
     title: `DEBRIEF · ${d.flightName}`,
+    stamp: OUTCOME_LABEL[d.outcome],
     outcome: d.outcome,
     outcomeLabel: OUTCOME_LABEL[d.outcome],
-    state: OUTCOME_STATUS[d.outcome],
-    contract: { id: d.contractId, status: words(d.contractStatus) },
-    moneyStart: credits(d.moneyStartCr),
-    moneyEnd: credits(d.moneyEndCr),
-    moneyDelta: credits(d.moneyDeltaCr, true),
-    reputationStart: rep(d.reputationStart),
-    reputationEnd: rep(d.reputationEnd),
-    reputationDelta: rep(d.reputationDelta, true),
-    holdTime: duration(d.holdS),
-    turnaround: days(d.turnaroundS),
+    state: st.severity,
+    facts,
+    money: { delta: credits(d.moneyDeltaCr, true), from: credits(d.moneyStartCr), to: credits(d.moneyEndCr) },
+    reputation: { delta: rep(d.reputationDelta, true), from: rep(d.reputationStart), to: rep(d.reputationEnd) },
     booster: {
       callSign: d.booster.callSign,
       state: words(d.booster.state),
-      enginesOut: d.booster.enginesOut,
-      wear: `${pct(d.booster.wearBefore).text} → ${pct(d.booster.wearAfter).text} %`,
-      wearBefore: pct(d.booster.wearBefore),
-      wearAfter: pct(d.booster.wearAfter),
       flights: `${d.booster.flightsBefore} → ${d.booster.flightsAfter}`,
+      wear: {
+        value: Math.round(d.booster.wearAfter * wearSegs),
+        max: wearSegs,
+        label: `WEAR ${pct(d.booster.wearAfter).text} %`,
+        text: `${pct(d.booster.wearBefore).text} → ${pct(d.booster.wearAfter).text} %`,
+      },
     },
-    tower: words(d.towerState),
-    recovery: d.recovery
-      ? {
-          mode: d.recovery.mode,
-          result: words(d.recovery.result),
-          p: prob(d.recovery.p),
-          roll: prob(d.recovery.roll),
-          by: d.recovery.decidedBy,
-        }
-      : null,
-    propellant: {
-      deliveredLox: tonnes(d.propellant.deliveredKg.LOX),
-      deliveredCh4: tonnes(d.propellant.deliveredKg.CH4),
-      lostLox: tonnes(d.propellant.lostKg.LOX),
-      lostCh4: tonnes(d.propellant.lostKg.CH4),
+    tower: {
+      label: words(d.towerState),
+      state: d.towerState === 'DAMAGED' ? 'danger' : 'ok',
     },
-    lines: d.lines.map((l) => ({
-      code: l.item,
+    turnaround: days(d.turnaroundS),
+    ledger: d.lines.map((l) => ({
       label: LEDGER_LABEL[l.item],
       amount: credits(l.amountCr, true),
-      reputation: { text: signed(l.reputationDelta, 0), unit: 'REP', si: l.reputationDelta },
+      reputation: l.reputationDelta !== 0 ? rep(l.reputationDelta, true) : null,
+    })),
+    decisions: d.decisions.map((x, i) => ({
+      time: tClock(x.tClockTicks),
+      id: `${i}:${x.kind}`,
+      detail: `${words(x.kind)}${x.detail ? ` · ${x.detail}` : ''}`,
+      by: x.by,
     })),
     anomalies: d.anomalies.map((a) => ({
-      code: a.anomaly,
-      label: ANOMALY_LABEL[a.anomaly],
-      source: a.source,
-      utc: utc(c.utc0 + a.tick * DT_S),
+      id: a.anomaly,
+      label: `${ANOMALY_LABEL[a.anomaly]} · ${a.source}`,
+      time: utc(c.utc0 + a.tick * DT_S),
     })),
-    decisions: d.decisions.map((x) => ({ tClock: tClock(x.tClockTicks), by: x.by, kind: words(x.kind), detail: x.detail })),
+    actions: [],
   };
 }

@@ -1,13 +1,12 @@
-// The projection before the first projector run (and the base for UI fixtures): every field present, all missing.
-import type { DisplayValue, SparkVM, StatusVM, UiProjection } from './projection-types';
+// The projection before the first projector run (and a base for UI fixtures): every field present, all missing.
+import type { UiProjection, ValueVM } from './projection-types';
 
-/** A missing value in a fixed slot: `—`, state neutral (DESIGN_SYSTEM §4). */
-export function missing(unit = ''): DisplayValue {
-  return { text: '—', unit, si: null };
+/** A missing value in a fixed slot: `—` (DESIGN_SYSTEM §4). */
+export function missing(unit = ''): ValueVM {
+  return { text: '—', unit, value: null };
 }
 
-const NONE: StatusVM = { code: 'NONE', label: '—', glyph: 'idle', severity: 'neutral' };
-const spark = (unit: string, max: number): SparkVM => ({ values: [], unit, min: 0, max, threshold: null });
+const badge = (): { warn: number; danger: number } => ({ warn: 0, danger: 0 });
 
 export function emptyProjection(): UiProjection {
   return {
@@ -20,35 +19,39 @@ export function emptyProjection(): UiProjection {
       utcS: 0,
       tClock: '—',
       tClockS: null,
+      missionClock: null,
       phase: null,
       phaseLabel: '—',
       holding: false,
       holdReason: null,
       holdLabel: '',
-      windowOpenUtc: '',
-      windowCloseUtc: '',
+      windowOpenAt: '',
+      windowCloseAt: '',
       windowState: 'NONE',
       windowRemaining: missing(),
     },
     timeScale: {
       requested: 1,
+      resumeRate: 1,
       effective: 0,
       maxAllowed: 100,
       paused: false,
       forced1x: false,
-      lockReason: null,
-      lockLabel: '',
       lagging: false,
-      effectiveRate: missing('×'),
+      effectiveRate: '—',
+      lockReason: null,
+      lockCode: null,
+      lockLabel: '',
       readout: 'SIM —',
-      skip: { enabled: false, target: '', reason: 'NOT_READY' },
+      skip: { enabled: false, target: null, reason: null, active: false },
     },
     economy: { money: missing('M CR'), reputation: missing('REP') },
     range: {
-      status: null,
+      aggregate: 'NONE',
+      state: 'neutral',
+      glyph: 'idle',
       label: 'RANGE —',
-      state: NONE,
-      reason: '',
+      reason: null,
       goCount: 0,
       total: 5,
       stations: [],
@@ -61,31 +64,26 @@ export function emptyProjection(): UiProjection {
         upperForecastPeak: missing('M/S'),
         groundLimit: missing('M/S'),
         upperLimit: missing('M/S'),
-        marginSpark: spark('', 1),
+        marginSeries: [],
       },
     },
-    alerts: { open: 0, unacked: 0, maxSeverity: 'none', label: '0 ALERTS', items: [] },
-    flight: null,
+    alerts: { open: 0, fresh: 0, state: 'neutral', label: '0 ALERTS', items: [] },
+    flightCard: null,
     countdown: null,
-    decision: null,
     inspector: null,
     lists: {
       vehicles: [],
       tanks: [],
       tasks: [],
       range: [],
+      rangeAssets: [],
       events: [],
-      badges: {
-        vehicles: { warn: 0, danger: 0 },
-        tanks: { warn: 0, danger: 0 },
-        tasks: { warn: 0, danger: 0 },
-        range: { warn: 0, danger: 0 },
-        events: { warn: 0, danger: 0 },
-      },
+      badges: { vehicles: badge(), tanks: badge(), tasks: badge(), range: badge(), events: badge() },
     },
+    decision: null,
+    debrief: null,
     labels: [],
     sites: [],
-    debrief: null,
     view: { siteId: 'LC-1', selectedId: null, followId: null, selected: null, follow: null, tab: 'vehicles' },
   };
 }

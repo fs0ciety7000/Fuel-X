@@ -39,7 +39,8 @@ function source(c: Ctx, s: Station, r: StationReading): { id: string; callSign: 
       return pick(c.cd?.boosterId);
     case 'PAD_CREW':
       if (r.driver === 'CREW_IN_HAZARD') {
-        for (const v of entitiesOf(c, 'van')) if (v.fsm.state === 'AT_PAD' || v.fsm.state === 'TO_SAFE') return pick(v.id);
+        for (const v of entitiesOf(c, 'van'))
+          if (v.fsm.state === 'AT_PAD' || v.fsm.state === 'TO_SAFE') return pick(v.id);
       }
       return null;
   }
@@ -196,7 +197,12 @@ export function alertsVM(c: Ctx, stations: readonly StationVM[]): AlertsVM {
       });
     }
     if (cd.clock.state === 'Holding' && cd.hold) {
-      specs.push({ id: 'hold', severity: 'warn', text: `COUNT HOLDING · ${cd.hold.reason.replace(/_/g, ' ')}`, entityId: null });
+      specs.push({
+        id: 'hold',
+        severity: 'warn',
+        text: `COUNT HOLDING · ${cd.hold.reason.replace(/_/g, ' ')}`,
+        entityId: null,
+      });
     }
   }
   if (cd && c.world.anomalies[cd.id]?.leak.active) {
@@ -215,10 +221,12 @@ export function alertsVM(c: Ctx, stations: readonly StationVM[]): AlertsVM {
     if (r && r.decisionRequiredTick !== null && r.mode === null && r.result === null) {
       specs.push({ id: `catch:${b.id}`, severity: 'warn', text: `${b.callSign} CATCH DECISION OPEN`, entityId: b.id });
     }
-    if (b.fsm.state === 'LOST') specs.push({ id: `lost:${b.id}`, severity: 'danger', text: `${b.callSign} LOST`, entityId: b.id });
+    if (b.fsm.state === 'LOST')
+      specs.push({ id: `lost:${b.id}`, severity: 'danger', text: `${b.callSign} LOST`, entityId: b.id });
   }
   for (const t of entitiesOf(c, 'tower')) {
-    if (t.fsm.state === 'DAMAGED') specs.push({ id: `damaged:${t.id}`, severity: 'danger', text: `${t.callSign} DAMAGED`, entityId: t.id });
+    if (t.fsm.state === 'DAMAGED')
+      specs.push({ id: `damaged:${t.id}`, severity: 'danger', text: `${t.callSign} DAMAGED`, entityId: t.id });
   }
   if (cd?.scrubReason === 'WINDOW_CLOSED') {
     specs.push({ id: 'window', severity: 'danger', text: `WINDOW MISSED · ${cd.contractId}`, entityId: null });

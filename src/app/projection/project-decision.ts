@@ -138,26 +138,50 @@ export function countdownActions(c: Ctx): ActionVM[] {
   if (!cd || !c.preLiftoff) return [];
   const holding = cd.clock.state === 'Holding';
   const leakFix = cd.hold?.reason === 'LEAK_FIX';
-  const goBlock = !holding ? 'NOT_HOLDING' : leakFix ? 'LEAK_FIX_IN_PROGRESS' : releaseBlocker(c.world as World, cd as Countdown);
+  const goBlock = !holding
+    ? 'NOT_HOLDING'
+    : leakFix
+      ? 'LEAK_FIX_IN_PROGRESS'
+      : releaseBlocker(c.world as World, cd as Countdown);
   const rec = recycleBlocker(c, cd);
   return [
-    action('GO', 'GO', { t: 'Go', countdownId: cd.id }, {
-      enabled: goBlock === null,
-      reason: goBlock,
-      variant: 'primary',
-      key: '⏎',
-    }),
-    action('HOLD', 'HOLD', { t: 'Hold', countdownId: cd.id }, { enabled: !holding, reason: 'ALREADY_HOLDING', key: 'H' }),
-    action('RECYCLE', 'RECYCLE', { t: 'Recycle', countdownId: cd.id }, {
-      enabled: rec === null,
-      reason: rec,
-      key: 'R',
-      confirm: [cq('T-CLOCK BACK TO', text(tClock(RECYCLE_TO_TICKS))), cq('COST', text('TIME ONLY'))],
-    }),
-    action('SCRUB', 'SCRUB', { t: 'Scrub', countdownId: cd.id }, {
-      variant: 'danger',
-      confirm: scrubConsequences(cd),
-    }),
+    action(
+      'GO',
+      'GO',
+      { t: 'Go', countdownId: cd.id },
+      {
+        enabled: goBlock === null,
+        reason: goBlock,
+        variant: 'primary',
+        key: '⏎',
+      },
+    ),
+    action(
+      'HOLD',
+      'HOLD',
+      { t: 'Hold', countdownId: cd.id },
+      { enabled: !holding, reason: 'ALREADY_HOLDING', key: 'H' },
+    ),
+    action(
+      'RECYCLE',
+      'RECYCLE',
+      { t: 'Recycle', countdownId: cd.id },
+      {
+        enabled: rec === null,
+        reason: rec,
+        key: 'R',
+        confirm: [cq('T-CLOCK BACK TO', text(tClock(RECYCLE_TO_TICKS))), cq('COST', text('TIME ONLY'))],
+      },
+    ),
+    action(
+      'SCRUB',
+      'SCRUB',
+      { t: 'Scrub', countdownId: cd.id },
+      {
+        variant: 'danger',
+        confirm: scrubConsequences(cd),
+      },
+    ),
   ];
 }
 
@@ -180,7 +204,8 @@ function catchDecision(c: Ctx, cd: Readonly<Countdown>, queued: number): CatchDe
   const failedCr = ec.boosterReplacementCostCr + ec.towerRepairCostCr + ec.towerRepairDowntimeS * ec.opsCostCrPerS;
   const evCatch = -(1 - p) * failedCr;
   const evDivert = -ec.boosterReplacementCostCr;
-  const band = p >= cm.bands.clear ? 'CLEAR' : p >= cm.bands.lean ? 'LEAN' : p >= cm.bands.contested ? 'CONTESTED' : 'AGAINST';
+  const band =
+    p >= cm.bands.clear ? 'CLEAR' : p >= cm.bands.lean ? 'LEAN' : p >= cm.bands.contested ? 'CONTESTED' : 'AGAINST';
   const committed = r.mode !== null && r.decidedBy !== null ? { mode: r.mode, by: r.decidedBy } : null;
   const forced = r.forcedDivert;
   const closed = committed !== null || forced !== null;
@@ -190,38 +215,53 @@ function catchDecision(c: Ctx, cd: Readonly<Countdown>, queued: number): CatchDe
   const windEff = cm.sigmaWindCoefMPerMPerS * Math.max(0, r.towerWindMPerS - cm.sigmaWindRefMPerS);
   const lowProp = r.landingPropKg < cm.lowPropRefKg;
   const sigmaEffect = (m: number): string => (m > 0 ? `σ +${fixed(m, 1)} M` : 'σ +0.0 M');
-  const pState: Severity = band === 'CLEAR' ? 'ok' : band === 'LEAN' ? 'neutral' : band === 'CONTESTED' ? 'warn' : 'danger';
+  const pState: Severity =
+    band === 'CLEAR' ? 'ok' : band === 'LEAN' ? 'neutral' : band === 'CONTESTED' ? 'warn' : 'danger';
   return {
     kind: 'CATCH',
     id: `catch:${b.id}`,
     countdownId: cd.id,
     title: `D3 CATCH OR DIVERT · ${b.callSign}`,
-    question: forced ? `FORCED DIVERT · ${forced.replace(/_/g, ' ')}` : `CATCH ${b.callSign} ON TOWER-1 OR DIVERT OFFSHORE?`,
-    autoNote: forced ? 'FLIGHT COMPUTER DIVERTS (FORCED)' : `AUTO AT DEADLINE: ${auto} (P ${auto === 'CATCH' ? '≥' : '<'} ${thr})`,
+    question: forced
+      ? `FORCED DIVERT · ${forced.replace(/_/g, ' ')}`
+      : `CATCH ${b.callSign} ON TOWER-1 OR DIVERT OFFSHORE?`,
+    autoNote: forced
+      ? 'FLIGHT COMPUTER DIVERTS (FORCED)'
+      : `AUTO AT DEADLINE: ${auto} (P ${auto === 'CATCH' ? '≥' : '<'} ${thr})`,
     deadline: deadline(c, 'LANDING BURN', r.deadlineTick, r.decisionRequiredTick, true),
     options: [
-      option('CATCH', 'GO FOR CATCH', { t: 'CatchDecision', boosterId: b.id, choice: 'CATCH' }, {
-        enabled: !closed,
-        reason: why,
-        variant: 'primary',
-        key: 'C',
-        ev: credits(evCatch, true),
-        auto: auto === 'CATCH' && !forced,
-        consequences: [
-          cq('SUCCESS', prob(p), pState),
-          cq('FAILED CATCH', credits(-failedCr, true), 'danger'),
-          cq('TOWER DOWN IF FAILED', { ...days(ec.towerRepairDowntimeS, 0) }, 'warn'),
-        ],
-      }),
-      option('DIVERT', 'DIVERT', { t: 'CatchDecision', boosterId: b.id, choice: 'DIVERT' }, {
-        enabled: !closed,
-        reason: why,
-        variant: 'danger',
-        key: 'D',
-        ev: credits(evDivert, true),
-        auto: auto === 'DIVERT' || forced !== null,
-        consequences: [cq('BOOSTER EXPENDED', credits(evDivert, true), 'warn'), cq('TOWER', text('SAFE'), 'ok')],
-      }),
+      option(
+        'CATCH',
+        'GO FOR CATCH',
+        { t: 'CatchDecision', boosterId: b.id, choice: 'CATCH' },
+        {
+          enabled: !closed,
+          reason: why,
+          variant: 'primary',
+          key: 'C',
+          ev: credits(evCatch, true),
+          auto: auto === 'CATCH' && !forced,
+          consequences: [
+            cq('SUCCESS', prob(p), pState),
+            cq('FAILED CATCH', credits(-failedCr, true), 'danger'),
+            cq('TOWER DOWN IF FAILED', { ...days(ec.towerRepairDowntimeS, 0) }, 'warn'),
+          ],
+        },
+      ),
+      option(
+        'DIVERT',
+        'DIVERT',
+        { t: 'CatchDecision', boosterId: b.id, choice: 'DIVERT' },
+        {
+          enabled: !closed,
+          reason: why,
+          variant: 'danger',
+          key: 'D',
+          ev: credits(evDivert, true),
+          auto: auto === 'DIVERT' || forced !== null,
+          consequences: [cq('BOOSTER EXPENDED', credits(evDivert, true), 'warn'), cq('TOWER', text('SAFE'), 'ok')],
+        },
+      ),
     ],
     state: committed ? 'neutral' : pState === 'ok' ? 'warn' : pState,
     blocking: true,
@@ -255,7 +295,11 @@ function catchDecision(c: Ctx, cd: Readonly<Countdown>, queued: number): CatchDe
         state: lowProp ? 'warn' : 'neutral',
       },
     ],
-    ev: { catch: credits(evCatch, true), divert: credits(evDivert, true), favours: evCatch > evDivert ? 'CATCH' : 'DIVERT' },
+    ev: {
+      catch: credits(evCatch, true),
+      divert: credits(evDivert, true),
+      favours: evCatch > evDivert ? 'CATCH' : 'DIVERT',
+    },
     autoChoice: forced ? 'DIVERT' : auto,
     forcedDivert: forced,
     committed,
@@ -301,24 +345,40 @@ function leakDecision(c: Ctx, cd: Readonly<Countdown>, queued: number): LeakDeci
     title: 'D3B GSE LEAK · OLM-1 QUICK DISCONNECT',
     question: 'CONTINUE THE LOAD DEGRADED OR HOLD TO FIX?',
     autoNote: 'NO ANSWER: LOAD CONTINUES DEGRADED',
-    deadline: deadline(c, 'WINDOW CLOSE', cd.windowCloseTick, c.world.anomalies[cd.id]?.fired.find((f) => f.anomaly === 'A3')?.tick ?? c.tick, false),
+    deadline: deadline(
+      c,
+      'WINDOW CLOSE',
+      cd.windowCloseTick,
+      c.world.anomalies[cd.id]?.fired.find((f) => f.anomaly === 'A3')?.tick ?? c.tick,
+      false,
+    ),
     options: [
-      option('DEGRADED', 'CONTINUE DEGRADED', { t: 'LeakResponse', choice: 'DEGRADED' }, {
-        key: '1',
-        auto: true,
-        consequences: [
-          cq('LOAD RATE', pct(c.world.logistics.loadRateFactor, 0)),
-          cq('VEHICLE', text('MARGINAL · ANOMALY RISK UP'), 'warn'),
-        ],
-      }),
-      option('HOLD_FIX', 'HOLD TO FIX', { t: 'LeakResponse', choice: 'HOLD_FIX' }, {
-        variant: 'primary',
-        key: '2',
-        consequences: [
-          cq('HOLD', { text: fixMin, unit: 'MIN', value: anomalyData.A3.fixDurationS }, 'warn'),
-          cq('WINDOW / FARM', text('KEEP DRAINING'), 'warn'),
-        ],
-      }),
+      option(
+        'DEGRADED',
+        'CONTINUE DEGRADED',
+        { t: 'LeakResponse', choice: 'DEGRADED' },
+        {
+          key: '1',
+          auto: true,
+          consequences: [
+            cq('LOAD RATE', pct(c.world.logistics.loadRateFactor, 0)),
+            cq('VEHICLE', text('MARGINAL · ANOMALY RISK UP'), 'warn'),
+          ],
+        },
+      ),
+      option(
+        'HOLD_FIX',
+        'HOLD TO FIX',
+        { t: 'LeakResponse', choice: 'HOLD_FIX' },
+        {
+          variant: 'primary',
+          key: '2',
+          consequences: [
+            cq('HOLD', { text: fixMin, unit: 'MIN', value: anomalyData.A3.fixDurationS }, 'warn'),
+            cq('WINDOW / FARM', text('KEEP DRAINING'), 'warn'),
+          ],
+        },
+      ),
     ],
     state: 'danger',
     blocking: true,
@@ -351,15 +411,20 @@ function pollDecision(
   if (counts.MARGINAL) parts.push(`${counts.MARGINAL} ${GO_LABEL.MARGINAL}`);
   if (counts.NO_GO) parts.push(`${counts.NO_GO} ${GO_LABEL.NO_GO}`);
   parts.push(`${counts.GO} OF ${stations.length} GO`);
-  const pollLabel = hold.poll ? `${tClock(cd.tClockTicks)} ${POLL_LABEL[hold.poll]}` : `${tClock(cd.tClockTicks)} ${PHASE_LABEL[cd.phase.state]}`;
+  const pollLabel = hold.poll
+    ? `${tClock(cd.tClockTicks)} ${POLL_LABEL[hold.poll]}`
+    : `${tClock(cd.tClockTicks)} ${PHASE_LABEL[cd.phase.state]}`;
   const marginal = stations.filter((s) => s.status === 'MARGINAL').map((s) => s.label);
   return {
     kind: 'POLL',
     id: `poll:${hold.poll ?? hold.reason}`,
     countdownId: cd.id,
     title: `D2 GO / NO-GO · ${pollLabel}`,
-    question: hold.poll ? 'PROCEED, RECYCLE OR SCRUB?' : `COUNT HOLDING · ${hold.reason.replace(/_/g, ' ')} · RESUME, RECYCLE OR SCRUB?`,
-    autoNote: hold.reason === 'LEAK_FIX' ? 'RESUMES WHEN THE LEAK IS FIXED' : 'NO ANSWER: HOLD CONTINUES, WINDOW CLOSES',
+    question: hold.poll
+      ? 'PROCEED, RECYCLE OR SCRUB?'
+      : `COUNT HOLDING · ${hold.reason.replace(/_/g, ' ')} · RESUME, RECYCLE OR SCRUB?`,
+    autoNote:
+      hold.reason === 'LEAK_FIX' ? 'RESUMES WHEN THE LEAK IS FIXED' : 'NO ANSWER: HOLD CONTINUES, WINDOW CLOSES',
     deadline: deadline(c, 'WINDOW CLOSE', cd.windowCloseTick, cd.clock.enteredTick, false),
     // HOLD is the state you are in: the strip offers the ways out.
     options: actions.filter((a) => a.id !== 'HOLD').map((a) => asOption(a)),
@@ -445,7 +510,10 @@ function propDecision(
     if (!t.order || t.fsm.state === 'OUTBOUND') continue;
     if (!t.chartered) busy++;
     const at = tClockAt(c, t.order.gateEtaTick);
-    pending.push({ label: `${t.callSign} ${t.fluid}${t.order.rush ? ' RUSH' : ''}`, eta: { text: tClock(at), unit: '', value: at * DT_S } });
+    pending.push({
+      label: `${t.callSign} ${t.fluid}${t.order.rush ? ' RUSH' : ''}`,
+      eta: { text: tClock(at), unit: '', value: at * DT_S },
+    });
   }
   return {
     kind: 'PROP_MARGIN',
@@ -462,7 +530,11 @@ function propDecision(
     pending: null,
     reserves: [reserve('lox', 'LOX RESERVE', lox.holdS), reserve('ch4', 'CH4 RESERVE', ch4.holdS)],
     orders: pending,
-    fleet: { value: busy, max: Math.max(fleet, ld.fleet.lx + ld.fleet.mx), label: `${busy} OF ${Math.max(fleet, ld.fleet.lx + ld.fleet.mx)} TRUCKS BOOKED` },
+    fleet: {
+      value: busy,
+      max: Math.max(fleet, ld.fleet.lx + ld.fleet.mx),
+      label: `${busy} OF ${Math.max(fleet, ld.fleet.lx + ld.fleet.mx)} TRUCKS BOOKED`,
+    },
   };
 }
 
@@ -470,12 +542,7 @@ export function decisionVM(c: Ctx, stations: StationVM[], actions: ActionVM[], o
   const cd = c.cd;
   if (!cd) return null;
   const b = entity(c, cd.boosterId);
-  const open = [
-    b?.kind === 'booster' && catchOpen(c, b),
-    leakOpen(c, cd),
-    pollOpen(c, cd),
-    propOpen(c, cd, stations),
-  ];
+  const open = [b?.kind === 'booster' && catchOpen(c, b), leakOpen(c, cd), pollOpen(c, cd), propOpen(c, cd, stations)];
   const queued = Math.max(0, open.filter(Boolean).length - 1);
   return (
     catchDecision(c, cd, queued) ??
