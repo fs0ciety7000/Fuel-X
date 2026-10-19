@@ -18,6 +18,8 @@ export interface RendererStats {
   programs: number;
   /** Live FX sprites (upper bound from the emitters' state, 5.6; budget ≤ 20 k). */
   particles: number;
+  /** Point vertices submitted by the FX draws this frame (included in `points`; the cloud alone = points − fxPoints). */
+  fxPoints: number;
 }
 
 export interface FrameShared {
@@ -46,6 +48,15 @@ export function createFrameShared(): FrameShared {
     camDist: 1000,
     movedNear: true,
     frames: 0,
-    stats: { drawCalls: 0, triangles: 0, points: 0, geometries: 0, textures: 0, programs: 0, particles: 0 },
+    stats: {
+      drawCalls: 0,
+      triangles: 0,
+      points: 0,
+      geometries: 0,
+      textures: 0,
+      programs: 0,
+      particles: 0,
+      fxPoints: 0,
+    },
   };
 }

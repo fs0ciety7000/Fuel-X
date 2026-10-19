@@ -50,16 +50,19 @@ test.describe('world', () => {
     });
     await page.goto('/play.html?debug=1');
     await page.waitForFunction(() => '__fuelx' in window);
-    const home = await fx<{ points: number; drawCalls: number; t: string }>(
+    const home = await fx<{ points: number; fxPoints: number; drawCalls: number; t: string }>(
       page,
       `await fx.seed(42); fx.pause(); await fx.ready();
        await fx.jumpTo('T-00:00:04'); fx.freezeVisuals(true); fx.camera('home'); await fx.frames(3);
-       const s = fx.stats(); return { points: s.points, drawCalls: s.drawCalls, t: fx.state().clock.tClock };`,
+       const s = fx.stats();
+       return { points: s.points, fxPoints: s.fxPoints, drawCalls: s.drawCalls, t: fx.state().clock.tClock };`,
     );
     console.log('world home', JSON.stringify(home));
     expect(home.t).toBe('T-00:00:04');
-    expect(home.points).toBeGreaterThan(0);
-    expect(home.points).toBeLessThanOrEqual(300_000); // ARCHITECTURE §13.1
+    // renderer.info counts every point vertex: the FX sprites (5.6, own ≤ 20 k budget) are not part of the cloud
+    const cloud = home.points - home.fxPoints;
+    expect(cloud).toBeGreaterThan(0);
+    expect(cloud).toBeLessThanOrEqual(300_000); // ARCHITECTURE §13.1
     await shot(page, 'phase5-world-home@T-00-00-04');
 
     // Sea-facing view from behind the pad: shoreline foam, crest streaks, scrub dots.

@@ -250,6 +250,8 @@ export class FxCore {
     z.end((2 * tanHalf) / hPx);
 
     shared.stats.particles = this.plume.liveEstimate() + this.steam.liveEstimate();
+    shared.stats.fxPoints =
+      (this.plume.points.visible ? this.plume.capacity : 0) + (this.steam.points.visible ? this.steam.capacity : 0);
   }
 }
 

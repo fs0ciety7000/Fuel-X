@@ -203,6 +203,7 @@ export function createDebugApi(game: Game): FuelxDebug {
         textures: 0,
         programs: 0,
         particles: 0,
+        fxPoints: 0,
       };
       const scale = time.effectiveScale(world, countdown);
       return {

@@ -83,10 +83,10 @@ void main() {
       if (aSeed.w < 0.62) {
         float side = aSeed.w < 0.38 ? -1.0 : 1.0;
         x = side * (hb + s * 0.354) * (0.9 + 0.2 * aSeed.y); // Kelvin half-angle 19.5 deg
-        size = 1.0 + 0.8 * ph;
+        size = 1.5 + 1.2 * ph;
       } else {
         x = (aSeed.y - 0.5) * hb * 2.0 * (1.0 + s / 60.0);
-        size = 1.6 + 3.0 * ph;
+        size = 2.2 + 3.6 * ph;
       }
       local = vec3(x, 0.0, bp.y - s);
       fade = pow(1.0 - ph, 1.3);
