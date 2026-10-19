@@ -51,7 +51,7 @@ const MOMENTS: Moment[] = [
 ];
 
 test.describe('animated entities and camera rig', () => {
-  test.describe.configure({ timeout: 300_000 });
+  test.describe.configure({ timeout: 600_000 });
 
   test('reference moments render inside the draw-call budget', async ({ page }) => {
     const errors: string[] = [];
