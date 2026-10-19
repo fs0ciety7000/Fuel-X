@@ -4,6 +4,17 @@
 > [ADR 0009](adr/0009-showcase-site.md) (showcase at `/`, game at `/play`, one app). Config in the repo:
 > [`Dockerfile`](../Dockerfile), [`deploy/nginx.conf`](../deploy/nginx.conf). No secrets in the repo.
 
+## Live configuration (2026-10-19)
+
+| Setting | Value |
+|---|---|
+| Coolify app | `fuel-x` (uuid `gskrxnrm9mrxguetw0abgplv`) on `coolify.fs0ciety.org` |
+| Branch | `claude/admiring-euler-m6jg59` (the repository default branch), auto-deploy on push |
+| Build pack | Dockerfile (`/Dockerfile`), port 80 |
+| Domains | `https://fuelx.fs0ciety.org,https://fuel.fs0ciety.org` (the game's old domain stays as an alias) |
+| Healthcheck | `GET /healthz` on port 80 |
+| DNS | Cloudflare `CNAME fuelx → fs0ciety.org`, proxied (same as `fuel`); zone SSL Full (strict). Expect a few minutes of Cloudflare 526 on a new name until Traefik has the origin certificate |
+
 ## Target
 
 | URL | Serves |
@@ -33,17 +44,17 @@ the same app as a second domain, or redirect to `fuelx` — see step 4.
    (`Projects → + Add`).
 2. **Application** (reuse `fuel-x`, or `+ New → Application → Public/Private GitHub repository`):
    - Repository: `fs0ciety7000/fuel-x`.
-   - **Branch**: the branch to publish. Until this work is merged, `claude/vitrine-site`; after the merge, the default
-     branch. Auto-deploy on push: on.
+   - **Branch**: the repository default branch (`claude/admiring-euler-m6jg59`). Auto-deploy on push: on.
    - **Build pack**: `Dockerfile` (location `/Dockerfile`, base directory `/`).
    - **Ports exposes**: `80`.
 3. **Healthcheck** (Configuration → Healthcheck): enabled, path `/healthz`, port `80`, scheme `http`, expected `200`.
 4. **Domains** (Configuration → General → Domains): `https://fuelx.fs0ciety.org`.
    - To keep the game's old address working, add it to the same field, comma-separated:
      `https://fuelx.fs0ciety.org,https://fuel.fs0ciety.org`. Coolify issues a certificate for each.
-5. **DNS** (registrar / Cloudflare for `fs0ciety.org`): an `A` record `fuelx` → `152.53.176.13` (the same origin as the
-   other Coolify apps). With Cloudflare: start **DNS only** (grey cloud) so Traefik can complete the Let's Encrypt
-   HTTP challenge; switch the proxy on afterwards if wanted (zone SSL mode **Full (strict)**).
+5. **DNS** (Cloudflare, zone `fs0ciety.org`): `CNAME fuelx → fs0ciety.org`, proxied, like the other apps (the apex
+   points at the Coolify origin `152.53.176.13`). Zone SSL is **Full (strict)**, so Cloudflare answers **526** until
+   Traefik has issued the Let's Encrypt certificate for the new name (a few minutes; the HTTP challenge passes through
+   the proxy). If it stays 526, switch the record to DNS only until the certificate exists, then proxy again.
 6. **Deploy** (`Deploy` button, or push to the branch). Watch the build log: it must end with
    `prerender: dist/index.html (… KB markup, 3 font preloads)` in the build stage.
 7. **Verify** (from any machine):
