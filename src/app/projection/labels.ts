@@ -1,6 +1,6 @@
 // Display vocabulary for the projection: codes → uppercase words, glyph ids and semantic states (DESIGN_SYSTEM §2.3,
 // §7). English only (i18n-ready: every label is keyed by a machine code). Data tables, no logic beyond lookups.
-import type { GlyphId, Severity, StatusVM } from '@bridge/projection-types';
+import type { GlyphId, Severity } from '@bridge/projection-types';
 import type {
   AnomalyId,
   BoatRole,
@@ -16,6 +16,14 @@ import type {
   StationDriver,
 } from '@sim/types';
 import { words } from './format';
+
+/** Glyph + word + semantic state of a status (chips, rows, labels); mapped onto the VM shapes by the projectors. */
+export interface StatusVM {
+  code: string;
+  label: string;
+  glyph: GlyphId;
+  severity: Severity;
+}
 
 export const KIND_LABEL: Record<Kind, string> = {
   booster: 'BOOSTER',

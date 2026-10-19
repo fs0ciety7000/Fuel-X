@@ -12,12 +12,20 @@
   z-index: var(--fx-z-world);
 }
 
-/* Temporary Phase 5 readout: ink on paper, one hairline frame, top-left gutter. */
-.readout {
+/* Temporary readouts until the 6.3 HUD frame: ink on paper, one hairline frame, top-left gutter. */
+.readouts {
   position: absolute;
   top: var(--fx-hud-gutter);
   left: var(--fx-hud-gutter);
   z-index: var(--fx-z-hud);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--fx-space-1);
+  pointer-events: none;
+}
+
+.readout {
   margin: 0;
   padding: var(--fx-space-2) var(--fx-space-3);
   border: var(--fx-rule-frame);

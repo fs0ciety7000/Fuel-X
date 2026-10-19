@@ -2,9 +2,10 @@ import { Scene } from '@render/index';
 import { useEffect, useRef } from 'react';
 import styles from './App.module.css';
 import type { Game } from './game';
+import { ProjectionReadout } from './ProjectionReadout';
 
-// Composition root view: full-screen scene + a temporary debug readout (the HUD arrives in Phase 6).
-// The readout is written imperatively by the game loop at 4 Hz; React renders this tree once.
+// Composition root view: full-screen scene + temporary readouts (the HUD frame arrives in 6.3). The debug readout
+// is written imperatively by the game loop at 4 Hz; the projection readout is a throttled store subscriber.
 export function App({ game }: { game: Game }) {
   const readout = useRef<HTMLParagraphElement>(null);
   useEffect(() => game.bindReadout(readout.current), [game]);
@@ -21,9 +22,12 @@ export function App({ game }: { game: Game }) {
         input={game.input}
         onApi={game.attachScene}
       />
-      <p ref={readout} className={styles.readout} data-testid="debug-readout">
-        LOADING
-      </p>
+      <div className={styles.readouts}>
+        <p ref={readout} className={styles.readout} data-testid="debug-readout">
+          LOADING
+        </p>
+        <ProjectionReadout className={styles.readout} />
+      </div>
     </main>
   );
 }

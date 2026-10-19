@@ -88,7 +88,7 @@ function propFraction(p: Stage['prop']): number {
 
 const asStage = (e: Entity | null): Stage | null => (e?.kind === 'booster' || e?.kind === 'ship' ? e : null);
 
-const flying = (e: Entity): e is Stage => (e.kind === 'booster' || e.kind === 'ship') && !!e.flight && !e.flight.done;
+const flying = (e: Entity): boolean => (e.kind === 'booster' || e.kind === 'ship') && !!e.flight && !e.flight.done;
 
 const metric = (key: string, label: string, value: DisplayValue, severity: Severity = 'neutral'): MetricVM => ({
   key,

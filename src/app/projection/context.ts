@@ -1,5 +1,5 @@
 // Shared inputs of the projection sub-projectors.
-import type { EventRowVM, UiProjection } from '@bridge/projection-types';
+import type { EventVM, UiProjection } from '@bridge/projection-types';
 import type { ViewState } from '@bridge/stores';
 import { DT_S, isPreLiftoff } from '@sim/index';
 import type { Countdown, Entity, Id, Kind, World } from '@sim/types';
@@ -32,7 +32,7 @@ export interface ProjectEnv {
   time: TimeInputs;
   spark: SparkSource;
   /** Newest-first event rows (EventLog). */
-  events: readonly EventRowVM[];
+  events: readonly EventVM[];
   seq: number;
   utcAtTick0S?: number;
   /** Render-side visibility (snapshot flags); entities it hides get no label. */

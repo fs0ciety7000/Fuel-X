@@ -1,7 +1,7 @@
 // Events tab / toasts source (DESIGN_SYSTEM §6.23): drained SimEvents → formatted log rows, newest first, capped.
 // Fed from the bus once per frame; names are resolved at log time (despawned entities keep their call-sign).
 // Low-signal bookkeeping events (ledger postings, tower mechanism steps, clock FSM echoes) are not logged.
-import type { EventRowVM, GlyphId, Severity } from '@bridge/projection-types';
+import type { EventVM, GlyphId, Severity } from '@bridge/projection-types';
 import type { SimEvent, SimEventType, World } from '@sim/types';
 import { DT_S } from '@sim/index';
 import { credits, fixed, tClock, tonnes, utc, words } from './format';
@@ -151,7 +151,7 @@ export function describeEvent(e: SimEvent): RowText | null {
 
 /** Newest-first event rows; the array keeps identity until a row is added. */
 export class EventLog {
-  private rows: EventRowVM[] = [];
+  private rows: EventVM[] = [];
   private nextKey = 1;
   /** Bumped when rows change. */
   version = 0;
@@ -162,7 +162,7 @@ export class EventLog {
   }
 
   add(world: Readonly<World>, batch: readonly SimEvent[], utcAtTick0S: number): void {
-    let added: EventRowVM[] | null = null;
+    let added: EventVM[] | null = null;
     for (const e of batch) {
       const d = describeEvent(e);
       if (!d) continue;
@@ -170,16 +170,17 @@ export class EventLog {
       const callSign =
         e.t === 'Spawned' || e.t === 'Despawned' ? e.callSign : ent ? ent.callSign : d.entityId ? '' : 'LC-1';
       (added ??= []).push({
-        key: this.nextKey++,
-        tick: e.tick,
-        utc: utc(utcAtTick0S + e.tick * DT_S),
+        id: String(this.nextKey++),
+        time: utc(utcAtTick0S + e.tick * DT_S),
         tClock: d.tClockTicks !== undefined ? tClock(d.tClockTicks) : '',
+        tick: e.tick,
         code: e.t,
-        severity: d.severity,
+        state: d.severity,
         glyph: d.glyph,
         entityId: d.entityId,
-        callSign,
-        text: d.text,
+        entityCode: callSign || null,
+        message: d.text,
+        acked: false,
       });
     }
     if (!added) return;
@@ -188,7 +189,7 @@ export class EventLog {
     this.version++;
   }
 
-  list(): EventRowVM[] {
+  list(): EventVM[] {
     return this.rows;
   }
 }

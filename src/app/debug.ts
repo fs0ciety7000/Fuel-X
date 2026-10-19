@@ -1,5 +1,7 @@
 // `window.__fuelx` (ARCHITECTURE §9): deterministic state control for Playwright visual/e2e/perf runs.
 // Installed when import.meta.env.DEV or `?debug=1`. Every method is safe from `page.evaluate`.
+import { view } from '@bridge/index';
+import type { UiProjection } from '@bridge/index';
 import { DT_S, WORLD_SCHEMA, findByCallSign } from '@sim/index';
 import type { Phase } from '@sim/types';
 import { SITE_VIEWS } from '@render/index';
@@ -8,8 +10,6 @@ import { lowFxRequested } from './debug/enabled';
 import { reactCommitsPerS } from './debug/react-commits';
 import type { Game } from './game';
 import { parseJumpTarget } from './jump';
-import { projectStub } from './projection/stub';
-import type { UiProjectionStub } from './projection/stub';
 import type { TimeScale } from './time/time-control';
 import { APP_VERSION } from './version';
 
@@ -23,7 +23,13 @@ export interface FuelxStats extends RendererStats {
   timeScale: number;
   effectiveTimeScale: number;
   reactCommitsPerS: number;
+  /** UI projector cost per run (6.1), µs, and age of the published projection, ms. */
+  projectorUs: { mean: number; p95: number; max: number; last: number };
+  projections: { runs: number; flushes: number; ageMs: number };
 }
+
+/** `state()`: a fresh UiProjection (flushed on call) + scene readiness. */
+export type FuelxState = UiProjection & { scene: { ready: boolean; frames: number }; frozen: boolean };
 
 export interface FuelxDebug {
   version: string;
@@ -49,7 +55,7 @@ export interface FuelxDebug {
   /** Low-cost visuals for software GL (no dot screen, point cloud or post); also `?lowfx=1`. */
   lowFx(on: boolean): void;
   frames(n: number): Promise<void>;
-  state(): UiProjectionStub;
+  state(): FuelxState;
   stats(): FuelxStats;
   save(): string;
   load(json: string): Promise<void>;
@@ -102,8 +108,9 @@ export function createDebugApi(game: Game): FuelxDebug {
 
     seed: async (seed, opts) => {
       await host.newGame({ seed, scenario: opts?.scenario ?? 'mvp', autopilot: opts?.autopilot ?? true });
-      controls.followId = null;
-      controls.cameraRequest = { kind: 'home' };
+      game.projector.reset();
+      view.reset();
+      view.camera({ kind: 'home' });
       game.afterTeleport();
       await frames(1);
     },
@@ -114,11 +121,11 @@ export function createDebugApi(game: Game): FuelxDebug {
       await frames(1);
     },
 
-    pause: () => time.setScale(0),
-    resume: () => time.setScale(time.requested),
+    pause: () => view.timeScale(0),
+    resume: () => view.timeScale(time.requested),
     setTimeScale: (s) => {
       if (![0, 1, 10, 100].includes(s)) throw new Error('BAD_TIME_SCALE');
-      time.setScale(s);
+      view.timeScale(s);
     },
 
     step: (n = 1) => {
@@ -127,29 +134,25 @@ export function createDebugApi(game: Game): FuelxDebug {
       loop.resetAccumulator();
     },
 
+    // Camera / selection go through the view store like the HUD (6.1); the game applies them to the controls.
     follow: (callSign, opts) => {
       if (callSign === null) {
-        controls.followId = null;
-        controls.cameraRequest = { kind: 'home' };
+        view.follow(null);
       } else {
         const e = findByCallSign(host.inspect().world, callSign);
         if (!e) throw new Error(`UNKNOWN_CALLSIGN ${callSign}`);
-        controls.followId = e.id;
-        controls.cameraRequest = { kind: 'frame' };
+        view.follow(e.id);
       }
       controls.snapCamera = opts?.snap ?? false;
     },
 
     site: (code) => {
       if (!(code in SITE_VIEWS)) throw new Error(`UNKNOWN_SITE ${code}`);
-      controls.siteId = code;
-      controls.followId = null;
-      controls.cameraRequest = { kind: 'home' };
+      view.site(code);
     },
 
     camera: (preset, opts) => {
-      controls.cameraRequest = typeof preset === 'string' ? { kind: preset } : { kind: 'orbit', ...preset };
-      if (opts?.snap) controls.snapCamera = true;
+      view.camera(typeof preset === 'string' ? { kind: preset } : { kind: 'orbit', ...preset }, opts);
     },
 
     freezeVisuals: (on) => {
@@ -171,24 +174,11 @@ export function createDebugApi(game: Game): FuelxDebug {
 
     frames,
 
-    state: () => {
-      const { world, countdown } = host.inspect();
-      const follow = controls.followId ? (world.entities.byId[controls.followId]?.callSign ?? null) : null;
-      return projectStub({
-        world,
-        countdown,
-        timeScale: {
-          requested: time.requested,
-          effective: time.effectiveScale(world, countdown),
-          maxAllowed: time.maxAllowed(world, countdown),
-          lagging: time.lagging,
-          paused: time.paused,
-        },
-        view: { site: controls.siteId, follow, frozen: controls.frozen },
-        scene: { ready: game.scene?.isReady() ?? false, frames: game.scene?.frames() ?? 0 },
-        hidden: (id) => game.isHidden(id),
-      });
-    },
+    state: () => ({
+      ...game.projector.flush(),
+      scene: { ready: game.scene?.isReady() ?? false, frames: game.scene?.frames() ?? 0 },
+      frozen: controls.frozen,
+    }),
 
     stats: () => {
       const { world, countdown } = host.inspect();
@@ -208,6 +198,7 @@ export function createDebugApi(game: Game): FuelxDebug {
         fxPoints: 0,
       };
       const scale = time.effectiveScale(world, countdown);
+      const ps = game.projector.stats();
       return {
         fps: mean > 0 ? 1000 / mean : 0,
         frameMs: { median: percentile(ft, 0.5), p95: percentile(ft, 0.95) },
@@ -219,6 +210,8 @@ export function createDebugApi(game: Game): FuelxDebug {
         timeScale: time.paused ? 0 : time.requested,
         effectiveTimeScale: time.lagging ? time.effectiveRate : scale,
         reactCommitsPerS: reactCommitsPerS(),
+        projectorUs: { mean: ps.usMean, p95: ps.usP95, max: ps.usMax, last: ps.usLast },
+        projections: { runs: ps.runs, flushes: ps.flushes, ageMs: ps.ageMs },
       };
     },
 
@@ -226,8 +219,9 @@ export function createDebugApi(game: Game): FuelxDebug {
 
     load: async (json) => {
       await host.load(json);
-      controls.followId = null;
-      controls.cameraRequest = { kind: 'home' };
+      game.projector.reset();
+      view.reset();
+      view.camera({ kind: 'home' });
       game.afterTeleport();
       await frames(1);
     },
