@@ -4,7 +4,8 @@
 //   A1 range fouled   rate × DT each tick while T ∈ [T-02:00:00, T-0) before liftoff → UNK-01 + picket intercept
 //   A2 upper-wind     a front (environment) that arrives during PropellantLoad / TerminalCount before T-0
 //   A3 GSE leak       one roll when the load starts; onset at a booster-LOX load fraction; load ×0.5, VEHICLE
-//                     MARGINAL, decision LEAK (DEGRADED / HOLD_FIX 20 min); the QD is disconnected at liftoff
+//                     MARGINAL, decision LEAK (DEGRADED / HOLD_FIX 20 min, one-shot; unanswered at
+//                     min(onset + A3.decisionTimeoutS, window close) → DEGRADED by AUTO); QD disconnected at liftoff
 //   A4 engine-out     per-engine rolls at ascent start (33) and boostback start (13), × wear reliability factor,
 //                     × marginalRiskMultiplier when a matching MARGINAL station was GO'd (AC 14)
 // Director (rng 'director', `guaranteeOne`): at the first tick it draws one anomaly by the configured weights
@@ -22,7 +23,8 @@ import { DT_S, secondsToTicks } from '../core/time';
 import { countdownIds } from '../core/world';
 import type { AnomalySource, AnomalyState, DirectorPlan, World } from '../core/world';
 import { T_BOOSTBACK_END, T_BOOSTBACK_START } from '../math/profile';
-import type { Countdown, EntityOf, Id, Phase } from '../types';
+import type { LeakRespondedBy } from '../core/events';
+import type { Countdown, EntityOf, Id, LeakChoice, Phase } from '../types';
 import { holdForLeakFix, isPreLiftoff } from './countdown';
 import { startFrontNow } from './environment';
 import { engineOut } from './flight';
@@ -33,6 +35,7 @@ const A1_END = secondsToTicks(an.A1.windowEndTS);
 const DEADLINE = secondsToTicks(an.director.deadlineTS);
 const CLOSE_LEAD = secondsToTicks(an.director.windowCloseLeadS);
 const FIX_TICKS = secondsToTicks(an.A3.fixDurationS);
+const DECISION_TIMEOUT = secondsToTicks(an.A3.decisionTimeoutS);
 const LOAD_PHASES: readonly Phase[] = ['PropellantLoad', 'TerminalCount'];
 
 type Booster = EntityOf<'booster'>;
@@ -46,7 +49,7 @@ export function newAnomalyState(): AnomalyState {
     leakRolled: false,
     leakOnsetFraction: null,
     leakOnsetSource: null,
-    leak: { active: false, response: null, fixEndTick: null },
+    leak: { active: false, response: null, deadlineTick: null, fixEndTick: null },
     ascentRolled: false,
     boostbackRolled: false,
     pendingEngineOuts: [],
@@ -117,20 +120,15 @@ function fireA2(world: World, cd: Countdown, st: AnomalyState, source: AnomalySo
 }
 
 function startLeak(world: World, cd: Countdown, st: AnomalyState): void {
-  st.leak = { active: true, response: null, fixEndTick: null };
+  const deadlineTick = Math.min(world.tick + DECISION_TIMEOUT, cd.windowCloseTick);
+  st.leak = { active: true, response: null, deadlineTick, fixEndTick: null };
   world.logistics.loadRateFactor = pd.degradedLoadFactor;
   record(world, cd, st, 'A3', st.leakOnsetSource ?? 'NATURAL', cd.padId);
-  emit(world, {
-    t: 'DecisionRequired',
-    countdownId: cd.id,
-    decision: 'LEAK',
-    poll: null,
-    deadlineTick: cd.windowCloseTick,
-  });
+  emit(world, { t: 'DecisionRequired', countdownId: cd.id, decision: 'LEAK', poll: null, deadlineTick });
 }
 
 function clearLeak(world: World, cd: Countdown, st: AnomalyState, by: 'FIXED' | 'LIFTOFF'): void {
-  st.leak = { active: false, response: st.leak.response, fixEndTick: null };
+  st.leak = { ...st.leak, active: false, fixEndTick: null };
   world.logistics.loadRateFactor = 1;
   cd.inputs.leakFixActive = false;
   emit(world, { t: 'LeakCleared', countdownId: cd.id, by });
@@ -256,6 +254,15 @@ function preLiftoff(world: World, cd: Countdown, st: AnomalyState): void {
     const frac = b.prop.loxKg / b.prop.loxCapKg;
     if (st.leakOnsetFraction !== null && !fired(st, 'A3') && frac >= st.leakOnsetFraction) startLeak(world, cd, st);
   }
+  // D3b default (6.8): no answer by the deadline → CONTINUE DEGRADED, committed by the sim.
+  if (
+    st.leak.active &&
+    st.leak.response === null &&
+    st.leak.deadlineTick !== null &&
+    world.tick >= st.leak.deadlineTick
+  ) {
+    respondToLeak(world, cd, st, 'DEGRADED', 'AUTO');
+  }
   if (
     st.leak.active &&
     st.leak.response === 'HOLD_FIX' &&
@@ -306,25 +313,30 @@ function inFlight(world: World, cd: Countdown, st: AnomalyState): void {
 
 // --- Command & system ---------------------------------------------------------------------------------
 
+/** Commits the (one-shot) D3b answer: by the player's command or by the sim's DEGRADED default at the deadline. */
+function respondToLeak(world: World, cd: Countdown, st: AnomalyState, choice: LeakChoice, by: LeakRespondedBy): void {
+  st.leak.response = choice;
+  if (choice === 'HOLD_FIX') {
+    st.leak.fixEndTick = world.tick + FIX_TICKS;
+    world.logistics.loadRateFactor = 0;
+    cd.inputs.leakFixActive = true;
+    if (cd.clock.state === 'Counting') holdForLeakFix(world, cd);
+  }
+  emit(world, { t: 'LeakResponded', countdownId: cd.id, choice, by });
+}
+
 /**
  * `LeakResponse { choice }` for the countdown with an active A3 leak: DEGRADED keeps loading at the degraded
  * rate; HOLD_FIX pauses the load for `fixDurationS` under a LEAK_FIX hold, then full rate (hold released).
+ * One-shot (GDD §13.2.1): any second answer, after a player or AUTO commit, is `ALREADY_RESPONDED`.
  */
 export function commandLeakResponse(world: World, cmd: CommandOf<'LeakResponse'>): string | null {
   const id = countdownIds(world).find((k) => world.anomalies[k]?.leak.active);
   const cd = id === undefined ? undefined : world.countdowns[id];
   const st = id === undefined ? undefined : world.anomalies[id];
   if (!cd || !st) return 'NO_ACTIVE_LEAK';
-  if (st.leak.response === 'HOLD_FIX') return 'ALREADY_FIXING';
-  if (st.leak.response === cmd.choice) return 'ALREADY_RESPONDED';
-  st.leak.response = cmd.choice;
-  if (cmd.choice === 'HOLD_FIX') {
-    st.leak.fixEndTick = world.tick + FIX_TICKS;
-    world.logistics.loadRateFactor = 0;
-    cd.inputs.leakFixActive = true;
-    if (cd.clock.state === 'Counting') holdForLeakFix(world, cd);
-  }
-  emit(world, { t: 'LeakResponded', countdownId: cd.id, choice: cmd.choice });
+  if (st.leak.response !== null) return 'ALREADY_RESPONDED';
+  respondToLeak(world, cd, st, cmd.choice, 'PLAYER');
   return null;
 }
 

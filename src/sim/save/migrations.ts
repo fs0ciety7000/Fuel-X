@@ -6,8 +6,11 @@
 //                separation start (fixture `schema-2.json`).
 //   3 → 4 (5.10): rng stream 'wind', weather wind direction (`windFromRad`, `windDirDevRad`), `engines.throttle`
 //                (fixture `schema-3.json`, saved in flight at T+40 s).
-import { flightProfile as fp, lc1Layout, siteGeometry as geo, tower as td } from '@data/index';
+//   4 → 5 (6.8): A3 leak decision deadline `anomalies[cd].leak.deadlineTick` (fixture `schema-4.json`: seed 42,
+//                standard autopilot without a leak answer, saved at tick 533 000 with the A3 leak open, unanswered).
+import { anomalies as an, flightProfile as fp, lc1Layout, siteGeometry as geo, tower as td } from '@data/index';
 import { seedStream } from '../core/rng';
+import { secondsToTicks } from '../core/time';
 import { WIND_FROM_MEAN_RAD } from '../core/world';
 import { CARRIAGE_STACK_BOOSTER_M, CARRIAGE_STACK_SHIP_M, carriageForBoosterM } from '../math/tower';
 
@@ -112,10 +115,31 @@ function addWindDirectionAndThrottle(world: RawWorld): RawWorld {
   return world;
 }
 
+/**
+ * Schema 4 → 5: every leak state gets `deadlineTick`. A leak that started gets min(A3 onset tick + decisionTimeoutS,
+ * window close), the rule `startLeak` applies from schema 5 on (an unanswered leak past it is committed DEGRADED by
+ * AUTO on the next tick); one that never started gets null.
+ */
+function addLeakDeadline(world: RawWorld): RawWorld {
+  const countdowns = obj(world.countdowns);
+  for (const [cdId, stRaw] of Object.entries(obj(world.anomalies))) {
+    const st = obj(stRaw);
+    const leak = obj(st.leak);
+    const fired = Array.isArray(st.fired) ? st.fired.map(obj) : [];
+    const onset = fired.find((f) => f.anomaly === 'A3');
+    const close = Number(obj(countdowns[cdId]).windowCloseTick);
+    leak.deadlineTick =
+      onset === undefined ? null : Math.min(Number(onset.tick) + secondsToTicks(an.A3.decisionTimeoutS), close);
+    st.leak = leak;
+  }
+  return world;
+}
+
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   1: addTowerMechanisms,
   2: addMountHeightsAndAttitude,
   3: addWindDirectionAndThrottle,
+  4: addLeakDeadline,
 };
 
 /**

@@ -201,7 +201,7 @@ describe('A3 GSE leak (D3b)', () => {
 
   it('DEGRADED keeps loading at the degraded rate; the leak lasts until liftoff', () => {
     const s = leaking('DEGRADED');
-    expect(s.log.find((e) => e.t === 'LeakResponded')).toMatchObject({ choice: 'DEGRADED' });
+    expect(s.log.find((e) => e.t === 'LeakResponded')).toMatchObject({ choice: 'DEGRADED', by: 'PLAYER' });
     run(s.world, T(60));
     expect(s.world.logistics.loadRateFactor).toBe(pd.degradedLoadFactor);
     expect(state(s).leak.active).toBe(true);
@@ -217,12 +217,73 @@ describe('A3 GSE leak (D3b)', () => {
     run(s.world, T(an.A3.fixDurationS) - 10);
     expect(s.cd.tClockTicks).toBe(tClock);
     expect(s.b.prop.loxKg).toBeLessThan(mass); // boil-off only, no fill
-    expect(rejected(step(s.world, [{ t: 'LeakResponse', choice: 'DEGRADED' }]))).toEqual(['ALREADY_FIXING']);
+    expect(rejected(step(s.world, [{ t: 'LeakResponse', choice: 'DEGRADED' }]))).toEqual(['ALREADY_RESPONDED']);
     const log = run(s.world, 20);
     expect(log.find((e) => e.t === 'LeakCleared')).toMatchObject({ by: 'FIXED' });
     expect(log.find((e) => e.t === 'HoldReleased')).toMatchObject({ reason: 'LEAK_FIX', by: 'AUTO' });
     expect(s.world.logistics.loadRateFactor).toBe(1);
     expect(s.cd.clock.state).toBe('Counting');
+  });
+
+  it('one-shot: HOLD_FIX after a DEGRADED answer is ALREADY_RESPONDED (no hold, still degraded)', () => {
+    const s = leaking('DEGRADED');
+    expect(rejected(step(s.world, [{ t: 'LeakResponse', choice: 'HOLD_FIX' }]))).toEqual(['ALREADY_RESPONDED']);
+    expect(state(s).leak.response).toBe('DEGRADED');
+    expect(s.cd.hold).toBeNull();
+    expect(s.world.logistics.loadRateFactor).toBe(pd.degradedLoadFactor);
+  });
+
+  it('deadline = onset + decisionTimeoutS; unanswered → DEGRADED by AUTO, logged AUTO, VEHICLE MARGINAL (AC 29)', () => {
+    const s = leaking();
+    const onset = s.world.tick - 1;
+    const deadline = onset + T(an.A3.decisionTimeoutS);
+    expect(s.log.find((e) => e.t === 'DecisionRequired')).toMatchObject({ decision: 'LEAK', deadlineTick: deadline });
+    expect(state(s).leak.deadlineTick).toBe(deadline);
+    const before = run(s.world, deadline - s.world.tick);
+    expect(before.some((e) => e.t === 'LeakResponded')).toBe(false);
+    expect(state(s).leak.response).toBeNull();
+    const at = step(s.world);
+    expect(at.filter((e) => e.t === 'LeakResponded')).toEqual([
+      { t: 'LeakResponded', tick: deadline, countdownId: s.cd.id, choice: 'DEGRADED', by: 'AUTO' },
+    ]);
+    expect(s.world.decisions[s.cd.id]?.at(-1)).toMatchObject({
+      tick: deadline,
+      kind: 'LeakResponse',
+      detail: 'DEGRADED',
+      by: 'AUTO',
+    });
+    expect(s.cd.hold).toBeNull();
+    expect(s.world.logistics.loadRateFactor).toBe(pd.degradedLoadFactor);
+    run(s.world, T(60));
+    expect(s.cd.inputs.stations.VEHICLE).toBe('MARGINAL');
+    expect(state(s).leak.active).toBe(true);
+    expect(rejected(step(s.world, [{ t: 'LeakResponse', choice: 'HOLD_FIX' }]))).toEqual(['ALREADY_RESPONDED']);
+  });
+
+  it('a player answer at the deadline tick wins (commands apply before systems); no AUTO entry', () => {
+    const s = leaking();
+    const deadline = state(s).leak.deadlineTick ?? 0;
+    run(s.world, deadline - s.world.tick);
+    const at = step(s.world, [{ t: 'LeakResponse', choice: 'HOLD_FIX' }]);
+    expect(at.filter((e) => e.t === 'LeakResponded')).toMatchObject([{ choice: 'HOLD_FIX', by: 'PLAYER' }]);
+    expect(s.world.decisions[s.cd.id]?.filter((d) => d.kind === 'LeakResponse').map((d) => d.by)).toEqual(['PLAYER']);
+  });
+
+  it('deadline is capped at window close', () => {
+    const onset = leaking().world.tick - 1; // same setup, deterministic onset tick
+    const s = withPlan(
+      mvpSetup({ prepped: true, startTS: cdData.loadStartTS - 2, phase: 'PropellantLoad', pollsPassed: ['load'] }),
+      { anomaly: 'A3', atLoadFraction: 0.01 },
+    );
+    s.world.config.stations = 'LIVE';
+    run(s.world, onset - s.world.tick);
+    s.cd.windowCloseTick = onset + T(100); // the window moved close to the onset (only the cap matters here)
+    const log = step(s.world);
+    expect(s.world.tick - 1).toBe(onset);
+    expect(log.find((e) => e.t === 'DecisionRequired')).toMatchObject({
+      decision: 'LEAK',
+      deadlineTick: onset + T(100),
+    });
   });
 
   it('rejects a response without a leak', () => {

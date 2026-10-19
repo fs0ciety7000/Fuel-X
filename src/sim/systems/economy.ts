@@ -8,7 +8,7 @@
 //   Debrief → OPS_COST for the attempt's sim duration, WINDOW_MISSED for a commanded scrub (the MVP does not play
 //   the rebook), then the debrief record + `DebriefReady`.
 // The decision log collects accepted player commands (recorded by applyCommands) and the automatic decisions
-// visible in events (auto poll GO, auto/forced recovery, auto holds, window-closed scrub).
+// visible in events (auto poll GO, auto/forced recovery, auto holds, window-closed scrub, D3b AUTO DEGRADED).
 import { contracts as contractDefs, economy as ec, vehicles } from '@data/index';
 import type { Propellant } from '@data/index';
 import type { Command } from '../core/commands';
@@ -348,6 +348,9 @@ function handle(world: World, e: SimEvent): void {
     case 'RecoveryCommitted':
       if (e.by !== 'PLAYER')
         recordDecision(world, e.countdownId, 'CatchDecision', `${e.mode} P ${e.p.toFixed(3)}`, e.by);
+      return;
+    case 'LeakResponded':
+      if (e.by === 'AUTO') recordDecision(world, e.countdownId, 'LeakResponse', e.choice, 'AUTO');
       return;
     case 'PollPassed':
       if (e.auto) recordDecision(world, e.countdownId, 'Go', `POLL ${e.poll.toUpperCase()}`, 'AUTO');

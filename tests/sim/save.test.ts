@@ -20,6 +20,7 @@ import { drive, runMvp } from '../harness';
 import fixture from '../fixtures/saves/schema-1.json?raw';
 import fixture2 from '../fixtures/saves/schema-2.json?raw';
 import fixture3 from '../fixtures/saves/schema-3.json?raw';
+import fixture4 from '../fixtures/saves/schema-4.json?raw';
 
 const META = { game: '0.1.0', createdAt: '2026-10-18T12:00:00.000Z' };
 
@@ -169,5 +170,34 @@ describe('fixture tests/fixtures/saves/schema-3.json (frozen, in flight at T+40 
     expect(f.altitudeM).toBeCloseTo(sampleProfile(CATCH_PROFILE, f.profileTimeS).altitudeM, 6);
     expect(b.engines.throttle).toBe(1);
     expect(w.weather.windDirDevRad).not.toBe(0); // the series moved on
+  });
+});
+
+describe('fixture tests/fixtures/saves/schema-4.json (frozen, A3 leak open and unanswered)', () => {
+  it('4 → 5 adds the leak deadline (onset + decisionTimeoutS); unanswered past it → DEGRADED by AUTO', () => {
+    const old = JSON.parse(fixture4) as { world: { anomalies: Record<string, { leak: Record<string, unknown> }> } };
+    expect(old.world.anomalies.cd01?.leak).toEqual({ active: true, response: null, fixEndTick: null });
+    const loaded = loadSave(fixture4);
+    expect(loaded.fromSchema).toBe(4);
+    expect(loaded.world.schema).toBe(WORLD_SCHEMA);
+    const w = loaded.world;
+    const cd = w.countdowns.cd01;
+    if (!cd) throw new Error('no countdown');
+    expect(w.tick).toBe(533_000);
+    // A3 onset at tick 532 231 + 300 s × 30 Hz; the window closes later (783 000).
+    expect(w.anomalies.cd01?.leak.deadlineTick).toBe(532_231 + 9_000);
+    const events: string[] = [];
+    drive(
+      { world: w, countdown: cd, ids: {} },
+      {
+        autopilot: { ...STANDARD_AUTOPILOT, leakResponse: null },
+        maxTicks: 9_000,
+        each: (_w, ev) => {
+          for (const e of ev) if (e.t === 'LeakResponded') events.push(`${e.tick} ${e.choice} ${e.by}`);
+        },
+      },
+    );
+    expect(events).toEqual(['541231 DEGRADED AUTO']);
+    expect(w.decisions.cd01?.at(-1)).toMatchObject({ kind: 'LeakResponse', detail: 'DEGRADED', by: 'AUTO' });
   });
 });

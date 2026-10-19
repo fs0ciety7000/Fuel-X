@@ -168,9 +168,9 @@
 522001 T-01:10:00 TLM PropellantLoad/Counting wind=6.59/8.24/8.57 upper=35.66 stations=GGMGG farm=3651274/1004245 B-09 LOADING 299584/83925 S-21 LOADING 134813/37467 cr=29959000 rep=50
 531001 T-01:05:00 TLM PropellantLoad/Counting wind=5.45/6.81/7.08 upper=37.25 stations=GGMGG farm=3216249/882742 B-09 LOADING 598237/167672 S-21 LOADING 269207/74854 cr=29959000 rep=50
 532231 T-01:04:19 AnomalyFired anomaly=A3 entityId=OLM-1 source=DIRECTOR
-532231 T-01:04:19 DecisionRequired decision=LEAK poll=null deadlineTick=783000
+532231 T-01:04:19 DecisionRequired decision=LEAK poll=null deadlineTick=541231
 532232 T-01:04:19 HoldStarted tClockTicks=-115769 reason=LEAK_FIX poll=null
-532232 T-01:04:19 LeakResponded choice=HOLD_FIX
+532232 T-01:04:19 LeakResponded choice=HOLD_FIX by=PLAYER
 532233 T-01:04:19 StationChanged station=VEHICLE status=MARGINAL driver=GSE_LEAK
 540001 T-01:04:19 TLM PropellantLoad/Holding wind=7.63/9.53/9.91 upper=40.12 stations=GGMMG farm=3156728/866120 B-09 LOADING 637364/178803 S-21 LOADING 286814/79823 cr=29959000 rep=50
 549001 T-01:04:19 TLM PropellantLoad/Holding wind=8.23/10.28/10.69 upper=44.97 stations=GGMMG farm=3156705/866117 B-09 LOADING 635454/178444 S-21 LOADING 285954/79663 cr=29959000 rep=50
