@@ -63,7 +63,7 @@ REQUIRED_NODES = [
     "SOCKET_Deluge_03", "SOCKET_Deluge_04", "SOCKET_Label", "SOCKET_Focus",
 ]
 
-METAL, CLAY, DARK = "MAT_Metal", "MAT_Clay", "MAT_ClayDark"
+METAL, CLAY, DARK, CONCRETE = "MAT_Metal", "MAT_Clay", "MAT_ClayDark", "MAT_Concrete"
 
 
 def leg_positions():
@@ -77,12 +77,13 @@ def build_static(lod: int) -> MeshBuilder:
     mb = MeshBuilder()
     seg = pick(lod, 48, 24, 12)
     tw = TRENCH_W / 2
-    # Apron slab, split around the trench strip (x ∈ ±tw, y ∈ [TRENCH_Y1, TRENCH_Y0]).
+    # Apron slab (MAT_Concrete: reads as the paved lot, the mount stays MAT_Clay), split around the trench
+    # strip (x ∈ ±tw, y ∈ [TRENCH_Y1, TRENCH_Y0]).
     A = APRON_HALF
-    mb.box_minmax((-A, TRENCH_Y0, 0.0), (A, A, APRON_TOP), CLAY)
-    mb.box_minmax((-A, -A, 0.0), (A, TRENCH_Y1, APRON_TOP), CLAY)
-    mb.box_minmax((-A, TRENCH_Y1, 0.0), (-tw, TRENCH_Y0, APRON_TOP), CLAY)
-    mb.box_minmax((tw, TRENCH_Y1, 0.0), (A, TRENCH_Y0, APRON_TOP), CLAY)
+    mb.box_minmax((-A, TRENCH_Y0, 0.0), (A, A, APRON_TOP), CONCRETE)
+    mb.box_minmax((-A, -A, 0.0), (A, TRENCH_Y1, APRON_TOP), CONCRETE)
+    mb.box_minmax((-A, TRENCH_Y1, 0.0), (-tw, TRENCH_Y0, APRON_TOP), CONCRETE)
+    mb.box_minmax((tw, TRENCH_Y1, 0.0), (A, TRENCH_Y0, APRON_TOP), CONCRETE)
     # Trench: dark floor at grade between two berm walls (stays visible above any terrain at z = 0).
     floor = TRENCH_FLOOR
     mb.box_minmax((-tw, TRENCH_Y1, 0.0), (tw, TRENCH_Y0, floor), DARK, faces="top")

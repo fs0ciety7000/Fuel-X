@@ -106,7 +106,7 @@ CSS: `--fx-state-<state>-bg|-fg|-border|-glyph`; TS: `tokens.state.<state>.{bg,f
 | `--fx-3d-sea-points` | `tokens.world.seaPoints` | `#FBFBF8` | Sea point cloud / foam |
 | `--fx-3d-ground-base` | `tokens.world.groundBase` | `#E3E1DB` | Ground under points |
 | `--fx-3d-ground-points` | `tokens.world.groundPoints` | `#C4C3BC` | Scrub dots (darker = vegetation) |
-| `--fx-3d-pad-concrete` | `tokens.world.padConcrete` | `#EFEEE9` | Pads, roads (lighter than ground) |
+| `--fx-3d-pad-concrete` | `tokens.world.padConcrete` | `#EFEEE9` | Pads, roads, terrain concrete lots (lighter than ground); `MAT_Concrete` base — pad apron slab (5.11) |
 | `--fx-3d-exhaust-core` | `tokens.world.exhaustCore` | `#FFE1D2` (= accent-tint) | Hot core particles (additive) |
 | `--fx-3d-exhaust-glow` | `tokens.world.exhaustGlow` | `#FF5A1F` (= accent) | Plume body/glow (`MAT_Accent` emissive) |
 | `--fx-3d-steam` | `tokens.world.steam` | `#FBFBF8` | Deluge steam, foam |

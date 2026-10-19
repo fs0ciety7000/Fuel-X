@@ -78,7 +78,7 @@ export interface GlbSummary {
   bounds: { min: [number, number, number]; max: [number, number, number] };
 }
 
-export const MATERIALS = ['MAT_Clay', 'MAT_ClayDark', 'MAT_Metal', 'MAT_Glass', 'MAT_Accent'] as const;
+export const MATERIALS = ['MAT_Clay', 'MAT_ClayDark', 'MAT_Metal', 'MAT_Glass', 'MAT_Accent', 'MAT_Concrete'] as const;
 const NAME_RE = /^[A-Za-z0-9_]+$/;
 const KINDS: readonly string[] = ['rot', 'trans', 'spin'];
 const AXES: readonly string[] = ['x', 'y', 'z'];

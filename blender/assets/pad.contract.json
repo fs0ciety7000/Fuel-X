@@ -18,5 +18,5 @@
     "PAD_BQD": { "kind": "trans", "axis": "y", "min": -1.5, "max": 0, "rest": 0, "unit": "m" },
     "PAD_Clamps": { "kind": "trans", "axis": "y", "min": -0.8, "max": 0, "rest": 0, "unit": "m" }
   },
-  "budget": { "tris": [15000, 5000, 1000], "bytes": 204800, "drawCalls": 6 }
+  "budget": { "tris": [15000, 5000, 1000], "bytes": 204800, "drawCalls": 7 }
 }

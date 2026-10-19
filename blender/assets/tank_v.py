@@ -3,8 +3,11 @@
 Run:  blender -b --factory-startup -P blender/assets/tank_v.py -- --out build/models-raw/tank_v.glb \
           --preview docs/assets/tank_v.png
 
-Ø 6 × 28 m: plinth, 2 m skirt, cylindrical shell, 2:1 ellipsoidal head, two stiffener rings, top guard
-rail, caged ladder on the front (−Y), fill line down to a stub facing −Y, vent stack on the crown.
+Ø 9.5 × 13 m (5.11 rebuild; was Ø 6 × 28, which read as a pole from the strategic camera): plinth, 2 m
+skirt, cylindrical shell, 2:1 ellipsoidal head, one stiffener ring, crown guard rail, caged ladder on the
+front (−Y), fill line down to a stub facing −Y, vent stack on the crown. The shell length is derived so the
+vessel volume (shell + head above the skirt) equals the old Ø 6 × 28 tank's ≈ 721 m³ (the sim reads its
+capacities from BALANCING, not from geometry; this keeps the look honest).
 
 Instancing-ready (ASSETS_GUIDE §6): one leaf mesh `TANK_V_Body`, two materials (MAT_Clay shell,
 MAT_ClayDark details), no animated parts, origin at the plinth centre on the ground.
@@ -27,14 +30,18 @@ from lib.shapes import add_band, add_ladder, add_ring_railing  # noqa: E402
 ASSET = "TANK_V"
 VERSION = 1
 
-RADIUS = 3.0
-HEIGHT = 28.0  # crown of the head (vent stack adds 1.2 m)
 SKIRT = 2.0
 PLINTH = 0.3
+# Volume preserved from the original Ø 6 × 28 m design: shell (skirt → 26.5 m) + 2:1 head of radius 3.
+_R0, _H0 = 3.0, 28.0
+VOLUME = math.pi * _R0**2 * (_H0 - _R0 * 0.5 - SKIRT) + (2 / 3) * math.pi * _R0**2 * (_R0 * 0.5)  # ≈ 721 m³
+RADIUS = 4.75  # Ø 9.5 m
 HEAD = RADIUS * 0.5  # 2:1 ellipsoidal
-BODY_TOP = HEIGHT - HEAD
-STIFFENERS = (9.5, 18.0)
-FILL = Vector((1.4, -RADIUS - 0.55, 0.9))  # fill line foot (pipe centre), stub runs to −Y
+SHELL = (VOLUME - (2 / 3) * math.pi * RADIUS**2 * HEAD) / (math.pi * RADIUS**2)  # ≈ 8.59 m cylinder
+BODY_TOP = SKIRT + SHELL  # ≈ 10.59
+HEIGHT = BODY_TOP + HEAD  # crown of the head ≈ 12.96 (vent stack adds 1.2 m)
+STIFFENERS = (SKIRT + SHELL / 2,)
+FILL = Vector((RADIUS * 0.47, -RADIUS - 0.55, 0.9))  # fill line foot (pipe centre), stub runs to −Y
 FILL_END_Y = -RADIUS - 1.6
 VENT_TOP = HEIGHT + 1.2
 
@@ -45,10 +52,10 @@ CLAY, DARK = "MAT_Clay", "MAT_ClayDark"
 
 def build_body(lod: int) -> MeshBuilder:
     mb = MeshBuilder()
-    seg = pick(lod, 24, 12)
+    seg = pick(lod, 32, 16)
     steps = pick(lod, 4, 2)
     # Plinth + skirt.
-    mb.revolve([(RADIUS + 0.4, 0.0), (RADIUS + 0.4, PLINTH)], pick(lod, 12, 8), DARK, smooth=False, cap_top=True)
+    mb.revolve([(RADIUS + 0.4, 0.0), (RADIUS + 0.4, PLINTH)], pick(lod, 16, 8), DARK, smooth=False, cap_top=True)
     add_band(mb, (0, 0, 0), RADIUS * 0.96, PLINTH, SKIRT + 0.02, seg, DARK)
     # Shell + head (one surface of revolution, pole at the crown).
     prof = [(RADIUS, SKIRT), (RADIUS, BODY_TOP)]
@@ -71,8 +78,8 @@ def build_body(lod: int) -> MeshBuilder:
         # Crown guard rail on the head shoulder and the caged ladder on the front face.
         rail_z = BODY_TOP + HEAD * 0.42
         rail_r = RADIUS * math.cos(math.asin(0.42)) - 0.1
-        add_ring_railing(mb, (0, 0, 0), rail_r, rail_z, 12, DARK, height=1.0, section=0.07, posts=6)
-        add_ladder(mb, (-0.9, -RADIUS - 0.3, PLINTH), rail_z + 0.4, (0, -1, 0), DARK, rail=0.09)
+        add_ring_railing(mb, (0, 0, 0), rail_r, rail_z, 16, DARK, height=1.0, section=0.07, posts=8)
+        add_ladder(mb, (-RADIUS * 0.3, -RADIUS - 0.3, PLINTH), rail_z + 0.4, (0, -1, 0), DARK, rail=0.09)
     return mb
 
 

@@ -33,7 +33,7 @@ Vehicle class: large fully reusable two-stage methane/LOX rocket, tower-caught b
 | `PAD` | apron 120 × 120 × 0.5; mount 30 × 30 × 20 | Launch mount: 6 legs (hexagon r 12, none on ±Y), table 13.5–18 m, ring OD 18 / ID 9.5 m with its top (deck) at 20 m. Flame trench toward −Y (front), 10 m wide, floor at grade between 3 m berms (a below-grade cut is hidden by the terrain plane). | MVP |
 | `BOOSTER` | Ø 9 × 71 | 33 engines (3 + 10 inner gimballed, 20 outer fixed), 4 grid fins (6 m chord × 3 m span, horizontal lattice) hinged at 68.4 m — above the catch arms, ±30° never reaches them —, 2 catch pins at 66 m (pin lower face = contact plane), hot-stage ring 69–71 m. | MVP |
 | `SHIP` | Ø 9 × 52 | Barrel 0–37 m, blunted nose 37–52 m. 6 engines (3 SL gimballed on r 1.3, 3 vac fixed on r 3.25), 2 fore flaps (6.2 m root along the nose line × 3 m, hinges 45.2–51 m), 2 aft flaps (10 × 4 m, hinges 1.5–11.5 m), 2 lift pins at 44 m (just below the fore flaps), heat shield on the −Y half (belly, `MAT_Clay` — see §4 SHIP), QD plate at 9 m on the leeward side. | MVP |
-| `TANK_V` | Ø 6 × 28 | Vertical cryo tank, 2 m skirt, ellipsoidal head, ladder cage. Variant Ø 4.5 × 20. | MVP |
+| `TANK_V` | Ø 9.5 × 13 (crown 12.96, vent 14.2) | Vertical cryo tank, 2 m skirt, 8.59 m shell, 2:1 ellipsoidal head, ladder cage. Rebuilt 5.11 from Ø 6 × 28 for **strategic-camera readability, volume preserved** (≈ 721 m³ above the skirt; the sim uses BALANCING capacities, not geometry). Variant Ø 4.5 × 20 (to be re-proportioned the same way when built). | MVP |
 | `TANK_H` | 22 × Ø 3.6 (top at 5.2) | Horizontal tank on 2 saddles. | MVP |
 | `TANK_SPHERE` | Ø 18, top at 24 | Sphere on 8 legs, equatorial ring, stair. | MVP |
 | `TANKER` | 21 × 2.6 × 4.0 | Tractor 7 m + cryo trailer 14 m, 5 axles, articulated at the fifth wheel. | MVP |
@@ -91,6 +91,8 @@ Why the QD hinge moved off the front face (Phase 4): stowed across the front fac
 
 As built (4.4): one rigid `rot` cannot move 20 clamps "outwards", so `PAD_Clamps` is a single `trans` (one draw call instead of 20 animated nodes). Draw calls 6 = `PAD_Static` × 3 materials + BQD × 2 + clamps × 1.
 
+As built (5.11): the 120 × 120 m apron slab is **`MAT_Concrete`** (token `padConcrete`, same as the terrain's concrete lots) while the mount, legs, ring, trench berms and deluge tank stay `MAT_Clay`: with one shared clay the apron read as part of the structure instead of a paved lot (5.6 notes). Draw calls 7 (LOD0/1; LOD2 5) = `PAD_Static` × 4 materials + BQD × 2 + clamps × 1; budget raised 6 → 7 (class cap 10).
+
 ### BOOSTER
 `BOOSTER_Static` (body, chines, raceways, hot-stage ring, catch pins, outer 20 engines); `BOOSTER_EnginesGimbal` (empty at gimbal plane z = 2.5, `rot x` ±8°, pitch) → `BOOSTER_EnginesGimbalYaw` (empty at the same point, `rot z` ±8°, yaw) → `BOOSTER_EnginesInner` (13 engines) + `SOCKET_Engine_01..13`; `BOOSTER_GridFinMount_01..04` (static empties on the hull at 45°/135°/225°/315°, z 68.4, local +X radial) → `BOOSTER_GridFin_01..04` (`rot x` = about the radial axis, ±30°, rest 0, identity rest rotation) → `BOOSTER_GridFinGeo_01..04` (linked duplicates). Landing legs: **none** (tower catch).
 Sockets: `SOCKET_Exhaust` (engine plane center, pointing down), `SOCKET_Engine_01..33` (each bell exit, pointing down; 01–03 center, 04–13 inner ring — children of the yaw gimbal so plumes follow it —, 14–33 outer ring; extras `fx_ring` = inner|outer — lets the renderer drop a plume on engine-out), `SOCKET_CatchPinL/R` ((±5.4, 0, 66), the pin's lower face; coincides with tower `SOCKET_CatchPointL/R` when the booster sits on the mount and the carriage is at 86 m), `SOCKET_ShipMount` ((0, 0, 71) top of the hot-stage ring = SHIP origin), `SOCKET_BQD` ((0, 4.5, 1.6) on the skirt, +Z toward +Y = the pad BQD hood), `SOCKET_Label` (z 74), `SOCKET_Focus` (z 35).
@@ -109,6 +111,7 @@ As built (4.6 rebuild): heat shield and flaps are **`MAT_Clay`** like the hull (
 ### TANK_V / TANK_H / TANK_SPHERE (instancing-friendly)
 Single leaf mesh `<ASSET>_Body` (≤ 2 materials), no animated parts. Sockets: `SOCKET_Fill` (pipe connection, faces −Y), `SOCKET_Vent` (boil-off steam, +Z up), `SOCKET_Label`, `SOCKET_Focus`.
 As built (4.5): `MAT_Clay` shell + `MAT_ClayDark` details (`TANK_SPHERE`: `MAT_Metal` legs/stairs), 2 LODs (LOD1 drops ladders, rails, stiffeners). One GLB per class → one `InstancedMesh` per class and LOD in the farm. The Ø 4.5 × 20 `TANK_V` variant is not built yet (no placement uses it).
+As rebuilt (5.11): `TANK_V` is Ø 9.5 m; the shell length is derived in `tank_v.py` from the Ø 6 × 28 vessel volume, so the tank reads as a squat cryo tank, not a pole, from the strategic camera. Sockets keep their relative placement: `SOCKET_Fill` at (0.47 R, −R − 1.6, 0.9) facing −Y, `SOCKET_Vent` on the crown (z 14.16), `SOCKET_Label` vent + 3 m, `SOCKET_Focus` at half the crown height. One stiffener ring at mid-shell (was two), 32/16 segments for the wider silhouette; still one leaf mesh × 2 materials. Farm spacing (site-lc1: 30 m centres, 80 m rows) clears the 10.3 m plinth.
 
 ### TANKER
 `TANKER_Tractor` (empty) → `TANKER_TractorGeo`, `TANKER_Axle_01..02` (`spin x`), `TANKER_Steer` (front axle, `rot y` ±35°); `TANKER_Trailer` (empty at fifth wheel, `rot y` ±70°) → `TANKER_TrailerGeo`, `TANKER_Axle_03..05`. Sockets: `SOCKET_Hose` (trailer rear valve box), `SOCKET_Label`, `SOCKET_Focus`.
@@ -140,7 +143,7 @@ As built (4.6): **`BLDG_HIGHBAY` doors are two bi-parting sliding leaves**, not 
 
 ## 5. Material contract
 
-Only these five shared materials may exist in a GLB. Colors come from the design-token export (`materials_from_tokens()` reads it; no hex literal in asset scripts). Proposed mapping — final token names belong to `docs/DESIGN_SYSTEM.md`:
+Only these six shared materials may exist in a GLB. Colors come from the design-token export (`materials_from_tokens()` reads it; no hex literal in asset scripts). Proposed mapping — final token names belong to `docs/DESIGN_SYSTEM.md`:
 
 | Material | Token (proposed) | ≈ sRGB | Roughness | Metallic | Use |
 |---|---|---|---|---|---|
@@ -149,10 +152,11 @@ Only these five shared materials may exist in a GLB. Colors come from the design
 | `MAT_Metal` | `clay.metal` | `#CFCFCB` | 0.6 | 0.3 | lattices, rails, piping. Metallic kept ≤ 0.3: without an env map, three renders metals dark |
 | `MAT_Glass` | `ink.glass` | neutral grey ≈ `#8E8E8A` | 0.25 | 0 | windows, bridge glazing. **Opaque**, no transmission. (The template's `#9DA3A6` is slightly blue — replace by a neutral ink token: one hue only.) |
 | `MAT_Accent` | `accent` | `#FF5A1F` | 0.8 | 0 | see below |
+| `MAT_Concrete` | `world.padConcrete` | `#EFEEE9` | 0.95 | 0 | ground-level paving only: pad apron/deck slabs, roads, lots (5.11). Lighter than `MAT_Clay` so slabs read as concrete; lit (shadows land on it); render side (`src/render/materials/clay.ts`) adds a 0.15 self-lift in the same token so a sunlit slab matches the terrain's unlit concrete lots |
 
 - Colors are converted sRGB → linear in Blender (`hex_to_linear`); glTF stores linear factors; three's GLTFLoader reads them correctly with sRGB output.
 - **`MAT_Accent` on models is the exception**: orange means thrust, selection, alerts, hazard/recovery zones, which are runtime states. MVP assets ship with **no** `MAT_Accent`. Allowed only on assets whose sole purpose is a hazard/signal marker (e.g. later `PROP_HazardBuoy`), after design review. Parts that may turn orange at runtime (engine bells, selection) are separate nodes so the renderer can swap their material.
-- Keep the five materials **numerically distinct**: `gltf-transform dedup` merges identical materials and keeps only one name (verified).
+- Keep the six materials **numerically distinct**: `gltf-transform dedup` merges identical materials and keeps only one name (verified).
 - Render code dedupes materials by name across all GLBs (one shader program per `MAT_*`) and may replace them with its own token-driven materials.
 - No textures, no UVs exported (`export_texcoords=False`), no vertex colors by default.
 - **Baked AO policy**: off in MVP. If ARCHITECTURE rejects screen-space AO for budget reasons, bake Cycles AO into `COLOR_0` (vertex color, single channel replicated) for large static structures only (`TOWER_Static`, `PAD_Static`, buildings), multiplied in the shader. Never on instanced assets.
@@ -183,7 +187,7 @@ Triangles after export; GLB size after optimization (meshopt ≈ 7–10 B/tri). 
 | Class | LOD0 tris | LOD1 | LOD2 | GLB LOD0 | Draw calls |
 |---|---|---|---|---|---|
 | TOWER | 40 k | 12 k | 3 k | ≤ 500 KB | ≤ 10 |
-| PAD | 15 k | 5 k | 1 k | ≤ 200 KB | ≤ 6 |
+| PAD | 15 k | 5 k | 1 k | ≤ 200 KB | ≤ 7 |
 | BOOSTER | 20 k | 6 k | 1.5 k | ≤ 250 KB | ≤ 10 |
 | SHIP | 15 k | 5 k | 1 k | ≤ 200 KB | ≤ 10 |
 | TANK_V / TANK_H / TANK_SPHERE | 1.5 k / 1.2 k / 2.5 k | 400 / 300 / 600 | — | ≤ 40 KB | ≤ 2 |
@@ -331,10 +335,10 @@ As built (Phase 4.1): geometry goes through `mesh.MeshBuilder` (vertex/face list
 | Asset | Script / contract | LOD0 / LOD1 / LOD2 tris | GLB LOD0 / LOD1 / LOD2 | Draw calls | Nodes / sockets | Preview |
 |---|---|---|---|---|---|---|
 | `TOWER` | `tower.py` · `tower.contract.json` | 4 084 / 2 486 / 370 | 67 / 45 / 14 KB | 9 | 17 (9 contract nodes, 7 sockets) | `docs/assets/tower.png`, turntable ×12 |
-| `PAD` | `pad.py` · `pad.contract.json` | 1 970 / 1 004 / 562 | 29 / 19 / 14 KB (rebuilt 4.6, winding fix) | 6 | 14 (5 contract nodes, 8 sockets) | `docs/assets/pad.png`, `docs/assets/_stack.png` |
+| `PAD` | `pad.py` · `pad.contract.json` | 1 970 / 1 004 / 562 | 30 / 20 / 15 KB (5.11 `MAT_Concrete` apron) | 7 | 14 (5 contract nodes, 8 sockets) | `docs/assets/pad.png`, `docs/assets/_stack.png` |
 | `BOOSTER` | `booster.py` · `booster.contract.json` | 6 952 / 2 608 / 756 | 58 / 33 / 19 KB | 8 | 57 (8 contract nodes, 39 sockets) | `docs/assets/booster.png`, `docs/assets/_stack.png` |
 | `SHIP` | `ship.py` · `ship.contract.json` | 2 582 / 912 / 276 | 27 / 18 / 13 KB | 8 | 29 (12 contract nodes, 12 sockets) | `docs/assets/ship.png`, `docs/assets/_stack.png` |
-| `TANK_V` | `tank_v.py` · `tank_v.contract.json` | 848 / 162 | 12.3 / 5.2 KB | 2 | 6 (`TANK_V_Body`, 4 sockets) | `docs/assets/tank_v.png` |
+| `TANK_V` | `tank_v.py` · `tank_v.contract.json` | 844 / 190 (5.11 Ø 9.5) | 12.3 / 5.4 KB | 2 | 6 (`TANK_V_Body`, 4 sockets) | `docs/assets/tank_v.png` |
 | `TANK_H` | `tank_h.py` · `tank_h.contract.json` | 602 / 200 | 9.2 / 5.5 KB | 2 | 6 (`TANK_H_Body`, 4 sockets) | `docs/assets/tank_h.png` |
 | `TANK_SPHERE` | `tank_sphere.py` · `tank_sphere.contract.json` | 1 732 / 378 | 24.3 / 8.1 KB | 2 | 6 (`TANK_SPHERE_Body`, 4 sockets) | `docs/assets/tank_sphere.png` |
 | `TANKER` | `tanker.py` · `tanker.contract.json` | 1 496 / 653 | 16.7 / 13.6 KB | 6 (instanced) | axles shared (`instanceLinked`) | `docs/assets/tanker.png`, `docs/assets/_farm.png` |

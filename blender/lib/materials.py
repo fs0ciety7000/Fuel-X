@@ -18,6 +18,8 @@ MATERIAL_TOKENS = {
     "MAT_Metal": ("world", "clayMetal", 0.6, 0.3),
     "MAT_Glass": ("world", "glass", 0.25, 0.0),
     "MAT_Accent": ("color", "accent", 0.8, 0.0),
+    # Ground-level concrete (pad apron, lots): lighter than MAT_Clay so slabs read as paving, not structure.
+    "MAT_Concrete": ("world", "padConcrete", 0.95, 0.0),
 }
 MATERIAL_NAMES = tuple(MATERIAL_TOKENS)
 
@@ -52,7 +54,7 @@ def _principled(mat):
 
 
 def materials_from_tokens(tokens_path=None) -> dict:
-    """Create (or reuse) the five shared materials. Returns {name: Material}."""
+    """Create (or reuse) the six shared materials. Returns {name: Material}."""
     mats = {}
     for name, (group, key, rough, metal) in MATERIAL_TOKENS.items():
         mat = bpy.data.materials.get(name) or bpy.data.materials.new(name)

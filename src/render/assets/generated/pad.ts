@@ -3,8 +3,8 @@
 export const PAD = {
   name: 'pad',
   asset: 'PAD',
-  url: '/models/pad.glb?v=28132454',
-  lods: ['/models/pad_lod1.glb?v=74b4dd85', '/models/pad_lod2.glb?v=ae657c1c'],
+  url: '/models/pad.glb?v=643586ef',
+  lods: ['/models/pad_lod1.glb?v=faf486f4', '/models/pad_lod2.glb?v=0be69b87'],
   nodes: {
     Static: 'PAD_Static',
     BQD: 'PAD_BQD',
@@ -28,8 +28,8 @@ export const PAD = {
   },
   bounds: { min: [-60, 0.002, -60], max: [60, 23.2, 60] },
   triangles: [1970, 1004, 562],
-  bytes: [29952, 19820, 14220],
-  drawCalls: 6,
+  bytes: [31064, 20960, 15332],
+  drawCalls: 7,
 } as const;
 
 export type PadNode = (typeof PAD.nodes)[keyof typeof PAD.nodes];

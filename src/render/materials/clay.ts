@@ -1,4 +1,4 @@
-// Token-driven replacements for the five GLB materials (ASSETS_GUIDE §5): one shared instance per `MAT_*` name
+// Token-driven replacements for the six GLB materials (ASSETS_GUIDE §5): one shared instance per `MAT_*` name
 // across every asset → one shader program each. Colors only from tokens (DESIGN_SYSTEM §2.4).
 import { tokens } from '@tokens/tokens';
 import { Color, MeshStandardMaterial } from 'three';
@@ -11,6 +11,8 @@ interface MatSpec {
   roughness: number;
   metalness: number;
   emissive?: string;
+  /** three default 1. */
+  emissiveIntensity?: number;
 }
 
 // MAT_Metal: the contract's metallic 0.3 renders dark without an environment map (no env in the clay look);
@@ -21,6 +23,16 @@ const SPECS: Record<string, MatSpec> = {
   MAT_Metal: { color: w.clayMetal, roughness: 0.6, metalness: 0 },
   MAT_Glass: { color: w.glass, roughness: 0.25, metalness: 0 },
   MAT_Accent: { color: w.exhaustGlow, roughness: 0.8, metalness: 0, emissive: w.exhaustGlow },
+  // Pad apron / paving: same token as the terrain's *unlit* concrete lots, lit matte so shadows still land on it.
+  // A faint self-lift in the same token (0.15) brings a sunlit up-facing slab level with the lot around it
+  // (≈ 218 → 234 sRGB in phase5-home) instead of reading as a grey plate; shadows stay ~2× darker.
+  MAT_Concrete: {
+    color: w.padConcrete,
+    roughness: 0.95,
+    metalness: 0,
+    emissive: w.padConcrete,
+    emissiveIntensity: 0.15,
+  },
 };
 
 const cache = new Map<string, MeshStandardMaterial>();
@@ -38,6 +50,7 @@ export function clayMaterial(name: string, side: Side): Material {
       side,
     });
     if (spec.emissive) m.emissive = new Color(spec.emissive);
+    if (spec.emissiveIntensity !== undefined) m.emissiveIntensity = spec.emissiveIntensity;
     m.name = name;
     cache.set(key, m);
   }

@@ -26,7 +26,7 @@ RAW = REPO_ROOT / "build" / "models-raw"
 
 # (asset file, root name, (x, y), heading deg (rotation about +Z), pose {node: (attr, value)})
 LAYOUT = [
-    *[("tank_v", "TANK_V", (x, y), 0.0, {}) for x in (-34.0, -25.0, -16.0) for y in (14.0, 23.0)],
+    *[("tank_v", "TANK_V", (x, y), 0.0, {}) for x in (-45.0, -32.0, -19.0) for y in (12.0, 25.0)],
     ("tank_sphere", "TANK_SPHERE", (4.0, 22.0), 0.0, {}),
     *[("tank_h", "TANK_H", (-25.0, y), 0.0, {}) for y in (-4.0, -10.0, -16.0, -22.0)],
     ("tanker", "TANKER", (8.0, -6.0), 90.0, {"TANKER_Trailer": ("rz", -15.0), "TANKER_Steer": ("rz", -10.0)}),
