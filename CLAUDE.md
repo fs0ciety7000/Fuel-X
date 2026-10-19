@@ -10,7 +10,7 @@ A **live rocket launch site you can play like a strategy game**, in the browser.
 - Showcase site: [`docs/SHOWCASE.md`](docs/SHOWCASE.md) · [ADR 0009](docs/adr/0009-showcase-site.md) · Deploy: [`docs/DEPLOY.md`](docs/DEPLOY.md)
 
 ## Status
-Phase 5 done (3D scene, perf audit). Waiting for **Gate 5** approval before Phase 6 (HUD). Live checklist: `docs/TASKS.md`.
+Phase 6 in progress (HUD) + visual follow-ups from Phase 5 (eased liftoff, pad concrete material, tank proportions). Live checklist: `docs/TASKS.md`.
 
 Stack (ADR 0001–0008): Vite SPA · React 19 · TypeScript strict · three (WebGL2) via R3F `frameloop="never"` · plain data-oriented sim @30 Hz on main thread behind `SimHost` · 10 Hz projection → Zustand · CSS Modules + generated CSS vars · Vitest + Playwright · Blender 4.5 → gltf-transform (dedup/prune/weld/meshopt) → in-house codegen · Coolify (nginx image).
 
