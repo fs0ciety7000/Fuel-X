@@ -78,7 +78,7 @@ test.describe('projection', () => {
     console.log('100x', JSON.stringify(fast));
     expect(fast.reactCommitsPerS).toBeLessThanOrEqual(12);
     expect(fast.projections.ageMs).toBeLessThanOrEqual(250 + 1000 / Math.max(1, fast.fps));
-    await expect(page.getByTestId('projection-readout')).toContainText('SIM 100×');
+    await expect(page.getByTestId('projection-readout')).toContainText('100×'); // `SIM 100×` or, lagging under SwiftShader, `SIM 22.0× OF 100×`
 
     // 1× at the terminal count (forced 1×).
     await page.evaluate(async () => {
