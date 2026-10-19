@@ -8,6 +8,17 @@
   "assets": {
     "totalGlbKB": 4096
   },
+  "scene": {
+    "$source": "docs/ARCHITECTURE.md \u00a713.1 \u2014 asserted by tests/e2e/scenes.perf.ts",
+    "mainDrawCalls": 200,
+    "shadowDrawCalls": 60,
+    "triangles": 800000,
+    "pointCloud": 300000,
+    "fxSprites": 20000,
+    "programs": 30,
+    "frameMedianMs": 16.7,
+    "frameP95Ms": 20
+  },
   "sim": {
     "mvpTickMeanUs": 50,
     "mvpTickP95Us": 150,

@@ -603,10 +603,10 @@ build/       git-ignored intermediates (models-raw/)
 | `test` | `vitest run` (unit + FSM + golden + equivalence + property; `--project sim` subset possible) |
 | `typecheck` | `tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit` |
 | `lint` | `eslint . && stylelint "src/**/*.css" && prettier --check . && tsx scripts/tokens/build.ts --check` |
-| `e2e` | `playwright test` (projects `e2e`, `visual`; `perf` project only via `npm run perf -- --browser`) |
+| `e2e` | `playwright test` (projects `e2e` light specs in parallel, `scene` game-scene specs one at a time (`workers: 1`, 5.9), `visual`; `perf` project only via `npm run perf -- --browser`, which sets `FUELX_PERF=1`) |
 | `asset` | `tsx scripts/assets/build.ts` → `npm run asset -- tower` (Blender → optimize → validate → codegen → preview) |
 | `assets` | `tsx scripts/assets/build.ts --all` (`-- --verify` rebuilds twice, asserts byte-identical GLBs) |
-| `perf` | `tsx scripts/perf/sim-bench.ts && tsx scripts/perf/budgets.ts` (sim timing harness + bundle gzip / GLB size vs `budget.json`; Playwright perf scenes added in Phase 5) |
+| `perf` | `tsx scripts/perf/sim-bench.ts && tsx scripts/perf/budgets.ts` (sim timing harness + bundle gzip / GLB size vs `budget.json`; `-- --browser` adds the Playwright reference scenes `tests/e2e/scenes.perf.ts`, counts vs `budget.json` `scene`, 5.9) |
 | `tokens` | `tsx scripts/tokens/build.ts` (helper, also run by dev/build/lint) |
 
 ASSETS_GUIDE §8 names `scripts/asset.mjs`; the implementation path is `scripts/assets/build.ts` (TS, same behaviour).

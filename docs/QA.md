@@ -90,6 +90,40 @@ Before pass 1: 105 caught, 82 diverted (p < 0.90), 1 failed, 12 scrubbed.
 After merging the 5.3–5.7 render commits (2026-10-19): game initial JS gzip (play.html graph) **452.5 KB vs 450 — OVER by 2.5 KB**, from the new FX/post code, not the showcase (showcase rows unchanged).
 **Fixed in 5.9**: per-module attribution (sourcemap build) showed `postprocessing` at **62.9 KB gz** of the play chunk (ARCHITECTURE estimated 25; SMAA's lookup images are inlined). `post/pipeline` is now a dynamic import from `RenderPass` (frames before it lands are drawn raw; `isReady()` waits for `shared.postReady`, so `__fuelx.ready()` screenshots always include post): initial JS **452.6 → 386.0 KB gz**, lazy `pipeline` chunk 69.1 KB gz, showcase initial 77.8 → 78.0 KB (shared preload helper).
 
+### Phase 5 perf-audit (5.9, 2026-10-19, production build `/play.html?debug=1`, full visuals, SwiftShader 1920×1080, 4 vCPU)
+
+`npm run perf -- --browser` = sim bench + static budgets + `tests/e2e/scenes.perf.ts` (opt-in `perf` project; writes `test-results/perf-scenes.json`; counts asserted against `scripts/perf/budget.json` `scene`). Counts on a frozen frame after `freezeVisuals(true)` + 4 frames; frame times = rAF deltas over 10 s live at 1×.
+
+| Metric (budget) | Terminal count LC-1, home, T-00:00:04 | Liftoff LC-1, home, T+00:00:03 | Ascent follow B-09, T+00:01:45 | Rollout follow SP-41 + B-09, T-05:15:00 |
+|---|---|---|---|---|
+| Draw calls main pass (≤ 200) | 47 | 32 | 25 | 28 |
+| Draw calls shadow pass, last refresh (≤ 60) | 35 | 35 | 16 | 18 |
+| Triangles (≤ 800 k) | 12.8 k | 9.3 k | 10.7 k | 14.9 k |
+| Point cloud = points − fxPoints (≤ 300 k) | 297.7 k | 297.7 k | 297.7 k | 297.7 k |
+| FX sprites live (≤ 20 k) / FX point vertices | 1 250 / 9 800 | 13 834 / 18 672 | 8 034 / 18 672 | 1 250 / 9 800 |
+| Shader programs (≤ 30) | 15 | 16 | 16 | 16 |
+| Textures / geometries | 13 / 48 | 13 / 49 | 13 / 60 | 13 / 72 |
+| Frame median / p95, ms (16.7 / 20 on the reference iGPU) — SwiftShader, indicative | 1 317 / 1 750 | 1 233 / 1 800 | 1 317 / 2 117 | 1 250 / 2 067 |
+| Sim + snapshot write, 900-tick batch in the page, µs/tick | 65 | 30 | 28 | 46 |
+| React commits / s live (≤ 12, 0 when nothing spawns) | 0 | 0 | 0 | 0 |
+
+- First Playwright perf baseline: no earlier frame-time numbers to diff against (Δ = —). SwiftShader frame times are CPU raster, ~1 fps at 1080p with post + 300 k points; compare run to run only.
+- Point cloud sits at **99 % of its budget** (297.7 k of 300 k): any density increase must come out of another level.
+- The loop's own `stats().simUsPerTick` is not usable under SwiftShader (mean of per-advance ratios at `performance.now()`'s 100 µs clamp while raster threads take every core: 200–2 200 µs mean); use the batched number above and the Node bench.
+- **Host tick ≠ sim tick**: Node, seed 42, 60 000 ticks: `jump` (sim only, one snapshot write) 4.6–7.0 µs/tick vs `advance` (snapshot + anim writers every tick) 20–23 µs/tick, so the writers cost ≈ 15 µs/tick, 3–4× the sim, and `sim-bench` leaves them out. At 100× (50 steps) that is ≈ 1 ms/frame in Node (budget 4 ms p95); see review finding M1.
+
+| Static / Node (`npm run perf`, 2026-10-19 5.9) | Budget | Measured | Δ vs last |
+|---|---|---|---|
+| Game initial JS gzip (play.html graph) | 450 KB | **386.2 KB** | −66.4 (post pipeline lazy, 69.1 KB chunk) |
+| CSS gzip (all) | 25 KB | 7.2 KB | +4.5 since Phase 2 (showcase) |
+| Fonts | 150 KB | 85.1 KB | 0 |
+| GLB payload (all of `public/models`) | 4 MB | 739.2 KB | first measure with assets |
+| Showcase initial JS / 3D chunk / GLB / images | 90 / 300 / 350 / 600 KB | 78.0 / 264.8 / 278.8 / 340.5 KB | +0.2 / 0 / 0 / 0 |
+| Sim tick MVP mean / p95 (Node bench) | 50 / 150 µs | 4.87 / 8.27 µs | +1.9 / +3.6 (5.0/5.0b tower + attitude; container noise) |
+| Sim per frame at 100× p95 | 4 ms | 0.40 ms | +0.18 (sim only, see host-tick note) |
+| Stress tick mean (p95), 2 000 entities | 400 µs | 138.3 (254.2) µs | +62 |
+| MVP save | 200 KB | 16.9 KB | +0.2 |
+
 ## Known flaky areas
 
 - `tests/e2e/scene.e2e.ts` › "debug hooks: step, time scale, save/load round trip" can time out when the whole e2e suite runs in parallel under SwiftShader (~1 fps); it passes alone (~1.7 min).

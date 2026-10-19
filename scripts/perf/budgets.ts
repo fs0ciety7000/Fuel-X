@@ -1,5 +1,7 @@
 // Static budget checks (ARCHITECTURE §13): bundle gzip sizes from dist/ and GLB payload from public/models/.
-// Runtime checks (fps, draw calls) live in the Playwright perf project (`perf-audit` skill).
+// Runtime checks (draw calls, triangles, points, frame times) live in the Playwright perf project
+// (`tests/e2e/scenes.perf.ts`, `perf-audit` skill): `npm run perf -- --browser` runs it after the static rows.
+import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -86,5 +88,14 @@ for (const [metric, limit, measured] of rows) {
   const ok = measured === null || measured <= limit;
   failed ||= !ok;
   console.log(metric.padEnd(24), String(limit).padStart(8), String(measured ?? '—').padStart(10), ok ? ' ok' : ' OVER');
+}
+if (process.argv.includes('--browser')) {
+  // Reference scenes on the production build (the Playwright webServer builds + previews when :4173 is free).
+  const r = spawnSync('npx', ['playwright', 'test', '--project', 'perf'], {
+    cwd: root,
+    stdio: 'inherit',
+    env: { ...process.env, FUELX_PERF: '1' },
+  });
+  failed ||= r.status !== 0;
 }
 process.exit(failed ? 1 : 0);
