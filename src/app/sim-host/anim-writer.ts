@@ -9,10 +9,10 @@
 //   - CR-77: slew / luff / hook choreography from the lift task progress; the stage hangs from the hook.
 // What the sim should eventually expose instead is listed in docs/TASKS.md (5.4 notes).
 import { siteGeometry } from '@data/siteGeometry';
-import { vehicles } from '@data/index';
+import { logistics, vehicles } from '@data/index';
 import { DT_S } from '@sim/index';
 import type { Entity, EntityOf, Id, Quat, Vec3, World } from '@sim/types';
-import { ANIM, ANIM_STRIDE } from '@render/snapshot';
+import { ANIM, ANIM_STRIDE, FX_T_MAX_S, FX_T_MIN_S, RECOVERY_ZONE } from '@render/snapshot';
 
 const TAU = Math.PI * 2;
 const DEG = Math.PI / 180;
@@ -66,6 +66,9 @@ const ANEMO_R_M = 0.35;
 const ANEMO_EFF = 0.35;
 /** The sim has no wind direction yet: prevailing onshore sea breeze from the east (compass, rad). */
 export const WIND_FROM_RAD = 95 * DEG;
+
+/** Recovery-zone rings stay up this long after a divert splashdown, s. */
+const ZONE_LINGER_S = 60;
 
 /** A move longer than this in one tick is a teleport (same rule as the snapshot writer). */
 export const TELEPORT_M = 250;
@@ -197,6 +200,49 @@ export function craneRig(world: World, crane: EntityOf<'crane'>): CraneRig {
   return { pose, hang };
 }
 
+// --- FX inputs (5.6) ---------------------------------------------------------------------------------
+
+/**
+ * T-clock seconds of the countdown flying from pad `padId` (mission time after liftoff), clamped to
+ * [FX_T_MIN_S, FX_T_MAX_S]; FX_T_MAX_S when no countdown uses the pad. Drives the deluge / steam timeline.
+ */
+export function padClockS(world: World, padId: Id): number {
+  let out = FX_T_MAX_S;
+  for (const id in world.countdowns) {
+    const cd = world.countdowns[id];
+    if (cd?.padId !== padId) continue;
+    const tS = cd.liftoffTick !== null ? (world.tick - cd.liftoffTick) * DT_S : cd.tClockTicks * DT_S;
+    out = Math.min(out, clamp(tS, FX_T_MIN_S, FX_T_MAX_S));
+  }
+  return out;
+}
+
+/** RECOVERY_ZONE mode of the recovery vessel from the flying booster's recovery state. */
+export function recoveryZone(world: World): number {
+  let mode: number = RECOVERY_ZONE.OFF;
+  for (const id in world.countdowns) {
+    const cd = world.countdowns[id];
+    if (!cd || cd.liftoffTick === null) continue;
+    const b = world.entities.byId[cd.boosterId];
+    if (b?.kind !== 'booster' || !b.recovery) continue;
+    const r = b.recovery;
+    if (r.mode === 'DIVERT') {
+      const linger = r.result === null || (world.tick - b.fsm.enteredTick) * DT_S < ZONE_LINGER_S;
+      if (linger) mode = RECOVERY_ZONE.ACTIVE;
+    } else if (r.mode === null && r.decisionRequiredTick !== null) {
+      mode = Math.max(mode, RECOVERY_ZONE.STANDBY);
+    }
+  }
+  return mode;
+}
+
+/** Commanded speed of a boat (straight leg, or its patrol loop), m/s; 0 when holding station. */
+export function boatSpeed(b: EntityOf<'boat'>): number {
+  if (b.leg && b.leg.movedTicks < b.leg.totalTicks) return b.leg.speedMPerS;
+  if (b.fsm.state === 'PATROL' && b.route) return b.route.speedMPerS;
+  return 0;
+}
+
 // --- Per-entity derived state -------------------------------------------------------------------------
 
 interface Mover {
@@ -290,7 +336,8 @@ export class AnimWriter {
         x: e.pos.x,
         z: e.pos.z,
         yaw: simYaw,
-        speed: 0,
+        // after a jump the first tick has no motion to differentiate: start boats at their commanded speed (wakes)
+        speed: e.kind === 'boat' ? boatSpeed(e) : 0,
         yawRate: 0,
         wheel: m?.wheel ?? 0,
         trailerYaw: simYaw,
@@ -366,6 +413,8 @@ export class AnimWriter {
         s.bqd = approach(s.bqd, bqdTo, 0.5);
         anim[o + ANIM.pad.clampsM] = s.clamps;
         anim[o + ANIM.pad.bqdM] = s.bqd;
+        anim[o + ANIM.pad.delugeS] = padClockS(world, e.id);
+        anim[o + ANIM.pad.hazardM] = world.logistics.roadClosed ? logistics.hazardPadRadiusM : 0;
         return;
       }
       case 'booster':
@@ -396,8 +445,13 @@ export class AnimWriter {
         return;
       }
       case 'boat': {
-        if (e.asset === 'boat_range' || e.asset === 'vessel_recovery') {
-          anim[o + 0] = wrapTau((t / RADAR_PERIOD_S[e.asset]) * TAU);
+        if (e.asset === 'boat_range') {
+          anim[o + ANIM.boat_range.radarRad] = wrapTau((t / RADAR_PERIOD_S[e.asset]) * TAU);
+          anim[o + ANIM.boat_range.speedMPerS] = m?.speed ?? 0;
+        } else if (e.asset === 'vessel_recovery') {
+          anim[o + ANIM.vessel_recovery.radarRad] = wrapTau((t / RADAR_PERIOD_S[e.asset]) * TAU);
+          anim[o + ANIM.vessel_recovery.speedMPerS] = m?.speed ?? 0;
+          anim[o + ANIM.vessel_recovery.zoneMode] = recoveryZone(world);
         }
         return;
       }

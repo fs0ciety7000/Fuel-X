@@ -41,6 +41,11 @@ export interface FuelxDebug {
     opts?: { snap?: boolean },
   ): void;
   freezeVisuals(on: boolean): void;
+  /**
+   * Queues a `CatchDecision` for the flying booster (or `booster` by call-sign) — e.g. force a divert for the
+   * recovery-zone screenshots. The sim validates it like any player command (window, ALREADY_DECIDED).
+   */
+  catchDecision(choice: 'CATCH' | 'DIVERT', booster?: string): void;
   /** Low-cost visuals for software GL (no dot screen, point cloud or post); also `?lowfx=1`. */
   lowFx(on: boolean): void;
   frames(n: number): Promise<void>;
@@ -153,6 +158,13 @@ export function createDebugApi(game: Game): FuelxDebug {
       if (on) controls.snapCamera = true;
     },
 
+    catchDecision: (choice, booster) => {
+      const { world, countdown } = host.inspect();
+      const b = booster ? findByCallSign(world, booster) : countdown ? world.entities.byId[countdown.boosterId] : null;
+      if (b?.kind !== 'booster') throw new Error(`UNKNOWN_BOOSTER ${booster ?? ''}`);
+      host.send({ t: 'CatchDecision', boosterId: b.id, choice });
+    },
+
     lowFx: (on) => {
       controls.lowFx = on;
     },
@@ -190,6 +202,7 @@ export function createDebugApi(game: Game): FuelxDebug {
         geometries: 0,
         textures: 0,
         programs: 0,
+        particles: 0,
       };
       const scale = time.effectiveScale(world, countdown);
       return {
