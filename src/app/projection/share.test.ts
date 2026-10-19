@@ -9,8 +9,22 @@ describe('structural sharing', () => {
   });
 
   it('keeps unchanged rows by id and replaces only the changed one', () => {
-    const prev = { rows: [{ id: 'a', v: 1 }, { id: 'b', v: 2 }, { id: 'c', v: 3 }], t: 1 };
-    const next = { rows: [{ id: 'a', v: 1 }, { id: 'b', v: 5 }, { id: 'c', v: 3 }], t: 2 };
+    const prev = {
+      rows: [
+        { id: 'a', v: 1 },
+        { id: 'b', v: 2 },
+        { id: 'c', v: 3 },
+      ],
+      t: 1,
+    };
+    const next = {
+      rows: [
+        { id: 'a', v: 1 },
+        { id: 'b', v: 5 },
+        { id: 'c', v: 3 },
+      ],
+      t: 2,
+    };
     const out = share(prev, next);
     expect(out).not.toBe(prev);
     expect(out.rows[0]).toBe(prev.rows[0]);
@@ -19,8 +33,19 @@ describe('structural sharing', () => {
   });
 
   it('matches rows by id across insertions', () => {
-    const prev = { rows: [{ id: 'a', v: 1 }, { id: 'b', v: 2 }] };
-    const next = { rows: [{ id: 'z', v: 0 }, { id: 'a', v: 1 }, { id: 'b', v: 2 }] };
+    const prev = {
+      rows: [
+        { id: 'a', v: 1 },
+        { id: 'b', v: 2 },
+      ],
+    };
+    const next = {
+      rows: [
+        { id: 'z', v: 0 },
+        { id: 'a', v: 1 },
+        { id: 'b', v: 2 },
+      ],
+    };
     const out = share(prev, next);
     expect(out.rows[1]).toBe(prev.rows[0]);
     expect(out.rows[2]).toBe(prev.rows[1]);

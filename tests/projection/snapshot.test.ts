@@ -17,7 +17,9 @@ describe('projection snapshot, seed 42', () => {
     expect(ui.clock.phase).toBe('TerminalCount');
     expect(ui.timeScale.forced1x).toBe(true);
     expect(ui.timeScale.lockLabel).toBe('1× LOCKED · TERMINAL COUNT');
-    await expect(`${JSON.stringify(ui, null, 1)}\n`).toMatchFileSnapshot('./__files__/projection.seed42.T-00-00-04.json');
+    await expect(`${JSON.stringify(ui, null, 1)}\n`).toMatchFileSnapshot(
+      './__files__/projection.seed42.T-00-00-04.json',
+    );
   });
 
   it('T+00:01:45 ascent', async () => {
@@ -28,6 +30,8 @@ describe('projection snapshot, seed 42', () => {
     expect(ui.inspector?.callSign).toBe('B-09');
     expect(ui.inspector?.progress?.label).toBe('FLIGHT TO TOWER CATCH');
     expect(ui.inspector?.chart?.series.some((v) => v !== null)).toBe(true);
-    await expect(`${JSON.stringify(ui, null, 1)}\n`).toMatchFileSnapshot('./__files__/projection.seed42.T+00-01-45.json');
+    await expect(`${JSON.stringify(ui, null, 1)}\n`).toMatchFileSnapshot(
+      './__files__/projection.seed42.T+00-01-45.json',
+    );
   });
 });

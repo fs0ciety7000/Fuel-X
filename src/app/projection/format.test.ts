@@ -37,7 +37,7 @@ describe('format (DESIGN_SYSTEM §2.5: fixed decimals, true minus, grouping, —
 
   it.each([
     ['km', km(8_312), '8.3', 'KM', 8_312],
-    ['km 0', km(20), '0.0', 'KM', 20],
+    ['km 0', km(20), '0.0', 'KM', 0],
     ['km/h', kmh(13.06), '47', 'KM/H', 13.06],
     ['km/h flight', kmh(1_016.6), `3${G}660`, 'KM/H', 1_016.6],
     ['m/s', mps(8.149), '8.1', 'M/S', 8.149],
@@ -56,7 +56,16 @@ describe('format (DESIGN_SYSTEM §2.5: fixed decimals, true minus, grouping, —
     ['duration', duration(4_800), '01:20:00', '', 4_800],
     ['missing', km(null), '—', 'KM', null],
   ])('%s', (_n, v, text, unit, value) => {
-    expect(v).toEqual({ text, unit, value });
+    expect({ text: v.text, unit: v.unit }).toEqual({ text, unit });
+    // machine value = SI quantised to the display resolution (keeps identity while the display is unchanged)
+    if (value === null) expect(v.value).toBeNull();
+    else expect(Math.abs((v.value ?? Number.NaN) - value)).toBeLessThanOrEqual(Math.abs(value) * 0.01 + 0.05);
+  });
+
+  it('quantises the machine value to the display step', () => {
+    expect(km(8_312).value).toBe(8_300);
+    expect(pct(0.82449).value).toBe(0.824);
+    expect(mps(8.149).value).toBe(8.1);
   });
 
   it.each([

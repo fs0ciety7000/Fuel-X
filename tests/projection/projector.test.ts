@@ -15,7 +15,14 @@ function setup() {
   const sc = createMvpScenario({ seed: 42 });
   sc.world.outbox.length = 0;
   let now = 0;
-  const time: TimeInputs = { requested: 1, paused: false, effective: 1, maxAllowed: 100, lagging: false, effectiveRate: 1 };
+  const time: TimeInputs = {
+    requested: 1,
+    paused: false,
+    effective: 1,
+    maxAllowed: 100,
+    lagging: false,
+    effectiveRate: 1,
+  };
   const view = createStore<ViewState>(() => initialViewState());
   const store = createStore<UiProjection>(() => emptyProjection());
   const p = new Projector({
@@ -60,7 +67,14 @@ describe('Projector cadence', () => {
     const t = setup();
     t.frame();
     expect(t.frame()).toBe(false); // 16 ms later: not due
-    const salient: SimEvent = { t: 'AnomalyFired', tick: t.sc.world.tick, countdownId: 'cd01', anomaly: 'A1', entityId: 'e000001', source: 'DIRECTOR' };
+    const salient: SimEvent = {
+      t: 'AnomalyFired',
+      tick: t.sc.world.tick,
+      countdownId: 'cd01',
+      anomaly: 'A1',
+      entityId: 'e000001',
+      source: 'DIRECTOR',
+    };
     expect(t.frame(1, [salient])).toBe(true);
     expect(t.frame()).toBe(false);
     t.view.setState({ selectedId: t.sc.countdown.boosterId });

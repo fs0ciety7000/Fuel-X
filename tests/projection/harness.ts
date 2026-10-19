@@ -41,12 +41,17 @@ export function projectedRun(seed: number, until: (w: World) => boolean, autopil
     sampler,
     log,
     project: (view = {}, prev = null, seq = 1) =>
-      projectUi(run.world, prev, { ...initialViewState(), ...view }, {
-        countdown: run.countdown,
-        time: timeAt(run),
-        spark: sampler,
-        events: log.list(),
-        seq,
-      }),
+      projectUi(
+        run.world,
+        prev,
+        { ...initialViewState(), ...view },
+        {
+          countdown: run.countdown,
+          time: timeAt(run),
+          spark: sampler,
+          events: log.list(),
+          seq,
+        },
+      ),
   };
 }
