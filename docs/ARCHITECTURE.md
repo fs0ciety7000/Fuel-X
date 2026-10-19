@@ -452,8 +452,10 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   reason `LEAK_FIX`, auto-released when the fix ends and no station is NO-GO. A4 calls `engineOut()`.
   GO-on-MARGINAL: `anomalies.marginalCategories[station]` lists the anomalies whose probability is ×
   `marginalRiskMultiplier` (WEATHER, VEHICLE → A4).
-- **Command** `LeakResponse { choice }` → the countdown with an active leak; rejections `NO_ACTIVE_LEAK`,
-  `ALREADY_RESPONDED`, `ALREADY_FIXING`.
+- **Command** `LeakResponse { choice }` → the countdown with an active leak; one-shot (6.8): rejections
+  `NO_ACTIVE_LEAK`, `ALREADY_RESPONDED` (any second answer). `DecisionRequired{LEAK}.deadlineTick` =
+  `leak.deadlineTick` = min(onset + `A3.decisionTimeoutS`, window close); unanswered at that tick the sim commits
+  DEGRADED: `LeakResponded { choice, by: 'PLAYER' | 'AUTO' }`, the AUTO one logged as a `LeakResponse` decision.
 
 ### 7.8 Scenario `mvp` and autopilot (3.9, `src/sim/scenarios/`)
 

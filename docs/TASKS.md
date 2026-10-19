@@ -76,6 +76,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [ ] 6.5 Countdown timeline (phases, playhead, hold, window markers), poll panel, decision strip — AC 11, 19, 23 — ← 6.3
 - [ ] 6.6 In-world labels (DOM via RenderSync, declutter ≤ 64), altitude scale, compass tape, map controls — AC 24–25 — ← 5.5, 6.3
 - [ ] 6.7 Events log/toasts, debrief panel — AC 22 — ← 6.4
+- [x] 6.8 Sim follow-ups from HUD design (GDD §13.2.1, AC 29, 33) — **simulation-engineer** · done: `anomalies.A3.decisionTimeoutS` = 300 s; `DecisionRequired{LEAK}.deadlineTick` = min(onset + 300 s, window close) (`leak.deadlineTick`); unanswered → DEGRADED, `LeakResponded{by: AUTO}` + D3b AUTO decision-log entry; `LeakResponded.by` PLAYER | AUTO; `LeakResponse` one-shot (`ALREADY_RESPONDED`, `ALREADY_FIXING` removed); world schema 5 + migration 4 → 5 (fixture `tests/fixtures/saves/schema-4.json`); golden: 2 lines (deadline, `by=PLAYER`). Station statuses already GO / MARGINAL / NO_GO only (AC 28 sim side). App follow-ups: §6 rate drops/caps, D3 > D3b > D2 > D1 priority, §13.2.2 previews, debrief REPLAY / NEW SEED / EXPORT LOG / VIEW SITE (AC 23, 30–32)
 - [ ] ⛳ Gate 6 — full HUD screenshots at the standard states + `/design`
 
 ## Phase 7 — Vertical slice
