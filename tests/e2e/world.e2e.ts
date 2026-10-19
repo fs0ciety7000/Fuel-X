@@ -58,7 +58,7 @@ test.describe('world', () => {
        return { points: s.points, fxPoints: s.fxPoints, drawCalls: s.drawCalls, t: fx.state().clock.tClock };`,
     );
     console.log('world home', JSON.stringify(home));
-    expect(home.t).toBe('T-00:00:04');
+    expect(home.t).toBe('T\u221200:00:04'); // projection T-clock uses the true minus (6.1)
     // renderer.info counts every point vertex: the FX sprites (5.6, own ≤ 20 k budget) are not part of the cloud
     const cloud = home.points - home.fxPoints;
     expect(cloud).toBeGreaterThan(0);
