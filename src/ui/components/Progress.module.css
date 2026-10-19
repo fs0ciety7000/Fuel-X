@@ -38,6 +38,11 @@
   outline-color: var(--fx-color-ink);
 }
 
+.cell[data-fill='part'] {
+  background: var(--fx-color-ink-4);
+  outline-color: var(--fx-color-ink);
+}
+
 .cell[data-fill='current'] {
   background: var(--fx-color-accent);
   outline-color: var(--fx-color-ink);

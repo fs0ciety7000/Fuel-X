@@ -70,7 +70,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 ## Phase 6 — HUD
 - [x] 6.0 DESIGN_SYSTEM addendum: **decision strip**, **debrief panel**, rate control states (requested by GDD §10) — **ui-design-system** + **game-designer** (GDD gaps listed in DESIGN_SYSTEM §13.2 for the designer)
 - [ ] 6.1 Projector (10 Hz + salient events) + Zustand stores + command API; unit-format tests — **systems-architect** ← 3.9
-- [ ] 6.2 Primitives + `/design` gallery (all components, all states) — **ui-design-system** ← 2.4
+- [x] 6.2 Primitives + `/design` gallery (all components, all states) — **ui-design-system** ← 2.4 · done: `src/ui/components/*` (19 primitives, CSS Modules, tokens only), fixtures `src/ui/fixtures`, gallery `src/ui/design/ComponentGallery.tsx`, unit `src/ui/components/components.test.ts`, e2e `tests/e2e/design.e2e.ts` (keyboard, modal, no radius/shadow/opacity, AA sweep); screens `docs/screens/phase6-design-*.png`
 - [ ] 6.3 HUD frame grid; top bar, site switcher (other sites disabled), alerts, rate control — ← 6.1, 6.2
 - [ ] 6.4 Flight card, inspector (booster/ship/vessel/transporter/tanker), tabbed panel (5 tabs) — ← 6.3
 - [ ] 6.5 Countdown timeline (phases, playhead, hold, window markers), poll panel, decision strip — AC 11, 19, 23 — ← 6.3

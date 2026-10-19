@@ -95,7 +95,7 @@ export function Popover({ trigger, children, label, open: controlled, onOpenChan
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, inline]);
   return (
-    <span className={styles.anchor}>
+    <span className={cx(styles.anchor, inline && styles.anchorInline)}>
       {trigger({
         'aria-haspopup': 'dialog',
         'aria-expanded': open,

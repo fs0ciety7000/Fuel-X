@@ -28,8 +28,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--fx-size-popover), 1fr));
   gap: var(--fx-rule-hair);
-  background: var(--fx-color-ink-5);
+  background: var(--fx-color-paper);
   border: var(--fx-rule-frame);
+  overflow: hidden;
 }
 
 .wide {
@@ -43,7 +44,12 @@
   gap: var(--fx-space-3);
   padding: var(--fx-space-4);
   background: var(--fx-color-paper);
+  outline: var(--fx-rule-hair) solid var(--fx-color-ink-5);
   min-width: 0;
+}
+
+.span2 {
+  grid-column: span 2;
 }
 
 .stretch {
@@ -72,7 +78,9 @@
   border: var(--fx-rule-frame);
 }
 
-.matrix > * {
+.matrix [role='cell'],
+.matrix [role='rowheader'],
+.matrix [role='columnheader'] {
   display: flex;
   align-items: center;
   padding: var(--fx-space-3);
@@ -91,8 +99,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--fx-size-tile), 1fr));
   gap: var(--fx-rule-hair);
-  background: var(--fx-color-ink-5);
+  background: var(--fx-color-paper);
   border: var(--fx-rule-frame);
+  overflow: hidden;
 }
 
 .glyphCell {
@@ -100,6 +109,7 @@
   gap: var(--fx-space-2);
   padding: var(--fx-space-3);
   background: var(--fx-color-paper);
+  outline: var(--fx-rule-hair) solid var(--fx-color-ink-5);
 }
 
 .glyphRow {
@@ -110,8 +120,8 @@
 .glyphRow > span {
   display: inline-grid;
   place-items: center;
-  width: var(--fx-size-control);
-  height: var(--fx-size-control);
+  width: var(--fx-size-hit-min);
+  height: var(--fx-size-hit-min);
   border: var(--fx-rule-hair) solid var(--fx-color-ink-5);
 }
 
@@ -201,4 +211,10 @@
   gap: var(--fx-space-1) var(--fx-space-4);
   font-size: var(--fx-type-label);
   letter-spacing: var(--fx-type-label-tracking);
+}
+
+/* Width of the HUD tabs/inspector column (DESIGN_SYSTEM §3.1: 400 px), to prove the tabs fit. */
+.hudColumn {
+  width: var(--fx-size-toast);
+  border: var(--fx-rule-frame);
 }

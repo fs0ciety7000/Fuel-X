@@ -2,11 +2,13 @@
   display: grid;
   grid-template-rows: auto 1fr;
   min-height: 0;
+  min-width: 0;
   pointer-events: auto;
 }
 
 .list {
   display: flex;
+  overflow-x: auto;
   border-bottom: var(--fx-rule-frame);
   background: var(--fx-color-paper);
 }
@@ -16,7 +18,7 @@
   align-items: center;
   gap: var(--fx-space-2);
   min-height: var(--fx-size-row);
-  padding: var(--fx-space-0) var(--fx-space-3);
+  padding: var(--fx-space-0) var(--fx-space-2);
   border: 0;
   border-bottom: var(--fx-rule-heavy);
   border-bottom-color: transparent;

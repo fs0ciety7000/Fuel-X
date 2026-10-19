@@ -46,9 +46,19 @@ function Section({ id, title, refs, children }: { id: string; title: string; ref
   );
 }
 
-function Specimen({ caption, children, stretch = false }: { caption: string; children: ReactNode; stretch?: boolean }) {
+function Specimen({
+  caption,
+  children,
+  stretch = false,
+  span = false,
+}: {
+  caption: string;
+  children: ReactNode;
+  stretch?: boolean;
+  span?: boolean;
+}) {
   return (
-    <div className={[styles.specimen, stretch && styles.stretch].filter(Boolean).join(' ')}>
+    <div className={[styles.specimen, stretch && styles.stretch, span && styles.span2].filter(Boolean).join(' ')}>
       <span className={styles.caption}>{caption}</span>
       {children}
     </div>
@@ -367,7 +377,7 @@ export function ComponentGallery() {
           <Specimen caption="DISABLED" stretch>
             <MetricTile metric={fx.metrics.disabled} />
           </Specimen>
-          <Specimen caption="FLIGHT CARD 2×2 (COMPOSED)" stretch>
+          <Specimen caption="FLIGHT CARD 2×2 (COMPOSED)" stretch span>
             <div className={styles.tileGrid}>
               <MetricTile metric={fx.flightCard.nextLaunch}>
                 <span className={styles.caption}>{fx.flightCard.vehicles}</span>
@@ -478,8 +488,10 @@ export function ComponentGallery() {
 
       <Section id="tabs" title="TABS" refs="§6.34 · ←/→ Home End">
         <div className={styles.specimens}>
-          <Specimen caption="INTERACTIVE · BADGES" stretch>
-            <InteractiveTabs />
+          <Specimen caption="INTERACTIVE · BADGES · 400 PX HUD COLUMN" span>
+            <div className={styles.hudColumn}>
+              <InteractiveTabs />
+            </div>
           </Specimen>
           <Specimen caption="HOVER · FOCUS · DISABLED" stretch>
             <Tabs

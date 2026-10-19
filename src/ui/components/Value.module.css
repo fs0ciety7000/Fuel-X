@@ -19,10 +19,10 @@
 }
 
 .stale {
-  color: var(--fx-color-ink-4);
+  color: var(--fx-color-ink-3);
   background-image: var(--fx-pattern-hatch);
 }
 
 .stale .unit {
-  color: var(--fx-color-ink-4);
+  color: var(--fx-color-ink-3);
 }

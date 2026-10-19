@@ -174,6 +174,8 @@ Component sizes (added in 6.2, all `tokens.size.*`):
 | `--fx-size-debrief` | 880px | Debrief sheet width (§6.29) |
 | `--fx-size-tile` | 160px | Metric tile min width (§6.8) |
 
+State semantics added in 6.2: a **capped** segment (rate above the current cap, §6.25) is hatched but keeps `ink-3` text (5.91, still selectable); only `aria-disabled` items drop to `ink-4`. Stale values (§6.36) print in `ink-3` over the hatch, not `ink-4`, because they stay readable data.
+
 | Token | TS | Value | Use |
 |---|---|---|---|
 | `--fx-radius` | `tokens.radius` | `0` | Everything |
@@ -823,7 +825,7 @@ A static route (or Storybook per ADR), no sim running, fixtures only, screenshot
 5. **Typography**: every micro step with sample `B-14 · 47 KM/H · 100.0 %`, every macro step with `T−00:00:04`, `B-14`, `LIFTOFF`; a tabular-digit jitter test (counter 0→9999 must not shift width).
 6. **Spacing, rules, z-layers, motion**: scale bars; motion demos (hover, toast enter, stamp, playhead) with a reduced-motion toggle.
 7. **Glyph set**: all glyphs at 12 and 16 px, on paper, paper-2, tint, accent.
-8. **Components**: each §6 component in all states (default/hover/focus/selected/warn/danger/disabled/empty/stale) — top bar, site switcher open, search with results, badges, alert counter, user chip, flight card, metric tile, segmented & linear progress, inspector (booster, vessel, transporter), status chips, tabbed panel per tab, list rows, countdown at 4 states (pre, hold, T+, scrub), map controls, label tags over a neutral clay image, altitude scale, compass tape, toasts + log, poll panel (polling / all GO / hold / no-go), time-scale, stamp, dialog.
+8. **Components** (6.2, `src/ui/design/ComponentGallery.tsx`, e2e `tests/e2e/design.e2e.ts` incl. an AA contrast sweep over every rendered text): each §6 component in all states (default/hover/focus/selected/warn/danger/disabled/empty/stale) — top bar, site switcher open, search with results, badges, alert counter, user chip, flight card, metric tile, segmented & linear progress, inspector (booster, vessel, transporter), status chips, tabbed panel per tab, list rows, countdown at 4 states (pre, hold, T+, scrub), map controls, label tags over a neutral clay image, altitude scale, compass tape, toasts + log, poll panel (polling / all GO / hold / no-go), time-scale, stamp, dialog.
 9. **Full HUD frame** with fixture data over a static background render, at both viewport sizes, grid areas outlined with crosshairs (toggle).
 10. **Keyboard map** table generated from the same keymap source as the app.
 
@@ -892,7 +894,7 @@ tabular figures; the page must read completely without JS (prerender) and withou
 ## 13. Phase 6 view-model contract and GDD gaps (6.0)
 
 ### 13.1 View models
-HUD components never read the store shape directly; they take **view models** defined in `src/ui/types.ts`, with fixtures in `src/ui/fixtures/` (used by `/design`, unit tests and e2e). The projector of 6.1 (`src/app/projection/`) produces the same shape (ARCHITECTURE §8); if it must differ, the change is made in `src/ui/types.ts` in the same commit as the projector.
+HUD components never read the store shape directly; they take **view models** imported from `src/ui/types.ts`, which re-exports the source of truth `src/bridge/projection-types.ts` (moved there in 6.1 so the bridge stores can type them without importing `src/ui`). Fixtures in `src/ui/fixtures/` (used by `/design`, unit tests and e2e) are typed against it. The projector of 6.1 (`src/app/projection/`) produces the same shape (ARCHITECTURE §8); a shape change edits the bridge file, the projector and the fixtures in the same commit.
 
 | Interface | Feeds |
 |---|---|

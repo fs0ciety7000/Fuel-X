@@ -56,6 +56,8 @@
   letter-spacing: var(--fx-type-label-tracking);
   color: var(--fx-color-ink-3);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .key {
