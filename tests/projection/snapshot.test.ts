@@ -1,7 +1,7 @@
 // Golden-style projection snapshots (6.1): seed 42, standard autopilot, at the two reference states of the scene
 // e2e (terminal count T-00:00:04, ascent T+00:01:45), B-09 selected + followed. Any change to the sim, the data or
 // the projector shows up as a readable JSON diff. Update with `npx vitest run tests/projection -u` and explain the
-// diff in the commit message.
+// diff in the commit message. Stored as .txt (indent 1) so Prettier leaves the file as the test writes it.
 import { describe, expect, it } from 'vitest';
 import { secondsToTicks } from '../../src/sim/index';
 import { projectedRun } from './harness';
@@ -18,7 +18,7 @@ describe('projection snapshot, seed 42', () => {
     expect(ui.timeScale.forced1x).toBe(true);
     expect(ui.timeScale.lockLabel).toBe('1× LOCKED · TERMINAL COUNT');
     await expect(`${JSON.stringify(ui, null, 1)}\n`).toMatchFileSnapshot(
-      './__files__/projection.seed42.T-00-00-04.json',
+      './__files__/projection.seed42.T-00-00-04.txt',
     );
   });
 
@@ -31,7 +31,7 @@ describe('projection snapshot, seed 42', () => {
     expect(ui.inspector?.progress?.label).toBe('FLIGHT TO TOWER CATCH');
     expect(ui.inspector?.chart?.series.some((v) => v !== null)).toBe(true);
     await expect(`${JSON.stringify(ui, null, 1)}\n`).toMatchFileSnapshot(
-      './__files__/projection.seed42.T+00-01-45.json',
+      './__files__/projection.seed42.T+00-01-45.txt',
     );
   });
 });

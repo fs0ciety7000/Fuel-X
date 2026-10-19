@@ -34,7 +34,7 @@ import { GO_LABEL, HOLD_LABEL, PHASE_LABEL, POLL_LABEL, goStatus } from './label
 import { countdownActions, decisionVM, orderActions } from './project-decision';
 import { debriefVM } from './project-debrief';
 import { inspectorVM, labelsVM, listsVM } from './project-entities';
-import { alertsVM, rangeVM, stationVMs } from './project-range';
+import { aggregate, alertsVM, rangeVM, stationVMs } from './project-range';
 import { share } from './share';
 
 export type { ProjectEnv } from './context';
@@ -199,13 +199,7 @@ function flightVM(c: Ctx, stations: readonly StationVM[]): FlightCardVM | null {
     return cap > 0 ? m / cap : null;
   })();
   const goCount = stations.filter((x) => x.status === 'GO').length;
-  const agg = stations.length
-    ? stations.some((x) => x.status === 'NO_GO')
-      ? 'NO_GO'
-      : stations.some((x) => x.status === 'MARGINAL')
-        ? 'MARGINAL'
-        : 'GO'
-    : null;
+  const agg = aggregate(stations);
   const aggSt = agg ? goStatus(agg) : null;
   const flown = cd.liftoffTick !== null;
   const status = contract?.status ?? 'ACTIVE';

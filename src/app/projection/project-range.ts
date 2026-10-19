@@ -109,7 +109,25 @@ function detail(s: Station, r: StationReading, v: ValueVM, src: string | null): 
 
 export function stationVMs(c: Ctx): StationVM[] {
   const rs = readings(c);
-  if (!rs) return [];
+  if (!rs) {
+    // A countdown before its first station sample (tick 0, a fresh load): PENDING rows (DESIGN_SYSTEM §6.24).
+    if (!c.cd || !c.preLiftoff) return [];
+    return STATIONS.map((s) => ({
+      id: s,
+      code: STATION_CODE[s],
+      label: STATION_LABEL[s],
+      status: 'PENDING',
+      state: 'neutral',
+      glyph: 'pending',
+      driver: 'POLLING',
+      driverCode: 'NOMINAL',
+      value: missing(),
+      limit: missing(),
+      detail: 'POLLING…',
+      sourceId: null,
+      sourceCode: null,
+    }));
+  }
   return STATIONS.map((s) => {
     const r = rs[s];
     const src = source(c, s, r);
@@ -135,7 +153,7 @@ export function stationVMs(c: Ctx): StationVM[] {
 }
 
 export function aggregate(stations: readonly StationVM[]): GoStatus | null {
-  if (stations.length === 0) return null;
+  if (stations.length === 0 || stations.every((s) => s.status === 'PENDING')) return null;
   return stations.reduce<GoStatus>((a, s) => (s.status !== 'PENDING' && RANK[s.status] > RANK[a] ? s.status : a), 'GO');
 }
 
