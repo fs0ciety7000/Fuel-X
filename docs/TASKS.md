@@ -88,7 +88,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [ ] 8.1 Perf against full budget on production build; fixes
 - [ ] 8.2 Accessibility & keyboard map audit (DESIGN_SYSTEM)
 - [ ] 8.3 Autosave/IndexedDB + export/import
-- [x] 8.4 Deploy on Coolify (ADR 0008): `Dockerfile` + `deploy/nginx.conf`, `docker build .` green, Coolify app `fuel-x` on `coolify.fs0ciety.org`, domain `https://fuel.fs0ciety.org`
+- [x] 8.4 Deploy on Coolify (ADR 0008): `Dockerfile` + `deploy/nginx.conf`, `docker build .` green, Coolify app `fuel-x` on `coolify.fs0ciety.org`, domain `https://fuel.fs0ciety.org` (since 2026-10-19 also `https://fuelx.fs0ciety.org`, showcase at `/`, game at `/play`, ADR 0009)
 - [ ] ⛳ Gate 8 — release candidate
 
 ## Showcase site (public `/`, deploy `fuelx.fs0ciety.org`) — owner **web-showcase**
@@ -101,6 +101,6 @@ Spec: [`SHOWCASE.md`](SHOWCASE.md) · Stack: [ADR 0009](adr/0009-showcase-site.m
 - [x] S.5 SEO/OG (1200×630 plate), robots/sitemap, JSON-LD; WebP plates from Blender previews ← S.3
 - [x] S.6 Tests: `tests/e2e/showcase.e2e.ts` (structure, links, meta, reduced motion, phone), budgets rows — **qa-perf** ← S.3, S.4
 - [x] S.7 `showcase-check` + `perf-audit` pass; `qa-perf` review ← S.6
-- [ ] ⛳ Gate S1 — screenshots (desktop, phone, story chapters) to the user
-- [~] S.8 Deploy: `DEPLOY.md` ✓, nginx `/play` + `/healthz` ✓ (runtime image verified), full `docker build .` (needs npm network: on Coolify), Coolify domain `fuelx.fs0ciety.org` (user clicks) ← Gate S1
-- [ ] ⛳ Gate S2 — live URL checked
+- [x] ⛳ Gate S1 — screenshots (desktop, phone, story chapters) to the user; user approved PR #2 merge + deploy
+- [x] S.8 Deploy: PR #2 merged; Coolify app `fuel-x` → default branch, domains `fuelx` + `fuel`, healthcheck `/healthz`; Cloudflare CNAME `fuelx`; live checks green (DEPLOY.md)
+- [x] ⛳ Gate S2 — live URL checked: https://fuelx.fs0ciety.org/ (prerendered, 3D stage loads, `/play`, `/healthz`, GLB MIME/cache/gzip, security headers)

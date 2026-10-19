@@ -36,3 +36,6 @@ short caching for HTML, HTTPS, optional custom headers (COOP/COEP only if we eve
 
 ## Dependencies introduced
 None in `package.json`. Container base images pinned by tag: `node:22-alpine`, `nginx:1.27-alpine`.
+
+> Update 2026-10-19 (ADR 0009, user decision): the same Coolify app also serves `https://fuelx.fs0ciety.org` (showcase at
+> `/`, game at `/play`); `fuel.fs0ciety.org` stays as an alias. Healthcheck path `/healthz`. Live setup: `docs/DEPLOY.md`.
