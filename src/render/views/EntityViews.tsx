@@ -2,11 +2,20 @@
 // Views take an entity id/slot from the snapshot index and register their root with the registry — they never
 // receive positions or state as props, and re-render only when the index changes (spawn / despawn / load).
 import { useLayoutEffect, useMemo, useSyncExternalStore } from 'react';
+import type { Object3D } from 'three';
 import type { SnapshotSlot } from '../snapshot';
 import type { IndexFeed } from '../index-feed';
 import type { EntityRegistry } from '../registry';
 import { isAssetName, useAsset } from '../assets/useAsset';
 import type { AssetName } from '../assets/generated';
+
+/** clone(true) shares geometry and the token materials: one GPU buffer set per asset. Hidden until posed. */
+function instantiate(scene: Object3D, name: string): Object3D {
+  const o = scene.clone(true);
+  o.name = name;
+  o.visible = false;
+  return o;
+}
 
 interface ViewProps {
   slot: SnapshotSlot;
@@ -16,11 +25,8 @@ interface ViewProps {
 
 function EntityView({ slot, asset, registry }: ViewProps) {
   const { gltf, info } = useAsset(asset);
-  // clone(true) shares geometry and the token materials: one GPU buffer set per asset.
-  const object = useMemo(() => gltf.scene.clone(true), [gltf]);
+  const object = useMemo(() => instantiate(gltf.scene, slot.callSign), [gltf, slot.callSign]);
   useLayoutEffect(() => {
-    object.name = slot.callSign;
-    object.visible = false; // RenderSync shows it once a pose is written
     registry.add({ id: slot.id, slot: slot.slot, object, info });
     return () => registry.remove(slot.id, object);
   }, [object, info, registry, slot]);

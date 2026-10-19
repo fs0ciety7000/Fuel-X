@@ -1,35 +1,32 @@
 .shell {
-  display: grid;
-  place-items: center;
+  position: relative;
+  width: 100%;
   height: 100%;
+  overflow: hidden;
+  background: var(--fx-3d-background);
 }
 
-.plate {
-  display: grid;
-  gap: var(--fx-rule-hair);
-  background: var(--fx-color-ink-5);
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: var(--fx-z-world);
+}
+
+/* Temporary Phase 5 readout: ink on paper, one hairline frame, top-left gutter. */
+.readout {
+  position: absolute;
+  top: var(--fx-hud-gutter);
+  left: var(--fx-hud-gutter);
+  z-index: var(--fx-z-hud);
+  margin: 0;
+  padding: var(--fx-space-2) var(--fx-space-3);
   border: var(--fx-rule-frame);
-}
-
-.plate > * {
   background: var(--fx-color-paper);
-  padding: var(--fx-space-3) var(--fx-space-5);
-}
-
-.title {
-  font-family: var(--fx-font-macro);
-  font-size: var(--fx-type-macro-stamp);
-  font-weight: var(--fx-type-macro-stamp-weight);
-  line-height: var(--fx-type-macro-stamp-leading);
-  letter-spacing: var(--fx-type-macro-stamp-tracking);
-}
-
-.meta {
+  color: var(--fx-color-ink);
+  font-family: var(--fx-font-micro);
   font-size: var(--fx-type-label);
   letter-spacing: var(--fx-type-label-tracking);
-  color: var(--fx-color-ink-3);
-}
-
-.accent {
-  color: var(--fx-color-accent-text);
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+  pointer-events: none;
 }

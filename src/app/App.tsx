@@ -1,17 +1,29 @@
+import { Scene } from '@render/index';
+import { useEffect, useRef } from 'react';
 import styles from './App.module.css';
+import type { Game } from './game';
 
-// Composition root. Phase 2: empty shell; the loop, SimHost, scene and HUD are wired in Phases 3–6.
-export function App() {
+// Composition root view: full-screen scene + a temporary debug readout (the HUD arrives in Phase 6).
+// The readout is written imperatively by the game loop at 4 Hz; React renders this tree once.
+export function App({ game }: { game: Game }) {
+  const readout = useRef<HTMLParagraphElement>(null);
+  useEffect(() => game.bindReadout(readout.current), [game]);
+  useEffect(() => {
+    game.loop.start();
+    return () => game.loop.stop();
+  }, [game]);
   return (
     <main className={styles.shell}>
-      <section className={styles.plate} aria-label="Fuel-X">
-        <p className={styles.meta}>[ CALDER ORBITAL / VARNE COAST / BRACKWATER LC-1 ]</p>
-        <h1 className={styles.title}>FUEL-X</h1>
-        <p className={styles.meta}>
-          REV 0.1 · PHASE 2 SCAFFOLD · <span className={styles.accent}>SIM OFFLINE</span> ·{' '}
-          <a href="./design.html">/DESIGN</a>
-        </p>
-      </section>
+      <Scene
+        className={styles.scene}
+        snapshot={game.host.snapshot}
+        controls={game.controls}
+        input={game.input}
+        onApi={game.attachScene}
+      />
+      <p ref={readout} className={styles.readout} data-testid="debug-readout">
+        LOADING
+      </p>
     </main>
   );
 }

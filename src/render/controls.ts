@@ -11,10 +11,7 @@ export interface CameraOrbit {
   distM: number;
 }
 
-export type CameraRequest =
-  | { kind: 'home' }
-  | { kind: 'frame' }
-  | ({ kind: 'orbit' } & CameraOrbit);
+export type CameraRequest = { kind: 'home' } | { kind: 'frame' } | ({ kind: 'orbit' } & CameraOrbit);
 
 export interface RenderControls {
   /** Entity the camera follows (and the floating origin re-centres on); null = site home target. */

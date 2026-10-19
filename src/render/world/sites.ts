@@ -11,7 +11,7 @@ export interface SiteView {
 
 export const SITE_VIEWS: Record<string, SiteView> = {
   // Pad + tower at the origin, tank farm ~(-380, 0, 230): look from the south-east like the asset previews.
-  'LC-1': { target: [-170, 35, 110], home: { yawDeg: 135, pitchDeg: 26, distM: 1150 }, coastX: 400 },
+  'LC-1': { target: [-175, 30, 95], home: { yawDeg: 140, pitchDeg: 30, distM: 820 }, coastX: 400 },
 };
 
 export const DEFAULT_SITE = 'LC-1';

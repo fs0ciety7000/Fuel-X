@@ -3,7 +3,7 @@
 // soft shadows, DPR clamped to [1, 1.5]. React renders this tree on mount and on index changes only.
 import { Canvas } from '@react-three/fiber';
 import type { RootState } from '@react-three/fiber';
-import { Suspense, useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import type { Group } from 'three';
 import { ALL_ASSETS, isAssetName, useAssets } from './assets/useAsset';
 import type { RenderControls } from './controls';
@@ -15,10 +15,10 @@ import type { RenderSnapshot } from './snapshot';
 import { AdaptiveDpr, DPR_RANGE } from './systems/AdaptiveDpr';
 import { CAMERA_FOV_DEG, CameraSystem } from './systems/CameraSystem';
 import { EnvironmentSystem } from './systems/EnvironmentSystem';
+import { GroundSystem } from './systems/GroundSystem';
 import { RenderPass } from './systems/RenderPass';
 import { RenderSync } from './systems/RenderSync';
 import { EntityViews } from './views/EntityViews';
-import { Ground } from './world/Ground';
 
 export interface SceneApi {
   /** Runs the render systems and draws one frame. */
@@ -35,7 +35,7 @@ export interface SceneProps {
   controls: RenderControls;
   input: FrameInput;
   onApi: (api: SceneApi) => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 function AssetGate({ onLoaded }: { onLoaded: () => void }) {
@@ -44,31 +44,50 @@ function AssetGate({ onLoaded }: { onLoaded: () => void }) {
   return null;
 }
 
-export function Scene({ snapshot, controls, input, onApi, className }: SceneProps) {
-  const core = useMemo(
-    () => ({ registry: new EntityRegistry(), feed: new IndexFeed(), shared: createFrameShared(), loaded: false }),
-    [],
-  );
-  const world = useRef<Group>(null);
-  const markLoaded = useMemo(
-    () => () => {
-      core.loaded = true;
-    },
-    [core],
-  );
+/** Non-React scene state shared by the systems (registry, index feed, per-frame scratch). */
+class SceneCore implements SceneApi {
+  readonly registry = new EntityRegistry();
+  readonly feed = new IndexFeed();
+  readonly shared = createFrameShared();
+  private loaded = false;
+  private advanceFn: ((now: number) => void) | null = null;
 
-  const onCreated = (state: RootState): void => {
+  constructor(private readonly snapshot: RenderSnapshot) {}
+
+  readonly markLoaded = (): void => {
+    this.loaded = true;
+  };
+
+  bind(state: RootState): void {
     state.gl.info.autoReset = true;
-    onApi({
-      advance: (now) => state.advance(now),
-      stats: () => core.shared.stats,
-      isReady: () => {
-        if (!core.loaded || core.shared.frames === 0) return false;
-        const want = snapshot.index.slots.filter((s) => isAssetName(s.asset)).length;
-        return core.feed.get() === snapshot.index && core.registry.size >= want;
-      },
-      frames: () => core.shared.frames,
-    });
+    this.advanceFn = (now) => state.advance(now);
+  }
+
+  advance(now: number): void {
+    this.advanceFn?.(now);
+  }
+
+  stats(): Readonly<RendererStats> {
+    return this.shared.stats;
+  }
+
+  isReady(): boolean {
+    if (!this.loaded || this.shared.frames === 0) return false;
+    const want = this.snapshot.index.slots.filter((s) => isAssetName(s.asset)).length;
+    return this.feed.get() === this.snapshot.index && this.registry.size >= want;
+  }
+
+  frames(): number {
+    return this.shared.frames;
+  }
+}
+
+export function Scene({ snapshot, controls, input, onApi, className }: SceneProps) {
+  const [core] = useState(() => new SceneCore(snapshot));
+  const world = useRef<Group>(null);
+  const onCreated = (state: RootState): void => {
+    core.bind(state);
+    onApi(core);
   };
 
   return (
@@ -76,7 +95,7 @@ export function Scene({ snapshot, controls, input, onApi, className }: SceneProp
       className={className}
       frameloop="never"
       flat
-      shadows="soft"
+      shadows="percentage"
       dpr={[DPR_RANGE[0], DPR_RANGE[1]]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       camera={{ fov: CAMERA_FOV_DEG, near: 1, far: 60_000, position: [800, 600, 900] }}
@@ -94,11 +113,11 @@ export function Scene({ snapshot, controls, input, onApi, className }: SceneProp
       <CameraSystem controls={controls} registry={core.registry} shared={core.shared} />
       <EnvironmentSystem shared={core.shared} />
       <AdaptiveDpr input={input} />
+      <GroundSystem shared={core.shared} siteId={controls.siteId} />
       <RenderPass shared={core.shared} />
       <group ref={world} name="WORLD">
-        <Ground siteId={controls.siteId} />
         <Suspense fallback={null}>
-          <AssetGate onLoaded={markLoaded} />
+          <AssetGate onLoaded={core.markLoaded} />
           <EntityViews feed={core.feed} registry={core.registry} />
         </Suspense>
       </group>

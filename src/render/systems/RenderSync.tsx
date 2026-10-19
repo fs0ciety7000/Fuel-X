@@ -2,7 +2,7 @@
 // through the registry; re-centre the world group on the followed entity (floating origin, §14 risk 4);
 // publish index changes to the views (the only React-visible event).
 import { useFrame } from '@react-three/fiber';
-import { useMemo } from 'react';
+import { useState } from 'react';
 import type { RefObject } from 'react';
 import type { Group } from 'three';
 import { PAD, TRANSPORTER } from '../assets/generated';
@@ -18,7 +18,7 @@ export const RENDER_SYNC_PRIORITY = -30;
 /** Radius around the camera target inside which motion refreshes the shadow map, m. */
 const SHADOW_MOTION_RADIUS_M = 900;
 
-interface Props {
+export interface RenderSyncDeps {
   snapshot: RenderSnapshot;
   controls: RenderControls;
   input: FrameInput;
@@ -28,27 +28,34 @@ interface Props {
   world: RefObject<Group | null>;
 }
 
-export function RenderSync({ snapshot, controls, input, shared, registry, feed, world }: Props) {
-  const pose = useMemo(createPose, []);
-  const lifts = useMemo(() => ({ mount: -1, cargo: -1 }), []);
-  const seen = useMemo(() => ({ tick: -1, registry: -1 }), []);
+export class RenderSyncSystem {
+  private readonly pose = createPose();
+  private mountLift = -1;
+  private cargoLift = -1;
+  private seenTick = -1;
+  private seenRegistry = -1;
 
-  useFrame(() => {
+  constructor(private readonly d: RenderSyncDeps) {}
+
+  frame(): void {
+    const { snapshot, controls, input, shared, registry, feed, world } = this.d;
     feed.publish(snapshot.index);
     // Attachment heights come from the GLB sockets (sockets are API): PAD deck, TRANSPORTER stand top.
-    if (lifts.mount < 0 || lifts.cargo < 0) {
+    if (this.mountLift < 0 || this.cargoLift < 0) {
       for (const h of registry.byId.values()) {
-        if (h.info.name === 'pad') lifts.mount = h.info.sockets.get(PAD.sockets.VehicleMount)?.y ?? -1;
-        if (h.info.name === 'transporter') lifts.cargo = h.info.sockets.get(TRANSPORTER.sockets.Cargo)?.y ?? -1;
+        if (h.info.name === 'pad') this.mountLift = h.info.sockets.get(PAD.sockets.VehicleMount)?.y ?? -1;
+        if (h.info.name === 'transporter') this.cargoLift = h.info.sockets.get(TRANSPORTER.sockets.Cargo)?.y ?? -1;
       }
     }
-    const regChanged = registry.version !== seen.registry;
-    const ticked = snapshot.tick !== seen.tick || regChanged;
-    seen.tick = snapshot.tick;
-    seen.registry = registry.version;
+    const regChanged = registry.version !== this.seenRegistry;
+    const ticked = snapshot.tick !== this.seenTick || regChanged;
+    this.seenTick = snapshot.tick;
+    this.seenRegistry = registry.version;
+
     let movedNear = false;
     const t = shared.targetAbs;
     const r2 = SHADOW_MOTION_RADIUS_M * SHADOW_MOTION_RADIUS_M;
+    const pose = this.pose;
     for (const h of registry.byId.values()) {
       samplePose(snapshot, h.slot, input.alpha, pose);
       const f = pose.flags;
@@ -60,9 +67,9 @@ export function RenderSync({ snapshot, controls, input, shared, registry, feed, 
       o.visible = true;
       const lift =
         (f & SlotFlag.ON_MOUNT) !== 0
-          ? Math.max(0, lifts.mount)
+          ? Math.max(0, this.mountLift)
           : (f & SlotFlag.ON_CARGO) !== 0
-            ? Math.max(0, lifts.cargo)
+            ? Math.max(0, this.cargoLift)
             : 0;
       o.position.set(pose.x, pose.y + lift, pose.z);
       o.quaternion.set(pose.qx, pose.qy, pose.qz, pose.qw);
@@ -77,12 +84,17 @@ export function RenderSync({ snapshot, controls, input, shared, registry, feed, 
       }
     }
     shared.movedNear = movedNear || regChanged;
+
     // Floating origin: the followed entity sits at the scene origin; everything else is relative to it.
     const followed = controls.followId ? registry.byId.get(controls.followId) : undefined;
     if (followed?.object.visible) shared.origin.copy(followed.object.position);
     else shared.origin.set(0, 0, 0);
     world.current?.position.set(-shared.origin.x, -shared.origin.y, -shared.origin.z);
-  }, RENDER_SYNC_PRIORITY);
+  }
+}
 
+export function RenderSync(props: RenderSyncDeps) {
+  const [system] = useState(() => new RenderSyncSystem(props));
+  useFrame(() => system.frame(), RENDER_SYNC_PRIORITY);
   return null;
 }
