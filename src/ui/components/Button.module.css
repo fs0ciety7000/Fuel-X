@@ -1,0 +1,194 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fx-space-3);
+  min-height: var(--fx-size-control);
+  min-width: var(--fx-size-hit-min);
+  padding: var(--fx-space-0) var(--fx-space-4);
+  border: var(--fx-rule-frame);
+  background: var(--fx-color-paper);
+  color: var(--fx-color-ink);
+  font: inherit;
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background-color var(--fx-dur-snap) var(--fx-ease-mech);
+}
+
+.small {
+  min-height: var(--fx-size-hit-min);
+  padding: var(--fx-space-0) var(--fx-space-3);
+  font-size: var(--fx-type-label);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.kbd {
+  font: inherit;
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  padding: var(--fx-space-0) var(--fx-space-1);
+  border: var(--fx-rule-hair) solid currentColor;
+}
+
+.button:focus-visible,
+.button[data-demo='focus'] {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+/* secondary */
+.button[data-variant='secondary']:hover,
+.button[data-variant='secondary'][data-demo='hover'] {
+  background: var(--fx-color-paper-2);
+}
+
+.button[data-variant='secondary']:active,
+.button[data-variant='secondary'][data-demo='pressed'] {
+  background: var(--fx-color-paper-3);
+}
+
+/* primary */
+.button[data-variant='primary'] {
+  background: var(--fx-color-ink);
+  color: var(--fx-color-paper);
+}
+
+.button[data-variant='primary']:hover,
+.button[data-variant='primary'][data-demo='hover'] {
+  background: var(--fx-color-ink-2);
+}
+
+.button[data-variant='primary']:active,
+.button[data-variant='primary'][data-demo='pressed'] {
+  background: var(--fx-color-paper-3);
+  color: var(--fx-color-ink);
+}
+
+/* danger */
+.button[data-variant='danger'] {
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+}
+
+.button[data-variant='danger']:hover,
+.button[data-variant='danger'][data-demo='hover'] {
+  border-left: var(--fx-rule-band) solid var(--fx-color-ink);
+  background-image: var(--fx-pattern-hazard);
+  background-size: auto;
+  background-repeat: repeat-y;
+  background-position: left;
+  background-color: var(--fx-color-accent);
+}
+
+.button[data-variant='danger']:active,
+.button[data-variant='danger'][data-demo='pressed'] {
+  background: var(--fx-color-ink);
+  color: var(--fx-color-paper);
+}
+
+/* disabled / busy (aria-disabled keeps it focusable so the reason stays reachable) */
+.button[aria-disabled='true'],
+.button[aria-disabled='true']:hover,
+.button[aria-disabled='true']:active {
+  background: var(--fx-color-paper);
+  background-image: var(--fx-pattern-hatch);
+  border-color: var(--fx-color-ink-4);
+  color: var(--fx-color-ink-4);
+  cursor: not-allowed;
+}
+
+.button[aria-busy='true'] {
+  cursor: progress;
+}
+
+.reason {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* segmented control */
+.group {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink);
+  border: var(--fx-rule-frame);
+  pointer-events: auto;
+}
+
+.seg {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fx-space-2);
+  min-width: var(--fx-size-control);
+  min-height: var(--fx-size-control);
+  padding: var(--fx-space-0) var(--fx-space-3);
+  background: var(--fx-color-paper);
+  color: var(--fx-color-ink);
+  border: 0;
+  font: inherit;
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+  cursor: pointer;
+}
+
+.seg:hover,
+.seg[data-demo='hover'] {
+  background: var(--fx-color-paper-2);
+}
+
+.seg:focus-visible,
+.seg[data-demo='focus'] {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+  z-index: 1;
+}
+
+.seg[aria-checked='true'] {
+  background: var(--fx-color-ink);
+  color: var(--fx-color-paper);
+}
+
+.seg[aria-disabled='true'],
+.seg[data-capped='true'] {
+  background: var(--fx-color-paper);
+  background-image: var(--fx-pattern-hatch);
+  color: var(--fx-color-ink-4);
+}
+
+.seg[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+.seg[data-capped='true'] {
+  cursor: pointer;
+}
+
+/* Requested but capped: hatch + ink frame = "queued" (applies when the cap lifts). */
+.seg[data-capped='true'][aria-checked='true'] {
+  color: var(--fx-color-ink);
+  outline: var(--fx-rule-heavy);
+  outline-offset: calc(-1 * var(--fx-space-1));
+}
+
+/* Rate actually running when below the requested one. */
+.seg[data-effective='true']::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: var(--fx-space-1);
+  background: var(--fx-color-accent);
+}

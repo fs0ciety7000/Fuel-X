@@ -1,0 +1,28 @@
+.value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--fx-space-2);
+  font-variant-numeric: tabular-nums slashed-zero;
+  white-space: nowrap;
+}
+
+.digits {
+  display: inline-block;
+  text-align: right;
+}
+
+.unit {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-2);
+}
+
+.stale {
+  color: var(--fx-color-ink-4);
+  background-image: var(--fx-pattern-hatch);
+}
+
+.stale .unit {
+  color: var(--fx-color-ink-4);
+}

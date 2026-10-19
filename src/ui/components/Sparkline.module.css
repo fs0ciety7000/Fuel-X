@@ -1,0 +1,31 @@
+.spark {
+  display: block;
+  width: var(--fx-size-spark-w);
+  height: var(--fx-size-spark-h);
+  overflow: visible;
+}
+
+.line {
+  fill: none;
+  stroke: var(--fx-color-ink);
+  stroke-width: 1;
+}
+
+.base {
+  stroke: var(--fx-color-ink-5);
+  stroke-width: 1;
+}
+
+.threshold {
+  stroke: var(--fx-color-ink-4);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.last {
+  fill: var(--fx-color-ink);
+}
+
+.empty {
+  background-image: var(--fx-pattern-hatch);
+}

@@ -1,0 +1,22 @@
+// HUD primitives (DESIGN_SYSTEM §6, task 6.2). Composites (flight card, strip, debrief…) are built from these in 6.3+.
+export { Badge } from './Badge';
+export { Button, SegmentedControl } from './Button';
+export type { SegmentOption } from './Button';
+export { DeadlineBar } from './DeadlineBar';
+export { Dialog } from './Dialog';
+export { Glyph, GlyphSprite, GLYPHS } from './Glyph';
+export { HazardBand } from './HazardBand';
+export { LabelTag } from './LabelTag';
+export type { TagState } from './LabelTag';
+export { LinearProgress } from './LinearProgress';
+export { List } from './List';
+export { MetricTile } from './MetricTile';
+export { Panel } from './Panel';
+export { SegmentedProgress } from './SegmentedProgress';
+export { Sparkline } from './Sparkline';
+export { StatusChip } from './StatusChip';
+export { Tabs } from './Tabs';
+export { Toast, ToastStack } from './Toast';
+export { Popover, Tooltip } from './Tooltip';
+export { Value, val, MISSING } from './Value';
+export type { DemoState } from './cx';

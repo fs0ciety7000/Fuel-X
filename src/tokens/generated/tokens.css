@@ -102,6 +102,17 @@
   --fx-size-glyph: 12px;
   --fx-size-glyph-lg: 16px;
   --fx-size-hit-min: 24px;
+  --fx-size-spark-w: 120px;
+  --fx-size-spark-h: 20px;
+  --fx-size-segment: 16px;
+  --fx-size-bar: 6px;
+  --fx-size-deadline: 8px;
+  --fx-size-tag: 20px;
+  --fx-size-popover: 280px;
+  --fx-size-toast: 400px;
+  --fx-size-dialog: 480px;
+  --fx-size-debrief: 880px;
+  --fx-size-tile: 160px;
   --fx-size-measure: 62ch;
   --fx-size-stage-phone: 46svh;
   --fx-size-cta-wide: 18rem;

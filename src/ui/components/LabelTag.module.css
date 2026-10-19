@@ -1,0 +1,62 @@
+.tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  height: var(--fx-size-tag);
+  padding: var(--fx-space-0) var(--fx-space-2);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-frame);
+  color: var(--fx-color-ink);
+  font: inherit;
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+button.tag {
+  cursor: pointer;
+}
+
+button.tag:hover,
+.tag[data-demo='hover'] {
+  background: var(--fx-color-paper-2);
+  outline: var(--fx-rule-frame);
+}
+
+.tag:focus-visible,
+.tag[data-demo='focus'] {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+.tag[data-state='selected'],
+.tag[data-state='selected']:hover {
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+}
+
+.tag[data-state='alert'],
+.tag[data-state='alert']:hover {
+  background: var(--fx-color-ink);
+  color: var(--fx-color-paper);
+}
+
+.tag[data-state='selected-alert'],
+.tag[data-state='selected-alert']:hover {
+  padding-right: 0;
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+}
+
+.tag[data-state='disabled'] {
+  background-image: var(--fx-pattern-hatch);
+  border-color: var(--fx-color-ink-4);
+  color: var(--fx-color-ink-4);
+}
+
+.tag[data-state='selected-alert'] .text {
+  padding-right: var(--fx-space-1);
+}

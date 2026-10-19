@@ -1,0 +1,100 @@
+.list {
+  display: grid;
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  list-style: none;
+  pointer-events: auto;
+}
+
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--fx-size-glyph) 1fr auto;
+  align-items: center;
+  column-gap: var(--fx-space-3);
+  min-height: var(--fx-size-row);
+  padding: var(--fx-space-2) var(--fx-space-3);
+  background: var(--fx-color-paper);
+  border-left: var(--fx-rule-warn);
+  border-right: var(--fx-rule-warn);
+  border-left-color: transparent;
+  border-right-color: transparent;
+  color: var(--fx-color-ink);
+  cursor: pointer;
+  transition: background-color var(--fx-dur-snap) var(--fx-ease-mech);
+}
+
+.row:hover,
+.row[data-demo='hover'] {
+  background: var(--fx-color-paper-2);
+}
+
+.row:focus-visible,
+.row[data-demo='focus'] {
+  outline: var(--fx-focus-ring);
+  outline-offset: calc(-1 * var(--fx-focus-offset));
+}
+
+.names {
+  display: grid;
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+  line-height: var(--fx-type-strong-leading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+  white-space: nowrap;
+}
+
+.key {
+  justify-self: end;
+}
+
+.edge {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: flex;
+}
+
+.row[aria-selected='true'] {
+  background: var(--fx-color-accent-tint);
+  border-left-color: var(--fx-color-accent);
+}
+
+.row[data-state='warn'] {
+  border-right-color: var(--fx-color-accent);
+}
+
+.row[data-state='warn'] .sub {
+  color: var(--fx-color-accent-text);
+}
+
+.row[data-state='disabled'] {
+  background-image: var(--fx-pattern-hatch);
+  color: var(--fx-color-ink-4);
+  cursor: default;
+}
+
+.row[data-state='disabled'] .sub {
+  color: var(--fx-color-ink-4);
+}
+
+.empty {
+  padding: var(--fx-space-4) var(--fx-space-3);
+  background: var(--fx-color-paper);
+  color: var(--fx-color-ink-3);
+  font-size: var(--fx-type-label);
+  letter-spacing: var(--fx-type-label-tracking);
+}

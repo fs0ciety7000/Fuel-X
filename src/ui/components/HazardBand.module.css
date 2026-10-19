@@ -1,0 +1,23 @@
+.band {
+  display: block;
+  flex: none;
+  background-image: var(--fx-pattern-hazard);
+}
+
+.vertical {
+  width: var(--fx-rule-band);
+  align-self: stretch;
+}
+
+.horizontal {
+  height: var(--fx-rule-band);
+  width: 100%;
+}
+
+.wide.vertical {
+  width: var(--fx-space-3);
+}
+
+.wide.horizontal {
+  height: var(--fx-space-3);
+}

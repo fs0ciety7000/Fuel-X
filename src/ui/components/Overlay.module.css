@@ -1,0 +1,236 @@
+/* Tooltip, popover, toast, dialog: opaque paper sheets, ink frames, clip-path reveals (no fades). */
+.anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: var(--fx-z-popover);
+  width: max-content;
+  max-width: var(--fx-size-popover);
+  margin-top: var(--fx-space-2);
+  padding: var(--fx-space-2) var(--fx-space-3);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-frame);
+  color: var(--fx-color-ink);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  line-height: var(--fx-type-label-leading);
+  white-space: normal;
+  pointer-events: none;
+  animation: reveal var(--fx-dur-fast) var(--fx-ease-mech);
+}
+
+.popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: var(--fx-z-popover);
+  min-width: var(--fx-size-popover);
+  margin-top: var(--fx-space-2);
+  pointer-events: auto;
+  animation: reveal var(--fx-dur-fast) var(--fx-ease-mech);
+}
+
+.static {
+  position: static;
+  margin-top: 0;
+  animation: none;
+}
+
+@keyframes reveal {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+
+  to {
+    clip-path: inset(0);
+  }
+}
+
+/* toast */
+.stack {
+  display: grid;
+  gap: var(--fx-space-3);
+  width: var(--fx-size-toast);
+  pointer-events: none;
+}
+
+.toast {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-frame);
+  pointer-events: auto;
+  animation: slide var(--fx-dur-base) var(--fx-ease-mech);
+}
+
+.toastEdge {
+  display: flex;
+  width: var(--fx-space-2);
+  background: var(--fx-color-paper);
+}
+
+.toast[data-state='warn'] {
+  border: var(--fx-rule-warn);
+}
+
+.toast[data-state='warn'] .toastEdge {
+  background: var(--fx-color-accent);
+}
+
+.toast[data-state='danger'] .toastEdge {
+  width: var(--fx-space-3);
+  background: var(--fx-color-accent);
+}
+
+.toast[data-state='ok'] .toastEdge,
+.toast[data-state='info'] .toastEdge {
+  background: var(--fx-color-ink);
+  width: var(--fx-space-1);
+}
+
+.toastBody {
+  display: grid;
+  gap: var(--fx-space-2);
+  padding: var(--fx-space-3);
+}
+
+.toastLine {
+  display: grid;
+  grid-template-columns: auto auto auto 1fr auto;
+  align-items: center;
+  gap: var(--fx-space-3);
+  font-size: var(--fx-type-body);
+}
+
+.toastTime {
+  color: var(--fx-color-ink-3);
+}
+
+.toastEntity {
+  font-weight: var(--fx-type-strong-weight);
+}
+
+.toastActions {
+  display: flex;
+  gap: var(--fx-space-2);
+}
+
+.more {
+  justify-self: start;
+  padding: var(--fx-space-1) var(--fx-space-3);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-frame);
+  font-size: var(--fx-type-label);
+  letter-spacing: var(--fx-type-label-tracking);
+  pointer-events: auto;
+}
+
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: var(--fx-size-hit-min);
+  height: var(--fx-size-hit-min);
+  border: var(--fx-rule-hair) solid transparent;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  border-color: var(--fx-color-ink);
+}
+
+@keyframes slide {
+  from {
+    transform: translateY(calc(-1 * var(--fx-space-3)));
+    clip-path: inset(0 0 100% 0);
+  }
+
+  to {
+    transform: none;
+    clip-path: inset(0);
+  }
+}
+
+/* dialog */
+.dialog {
+  width: var(--fx-size-dialog);
+  max-width: 100%;
+  padding: 0;
+  background: var(--fx-color-paper);
+  color: var(--fx-color-ink);
+  border: var(--fx-rule-heavy);
+  z-index: var(--fx-z-dialog);
+}
+
+.dialog::backdrop {
+  background: transparent;
+}
+
+.inline {
+  position: static;
+  display: block;
+  margin: 0;
+}
+
+.dialogHead {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-3);
+  min-height: var(--fx-size-control);
+  padding: var(--fx-space-0) var(--fx-space-4);
+  border-bottom: var(--fx-rule-heavy);
+  font-size: var(--fx-type-title);
+  font-weight: var(--fx-type-title-weight);
+  letter-spacing: var(--fx-type-title-tracking);
+}
+
+.dialog[data-state='danger'] .dialogHead {
+  padding-left: 0;
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+}
+
+.dialogBody {
+  display: grid;
+  gap: var(--fx-space-4);
+  padding: var(--fx-space-4);
+}
+
+.consequences {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+}
+
+.consequences dt,
+.consequences dd {
+  padding: var(--fx-space-2) var(--fx-space-3);
+  background: var(--fx-color-paper);
+}
+
+.consequences dt {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+}
+
+.consequences dd {
+  text-align: right;
+  font-weight: var(--fx-type-strong-weight);
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--fx-space-3);
+}

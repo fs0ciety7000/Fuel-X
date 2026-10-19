@@ -91,6 +91,18 @@ export const tokens = {
     glyph: '12px',
     glyphLg: '16px',
     hitMin: '24px',
+    // HUD primitives (DESIGN_SYSTEM §2.6, task 6.2).
+    sparkW: '120px',
+    sparkH: '20px',
+    segment: '16px',
+    bar: '6px',
+    deadline: '8px',
+    tag: '20px',
+    popover: '280px',
+    toast: '400px',
+    dialog: '480px',
+    debrief: '880px',
+    tile: '160px',
     // Showcase site: reading measure and the sticky stage height on phones.
     measure: '62ch',
     stagePhone: '46svh',

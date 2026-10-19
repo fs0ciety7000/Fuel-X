@@ -1,0 +1,69 @@
+.badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-3);
+  min-height: var(--fx-size-hit-min);
+  padding: var(--fx-space-0) var(--fx-space-3);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-frame);
+  color: var(--fx-color-ink);
+  font: inherit;
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.badge:hover,
+.badge[data-demo='hover'] {
+  background: var(--fx-color-paper-2);
+}
+
+.badge:focus-visible,
+.badge[data-demo='focus'] {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+.badge[data-state='neutral'] {
+  border-color: var(--fx-color-ink-5);
+  color: var(--fx-color-ink-2);
+}
+
+.badge[data-state='warn'] {
+  border: var(--fx-rule-warn);
+  color: var(--fx-color-accent-text);
+}
+
+.badge[data-state='danger'],
+.badge[data-state='danger']:hover {
+  padding-left: 0;
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+}
+
+.badge[data-state='selected'] {
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+}
+
+.badge[aria-disabled='true'] {
+  border-color: var(--fx-color-ink-5);
+  background-image: var(--fx-pattern-hatch);
+  color: var(--fx-color-ink-4);
+  cursor: default;
+}
+
+.output {
+  font: inherit;
+}
+
+.count {
+  display: inline-block;
+  min-width: 2ch;
+  text-align: right;
+}
