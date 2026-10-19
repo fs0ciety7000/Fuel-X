@@ -20,7 +20,7 @@ import {
   Vector4,
   WebGLRenderTarget,
 } from 'three';
-import type { AnyPixelFormat, Texture, WebGLRenderer } from 'three';
+import type { PixelFormat, Texture, WebGLRenderer } from 'three';
 import type { TerrainSpec } from './terrain';
 
 /** Concrete field: texel (m), margin around the lots/roads bbox (m), max texture side, clamp distance (m). */
@@ -118,7 +118,7 @@ void main() {
 }
 `;
 
-function bake(gl: WebGLRenderer, d: FieldDomain, format: AnyPixelFormat, frag: string, name: string): WebGLRenderTarget {
+function bake(gl: WebGLRenderer, d: FieldDomain, format: PixelFormat, frag: string, name: string): WebGLRenderTarget {
   const rt = new WebGLRenderTarget(d.widthPx, d.heightPx, {
     type: HalfFloatType,
     format,
