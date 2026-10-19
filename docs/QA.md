@@ -50,6 +50,18 @@ Never run `playwright install`; Playwright stays at 1.56.1 until the preinstalle
 
 Phase 2 reference screenshots (manual, not baselines yet): `docs/screens/phase2-game.png`, `docs/screens/phase2-design.png`. Baselines (`*.visual.ts`) start in Phase 5 once `window.__fuelx` exists; mask the noise overlay and clocks. Full-page screenshots show the fixed noise overlay only on the first viewport — expected.
 
+### Gate 5 screenshots (2026-10-19, `FUELX_SCREENS=1 npm run e2e`, production build, SwiftShader 1920×1080, frozen visuals)
+
+| State | File | Spec |
+|---|---|---|
+| Terminal count, home (LC-1, T-00:00:04) | `docs/screens/phase5-terminal-count@T-00-00-04.png` · `phase5-home.png` (FX home framing) | `scene.e2e` · `fx.e2e` |
+| Ascent following B-09 (T+00:01:45) | `docs/screens/phase5-ascent-follow-B09@T+00-01-45.png` · `phase5-fx-ascent-follow-B09@T+00-01-45.png` | `scene.e2e` · `fx.e2e` |
+| Tower catch (T+00:06:55) | `docs/screens/phase5-anim-catch@T+00-06-55.png` | `anim.e2e` |
+| Liftoff FX (T+00:00:03) | `docs/screens/phase5-fx-liftoff@T+00-00-03.png` | `fx.e2e` |
+| Recovery rings (divert, RV-1, T+00:06:45) | `docs/screens/phase5-fx-recovery-rings.png` | `fx.e2e` |
+
+Also current: `phase5-pad-close@T-00-00-04.png`, `phase5-anim-{rollout-SP41-B09,crane-CR77,tower-qd,boostback-follow-B09}@….png`, `phase5-world-{home,sea}@T-00-00-04.png`, `phase5-fx-landing-burn.png`. Liftoff still shows the stack ≈ 600 m up at T+3 s (sim piecewise-linear profile, TASKS 5.6 follow-up), so no plume impingement on the pad yet.
+
 ## Latest numbers
 
 | Date | Metric | Budget | Measured |
@@ -126,7 +138,5 @@ After merging the 5.3–5.7 render commits (2026-10-19): game initial JS gzip (p
 
 ## Known flaky areas
 
-- `tests/e2e/scene.e2e.ts` › "debug hooks: step, time scale, save/load round trip" can time out when the whole e2e suite runs in parallel under SwiftShader (~1 fps); it passes alone (~1.7 min).
-
-
-None yet.
+- ~~`tests/e2e/scene.e2e.ts` › "debug hooks: step, time scale, save/load round trip" timed out when the whole suite ran in parallel under SwiftShader~~ — **fixed in 5.9**: the game-scene specs (`scene`, `anim`, `fx`, `world`) run in the `scene` Playwright project with `workers: 1` (two software-GL scenes at once starved each other on 4 vCPU); smoke/showcase run beside them in `e2e`. Full suite 9.0 min (same as before); "debug hooks" 30.6 s → 17.7 s. Two consecutive full `npm run e2e` runs green (2026-10-19).
+- Any new spec that boots `/play` with full visuals belongs in `SCENE_SPECS` (`playwright.config.ts`).

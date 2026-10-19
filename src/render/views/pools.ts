@@ -33,6 +33,7 @@ const m4 = new Matrix4();
 const m5 = new Matrix4();
 const one = new Vector3(1, 1, 1);
 const rel = new Vector3();
+const NONE: readonly EntityHandle[] = [];
 
 class Pool {
   readonly levels: Level[];
@@ -103,6 +104,10 @@ class Pool {
     for (const lv of this.levels) {
       for (const im of lv.meshes) {
         im.count = lv.count;
+        if (lv.count === 0) continue;
+        // upload only the live instances, not the whole power-of-two capacity
+        im.instanceMatrix.clearUpdateRanges();
+        im.instanceMatrix.addUpdateRange(0, lv.count * 16);
         im.instanceMatrix.needsUpdate = true;
       }
     }
@@ -127,6 +132,6 @@ export class InstancePools {
 
   /** `byAsset`: live pooled handles grouped by asset. */
   update(byAsset: ReadonlyMap<AssetName, EntityHandle[]>, camera: Camera, origin: Vector3, fovDeg: number): void {
-    for (const [name, pool] of this.pools) pool.update(byAsset.get(name) ?? [], camera, origin, fovDeg);
+    for (const [name, pool] of this.pools) pool.update(byAsset.get(name) ?? NONE, camera, origin, fovDeg);
   }
 }
