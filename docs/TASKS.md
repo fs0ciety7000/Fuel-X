@@ -66,7 +66,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 - [x] ⛳ **Gate 5** approved — screenshots: terminal count, ascent follow, catch
 
 ## Phase 6 — HUD
-- [ ] 6.0 DESIGN_SYSTEM addendum: **decision strip**, **debrief panel**, rate control states (requested by GDD §10) — **ui-design-system** + **game-designer**
+- [x] 6.0 DESIGN_SYSTEM addendum: **decision strip**, **debrief panel**, rate control states (requested by GDD §10) — **ui-design-system** + **game-designer** (GDD gaps listed in DESIGN_SYSTEM §13.2 for the designer)
 - [ ] 6.1 Projector (10 Hz + salient events) + Zustand stores + command API; unit-format tests — **systems-architect** ← 3.9
 - [ ] 6.2 Primitives + `/design` gallery (all components, all states) — **ui-design-system** ← 2.4
 - [ ] 6.3 HUD frame grid; top bar, site switcher (other sites disabled), alerts, rate control — ← 6.1, 6.2

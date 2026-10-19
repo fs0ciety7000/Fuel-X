@@ -1,6 +1,6 @@
 # Fuel-X — Design System
 
-> Owner: `ui-design-system`. Status: Phase 1 draft, awaiting Gate 1.
+> Owner: `ui-design-system`. Status: Gate 1 approved; Phase 6 addendum (6.0: decision strip §6.28, debrief §6.29, rate control §6.25, primitives §6.30–6.36, view-model contract §13).
 > Aesthetic source: `industrial-brutalist-ui` skill, **Swiss Industrial Print (light) only**, with the Fuel-X addendum (§9). Mechanics of token use: `design-tokens` skill.
 > Styling technology is the architect's call (see `docs/adr/`). Every token below is given as a **CSS custom property** and a **TS constant path**; one is generated from the other, never both hand-maintained.
 > Names in examples (`LC-1`, `B-14`, `S-31`, `SP-41`, `RV-1`, `RB-2`) are placeholders until `docs/GDD.md` fixes lore & naming.
@@ -159,6 +159,21 @@ Rules: minimum readable content size 11 px (10 px only for redundant ticks). Uni
 
 Sizes: `--fx-size-row` 32px (list row, 28 compact), `--fx-size-control` 32px (map buttons, segmented), `--fx-size-topbar` 40px, `--fx-size-glyph` 12px, `--fx-size-glyph-lg` 16px, `--fx-size-hit-min` 24px (WCAG 2.5.8).
 
+Component sizes (added in 6.2, all `tokens.size.*`):
+
+| Token | Value | Use |
+|---|---|---|
+| `--fx-size-spark-w` · `--fx-size-spark-h` | 120px · 20px | Sparkline box (§6.8) |
+| `--fx-size-segment` | 16px | Width of one segmented-progress cell (§6.9) |
+| `--fx-size-bar` | 6px | Height of linear progress, segment cells, inline tank bar (§6.9, §6.10) |
+| `--fx-size-deadline` | 8px | Deadline bar track height (§6.30) |
+| `--fx-size-tag` | 20px | Label tag height (§6.20) |
+| `--fx-size-popover` | 280px | Tooltip / popover max width (§6.32) |
+| `--fx-size-toast` | 400px | Toast width (§6.23) |
+| `--fx-size-dialog` | 480px | Confirm dialog width (§6.27) |
+| `--fx-size-debrief` | 880px | Debrief sheet width (§6.29) |
+| `--fx-size-tile` | 160px | Metric tile min width (§6.8) |
+
 | Token | TS | Value | Use |
 |---|---|---|---|
 | `--fx-radius` | `tokens.radius` | `0` | Everything |
@@ -217,7 +232,7 @@ Touch/mobile out of scope for MVP.
 
 ### 3.1 Grid definition (1920×1080)
 
-The HUD is one CSS grid laid over the canvas (`position: fixed; inset: 0`). Columns (px): `16 | 320 | 56 | 1fr | 40 | 8 | 400 | 16`. Rows: `40 | 16 | auto | 1fr | 40 | 112 | 16`.
+The HUD is one CSS grid laid over the canvas (`position: fixed; inset: 0`). Columns (px): `16 | 320 | 56 | 1fr | 40 | 8 | 400 | 16`. Rows: `40 | 16 | auto | 1fr | 40 | auto | 112 | 16` (row 6 = decision strip, 0 px when no decision is open).
 
 ```
 grid-template-areas:
@@ -226,6 +241,7 @@ grid-template-areas:
  ".      flight alt    toast   .       .     inspect ."
  ".      poll   alt    world   .       .     inspect ."
  ".      poll   alt    compass ctrl    .     tabs    ."
+ ".      strip  strip  strip   strip   .     tabs    ."
  ".      time   time   time    time    .     tabs    ."
  ".      .      .      .       .       .     tabs    .";
 ```
@@ -243,7 +259,9 @@ grid-template-areas:
 | `ctrl` | Map controls (§6.19) |
 | `inspect` | Inspector card (§6.11) |
 | `tabs` | Tabbed panel (§6.14) |
-| `time` | Countdown timeline (§6.17) incl. time-scale control (§6.25) |
+| `strip` | Decision strip (§6.28), only while a decision is open; pushes nothing else (the row grows upward into `world`) |
+| `time` | Countdown timeline (§6.17) incl. rate control (§6.25) |
+| (centered over `world`) | Debrief sheet (§6.29), end of run |
 
 Crosshair `+` marks (ink-4) sit on the outer corners of every card and at the four corners of `world`. No full-screen gridlines over the scene.
 
@@ -308,19 +326,27 @@ Crosshair `+` marks (ink-4) sit on the outer corners of every card and at the fo
 
 ## 5. Decision map (why each component exists)
 
-| Component | Player decision served |
-|---|---|
-| Site switcher | Where to act / expand (strategy layer) |
-| Search | Find & follow any entity fast |
-| Range badge, alert counter, poll panel | Hold / recycle / scrub / proceed |
-| Flight card | Is the next launch on track? (prop, stages, range) |
-| Inspector | React to a vehicle anomaly (divert, hold arms, safe) |
-| Tabbed panel | Dispatch logistics, follow entities, review events |
-| Countdown timeline | When to hold; how far is the cycle |
-| Time-scale | Compress logistics, play the count at 1× |
-| Map controls, labels, scales | Spatial awareness to judge hazards/recovery |
+Synced with GDD §10 / §13.2 in 6.0. D1–D3b are the MVP decisions (GDD §13.2).
 
-(GDD may cut/merge; components without a decision are removed.)
+| Component | Player decision served | GDD §10 verdict |
+|---|---|---|
+| Site switcher | Where to act / expand (strategy layer) | MVP display only (other sites disabled) |
+| Search | Find & follow any entity fast | MVP stub: filters the tabbed panel |
+| UTC clock + **rate control** (§6.25) | Window timing; compress dead air, play the count at 1× | keep + ADD |
+| `TLM 38 MS` cell | — | **repurposed** as the effective sim-rate readout `SIM 10×` (§6.25) |
+| Range badge, alert counter | D2 GO/HOLD/RECYCLE/SCRUB; notice anomalies | keep |
+| User chip | — (frames the fantasy) | role label `LAUNCH DIRECTOR` only, no avatar/initials plate |
+| Flight card | D1 margin (prop % + farm reserve tick), D2 (`STATIONS GO n OF 5`, range trend) | keep / REDEFINE stages → stations |
+| Poll panel (§6.24) | D2 evidence (station table) | keep; the **buttons live in the decision strip** |
+| **Decision strip** (§6.28) | D1, D2, D3, D3b: the only command surface for the four decisions | ADD |
+| Inspector | D3 margin (landing prop, engines, tower wind), monitoring | keep |
+| Tabbed panel | Dispatch logistics (Tasks = D1 order rows), follow, review (Events), D2 (Range) | keep |
+| Countdown timeline | When to hold; hold glyph; window open/close markers | keep |
+| **Debrief panel** (§6.29) | Learning / next turnaround (outcome, deltas, decision log) | ADD |
+| Map controls, labels, altitude scale | Spatial awareness for D2 (range) and D3 (where is the booster) | keep |
+| Compass tape | — | FLAG ambience, low priority (built last, cut first) |
+
+Components without a decision are removed; ambience items are allowed only where GDD §10 says *keep*.
 
 ---
 
@@ -368,9 +394,9 @@ ORG / REGION / [LC-1 ▾]             dropdown (popover):
 
 ### 6.4 Status badge (RANGE GO / NO-GO)
 ```
-[■✓ RANGE GO]   [△ RANGE HOLD]   [▲ RANGE NO-GO]  (danger: orange fill, ink text, hazard band left edge)
+[■✓ RANGE GO]   [△ RANGE MARGINAL]   [▲ RANGE NO-GO]  (danger: orange fill, ink text, hazard band left edge)
 ```
-- `<button>` (opens Range tab) containing `<output aria-live="polite">`. Data: `ui.range.status ∈ GO|HOLD|NO-GO`, `ui.range.reason`.
+- `<button>` (opens Range tab) containing `<output aria-live="polite">`. Data: `ui.range.aggregate ∈ GO|MARGINAL|NO_GO|NONE`, `ui.range.reason` (worst station, §13).
 - States map to ok / warn / danger (§2.3). Tooltip = reason (`BOAT IN HAZARD ZONE: RB-9`). Disabled when no launch scheduled (`RANGE —`).
 
 ### 6.5 Alert counter
@@ -562,36 +588,150 @@ log:    13:42:16  ▲  B-14   ENGINE OUT · 32 OF 33          (<samp>, type-body
 
 ### 6.24 Go/No-Go poll panel
 ```
-+[ GO / NO-GO POLL · TERMINAL COUNT ]---+
-|STATION        STATUS      BY          |
-|WEATHER   WX   ■✓ GO       WX-1        |
-|RANGE     RNG  △ HOLD      RB-9 IN ZONE|   warn row: 2px accent left rule
-|PROPELLANT PRP ■✓ GO       LOX 100 %   |
-|VEHICLE   VEH  ■✓ GO       B-14 / S-31 |
-|CREW REST CRW  ■✓ GO       SHIFT 6:10 H|
-|RECOVERY  REC  ○ POLLING…  RV-1        |
-|---------------------------------------|
-|RESULT: △ 1 HOLD          T-00:10:00 ⏸ |
-|[PROCEED ⏎] [HOLD H] [RECYCLE R] [SCRUB]|  SCRUB = danger button, confirm dialog
-+---------------------------------------+
++[ GO / NO-GO POLL · T-00:10:00 TERMINAL ]--+
+|STATION        STATUS        DRIVER         |
+|WEATHER   WX   ■✓ GO         GND 8.1 M/S    |
+|RANGE     RNG  ▲ NO-GO       UNK-01 IN AREA |   danger row: 4px hazard band left
+|PROPELLANT PRP △ MARGINAL    LOX 0.6 HOLD-H |   warn row: 2px accent left rule
+|VEHICLE   VEH  ■✓ GO         HEALTH 0.98    |
+|PAD/CREW  CRW  ■✓ GO         SHIFT 6:10 H   |
+|--------------------------------------------|
+|RESULT  △ 1 MARGINAL · ▲ 1 NO-GO   4 OF 5   |
++--------------------------------------------+
 ```
-- `<section role="region" aria-labelledby>`; stations as `<table>` (caption, `<th scope>`); result `<output aria-live="polite">`; buttons `<button>` with `<kbd>`.
-- Data: `ui.poll {phase, stations[{id,label,status: GO|HOLD|NO-GO|PENDING, detail, source}], result, deadlineT, actions[{id,enabled}]}`.
-- States: polling (pending rows step through `○ → ◐`), all GO (PROCEED is default button, ink fill), any HOLD (PROCEED disabled with reason, HOLD default), any NO-GO (danger header band; SCRUB/RECYCLE emphasized), expired (auto-hold per GDD).
-- Behavior: appears in `poll` area when the sim opens a poll; time scale forced to 1× while open (GDD to confirm); focus moves to the panel; closing requires a decision. Station code click = select its source entity.
+- `<section role="region" aria-labelledby>`; stations as `<table>` (caption, `<th scope>`); result `<output aria-live="polite">`.
+- Data: `ui.range.stations[]` = `StationVM {id, code, label, status: GO|MARGINAL|NO_GO|PENDING, driver, value, source}` (§13). Station vocabulary is the GDD's **GO / MARGINAL / NO-GO** (MARGINAL = warn, NO-GO = danger, PENDING = `○ POLLING…` neutral).
+- **6.0 change:** the panel is evidence only. The GO / HOLD / RECYCLE / SCRUB buttons live in the decision strip (§6.28), which is the single command surface, so there is never a second set of buttons for the same decision. Clicking a station code selects its source entity (`UNK-01`, `WX-1`, `LOX-1`).
+- States: polling (pending rows step `○ → ◐`), all GO, any MARGINAL, any NO-GO (danger header band). Shown in `poll` while a poll is open and during any hold; collapsed to its header otherwise.
 
-### 6.25 Time-scale control
+### 6.25 Rate control (time compression)
 ```
-[ II | 1× | 10× | 100× ]     selected: ink fill, paper text; locked (poll/terminal count): hatch on 10×/100×
+default    [ II | 1× | 10× | 100× | ▸▸ T-01:20:00 POLL ]   SIM 10×
+paused     [ ■II| 1× | 10× | 100× | ▸▸ … ]                 SIM PAUSED    (II = ink fill; PAUSED plate on T-clock)
+locked     [ II | 1× |▨10×▨|▨100×▨| ▨▸▸▨ ]  ⊘ 1× LOCKED · TERMINAL COUNT   (hatch, aria-disabled, reason text)
+capped     [ II | 1× | 10× |▨100×▨| ▸▸ … ]  ⊘ MAX 10× · PROPELLANT LOAD
+lagging    [ II | 1× | 10× | 100× | ▸▸ … ]  △ SIM 7.4× OF 100×             (warn: 2px accent frame on readout)
+skipping   [ II | 1× | 10× | 100× |◐ SKIPPING… ]  SIM SKIP → T-01:20:00   (all segments aria-disabled until arrival)
 ```
-- `role="radiogroup" aria-label="Time scale"` of `role="radio"`; `Space` pause toggle, `,` / `.` slower/faster.
-- Data: `ui.time {scale ∈ 0|1|10|100, lockedMax, reason}`. Paused: a `PAUSED` stamp (warn style, 2 px accent frame) on the T-clock box; the world keeps rendering.
+- Placement: in the countdown header (§6.17) and mirrored as the `SIM` readout in the top bar (replaces `TLM 38 MS`, GDD §10).
+- Element: segmented control (§6.33) = `role="radiogroup" aria-label="Time rate"` of `role="radio"` (II, 1×, 10×, 100×), plus a separate `<button>` **SKIP** whose label names the target milestone (`▸▸ T-01:20:00 LOAD POLL`); readout `<output aria-live="off">`.
+- Data: `TimeScaleVM {requested, effective, maxAllowed, paused, lagging, effectiveRate, lockReason, skip{enabled, target, reason}}` (§13).
+- States:
+  - **selected** = the *requested* rate (ink fill, paper text). If `effective < requested` the selected segment keeps the ink fill and a 2 px accent underline marks the effective one, so the player sees both what they asked for and what runs.
+  - **locked / capped** (`maxAllowed < 100`): segments above the cap get `pattern-hatch` + ink-4 text, `aria-disabled="true"` (still focusable, announce reason); the reason chip (`⊘ 1× LOCKED · TERMINAL COUNT`, `⊘ 1× · DECISION OPEN`, `⊘ 1× · NO-GO`) sits right of the control. Requesting a capped rate is allowed and remembered (GDD §6: the game never auto-raises; when the cap lifts the requested rate applies because the player asked for it) — the requested segment shows a hatched fill with an ink border to say "queued".
+  - **lagging** (`effectiveRate < 0.9 × effective` over 1 s): readout switches to `SIM 7.4× OF 100×` in warn style. No modal, no auto-change.
+  - **paused**: II segment selected; `PAUSED` plate (warn, 2 px accent frame) on the T-clock box; world keeps rendering.
+  - **skip**: disabled with reason when forced 1×, a decision is open or no milestone is scheduled; while skipping the control shows `◐ SKIPPING…` and is inert; arrival = hard cut + phase stamp if a phase changed.
+- Keyboard: `Space` pause/resume, `,` / `.` slower/faster (skips capped steps with an announcement), `←/→` inside the group, `N` skip to next milestone. Rate changes announce in the polite region (`RATE 10×`, `RATE LOCKED 1×, TERMINAL COUNT`).
 
 ### 6.26 Phase-transition stamp
 `LIFTOFF` in `type-macro-stamp`, ink on paper plate with 2 px ink frame and `[ PHASE 05 / 08 ]` micro header, centered over `world`; 3-step appear (`steps(3)`), hold, hard cut; total 640 ms (static 1 s plate under reduced motion). Pointer-events none; `aria-hidden` (the countdown live region announces).
 
 ### 6.27 Dialog (confirm scrub/abort/divert)
 `<dialog>` modal, 480 px, 2 px ink frame, danger header band for irreversible actions; consequence list (`PENALTY 2.4 M`, `TURNAROUND +3 D`); buttons `CANCEL` (default focus) and `SCRUB` (danger style). Esc cancels.
+
+### 6.28 Decision strip (D1, D2, D3, D3b)
+
+One opaque strip in the `strip` grid area, directly above the countdown timeline, full width of `flight → ctrl`. It is **the only place the four MVP decisions are taken** (GDD §10, §13.2): a question, its deadline, the evidence, the consequences of each branch and 2–4 buttons. At most one strip at a time; a newer decision queues behind (`+1 QUEUED` chip) by priority D3 > D2 > D3b > D1.
+
+Anatomy (1920 wide):
+```
++[ DECISION · D3 RECOVERY ]─────────────────────────────────────────────────── ⊘ 1× · DECISION OPEN ─+
+| CATCH B-09 AT TOWER-1?                       | P(CATCH)  0.62  LEAN        | LANDING BURN  T+00:06:20 |
+| AUTO AT DEADLINE: DIVERT (P < 0.65)          | ▕████████████▌░░░░░░░▏0.535 | ████████████░░░░  00:41  |
+|----------------------------------------------+-----------------------------+--------------------------|
+| DRIVERS  ENGINE OUT 32 OF 33  σ +0.9 M  · TOWER WIND 11.2 M/S  σ +0.4 M  · LANDING PROP 55 T  σ +0.6 M |
+|------------------------------------+-------------------------------------+---------------------------|
+| [ GO FOR CATCH  ⏎ ]  primary       | [ DIVERT  D ]  secondary            |                           |
+|  SUCCESS 62 %  → +1.5 M REFURB     |  BOOSTER LOST  −40.0 M              |                           |
+|  FAIL 38 %  → −86.0 M (TOWER 21 D) |  TOWER SAFE                         |                           |
+|  EV  −33.6 M                       |  EV  −40.0 M                        |                           |
++----------------------------------------------------------------------------------------------------+
+```
+Cells: **question** (`type-title`, ink; second line `AUTO AT DEADLINE: …` in `type-label` ink-3 — the auto policy is always stated), **evidence** (decision-specific, below), **deadline** (§6.30), **drivers** (D3 only), **options** = one column per option: button (§6.33) + consequence `<dl>` + EV line.
+
+| Variant | Opens when | Question / evidence | Options (key) | Deadline | Default at deadline |
+|---|---|---|---|---|---|
+| **D1 PROPELLANT MARGIN** | from scenario start while the road is open; re-raised on forecast change or station PROPELLANT ≠ GO | `ORDER PROPELLANT BEFORE ROAD CLOSURE?` · farm reserve `LOX 0.6 HOLD-H · CH4 0.9 HOLD-H` vs planned holds, open orders with ETA, LX/MX fleet `3 OF 4` | `STANDARD ×n` (S), `RUSH ×n` (R), `NO ORDER` (Esc) — steppers for n inside each option | `ROAD CLOSES T-00:40:00`; standard option disables itself at the standard cut-off (ETA would arrive after closure) with reason | nothing ordered |
+| **D2 GO / NO-GO** | at each poll (T-01:20:00, T-00:10:00, T-00:00:40), whenever a station changes during the count, and on every hold | `POLL T-00:10:00 · 4 OF 5 GO` · station mini-row (5 chips) + reason of the worst one · risk line `GO ON MARGINAL: ASCENT RISK ×2.0` | `GO` (⏎), `HOLD` (H), `RECYCLE` (R, enabled only with propellant loaded + window remaining), `SCRUB` (danger, confirm dialog) | `WINDOW CLOSES` (shrinks during holds) | per sim: auto-GO when all GO and `autoGoWhenAllGreen`; else the clock stays held; window close = auto-scrub |
+| **D3 RECOVERY** | no later than boostback end (AC 19) | `CATCH B-09 AT TOWER-1?` · *p* to 0.01 + band word (CLEAR / LEAN / CONTESTED / AGAINST) + a *p* bar with the break-even tick (0.535) · drivers with their σ contribution | `GO FOR CATCH` (⏎), `DIVERT` (D) | `LANDING BURN T+…` | catch if *p* ≥ 0.65 else divert; forced divert when landing prop < min (CATCH disabled, NO-GO) |
+| **D3b GSE LEAK** | A3 fires | `CH4 QD LEAK · LOAD RATE ×0.5` · predicted load-complete T-clock for each branch vs the T-00:03:00 auto-hold | `CONTINUE DEGRADED` (C), `HOLD 20 MIN TO FIX` (H) | `WINDOW CLOSES` | continue degraded (see §13 gaps) |
+
+Rules:
+- **Honest numbers, no recommendation.** Every option prints its consequences (money, reputation, schedule, asset) and, where the GDD defines one, its **EV** in cr (D3 always; D2 SCRUB shows the certain penalty; D1 shows cost and the hold-minutes it buys). The auto/default option is marked `AUTO` (ink-3 tag), never visually emphasized as "recommended". The primary (ink fill) style is reserved for the commit-forward option (GO, GO FOR CATCH, CONTINUE, ORDER).
+- **Severity of the strip** = the worst input: ok (all GO, *p* CLEAR) → `info` frame; warn (MARGINAL, LEAN, CONTESTED) → 2 px accent frame; danger (NO-GO, AGAINST, forced divert) → 4 px hazard band top edge + danger header. *p* band words: CLEAR = ok, LEAN = info, CONTESTED = warn, AGAINST = danger.
+- **Time:** a blocking strip (D2, D3, D3b) drops the rate to 1× (GDD §6), shown in the header (`⊘ 1× · DECISION OPEN`). D1 is **advisory**: it does not touch the rate (else 5 h of prep would run at 1×) — it opens collapsed to one line (`D1 · ROAD CLOSES IN 03:12:00 · RESERVE 0.6 HOLD-H · ORDER ▸`) and expands on click/`O`.
+- **Commit:** a button press sends one command through the bridge and the strip shows `◐ SENT · GO` until the projection reflects it (≤ 100 ms), then hard-cuts away. Irreversible options (SCRUB, DIVERT when *p* is CLEAR/LEAN) go through the confirm dialog (§6.27) listing the same consequences; others commit immediately.
+- **Expiry:** at the deadline the strip prints `AUTO · DIVERT (P 0.62 < 0.65)` for 2 s (decision log entry `by: AUTO`), then cuts.
+- Element: `<section role="region" aria-labelledby aria-describedby>` with the question as `<h2>`; consequences in `<dl>`; *p* in `<output>`; deadline `<progress>`/`<time>`. On open: focus moves to the strip (not into a button) and the assertive region announces `DECISION: CATCH B-09? P 0.62 LEAN, DEADLINE 41 SECONDS`.
+- Keyboard: option keys above are **scoped to the strip** (active only while focus is inside it, so `H`/`C`/`D` never collide with camera keys), `G` focuses the strip, `Tab` cycles options, `Esc` collapses D1 (others cannot be dismissed, only decided or allowed to expire).
+- Data: `DecisionVM` (§13), discriminated by `kind`.
+
+### 6.29 Debrief panel
+
+End-of-run sheet (GDD §4.9, §9, AC 22). Opens when the attempt enters Debrief; sim paused; world stays visible around it.
+```
++[ DEBRIEF · LC-1 FLIGHT 7 · NRL-3 ]──────────────────────────────────────── REV 07 · SEED 42 ─+
+| CAUGHT                                           | CONTRACT    FULFILLED  (SECO T+00:08:31)  |
+| (macro stamp, ink; DIVERTED/CATCH FAILED/SCRUBBED |  LIFTOFF    T-0 AT 14:22:09 UTC           |
+|  in danger plate)                                 |  HOLDS      00:23:40 · 2 HOLDS            |
+|---------------------------+-----------------------+------------------------------------------|
+| MONEY Δ                   | REPUTATION Δ          | B-09 BOOSTER                              |
+| +37.4 M CR                | +4                    | CAUGHT, SAFING · FLIGHTS 7 → 8            |
+| 812.0 → 849.4 M           | 61 → 65               | WEAR 0.18 → 0.24  ■■■■■□□□□□ (segmented)  |
+|                           |                       | TOWER-1 NOMINAL · TURNAROUND 4.0 D        |
+|---------------------------+-----------------------+------------------------------------------|
+| LEDGER                          AMOUNT    REP   | DECISION LOG                                  |
+| CONTRACT NRL-3                 +62.0 M    +5    | T-05:58:12  D1  ORDER 2× LX STANDARD   PLAYER |
+| EXPENDED SHIP S-21             −20.0 M          | T-01:20:00  D2  GO (PRP MARGINAL)      PLAYER |
+| PROPELLANT                      −1.1 M          | T-00:31:07  D2  HOLD · UNK-01          PLAYER |
+| RUSH DELIVERY ×1                −0.1 M          | T+00:05:39  D3  CATCH P 0.71 → ROLL 0.44 AUTO |
+| REFURB                          −1.5 M          |                                               |
+| OPS                             −1.9 M          | ANOMALIES  A1 T-00:41:12 · A4 T+00:02:10      |
+|---------------------------------+---------+-----+-----------------------------------------------|
+| [ REPLAY SAME SEED ]  [ NEW SEED ]  [ EXPORT LOG ]                         [ VIEW SITE  Esc ]  |
++----------------------------------------------------------------------------------------------+
+```
+- Element: modal `<dialog>` (§6.27 frame, width `--fx-size-debrief`), heading `<h2>`; outcome word in `type-macro-stamp` is the one macro use on screen while it is open (the T-clock is hidden behind it); money/rep deltas as `<data value>` in `type-value`; ledger as `<table>` (`<th scope="col">`, numbers right-aligned, true minus `−`); decision log as `<ol>` of `<samp>` lines (`<time>` T-clock, decision id D1–D3b, detail, `by` tag `PLAYER` ink / `AUTO` ink-3 / `FORCED` accent-text).
+- States by outcome: `CAUGHT` (ok, ink stamp), `DIVERTED` (warn: 2 px accent frame on the stamp), `CATCH FAILED` (danger: accent plate + hazard band, tower line `TOWER-1 DAMAGED · 21 D`), `SCRUBBED` (danger header, `WINDOW LOST` reason, booster line `NOT FLOWN`, decision log ends with the scrub). Negative money delta = value in ink with `−` and a `▲` glyph; never orange text on a big number.
+- Data: `DebriefVM` (§13). Every number is from the projection; no client maths.
+- Behavior: `VIEW SITE` (Esc) collapses the sheet to a `[■ DEBRIEF READY]` badge in the top bar (reopen with `B`); replay / new seed are commands to `app` (MVP: reload the scenario). Focus starts on the heading; Tab order: deltas → ledger → log → actions.
+
+### 6.30 Deadline bar
+```
+LANDING BURN  T+00:06:20   ████████████░░░░░░  00:41     remaining = ink fill shrinking right→left
+                                ↑ 2px accent tick = point of no return / standard cut-off (optional)
+warn (< 25 %)  2px accent frame;   danger (< 10 % or expired) fill = accent with ink end-cap + ▲
+```
+- `<div role="group">` with label, `<time>` target, `<progress max=1 value=fraction>` (remaining fraction) and remaining text `<output>` in a fixed `8ch` slot. Height `--fx-size-deadline`, track paper-3, fill ink, linear motion between projection samples.
+- States: running, held (`HELD` tag; the bar keeps shrinking because the window keeps closing — GDD §4.5 HOLD: window keeps closing), warn, danger, expired (`EXPIRED` + hatch), none (`—`).
+
+### 6.31 Hazard band
+4 px (`--fx-rule-band`) strip of `pattern-hazard`, `aria-hidden`. Placement: left edge of danger rows/chips/toasts, top edge of danger panels/strips, right edge of sel+alert tags. It is the *mass* signal of danger (§2.3), never a divider. Horizontal and vertical orientations; a wide variant (`--fx-space-3`) only on the debrief `CATCH FAILED` plate and the showcase CTA band.
+
+### 6.32 Tooltip and popover
+- **Tooltip**: plain text, max width `--fx-size-popover`, paper bg, 1 px ink frame, `type-label`; opens 0 ms on focus, after hover intent (300 ms) on pointer, clip-reveal 120 ms; `role="tooltip"` linked by `aria-describedby`; Esc closes. Never holds the only copy of information needed for a decision (reasons are also printed or announced).
+- **Popover**: interactive content (site list, user menu, D1 order stepper) — `[ TITLE ]` frame like a panel, `aria-haspopup` + `aria-expanded` trigger, focus moves in, Esc returns focus to the trigger, click outside closes. z = `--fx-z-popover`.
+
+### 6.33 Button and segmented control
+```
+primary    [ GO  ⏎ ]   ink fill, paper text (17.96); hover ink-2 fill; pressed paper-3 fill + ink text
+secondary  [ HOLD  H ] paper fill, 1px ink frame; hover paper-2; pressed paper-3
+danger     [▲ SCRUB ]  accent fill, ink text + ink frame (6.35); hover: 4px hazard band left; pressed ink fill, paper text
+disabled   [▨ RECYCLE ] hatch, ink-4 text, aria-disabled (stays focusable to expose its reason tooltip)
+busy       [◐ SENT ]   glyph swap, inert until the projection confirms
+```
+- `<button type="button">` min height `--fx-size-hit-min` (32 in strips/toolbars), `type-strong`, key hint in `<kbd>` (`type-label`, 1 px current-color frame). Disabled buttons use `aria-disabled` + `aria-describedby` → reason, never the `disabled` attribute (reasons must be reachable).
+- **Segmented control**: `role="radiogroup"`, cells share 1 px ink rules (grid gap on an ink parent), selected cell ink fill + paper text, roving tabindex, `←/→` moves and selects, disabled cells hatch. Used by the rate control and list filters.
+
+### 6.34 Tabs
+`role="tablist"` of `role="tab"` (roving tabindex, `←/→ Home End`, activation on arrow = automatic) + `role="tabpanel"`. Active: ink text + 2 px ink underline; inactive ink-3 (5.91); hover paper-2; disabled hatch. Trailing count badge per tab (§6.14). Panel switch is a hard cut.
+
+### 6.35 Label tag (generic)
+The §6.20 in-world tag as a reusable primitive (also used inline in rows, the debrief and the strip to name an entity): states default / hover / selected / alert / selected+alert / disabled, size `--fx-size-tag`. Inline use is a `<button>` (select) or `<span>` (static).
+
+### 6.36 Value cell
+Every number on screen goes through one primitive: `<data value="{SI}">{text}</data>` + unit in `type-label` ink-2, tabular, right-aligned in a fixed `ch` slot supplied by the projection (`width` = text length of the widest legal value). Missing → `—` (same slot). Stale (projection older than 2 s or source offline) → value kept, ink-4, `pattern-hatch` underlay and `aria-description="stale"`.
 
 ---
 
@@ -622,6 +762,13 @@ log:    13:42:16  ▲  B-14   ENGINE OUT · 32 OF 33          (<samp>, type-body
 | `▲` | `g-danger` | Danger / fault (solid orange, ink `!`) |
 | `◆` | `g-selected` | Selected marker (minimap/legend only) |
 | `+` | `g-crosshair` | Grid intersection mark |
+| `II` | `g-pause` | Paused / pause segment |
+| `▸▸` | `g-skip` | Skip to next milestone |
+| `✕` | `g-close` | Dismiss toast / close popover |
+| `▾` | `g-caret` | Opens a popover / dropdown |
+| `✓` | `g-check` | Confirmed / sent |
+| `⌕` | `g-search` | Search |
+| `−` `+` | `g-minus` `g-plus` | Stepper (D1 order count), zoom |
 
 Syntax decoration (structure, not ornament): `[ TITLE ]` card heads, `>>>` for "next" in task chains, `///` hatch for future spans, `REV 0.1 · UNIT LC-1` stamp in the top-bar logo cell tooltip and `/design` header only.
 
@@ -655,7 +802,10 @@ Syntax decoration (structure, not ornament): `[ TITLE ]` card heads, `>>>` for "
 | `Space` | Pause / resume |
 | `,` / `.` | Time scale down / up |
 | `A` | Jump to oldest unacknowledged alert · `Shift+A` ack focused alert |
-| `G` | Focus Go/No-Go poll (when open) · in poll: `Enter` proceed, `H` hold, `R` recycle |
+| `G` | Focus the decision strip (when open) · inside it: option keys of §6.28 (`Enter` GO / GO FOR CATCH, `H` hold, `R` recycle, `D` divert, `C` continue, `S`/`R` order) |
+| `O` | Expand the D1 propellant strip |
+| `N` | Skip to next milestone (when allowed) |
+| `B` | Reopen the debrief |
 | `?` | Shortcut sheet |
 
 (Camera WASD/drag bindings belong to ARCHITECTURE/render; they must not collide with the above.)
@@ -703,7 +853,7 @@ A static route (or Storybook per ADR), no sim running, fixtures only, screenshot
 
 1. ~~accent-text value~~ — resolved at Gate 1: `#B23B0B`.
 2. `#FF5A1F` is 2.83:1 against paper — below the 3:1 non-text target. Spec mitigates by always pairing with ink; acceptable?
-3. Poll panel forcing 1× time scale and auto-hold on deadline — GDD to confirm.
+3. ~~Poll panel forcing 1× and auto-hold~~ — resolved by GDD §6 (decision prompt → 1×) and §4.5 (window close → auto-scrub).
 4. Label tags as DOM vs instanced sprites (perf with 100+ entities) — render/architect decision; visual spec unchanged.
 5. Self-hosted fonts vs Google Fonts — styling ADR.
 
@@ -738,3 +888,34 @@ The showcase reuses every token and rule above; it is a scrolling document, not 
 Rules specific to the showcase: orange stays reserved for CTA, active/selected state, thrust and hazard bands; motion
 is clip-path/translate "printing" (≤ 8 px, no bounce, no fade-only); every scroll-linked value updates in place with
 tabular figures; the page must read completely without JS (prerender) and without WebGL (Blender still).
+
+## 13. Phase 6 view-model contract and GDD gaps (6.0)
+
+### 13.1 View models
+HUD components never read the store shape directly; they take **view models** defined in `src/ui/types.ts`, with fixtures in `src/ui/fixtures/` (used by `/design`, unit tests and e2e). The projector of 6.1 (`src/app/projection/`) produces the same shape (ARCHITECTURE §8); if it must differ, the change is made in `src/ui/types.ts` in the same commit as the projector.
+
+| Interface | Feeds |
+|---|---|
+| `ValueVM {text, unit?, value, width?, stale?}` | every number (§6.36): display string pre-formatted by the projector, SI `value` for `<data>` |
+| `UiProjection` | root: `clock, timeScale, range, alerts, flightCard, inspector, lists, decision, debrief, labels, sites` |
+| `ClockVM`, `TimeScaleVM` | top bar, timeline header, rate control (§6.25) |
+| `RangeVM`, `StationVM` | range badge, poll panel, Range tab, D2 strip |
+| `AlertsVM`, `EventVM` | alert counter, toasts, Events tab |
+| `FlightCardVM`, `MetricVM` | flight card, metric tiles |
+| `InspectorVM`, `ActionVM` | inspector, entity actions |
+| `ListsVM`, `ListRowVM`, `TankRowVM`, `TaskRowVM` | tabbed panel |
+| `DecisionVM` = `PropMarginDecisionVM \| PollDecisionVM \| CatchDecisionVM \| LeakDecisionVM` | decision strip (§6.28), with `DeadlineVM`, `DecisionOptionVM`, `ConsequenceVM`, `CatchDriverVM` |
+| `DebriefVM` | debrief panel (§6.29) |
+| `CountdownVM`, `PhaseVM` | countdown timeline |
+
+Severity everywhere is the §2.3 vocabulary `neutral | info | ok | active | warn | danger | disabled`, computed by the projector (the UI never compares thresholds).
+
+### 13.2 GDD gaps found in 6.0 (for `game-designer`)
+1. **D1 vs "decision prompt drops to 1×"** (GDD §6): D1 is open for ~5 h of prep; forcing 1× would break compression. This spec makes D1 *advisory* (no rate change). GDD §6 should say "blocking decision prompts (D2, D3, D3b)".
+2. **D1 is not listed for the decision strip** in GDD §10 ("Go/No-Go, catch/divert, load-leak") while §10 also puts order buttons on Tasks rows. This spec puts D1 in the strip (collapsed) *and* keeps the Tasks rows as the detailed order surface; both send the same command.
+3. **D3b default** when the player gives no input is unstated (sim: the load continues degraded, deadline = window close). Spec assumes `CONTINUE DEGRADED` is the auto choice; confirm.
+4. **Station vocabulary**: GDD uses GO / MARGINAL / NO-GO for stations and HOLD as a clock action; the old §6.24 mixed them. Fixed here (MARGINAL everywhere for stations; the top-bar badge aggregates to `RANGE GO | MARGINAL | NO-GO`).
+5. **Poll panel buttons vs decision strip**: GDD §4.5 lists both the Range tab and the strip; two button sets for D2 would be ambiguous. The poll panel became evidence only (§6.24).
+6. **Debrief exit actions** are not defined for the MVP (no rebook played). Spec proposes REPLAY SAME SEED / NEW SEED / EXPORT LOG / VIEW SITE; confirm with the architect (7.x) and designer.
+7. **EV per option** is required by GDD §14 risk 2 for D3 only; D2 (SCRUB penalty) and D1 (cost vs hold-minutes bought) consequences are spec'd as plain consequences, not EV, because the sim has no probability for "hold succeeds". Designer to confirm that's enough.
+8. **Telemetry latency** repurposed as `SIM n×` readout (GDD §10 recommendation adopted); the user avatar is dropped, role label kept.
