@@ -2,16 +2,52 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Fuel-X — A live rocket launch site you can play like a strategy game</title>
     <meta
       name="description"
-      content="Fuel-X is a calm strategy game about cadence and risk, set in a live rocket launch site. You never fly the rocket."
+      content="Fuel-X is a calm strategy game about cadence and risk, set in a live rocket launch site. Win contracts, fuel and count down a reusable rocket, then catch the booster in the tower arms. You never fly the rocket."
     />
+    <link rel="canonical" href="https://fuelx.fs0ciety.org/" />
+    <meta name="theme-color" content="#F4F4F0" />
     <link rel="icon" href="/brand/cardor-monogram.svg" type="image/svg+xml" />
-    <title>Fuel-X — Launch director</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Fuel-X" />
+    <meta property="og:title" content="Fuel-X — Launch director" />
+    <meta
+      property="og:description"
+      content="A live rocket launch site you can play like a strategy game. You never fly the rocket: you decide when, whether, and how much risk."
+    />
+    <meta property="og:url" content="https://fuelx.fs0ciety.org/" />
+    <meta property="og:image" content="https://fuelx.fs0ciety.org/showcase/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Fuel-X: booster and ship stacked beside the catch tower, printed on paper with a signal-orange accent"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Fuel-X",
+        "url": "https://fuelx.fs0ciety.org/",
+        "description": "A calm strategy game about cadence and risk, set in a live rocket launch site.",
+        "genre": ["Strategy", "Simulation"],
+        "gamePlatform": "Web browser",
+        "applicationCategory": "Game",
+        "operatingSystem": "Any",
+        "inLanguage": "en",
+        "image": "https://fuelx.fs0ciety.org/showcase/og.png",
+        "author": { "@type": "Organization", "name": "CM Interactive" },
+        "publisher": { "@type": "Organization", "name": "Cardor Media" }
+      }
+    </script>
+    <!--showcase:head-->
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/vitrine.tsx"></script>
+    <div id="root"><!--showcase:html--></div>
+    <script type="module" src="/src/showcase.tsx"></script>
   </body>
 </html>

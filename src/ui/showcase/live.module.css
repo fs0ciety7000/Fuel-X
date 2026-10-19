@@ -1,0 +1,294 @@
+/* Showcase HUD fragments (DESIGN_SYSTEM §12). Same grammar as the game HUD: opaque paper, ink rules, one accent. */
+
+.label {
+  display: block;
+  color: var(--fx-color-ink-3);
+  font-size: var(--fx-type-tick);
+  letter-spacing: var(--fx-type-tick-tracking);
+}
+
+.value {
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+}
+
+.warn {
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  color: var(--fx-color-accent-text);
+}
+
+/* ---- Stage readout -------------------------------------------------------------------------------------------- */
+
+.readout {
+  display: grid;
+  gap: var(--fx-space-2);
+  padding: var(--fx-space-3);
+  border: var(--fx-rule-frame);
+  background: var(--fx-color-paper);
+}
+
+.readoutHead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--fx-space-4);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.clock {
+  display: block;
+  font-family: var(--fx-font-macro);
+  font-size: var(--fx-type-macro-clock);
+  font-weight: var(--fx-type-macro-clock-weight);
+  line-height: var(--fx-type-macro-clock-leading);
+  letter-spacing: var(--fx-type-macro-clock-tracking);
+}
+
+.phase {
+  min-height: var(--fx-size-glyph-lg);
+  color: var(--fx-color-accent-text);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-strong-weight);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--fx-rule-hair);
+  border: var(--fx-rule-frame);
+  background: var(--fx-color-ink-5);
+}
+
+.metrics > div {
+  display: grid;
+  gap: var(--fx-space-1);
+  padding: var(--fx-space-2);
+  background: var(--fx-color-paper);
+}
+
+.metrics dt {
+  color: var(--fx-color-ink-3);
+  font-size: var(--fx-type-tick);
+}
+
+.metrics dd {
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  white-space: nowrap;
+}
+
+/* ---- Phase bar ------------------------------------------------------------------------------------------------ */
+
+.phaseBar {
+  display: grid;
+  border: var(--fx-rule-frame);
+  background: var(--fx-color-paper);
+}
+
+.phases {
+  display: flex;
+  list-style: none;
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+}
+
+.phases li {
+  flex-basis: 0;
+  min-width: 0;
+  background: var(--fx-color-paper);
+}
+
+.phases li[data-state='current'] {
+  background: var(--fx-color-accent-tint);
+}
+
+.phases button {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  width: 100%;
+  min-height: var(--fx-size-row);
+  padding: var(--fx-space-2);
+  border: 0;
+  background: transparent;
+  color: var(--fx-color-ink-2);
+  font: inherit;
+  font-size: var(--fx-type-tick);
+  letter-spacing: var(--fx-type-tick-tracking);
+  text-align: left;
+  text-transform: uppercase;
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.phases li[data-state='current'] button {
+  color: var(--fx-color-ink);
+  font-weight: var(--fx-type-strong-weight);
+}
+
+.phases button:hover {
+  color: var(--fx-color-ink);
+  text-decoration: underline;
+}
+
+/* Done = filled ink square, current = half fill, next = empty frame (state never color-only). */
+.glyph {
+  flex: none;
+  width: var(--fx-size-glyph);
+  height: var(--fx-size-glyph);
+  border: var(--fx-rule-frame);
+  background: var(--fx-color-paper);
+}
+
+.phases li[data-state='done'] .glyph {
+  background: var(--fx-color-ink);
+}
+
+.phases li[data-state='current'] .glyph {
+  background: var(--fx-color-paper);
+  border-left: calc(var(--fx-size-glyph) / 2) solid var(--fx-color-accent);
+}
+
+.track {
+  position: relative;
+  display: block;
+  height: var(--fx-rule-band);
+  container-type: inline-size;
+  border-top: var(--fx-rule-frame);
+  background: var(--fx-color-paper-3);
+}
+
+.head {
+  position: absolute;
+  top: calc(-1 * var(--fx-space-2));
+  left: 0;
+  display: block;
+  width: var(--fx-rule-band);
+  height: var(--fx-space-5);
+  translate: calc(-1 * var(--fx-space-1)) 0;
+  background: var(--fx-color-accent);
+  border: var(--fx-rule-hair) solid var(--fx-color-ink);
+}
+
+@media (width < 900px) {
+  .phases button {
+    justify-content: center;
+  }
+
+  /* Phones: only the current phase prints its name; the others keep it for assistive tech. */
+  .phases li:not([data-state='current']) .phaseName {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* ---- Hero flight card ----------------------------------------------------------------------------------------- */
+
+.card {
+  display: grid;
+  gap: var(--fx-rule-hair);
+  border: var(--fx-rule-heavy);
+  background: var(--fx-color-ink-5);
+}
+
+.card > * {
+  background: var(--fx-color-paper);
+}
+
+.cardHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--fx-space-2) var(--fx-space-3);
+  background: var(--fx-color-ink);
+  color: var(--fx-color-paper);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.card > .cardHead {
+  background: var(--fx-color-ink);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+}
+
+.dot {
+  width: var(--fx-space-3);
+  height: var(--fx-space-3);
+  background: var(--fx-color-accent);
+  animation: blink 2s steps(2, jump-none) infinite;
+}
+
+@keyframes blink {
+  50% {
+    background: var(--fx-color-paper);
+  }
+}
+
+.cardRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: var(--fx-space-2) var(--fx-space-4);
+  padding: var(--fx-space-3);
+}
+
+.cardClock {
+  font-family: var(--fx-font-macro);
+  font-size: var(--fx-type-macro-clock);
+  font-weight: var(--fx-type-macro-clock-weight);
+  line-height: var(--fx-type-macro-clock-leading);
+  letter-spacing: var(--fx-type-macro-clock-tracking);
+}
+
+.segments {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  gap: var(--fx-space-1);
+  height: var(--fx-space-4);
+}
+
+.segments > span {
+  background: var(--fx-color-paper-3);
+}
+
+.segments > span[data-on='true'] {
+  background: var(--fx-color-ink);
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+}
+
+.card > .cardGrid {
+  background: var(--fx-color-ink-5);
+}
+
+.cardGrid > div {
+  display: grid;
+  gap: var(--fx-space-1);
+  padding: var(--fx-space-3);
+  background: var(--fx-color-paper);
+}
+
+@media (width < 520px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,16 @@
+/* Showcase-only globals: the game HUD is a fixed-viewport app, the showcase is a scrolling document. */
+html,
+body,
+#root {
+  height: auto;
+}
+
+html {
+  scroll-padding-top: var(--fx-size-topbar);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

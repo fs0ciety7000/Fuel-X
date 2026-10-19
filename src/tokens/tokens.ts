@@ -77,6 +77,10 @@ export const tokens = {
     macroClock: { size: 'clamp(2rem, 2.6vw, 3.5rem)', leading: 0.9, tracking: '-0.03em', weight: 900 },
     macroCallsign: { size: 'clamp(1.75rem, 2vw, 2.75rem)', leading: 0.9, tracking: '-0.04em', weight: 900 },
     macroStamp: { size: 'clamp(4rem, 9vw, 11rem)', leading: 0.85, tracking: '-0.05em', weight: 900 },
+    // Showcase site (docs/SHOWCASE.md): reading copy and two extra macro steps; the HUD never uses these.
+    lede: { size: 'clamp(14px, 1.05vw, 17px)', leading: 1.5, tracking: '0.02em', weight: 400 },
+    macroHero: { size: 'clamp(5.5rem, 19vw, 21rem)', leading: 0.8, tracking: '-0.065em', weight: 900 },
+    macroSection: { size: 'clamp(2.75rem, 6.5vw, 7rem)', leading: 0.86, tracking: '-0.05em', weight: 900 },
   },
   space: ['0', '2px', '4px', '8px', '12px', '16px', '24px', '32px', '48px'],
   size: {
@@ -87,6 +91,9 @@ export const tokens = {
     glyph: '12px',
     glyphLg: '16px',
     hitMin: '24px',
+    // Showcase site: reading measure and the sticky stage height on phones.
+    measure: '62ch',
+    stagePhone: '46svh',
   },
   radius: '0',
   shadow: 'none',

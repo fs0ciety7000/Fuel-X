@@ -9,7 +9,7 @@
   "scripts": {
     "tokens": "tsx scripts/tokens/build.ts",
     "dev": "tsx scripts/tokens/build.ts && vite",
-    "build": "tsx scripts/tokens/build.ts && vite build",
+    "build": "tsx scripts/tokens/build.ts && vite build && vite build --ssr src/showcase.server.tsx --outDir build/ssr && tsx scripts/showcase/prerender.ts",
     "preview": "vite preview --port 4173 --strictPort",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit",
@@ -18,7 +18,8 @@
     "e2e": "playwright test",
     "asset": "tsx scripts/assets/build.ts",
     "assets": "tsx scripts/assets/build.ts --all",
-    "perf": "tsx scripts/perf/sim-bench.ts && tsx scripts/perf/budgets.ts"
+    "perf": "tsx scripts/perf/sim-bench.ts && tsx scripts/perf/budgets.ts",
+    "showcase:assets": "tsx scripts/showcase/brand.ts && python3 -I scripts/showcase/plates.py"
   },
   "dependencies": {
     "@fontsource/inter-tight": "5.3.0",

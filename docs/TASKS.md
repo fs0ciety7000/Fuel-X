@@ -95,7 +95,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 Spec: [`SHOWCASE.md`](SHOWCASE.md) · Stack: [ADR 0009](adr/0009-showcase-site.md) · Deploy: [`DEPLOY.md`](DEPLOY.md)
 - [x] S.0 Audit of the PR #1 showcase, trend research, 3 directions → user picks **A "Launch dossier"**, single Coolify app, game at `/play`, English only
 - [x] S.1 Docs: SHOWCASE.md, ADR 0009, `web-showcase` agent, `showcase-check` skill
-- [ ] S.2 Build: SSR prerender of `index.html`, `/play` rewrite (dev/preview/nginx), lazy 3D chunk, `gsap` — **systems-architect**
+- [ ] S.2 Build: SSR prerender of `index.html`, `/play` rewrite (dev/preview/nginx), lazy 3D chunk, native scroll driver — **systems-architect**
 - [ ] S.3 Sections: top bar, hero + mini flight card, dossier sheets, four calls, hardware catalogue, sites, how it's built, CTA, colophon (logos in ink) — **ui-design-system** ← S.2
 - [ ] S.4 Stage: scroll-driven rollout → stack → liftoff → boostback → catch with the game GLBs, reduced-motion stills, no-WebGL still — **three-graphics-engineer** ← S.2
 - [ ] S.5 SEO/OG (1200×630 plate), robots/sitemap, JSON-LD; WebP plates from Blender previews ← S.3

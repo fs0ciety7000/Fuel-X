@@ -1,12 +1,29 @@
 import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
+import type { Connect, Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 const r = (p: string): string => resolve(import.meta.dirname, p);
+const base = process.env.VITE_BASE ?? '/';
+
+// The game lives at the clean URL `/play` (ADR 0009); nginx maps it in production, this does it in dev and preview.
+function playRoute(): Plugin {
+  const rewrite: Connect.NextHandleFunction = (req, _res, next) => {
+    const match = req.url?.match(/^([^?]*)(\?.*)?$/);
+    if (match && (match[1] === `${base}play` || match[1] === `${base}play/`))
+      req.url = `${base}play.html${match[2] ?? ''}`;
+    next();
+  };
+  return {
+    name: 'fuelx-play-route',
+    configureServer: (server) => void server.middlewares.use(rewrite),
+    configurePreviewServer: (server) => void server.middlewares.use(rewrite),
+  };
+}
 
 export default defineConfig({
-  base: process.env.VITE_BASE ?? '/',
-  plugins: [react()],
+  base,
+  plugins: [react(), playRoute()],
   resolve: {
     alias: {
       '@app': r('src/app'),

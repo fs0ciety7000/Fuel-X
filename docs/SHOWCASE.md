@@ -19,7 +19,7 @@ The public front door at `https://fuelx.fs0ciety.org/`. The game itself lives at
 | Live "product UI" fragments in marketing pages (real HUD pieces rather than screenshots) | common on 2025–26 SaaS/game launch pages | **Yes** | Mini flight card + phase timeline built from the same tokens and visual grammar as the game HUD. |
 | Bento grids, glassmorphism, gradient meshes, cursor trails | generic 2024–26 trend | **No** | Banned by the design system (no translucency, no gradients, no gimmick motion). |
 | Islands / zero-JS-by-default frameworks (Astro) | [pkgpulse](https://www.pkgpulse.com/guides/rsc-vs-astro-islands-2026), [Astro vs Next 2026](https://www.kunalganglani.com/blog/astro-vs-nextjs-2026.md) | **Idea yes, framework no** | Same effect inside our Vite build: prerendered static HTML + one lazily loaded 3D island (ADR 0009). |
-| GSAP fully free (incl. ScrollTrigger) since the Webflow acquisition | [gsap on npm](https://npmjs.com/package/gsap) | **Yes** | ScrollTrigger pins the story and scrubs the stage; loaded with the 3D chunk, not in the critical path. |
+| GSAP fully free (incl. ScrollTrigger) since the Webflow acquisition | [gsap on npm](https://npmjs.com/package/gsap) | **Evaluated, not needed** | CSS `position: sticky` pins, a 30-line native driver scrubs (ADR 0009); saves ~45 KB. |
 
 ## 2. Information architecture
 
@@ -67,7 +67,7 @@ Reduced motion: the stage renders one still per chapter (no scrub interpolation)
 | LCP (mobile, 4G throttled) | < 2.5 s | prerendered HTML; LCP element = hero macro type (fonts preloaded); 3D lazy |
 | CLS | < 0.05 | fixed aspect stage slot, font metrics via `font-display: swap` + preload |
 | Initial JS (gzip) | ≤ 90 KB | React + hydration + page code only |
-| Deferred 3D chunk (gzip) | ≤ 330 KB | three + R3F + gsap + stage code |
+| Deferred 3D chunk (gzip) | ≤ 300 KB | three + R3F + stage code |
 | GLB on the showcase | ≤ 350 KB | LOD1 of tower/pad/booster/ship + tanks + transporter |
 | Images | ≤ 600 KB total | WebP plates 720 px from the Blender previews, lazy |
 | Contrast | WCAG AA | token pairs from DESIGN_SYSTEM §2.2 only |

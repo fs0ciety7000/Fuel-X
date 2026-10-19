@@ -14,7 +14,7 @@ description: Verify the Fuel-X showcase site (index.html at /) — production bu
 3. **Look at every screenshot** (Read tool). Check: paper substrate, one orange, no radius/shadow/gradient, macro type
    only on hero/stamps/clock, no clipped text at 390 px, stage framing per `docs/SHOWCASE.md §3`, logos in ink.
 4. `npm run e2e -- showcase` — structure, links (`/play`), meta/OG, reduced motion, no page errors.
-5. Budgets: `npx tsx scripts/perf/budgets.ts` (showcase rows) — initial JS ≤ 90 KB gz, deferred 3D ≤ 330 KB gz,
+5. Budgets: `npx tsx scripts/perf/budgets.ts` (showcase rows) — initial JS ≤ 90 KB gz, deferred 3D ≤ 300 KB gz,
    showcase GLB ≤ 350 KB, images ≤ 600 KB.
 6. Optional Lighthouse (if `npx lighthouse` reachable): mobile perf ≥ 90, a11y ≥ 95, SEO 100.
 
