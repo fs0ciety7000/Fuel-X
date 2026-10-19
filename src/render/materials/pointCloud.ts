@@ -4,7 +4,9 @@
 // classifies it with the shared terrain GLSL: concrete lots/roads → dropped, land → scrub/fleck dots, beach → sand,
 // sea → white crest dots that ride the waves, foam band → dense breaker dots. Colors from tokens; linear fog to paper.
 import { tokens } from '@tokens/tokens';
-import { Color, ShaderChunk, ShaderMaterial, UniformsLib, UniformsUtils, Vector2, Vector3 } from 'three';
+import { Color, ShaderChunk, ShaderMaterial, UniformsLib, UniformsUtils, Vector2, Vector3, Vector4 } from 'three';
+import type { Texture } from 'three';
+import { CONCRETE_FIELD_GLSL } from '../world/concrete-field';
 
 export interface PointCloudUniforms {
   [name: string]: { value: unknown };
@@ -19,7 +21,12 @@ export interface PointCloudUniforms {
   uCamAbs: { value: Vector3 };
   uOrigin: { value: Vector3 };
   uFwd: { value: Vector2 };
+  uConcreteTex: { value: Texture | null };
+  uConcreteXf: { value: Vector4 };
 }
+
+/** Largest dot on screen, px: dots stay print-fine; density comes from count, not size. */
+const MAX_POINT_PX = 3.5;
 
 const VERT = (terrain: string, beachM: number): string => /* glsl */ `
 attribute float aRand;
@@ -43,6 +50,7 @@ varying vec3 vColor;
 varying float vSize;
 ${ShaderChunk.fog_pars_vertex}
 ${terrain}
+${CONCRETE_FIELD_GLSL}
 
 float band(float r, float R) { return 1.0 - smoothstep(0.55 * R, R, r); }
 
@@ -66,7 +74,7 @@ void main() {
   float size = 0.45;
   vec3 col;
   if (land > 0.0) {
-    if (fxConcreteSdf(w) < 1.5) { cull(); return; }
+    if (fxConcrete(w) < 1.5) { cull(); return; }
     if (land < ${beachM.toFixed(1)}) {
       if (aRand > 0.55) { cull(); return; }
       col = uSand;
@@ -99,7 +107,7 @@ void main() {
   vec4 mvPosition = viewMatrix * vec4(abs3 - uOrigin, 1.0);
   gl_Position = projectionMatrix * mvPosition;
   float px = size * (T / uSide) * uPxScale / max(-mvPosition.z, 1.0);
-  gl_PointSize = clamp(px, 1.0, 9.0);
+  gl_PointSize = clamp(px, 1.0, ${MAX_POINT_PX.toFixed(1)});
   vSize = gl_PointSize;
   vColor = col;
   ${ShaderChunk.fog_vertex}
@@ -134,7 +142,7 @@ export function createPointCloudMaterial(
       uTime: { value: 0 },
       uBaseLevel: { value: 10 },
       uUnit: { value: 1 },
-      uSide: { value: 245 },
+      uSide: { value: 244 },
       uCover: { value: 0.62 },
       uAhead: { value: 0.2 },
       uLevels: { value: 5 },
@@ -142,6 +150,8 @@ export function createPointCloudMaterial(
       uCamAbs: { value: new Vector3() },
       uOrigin: { value: new Vector3() },
       uFwd: { value: new Vector2(0, -1) },
+      uConcreteTex: { value: null },
+      uConcreteXf: { value: new Vector4(0, 0, 1, 1) },
       uScrub: { value: new Color(w.groundPoints) },
       uFleck: { value: new Color(w.seaPoints) },
       uSand: { value: new Color(w.padConcrete) },

@@ -1,6 +1,6 @@
-// Sea + ground (5.3): replaces the 5.1 placeholder planes. Three objects, three draw calls:
+// Sea + ground (5.3): replaces the 5.1 placeholder planes. Three objects, three draw calls (+ one bake at mount):
 //  - GROUND_Surface: re-centred subdivided quad, terrain shader (land / sand / concrete / sea / foam + speckle);
-//  - GROUND_Points: one instanced point cloud, 5 LOD levels × 60 025 points = 300 k (ARCHITECTURE §13.1), static
+//  - GROUND_Points: one instanced point cloud, 5 LOD levels × 59 536 points = 297.7 k (ARCHITECTURE §13.1), static
 //    buffers, everything animated in the vertex shader from `uTime` (frozen by freezeVisuals);
 //  - GROUND_ShadowCatcher: ink at low opacity where the sun's shadow map falls (unchanged from 5.1).
 // Point placement is a seeded stratified-jitter unit tile (no Math.random), wrapped in the shader onto a lattice
@@ -23,12 +23,14 @@ import type { FrameShared } from '../frame';
 import { createGroundSurfaceMaterial } from '../materials/groundSurface';
 import { createPointCloudMaterial } from '../materials/pointCloud';
 import { FOG } from '../systems/EnvironmentSystem';
+import { bakeConcreteField } from './concrete-field';
+import type { ConcreteField } from './concrete-field';
 import { mulberry32 } from './rng';
 import { terrainGlsl, terrainSpec } from './terrain';
 
 /** Point cloud layout. `side²` points per level; `levels` instances; tiles = unitM × 2^level. */
 export const CLOUD = {
-  side: 245,
+  side: 244,
   levels: 5,
   unitM: 1,
   /** Level coverage radius (3D distance to the camera) = cover × tile. */
@@ -85,17 +87,22 @@ export class WorldGround {
   readonly catcher: Mesh;
   private readonly surfaceMat;
   private readonly cloudMat;
+  private readonly field: ConcreteField;
   private readonly camAbs = new Vector3();
   private readonly dir = new Vector3();
 
   constructor(
     private readonly shared: FrameShared,
     siteId: string,
+    gl: WebGLRenderer,
   ) {
     const spec = terrainSpec(siteId);
     const glsl = terrainGlsl(spec);
+    this.field = bakeConcreteField(gl, spec, glsl);
 
-    this.surfaceMat = createGroundSurfaceMaterial(glsl, spec.beachM);
+    this.surfaceMat = createGroundSurfaceMaterial(glsl, spec.beachM, spec.foamM);
+    this.surfaceMat.uniforms.uConcreteTex.value = this.field.texture;
+    this.surfaceMat.uniforms.uConcreteXf.value.copy(this.field.transform);
     this.surface = new Mesh(unitQuad(), this.surfaceMat);
     this.surface.name = 'GROUND_Surface';
     this.surface.renderOrder = -2;
@@ -115,6 +122,8 @@ export class WorldGround {
     u.uCover.value = CLOUD.cover;
     u.uAhead.value = CLOUD.ahead;
     u.uLevels.value = CLOUD.levels;
+    u.uConcreteTex.value = this.field.texture;
+    u.uConcreteXf.value.copy(this.field.transform);
     this.points = new Points(geo, this.cloudMat);
     this.points.name = 'GROUND_Points';
     this.points.renderOrder = -1;
@@ -176,5 +185,6 @@ export class WorldGround {
     this.cloudMat.dispose();
     this.catcher.geometry.dispose();
     (this.catcher.material as ShadowMaterial).dispose();
+    this.field.dispose();
   }
 }

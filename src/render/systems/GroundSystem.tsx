@@ -20,7 +20,7 @@ class GroundRunner {
     private readonly controls: RenderControls,
   ) {}
 
-  mount(scene: Scene): () => void {
+  mount(scene: Scene, gl: WebGLRenderer): () => void {
     const sync = (): void => {
       if (this.ground && this.site === this.controls.siteId) return;
       if (this.ground) {
@@ -28,7 +28,7 @@ class GroundRunner {
         this.ground.dispose();
       }
       this.site = this.controls.siteId;
-      this.ground = new WorldGround(this.shared, this.site);
+      this.ground = new WorldGround(this.shared, this.site, gl);
       scene.add(this.ground.surface, this.ground.points, this.ground.catcher);
     };
     this.sync = sync;
@@ -52,8 +52,9 @@ class GroundRunner {
 
 export function GroundSystem({ shared, controls }: { shared: FrameShared; controls: RenderControls }) {
   const scene = useThree((s) => s.scene);
+  const gl = useThree((s) => s.gl);
   const [runner] = useState(() => new GroundRunner(shared, controls));
-  useEffect(() => runner.mount(scene), [runner, scene]);
+  useEffect(() => runner.mount(scene, gl), [runner, scene, gl]);
   useFrame((state, delta) => runner.frame(state, delta), GROUND_PRIORITY);
   return null;
 }
