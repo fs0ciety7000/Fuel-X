@@ -289,6 +289,8 @@ float fxNoise(vec2 p) {
   return a + (b - a) * u.x + (cc - a) * u.y + (a - b - cc + d) * u.x * u.y;
 }
 float fxSq(float v) { return v * v; }
+/** Scrub patch noise (2 octaves, static) in [0, 1]. */
+float fxScrubNoise(vec2 w) { return 0.7 * fxNoise(w / 230.0) + 0.3 * fxNoise(w / 55.0); }
 float fxLandSdf(vec2 w) {
   float z = w.y;
   float d = ${f(c.baseX)} + ${coastTerms} - w.x;

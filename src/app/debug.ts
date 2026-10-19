@@ -4,6 +4,7 @@ import { DT_S, WORLD_SCHEMA, findByCallSign } from '@sim/index';
 import type { Phase } from '@sim/types';
 import { SITE_VIEWS } from '@render/index';
 import type { RendererStats } from '@render/index';
+import { lowFxRequested } from './debug/enabled';
 import { reactCommitsPerS } from './debug/react-commits';
 import type { Game } from './game';
 import { parseJumpTarget } from './jump';
@@ -40,6 +41,8 @@ export interface FuelxDebug {
     opts?: { snap?: boolean },
   ): void;
   freezeVisuals(on: boolean): void;
+  /** Low-cost visuals for software GL (no dot screen, point cloud or post); also `?lowfx=1`. */
+  lowFx(on: boolean): void;
   frames(n: number): Promise<void>;
   state(): UiProjectionStub;
   stats(): FuelxStats;
@@ -150,6 +153,10 @@ export function createDebugApi(game: Game): FuelxDebug {
       if (on) controls.snapCamera = true;
     },
 
+    lowFx: (on) => {
+      controls.lowFx = on;
+    },
+
     frames,
 
     state: () => {
@@ -214,6 +221,7 @@ export function createDebugApi(game: Game): FuelxDebug {
 
 export function installDebug(game: Game): FuelxDebug {
   const api = createDebugApi(game);
+  if (lowFxRequested()) api.lowFx(true);
   window.__fuelx = api;
   return api;
 }

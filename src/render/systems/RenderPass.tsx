@@ -1,9 +1,10 @@
 // Final pass (priority > 0 takes rendering over from R3F): renders the frame through the post pipeline (5.7:
-// RenderPass → one EffectPass with SMAA + halftone/dither), then records renderer.info for `__fuelx.stats()`.
+// RenderPass → one EffectPass with SMAA + halftone/dither; skipped under `controls.lowFx`), then records renderer.info for `__fuelx.stats()`.
 // renderer.info is reset once per frame (not per render call) so the stats cover shadow + main + post passes.
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
 import type { Camera, Scene, WebGLRenderer } from 'three';
+import type { RenderControls } from '../controls';
 import type { FrameShared } from '../frame';
 import { PostPipeline } from '../post/pipeline';
 
@@ -33,7 +34,10 @@ export function renderFrame(gl: WebGLRenderer, scene: Scene, camera: Camera, sha
 class PostRunner {
   private pipeline: PostPipeline | null = null;
 
-  constructor(private readonly shared: FrameShared) {}
+  constructor(
+    private readonly shared: FrameShared,
+    private readonly controls: Readonly<RenderControls>,
+  ) {}
 
   mount(gl: WebGLRenderer, scene: Scene, camera: Camera): () => void {
     this.pipeline = new PostPipeline(gl, scene, camera);
@@ -44,7 +48,7 @@ class PostRunner {
   }
 
   frame(gl: WebGLRenderer, scene: Scene, camera: Camera): void {
-    if (!this.pipeline) {
+    if (!this.pipeline || this.controls.lowFx) {
       renderFrame(gl, scene, camera, this.shared);
       return;
     }
@@ -55,11 +59,11 @@ class PostRunner {
   }
 }
 
-export function RenderPass({ shared }: { shared: FrameShared }) {
+export function RenderPass({ shared, controls }: { shared: FrameShared; controls: Readonly<RenderControls> }) {
   const gl = useThree((s) => s.gl);
   const scene = useThree((s) => s.scene);
   const camera = useThree((s) => s.camera);
-  const [runner] = useState(() => new PostRunner(shared));
+  const [runner] = useState(() => new PostRunner(shared, controls));
   useEffect(() => runner.mount(gl, scene, camera), [runner, gl, scene, camera]);
   useFrame((state) => runner.frame(state.gl, state.scene, state.camera), RENDER_PASS_PRIORITY);
   return null;

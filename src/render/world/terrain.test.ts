@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { concreteFieldDomain } from './concrete-field';
+import { concreteFieldDomain } from './terrain-fields';
 import { CLOUD, CLOUD_POINTS, buildCloudPattern, cloudBaseLevel } from './ground';
 import { classify, coastX, concreteSdf, hash2, landSdf, terrainGlsl, terrainSpec, valueNoise } from './terrain';
 import { createRenderControls } from '../controls';

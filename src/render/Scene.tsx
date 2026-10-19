@@ -118,7 +118,7 @@ export function Scene({ snapshot, controls, input, onApi, className }: SceneProp
       <EnvironmentSystem shared={core.shared} />
       <AdaptiveDpr input={input} />
       <GroundSystem shared={core.shared} controls={controls} />
-      <RenderPass shared={core.shared} />
+      <RenderPass shared={core.shared} controls={controls} />
       <group ref={world} name="WORLD">
         <Suspense fallback={null}>
           <AssetGate onLoaded={core.markLoaded} />

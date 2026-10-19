@@ -18,13 +18,13 @@ import {
   ShadowMaterial,
   Vector3,
 } from 'three';
-import type { Camera, WebGLRenderer } from 'three';
+import type { Camera, Texture, Vector4, WebGLRenderer } from 'three';
 import type { FrameShared } from '../frame';
 import { createGroundSurfaceMaterial } from '../materials/groundSurface';
 import { createPointCloudMaterial } from '../materials/pointCloud';
 import { FOG } from '../systems/EnvironmentSystem';
-import { bakeConcreteField } from './concrete-field';
-import type { ConcreteField } from './concrete-field';
+import { bakeTerrainFields } from './terrain-fields';
+import type { TerrainFields } from './terrain-fields';
 import { mulberry32 } from './rng';
 import { terrainGlsl, terrainSpec } from './terrain';
 
@@ -87,7 +87,8 @@ export class WorldGround {
   readonly catcher: Mesh;
   private readonly surfaceMat;
   private readonly cloudMat;
-  private readonly field: ConcreteField;
+  private readonly field: TerrainFields;
+  private readonly surfaceLow;
   private readonly camAbs = new Vector3();
   private readonly dir = new Vector3();
 
@@ -98,11 +99,13 @@ export class WorldGround {
   ) {
     const spec = terrainSpec(siteId);
     const glsl = terrainGlsl(spec);
-    this.field = bakeConcreteField(gl, spec, glsl);
+    this.field = bakeTerrainFields(gl, spec, glsl);
 
     this.surfaceMat = createGroundSurfaceMaterial(glsl, spec.beachM, spec.foamM);
-    this.surfaceMat.uniforms.uConcreteTex.value = this.field.texture;
-    this.surfaceMat.uniforms.uConcreteXf.value.copy(this.field.transform);
+    this.bindFields(this.surfaceMat.uniforms);
+    // Low-fx variant shares the uniforms object; its program compiles only if lowFx is ever switched on.
+    this.surfaceLow = createGroundSurfaceMaterial(glsl, spec.beachM, spec.foamM, true);
+    this.surfaceLow.uniforms = this.surfaceMat.uniforms;
     this.surface = new Mesh(unitQuad(), this.surfaceMat);
     this.surface.name = 'GROUND_Surface';
     this.surface.renderOrder = -2;
@@ -122,8 +125,7 @@ export class WorldGround {
     u.uCover.value = CLOUD.cover;
     u.uAhead.value = CLOUD.ahead;
     u.uLevels.value = CLOUD.levels;
-    u.uConcreteTex.value = this.field.texture;
-    u.uConcreteXf.value.copy(this.field.transform);
+    this.bindFields(u);
     this.points = new Points(geo, this.cloudMat);
     this.points.name = 'GROUND_Points';
     this.points.renderOrder = -1;
@@ -145,9 +147,24 @@ export class WorldGround {
     for (const o of [this.surface, this.points, this.catcher]) o.frustumCulled = false;
   }
 
-  /** Per frame: re-centre the planes, feed the shaders camera/origin/LOD/time. Allocation-free. */
-  frame(camera: Camera, gl: WebGLRenderer, timeS: number): void {
+  private bindFields(u: {
+    uConcreteTex: { value: Texture | null };
+    uConcreteXf: { value: Vector4 };
+    uLandTex: { value: Texture | null };
+    uLandXf: { value: Vector4 };
+  }): void {
+    u.uConcreteTex.value = this.field.concrete;
+    u.uConcreteXf.value.copy(this.field.concreteXf);
+    u.uLandTex.value = this.field.land;
+    u.uLandXf.value.copy(this.field.landXf);
+  }
+
+  /** Per frame: re-centre the planes, feed the shaders camera/origin/LOD/time. Allocation-free. `lowFx`: flat
+   * ground, no point cloud (software GL). */
+  frame(camera: Camera, gl: WebGLRenderer, timeS: number, lowFx = false): void {
     const s = this.shared;
+    this.surface.material = lowFx ? this.surfaceLow : this.surfaceMat;
+    this.points.visible = !lowFx;
     const o = s.origin;
     const t = s.targetAbs;
     const r = Math.max(FOG.minFarM, s.camDist * FOG.farFactor) * 1.5;
@@ -181,6 +198,7 @@ export class WorldGround {
   dispose(): void {
     this.surface.geometry.dispose();
     this.surfaceMat.dispose();
+    this.surfaceLow.dispose();
     this.points.geometry.dispose();
     this.cloudMat.dispose();
     this.catcher.geometry.dispose();
