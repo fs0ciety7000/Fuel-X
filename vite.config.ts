@@ -21,7 +21,7 @@ export default defineConfig({
   build: {
     target: 'es2023',
     rollupOptions: {
-      input: { main: r('index.html'), design: r('design.html') },
+      input: { main: r('index.html'), play: r('play.html'), design: r('design.html') },
     },
   },
   test: {

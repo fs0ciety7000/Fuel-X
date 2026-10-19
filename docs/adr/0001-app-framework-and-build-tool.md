@@ -24,9 +24,12 @@ not be driven by component re-renders.
 ## Decision
 **Vite SPA + React 19 + TypeScript (strict)**. No meta-framework, no SSR, no router library.
 
-- Two HTML entries (Vite multi-page): `index.html` (game) and `design.html` (the `/design`
-  token & component gallery required by DESIGN_SYSTEM; built and served like the game so
-  `visual-check` can screenshot it from `preview`). No Storybook (second build system, ~MBs of deps).
+- HTML entries (Vite multi-page): `index.html` (public showcase), `play.html` (game shell) and
+  `design.html` (the `/design` token & component gallery required by DESIGN_SYSTEM; built and
+  served like the game so `visual-check` can screenshot it from `preview`). No Storybook
+  (second build system, ~MBs of deps). Amended 2026-10-18: the showcase is the front door at
+  `index.html` (`src/vitrine.tsx`); the Phase 2 shell moved to `play.html` so later phases replace
+  the pad without replacing the public page.
 - TypeScript **6.0.3**, not 7.x: typescript-eslint 8.x supports `typescript <6.1`; the native TS 7
   compiler is revisited when the lint stack supports it.
 - `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`.

@@ -41,7 +41,7 @@ async function boot(page: Page, errors: string[]): Promise<void> {
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
-  await page.goto('/?debug=1');
+  await page.goto('/play.html?debug=1');
   await page.waitForFunction(() => window.__fuelx !== undefined);
   await page.evaluate(async () => {
     const fx = window.__fuelx;

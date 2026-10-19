@@ -503,7 +503,7 @@ interface FuelxDebug {
 ```
 docs/DESIGN_SYSTEM.md (values, authority)
         │ (ui-design-system edits)
-src/tokens/tokens.ts  ──npm run tokens──►  src/tokens/generated/tokens.css   (:root { --fx-* }, imported once by main.tsx and design.tsx)
+src/tokens/tokens.ts  ──npm run tokens──►  src/tokens/generated/tokens.css   (:root { --fx-* }, imported once by main.tsx, vitrine.tsx and design.tsx)
    │                                       src/tokens/generated/tokens.json  ({ srgb: '#F4F4F0', linear: [r,g,b] } per color + all scalars)
    │                                                    └──► blender/lib/materials.py materials_from_tokens(...)  (MAT_* colors, preview bg)
    └──► import { tokens } from '@tokens/tokens'  (render: background, fog, clay ramp, accent for exhaust/selection/rings)
@@ -514,9 +514,9 @@ Generated files are committed (Blender runs need them) and `npm run lint` runs `
 ## 12. Repo layout & scripts
 
 ```
-index.html · design.html                  Vite entries (game, /design gallery)
+index.html · play.html · design.html     Vite entries (public showcase, pad shell, /design gallery)
 src/
-  main.tsx · design.tsx                   entry points
+  vitrine.tsx · main.tsx · design.tsx     entry points
   app/       loop.ts, time/, sim-host/ (inline + worker-ready), projection/, bus.ts, persistence/, debug.ts, App.tsx
   bridge/    stores.ts (projectionStore, viewStore), commands.ts
   sim/       core/ (world, rng, fsm, events, commands, serialize), systems/, entities/ (factories),
@@ -529,7 +529,7 @@ src/
   tokens/    tokens.ts, build.ts helpers, generated/{tokens.css,tokens.json}
 tests/       golden/ (+ __files__), sim/ (equivalence, property), perf/ (benches), fixtures/saves/, e2e/ (Playwright: e2e, visual, perf)
 blender/     lib/ (export, materials, preview, truss, tanks…), assets/<asset>.py + <asset>.contract.json
-public/      models/*.glb (generated), fonts/*.woff2
+public/      models/*.glb (generated), brand/ (CM Interactive + Cardor marks), fonts/*.woff2
 deploy/      nginx.conf (Coolify image) · Dockerfile at repo root
 docs/        GDD, BALANCING, ARCHITECTURE, adr/, DESIGN_SYSTEM, ASSETS_GUIDE, TASKS, QA, assets/ (previews)
 scripts/     install-blender.sh, session-start.sh, tokens/build.ts, assets/{build,codegen,contract}.ts, perf/{budgets.ts,budget.json}
