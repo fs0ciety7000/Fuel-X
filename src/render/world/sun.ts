@@ -7,10 +7,13 @@ export const SUN_ROTATION_DEG = [50, 0, 35] as const;
 /** Blender sun strength (irradiance, W/m²) → three directional intensity (three divides diffuse by π too). */
 export const SUN_INTENSITY = 2.2;
 /**
- * Blender world fill = paper at strength 0.25 (uniform radiance → hemisphere irradiance π × 0.25), raised to 0.3 to
- * stand in for the Cycles ground bounce: calibrated so the PAD apron matches docs/assets/_stack.png (≈ #C0BEB7).
+ * Hemisphere fill (sky = paper, ground = shadow tint). Blender's world fill is paper at 0.25 (+ Cycles bounce); 5.1
+ * matched the PAD apron to docs/assets/_stack.png at π × 0.3 (≈ #C0BEB7), but in the game the ground is an *unlit*
+ * token surface (`groundBase` / `padConcrete`), so lit horizontal clay read as dark grey slabs and fell under the
+ * halftone threshold (5.6 fix). π × 0.5 puts an up-facing `clayLight` face at ≈ 0.95 of its token value (fill 0.5 +
+ * sun 0.7 · sin 40°), i.e. level with the token ground, while shadowed walls keep ~2.5× less light than sunlit ones.
  */
-export const FILL_INTENSITY = Math.PI * 0.3;
+export const FILL_INTENSITY = Math.PI * 0.5;
 
 /** Unit vector from the scene toward the sun in three space (Y-up), derived from SUN_ROTATION_DEG. */
 export function sunDirection(rotDeg: readonly [number, number, number] = SUN_ROTATION_DEG): [number, number, number] {
