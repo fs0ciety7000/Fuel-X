@@ -96,6 +96,10 @@ export class InlineSimHost implements SimHost {
         stopped = true;
         break;
       }
+      if (req.stopWhen?.(evs)) {
+        stopped = true;
+        break;
+      }
     }
     const ms = this.now() - t0;
     if (steps > 0) {

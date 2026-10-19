@@ -81,7 +81,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 
 ## Phase 7 — Vertical slice
 - [ ] 7.1 Wire all MVP decisions D1–D3b end to end from the HUD (no console) — AC 27 — all agents
-- [ ] 7.2 Time rules: forced 1× windows, skip-to-milestone — AC 23
+- [ ] 7.2 Time rules: forced 1× windows, skip-to-milestone — AC 23 · **app slice done** (*systems-architect*, Phase 6 wave B): `src/app/time/rules.ts` caps (incl. Debrief = 0, `RUN_ENDED`) vs one-shot drops (DECISION_OPEN / NO_GO / GO_POSSIBLE, stop at the trigger tick), skip to next poll/milestone/Debrief (12 ms/frame, blockers, interrupted by drops), `session.skipToNextMilestone()` / `cancelSkip()`, `TimeScaleVM.skip/drop/runEnded`, scripted loop test (ARCHITECTURE §3). **Remains**: HUD rate control + SKIP button + keys + drop announcement (6.3), full-run browser e2e (7.4), worker host parity
 - [ ] 7.3 Background logistics always visible — AC 26
 - [ ] 7.4 Playwright e2e: full run with autopilot + manual decision paths; AC checklist report — **qa-perf**
 - [ ] 7.5 Playtest pass (3 seeds) → BALANCING tweaks, design risks §14 re-evaluated — **game-designer**

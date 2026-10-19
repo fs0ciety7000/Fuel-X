@@ -10,6 +10,7 @@ import { lowFxRequested } from './debug/enabled';
 import { reactCommitsPerS } from './debug/react-commits';
 import type { Game } from './game';
 import { parseJumpTarget } from './jump';
+import type { SkipBlockCode } from './time/rules';
 import type { TimeScale } from './time/time-control';
 import { APP_VERSION } from './version';
 
@@ -39,6 +40,18 @@ export interface FuelxDebug {
   pause(): void;
   resume(): void;
   setTimeScale(s: TimeScale): void;
+  /** SKIP TO NEXT MILESTONE (7.2): null when started, else the blocker code (no throw). */
+  skip(): SkipBlockCode | null;
+  /** Time-rule state (7.2): requested / effective / cap, skip target, last drop. */
+  time(): {
+    requested: number;
+    paused: boolean;
+    effective: number;
+    maxAllowed: number;
+    skipping: string | null;
+    drop: string | null;
+    drops: number;
+  };
   step(n?: number): void;
   follow(callSign: string | null, opts?: { snap?: boolean }): void;
   site(code: string): void;
@@ -108,6 +121,7 @@ export function createDebugApi(game: Game): FuelxDebug {
 
     seed: async (seed, opts) => {
       await host.newGame({ seed, scenario: opts?.scenario ?? 'mvp', autopilot: opts?.autopilot ?? true });
+      time.resetRun();
       game.projector.reset();
       view.reset();
       view.camera({ kind: 'home' });
@@ -117,6 +131,7 @@ export function createDebugApi(game: Game): FuelxDebug {
 
     jumpTo: async (target) => {
       await host.jump(parseJumpTarget(target));
+      time.cancelSkip();
       game.afterTeleport();
       await frames(1);
     },
@@ -126,6 +141,20 @@ export function createDebugApi(game: Game): FuelxDebug {
     setTimeScale: (s) => {
       if (![0, 1, 10, 100].includes(s)) throw new Error('BAD_TIME_SCALE');
       view.timeScale(s);
+    },
+
+    skip: () => game.skipToNextMilestone(),
+    time: () => {
+      const { world, countdown } = host.inspect();
+      return {
+        requested: time.requested,
+        paused: time.isPaused(countdown),
+        effective: time.effectiveScale(world, countdown),
+        maxAllowed: time.maxAllowed(world, countdown),
+        skipping: time.skip?.target.name ?? null,
+        drop: time.lastDrop?.code ?? null,
+        drops: time.drops,
+      };
     },
 
     step: (n = 1) => {
@@ -219,6 +248,7 @@ export function createDebugApi(game: Game): FuelxDebug {
 
     load: async (json) => {
       await host.load(json);
+      time.resetRun();
       game.projector.reset();
       view.reset();
       view.camera({ kind: 'home' });

@@ -4,6 +4,7 @@ import { DT_S } from '@sim/index';
 import type { SimEvent } from '@sim/types';
 import type { SimHost } from './sim-host/types';
 import type { TimeControl } from './time/time-control';
+import { SKIP_BUDGET_MS, SKIP_MAX_STEPS_PER_FRAME } from './time/time-control';
 
 export const MAX_FRAME_DT_S = 0.25;
 export const MAX_STEPS_PER_FRAME = 200;
@@ -79,19 +80,34 @@ export class GameLoop {
     this.frameMs[this.frameN++ % FRAME_WINDOW] = wallDtMs;
 
     const { world, countdown } = host.inspect();
-    const scale = time.effectiveScale(world, countdown);
-    this.acc += wallDt * scale;
+    // Time rules after every tick (drops, skip arrival): stop this frame's stepping when the rate changed.
+    const stopWhen = (evs: readonly SimEvent[]): boolean => {
+      const s = host.inspect();
+      return time.afterTick(evs, s.world, s.countdown);
+    };
     let steps = 0;
-    if (this.acc >= DT_S) {
-      const want = Math.min(Math.floor(this.acc / DT_S), MAX_STEPS_PER_FRAME);
-      const report = host.advance({ maxSteps: want, budgetMs: SIM_BUDGET_MS });
+    if (time.skip) {
+      // Skip to next milestone: same fixed dt, as many steps as the wall budget allows (ARCHITECTURE §3).
+      const report = host.advance({ maxSteps: SKIP_MAX_STEPS_PER_FRAME, budgetMs: SKIP_BUDGET_MS, stopWhen });
       steps = report.steps;
-      this.acc -= steps * DT_S;
-      time.lagging = this.acc >= DT_S;
-      // Drop the backlog rather than ever taking a bigger dt; the HUD shows the effective rate.
-      if (time.lagging) this.acc = 0;
-    } else {
+      this.acc = 0;
       time.lagging = false;
+    } else {
+      const scale = time.effectiveScale(world, countdown);
+      this.acc += wallDt * scale;
+      if (this.acc >= DT_S) {
+        const want = Math.min(Math.floor(this.acc / DT_S), MAX_STEPS_PER_FRAME);
+        const report = host.advance({ maxSteps: want, budgetMs: SIM_BUDGET_MS, stopWhen });
+        steps = report.steps;
+        this.acc -= steps * DT_S;
+        // A rule stopped stepping (rate dropped / skip arrived / run ended): the backlog belonged to the old rate.
+        if (report.stopped) this.acc = Math.min(this.acc, DT_S * 0.999);
+        time.lagging = !report.stopped && this.acc >= DT_S;
+        // Drop the backlog rather than ever taking a bigger dt; the HUD shows the effective rate.
+        if (time.lagging) this.acc = 0;
+      } else {
+        time.lagging = false;
+      }
     }
     time.effectiveRate = wallDt > 0 ? (steps * DT_S) / wallDt : 0;
     this.lastSteps = steps;

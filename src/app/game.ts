@@ -1,6 +1,6 @@
 // Composition root object (ARCHITECTURE §2): wires SimHost ↔ GameLoop ↔ render scene ↔ bus. Created once in
 // main.tsx outside React so StrictMode double-mounts never build a second world.
-import { commands, projectionStore, viewStore } from '@bridge/index';
+import { commands, projectionStore, session, viewStore } from '@bridge/index';
 import type { ViewState } from '@bridge/index';
 import { createFrameInput, createRenderControls, DEFAULT_SITE, SLOT_STRIDE, SlotFlag } from '@render/index';
 import type { FrameInput, RenderControls, SceneApi } from '@render/index';
@@ -11,6 +11,7 @@ import { formatTClock } from './jump';
 import { Projector } from './projection/projector';
 import type { TimeInputs } from './projection/context';
 import { InlineSimHost } from './sim-host/inline';
+import type { SkipBlockCode } from './time/rules';
 import { TimeControl } from './time/time-control';
 
 export class Game {
@@ -55,6 +56,10 @@ export class Game {
     this.bus.onBatch((batch) => this.projector.onEvents(batch));
     this.loop.onAfterFrame(() => this.projector.frame(performance.now()));
     commands.bind((cmd) => this.host.send(cmd));
+    session.bind({
+      skipToNextMilestone: () => void this.skipToNextMilestone(),
+      cancelSkip: () => this.cancelSkip(),
+    });
     viewStore.subscribe((s, prev) => this.applyView(s, prev));
   }
 
@@ -67,7 +72,23 @@ export class Game {
       maxAllowed: t.maxAllowed(world, cd),
       lagging: t.lagging,
       effectiveRate: t.effectiveRate,
+      skipping: t.skip?.target ?? null,
+      skipBlocker: t.skipBlocker(world, cd),
+      drop: t.lastDrop ? { code: t.lastDrop.code, tick: t.lastDrop.tick } : null,
     };
+  }
+
+  /** SKIP TO NEXT MILESTONE (GDD §6, 7.2): null when started, else the blocker code. */
+  skipToNextMilestone(): SkipBlockCode | null {
+    const { world, countdown } = this.host.inspect();
+    const blocked = this.time.startSkip(world, countdown);
+    this.projector.markDirty();
+    return blocked;
+  }
+
+  cancelSkip(): void {
+    this.time.cancelSkip();
+    this.projector.markDirty();
   }
 
   /** viewStore intents → render controls / time control (the only writer of those from the UI side). */

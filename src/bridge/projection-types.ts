@@ -109,6 +109,37 @@ export type Rate = 0 | 1 | 10 | 100;
 /** Machine reason of a rate cap (`lockReason` is its display text). */
 export type TimeLockCode = 'TERMINAL_COUNT' | 'FLIGHT' | 'RECOVERY_SETTLE' | 'HOLD' | 'PHASE_CAP';
 
+/** Why the requested rate was dropped to 1× (GDD §6 drop triggers, 7.2). */
+export type TimeDropCode = 'DECISION_OPEN' | 'NO_GO' | 'GO_POSSIBLE';
+
+/** Why SKIP TO NEXT MILESTONE is disabled (7.2). */
+export type SkipBlockCode = 'RUN_ENDED' | 'FORCED_1X' | 'DECISION_OPEN' | 'NO_MILESTONE';
+
+/** Skip-to-next-milestone state (DESIGN_SYSTEM §6.25). Start / cancel: `session.skipToNextMilestone()` / `cancelSkip()`. */
+export interface SkipVM {
+  enabled: boolean;
+  /** Button label target, e.g. `T−01:20:00 LOAD POLL`, `DEBRIEF`; null when nothing is scheduled. */
+  target: string | null;
+  /** Display reason when disabled (`DECISION OPEN`, `1× LOCKED`, `RUN ENDED`, `NO MILESTONE SCHEDULED`). */
+  reason: string | null;
+  /** A skip is running (the control is inert until arrival or a drop interrupts it). */
+  active: boolean;
+  reasonCode?: SkipBlockCode | null;
+  /** Target T-clock, s (null for DEBRIEF / none). */
+  targetTClockS?: number | null;
+  /** Target name only, e.g. `LOAD POLL`, `ROAD CLOSURE`, `DEBRIEF`. */
+  targetName?: string | null;
+}
+
+/** Last one-shot drop of the requested rate to 1× (cleared by the next player rate request / skip / new run). */
+export interface TimeDropVM {
+  code: TimeDropCode;
+  /** Chip text: `1× · DECISION OPEN`, `1× · NO-GO`, `1× · GO POSSIBLE`. */
+  label: string;
+  /** Sim tick that fired it. */
+  tick: number;
+}
+
 export interface TimeScaleVM {
   /** Last rate the player asked for (0 = paused). */
   requested: Rate;
@@ -131,8 +162,15 @@ export interface TimeScaleVM {
   lockLabel?: string;
   /** Top-bar readout: `SIM 10×`, `SIM PAUSED`, `SIM 7.4× OF 100×`. */
   readout?: string;
-  /** Skip to next milestone (task 7.2): the target is projected now, enabled once 7.2 lands. */
-  skip: { enabled: boolean; target: string | null; reason: string | null; active: boolean };
+  /** Skip to next milestone (7.2). */
+  skip: SkipVM;
+  /** Last drop to 1× (GDD §6), null when none since the player's last rate request. */
+  drop?: TimeDropVM | null;
+  /**
+   * Debrief: the run is over — every rate segment and SKIP disabled with reason `RUN ENDED` (`lockReason` /
+   * `lockLabel` carry the same text; `maxAllowed` = 0, `paused` = true).
+   */
+  runEnded?: boolean;
 }
 
 // --- Range, stations, alerts ------------------------------------------------------------------------

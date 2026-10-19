@@ -3,6 +3,7 @@ import type { EventVM, UiProjection } from '@bridge/projection-types';
 import type { ViewState } from '@bridge/stores';
 import { DT_S, isPreLiftoff } from '@sim/index';
 import type { Countdown, Entity, Id, Kind, World } from '@sim/types';
+import type { DropCode, SkipBlockCode, SkipTarget } from '../time/rules';
 import type { TimeScale } from '../time/time-control';
 import type { SparkKey } from './spark';
 
@@ -21,6 +22,12 @@ export interface TimeInputs {
   lagging: boolean;
   /** Measured sim s per wall s. */
   effectiveRate: number;
+  /** Skip in progress → its target; null otherwise (7.2). */
+  skipping?: SkipTarget | null;
+  /** SKIP blocked now (null = available or already skipping). Absent = computed from the world. */
+  skipBlocker?: SkipBlockCode | null;
+  /** Last drop to 1× (GDD §6). */
+  drop?: { code: DropCode; tick: number } | null;
 }
 
 export interface SparkSource {

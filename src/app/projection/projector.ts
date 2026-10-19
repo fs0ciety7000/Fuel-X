@@ -39,6 +39,20 @@ export interface ProjectorStats {
 
 const WINDOW = 240;
 
+/** Time-control fingerprint: a change flushes a projection at once (rate control feedback). */
+function timeFingerprint(t: TimeInputs): string {
+  return [
+    t.paused,
+    t.requested,
+    t.effective,
+    t.maxAllowed,
+    t.lagging,
+    t.skipping?.name ?? '',
+    t.skipBlocker ?? '',
+    t.drop ? `${t.drop.code}@${t.drop.tick}` : '',
+  ].join('|');
+}
+
 export class Projector {
   private readonly sampler = new SparkSampler();
   private readonly log = new EventLog();
@@ -93,7 +107,7 @@ export class Projector {
     if (world.tick < this.lastTick) this.resetHistory();
     this.sampler.sample(world, countdown);
     const t = this.deps.time(world, countdown);
-    const key = `${t.paused}|${t.requested}|${t.effective}|${t.maxAllowed}|${t.lagging}`;
+    const key = timeFingerprint(t);
     if (key !== this.timeKey) this.dirty = true;
     const due = !t.paused && world.tick !== this.lastTick && nowMs - this.lastRunMs >= PROJECTION_INTERVAL_MS;
     if (!this.dirty && !due) return false;
@@ -108,13 +122,7 @@ export class Projector {
     if (world.tick < this.lastTick) this.resetHistory();
     this.sampler.sample(world, countdown);
     const t = this.deps.time(world, countdown);
-    this.run(
-      this.deps.now(),
-      world,
-      countdown,
-      t,
-      `${t.paused}|${t.requested}|${t.effective}|${t.maxAllowed}|${t.lagging}`,
-    );
+    this.run(this.deps.now(), world, countdown, t, timeFingerprint(t));
     return this.deps.store.getState();
   }
 

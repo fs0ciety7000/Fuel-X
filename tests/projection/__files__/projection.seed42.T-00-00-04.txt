@@ -39,9 +39,14 @@
   "skip": {
    "enabled": false,
    "target": "T−00:00:03 ENGINE IGNITION",
-   "reason": "SKIP NOT AVAILABLE YET",
-   "active": false
-  }
+   "reason": "1× LOCKED",
+   "active": false,
+   "reasonCode": "FORCED_1X",
+   "targetTClockS": -3,
+   "targetName": "ENGINE IGNITION"
+  },
+  "drop": null,
+  "runEnded": false
  },
  "economy": {
   "money": {

@@ -21,6 +21,11 @@ export interface AdvanceRequest {
   budgetMs: number;
   /** Stop right after a tick that emitted one of these (milestone / forced-1× rules, ARCHITECTURE §3). */
   stopOn?: readonly SimEventType[];
+  /**
+   * Called after every tick with that tick's events (time rules: drops, skip arrival, 7.2); true = stop stepping.
+   * Inline host only — a worker host evaluates the same rules (`src/app/time/rules.ts`, pure) on its side.
+   */
+  stopWhen?: (events: readonly SimEvent[]) => boolean;
 }
 
 export interface AdvanceReport {

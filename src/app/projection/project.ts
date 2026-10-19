@@ -9,6 +9,7 @@ import type {
   PhaseVM,
   PollMarkVM,
   SiteVM,
+  SkipVM,
   StationVM,
   TimeLockCode,
   TimeScaleVM,
@@ -36,6 +37,7 @@ import { debriefVM } from './project-debrief';
 import { inspectorVM, labelsVM, listsVM } from './project-entities';
 import { aggregate, alertsVM, rangeVM, stationVMs } from './project-range';
 import { share } from './share';
+import { DROP_LABEL, SKIP_BLOCK_LABEL, nextSkipTarget, runEnded, skipBlocker } from '../time/rules';
 
 export type { ProjectEnv } from './context';
 
@@ -112,40 +114,66 @@ export function lockReason(
   return 'PHASE_CAP';
 }
 
-/** Next poll or milestone after the current T-clock (skip target label). */
-function nextMark(cd: Readonly<Countdown> | null): string {
-  if (!cd || !isPreLiftoff(cd.phase.state)) return '';
-  const t = cd.tClockTicks * DT_S;
-  const marks: { tS: number; label: string }[] = [
-    ...(Object.entries(cdData.pollTS) as [PollId, number][]).map(([id, tS]) => ({ tS, label: POLL_LABEL[id] })),
-    ...cdData.milestones.map((m) => ({ tS: m.tS, label: words(m.name) })),
-  ];
-  const next = marks.filter((m) => m.tS > t + 1e-9).sort((a, b) => a.tS - b.tS)[0];
-  return next ? `${tClockS(next.tS)} ${next.label}` : '';
+function skipVM(c: Ctx): SkipVM {
+  const t = c.env.time;
+  const active = t.skipping ?? null;
+  const target = active ?? nextSkipTarget(c.cd);
+  const code = active ? null : t.skipBlocker !== undefined ? t.skipBlocker : skipBlocker(c.world, c.cd);
+  const label =
+    target === null ? null : target.kind === 'DEBRIEF' ? target.name : `${tClock(target.tClockTicks)} ${target.name}`;
+  return {
+    enabled: active === null && code === null,
+    target: label,
+    reason: code ? SKIP_BLOCK_LABEL[code] : null,
+    active: active !== null,
+    reasonCode: code,
+    targetTClockS: target?.kind === 'TCLOCK' ? target.tClockTicks * DT_S : null,
+    targetName: target?.name ?? null,
+  };
 }
 
 function timeScaleVM(c: Ctx): TimeScaleVM {
   const t = c.env.time;
-  const reason = lockReason(c.world, c.cd, t.maxAllowed);
+  const ended = runEnded(c.cd);
+  const reason = ended ? null : lockReason(c.world, c.cd, t.maxAllowed);
   const phaseWord = c.cd ? PHASE_LABEL[c.cd.phase.state] : '';
-  const word = reason ? LOCK_WORDS[reason] || phaseWord : '';
-  const lockLabel = !reason ? '' : t.maxAllowed === 1 ? `1× LOCKED · ${word}` : `MAX ${t.maxAllowed}× · ${word}`;
-  const rate = t.lagging ? t.effectiveRate : t.effective;
+  const word = ended ? 'RUN ENDED' : reason ? LOCK_WORDS[reason] || phaseWord : '';
+  const lockLabel = ended
+    ? 'RUN ENDED'
+    : !reason
+      ? ''
+      : t.maxAllowed === 1
+        ? `1× LOCKED · ${word}`
+        : `MAX ${t.maxAllowed}× · ${word}`;
+  const paused = t.paused || ended;
+  const skip = skipVM(c);
+  const rate = t.lagging || skip.active ? t.effectiveRate : t.effective;
   const rateText = fixed(rate, t.lagging ? 1 : 0);
+  const drop = t.drop ? { code: t.drop.code, label: `1× · ${DROP_LABEL[t.drop.code]}`, tick: t.drop.tick } : null;
   return {
-    requested: t.paused ? 0 : t.requested,
+    requested: paused ? 0 : t.requested,
     resumeRate: t.requested,
-    effective: t.effective,
-    maxAllowed: t.maxAllowed,
-    paused: t.paused,
-    forced1x: t.maxAllowed === 1,
+    effective: ended ? 0 : t.effective,
+    maxAllowed: ended ? 0 : t.maxAllowed,
+    paused,
+    forced1x: !ended && t.maxAllowed === 1,
     lagging: t.lagging,
     effectiveRate: `${rateText}×`,
-    lockReason: reason ? word : null,
+    lockReason: ended || reason ? word : null,
     lockCode: reason,
     lockLabel,
-    readout: t.paused ? 'SIM PAUSED' : t.lagging ? `SIM ${rateText}× OF ${t.effective}×` : `SIM ${t.effective}×`,
-    skip: { enabled: false, target: nextMark(c.cd) || null, reason: 'SKIP NOT AVAILABLE YET', active: false },
+    readout: ended
+      ? 'SIM PAUSED · RUN ENDED'
+      : skip.active
+        ? `SIM SKIP → ${skip.target ?? ''}`.trim()
+        : t.paused
+          ? 'SIM PAUSED'
+          : t.lagging
+            ? `SIM ${rateText}× OF ${t.effective}×`
+            : `SIM ${t.effective}×`,
+    skip,
+    drop,
+    runEnded: ended,
   };
 }
 
