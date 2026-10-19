@@ -123,7 +123,7 @@ const LC1_COAST: TerrainSpec['coast'] = {
 const LC1_BAY: TerrainSpec['bay'] = { cx: -2_600, cz: -2_500, rx: 2_200, rz: 1_600, wobble: 45, lobes: 5, phase: 1.3 };
 
 function buildLc1(): TerrainSpec {
-  const base = { coast: LC1_COAST, bay: LC1_BAY, lots: [], roads: [], beachM: 16, foamM: 70 };
+  const base = { coast: LC1_COAST, bay: LC1_BAY, lots: [], roads: [], beachM: 16, foamM: 110 };
   const land = (x: number, z: number): boolean => landSdf(base, x, z) > 0;
   return {
     ...base,

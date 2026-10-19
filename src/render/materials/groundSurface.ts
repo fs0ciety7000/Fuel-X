@@ -32,8 +32,13 @@ void main() {
 
 /** Smallest dot cell on screen, px (cells span [DOT_PX, 2 × DOT_PX]). */
 const DOT_PX = 3;
+/** Sea streak/foam cells: finer, so crests read as dense hairlines rather than drops. */
+const SEA_DOT_PX = 2;
 
-const f = (n: number): string => n.toFixed(1);
+const f = (n: number): string => (Number.isInteger(n) ? n.toFixed(1) : String(n));
+
+/** Sea streak cells are this many times longer along the crests (z) than across. */
+const STREAK = 3;
 
 const FRAG = (terrain: string, beachM: number, foamM: number): string => /* glsl */ `
 uniform float uTime;
@@ -47,26 +52,38 @@ ${ShaderChunk.fog_pars_fragment}
 ${terrain}
 ${CONCRETE_FIELD_GLSL}
 
-// One jittered round dot per cell of size c (m), present with probability p, radius rr × c; AA over fp (m/px).
-float dotsAt(vec2 g, float c, float p, float rr, float fp, int salt) {
+// One jittered round dot per cell of size c (m), radius rr × c, AA over fp (m/px). x = coverage, y = the cell's
+// hash in [0, 1] (the caller turns it into presence / class), so one lookup serves two dot classes.
+vec2 dotCell(vec2 g, float c, float rr, float fp, int salt) {
   vec2 q = g / c;
   vec2 id = floor(q);
   ivec2 ic = ivec2(id) + ivec2(salt * 7919, salt * 104729);
-  if (fxHash(ic) >= p) return 0.0;
-  vec2 jit = vec2(fxHash(ic + ivec2(17, 3)), fxHash(ic + ivec2(5, 29)));
-  vec2 ctr = 0.5 + (jit - 0.5) * (1.0 - 2.0 * rr);
+  float h = fxHash(ic);
+  float j = fxHash(ic + ivec2(17, 3));
+  vec2 ctr = 0.5 + (vec2(j, fract(j * 97.0)) - 0.5) * (1.0 - rr);
   float d = length(q - id - ctr) * c;
   float r = rr * c;
-  return 1.0 - smoothstep(r - 0.5 * fp, r + 0.5 * fp, d);
+  return vec2(1.0 - smoothstep(r - 0.5 * fp, r + 0.5 * fp, d), h);
 }
 
-// World-anchored dot screen: power-of-two cells ≥ ${DOT_PX} px, the two nearest LODs cross-faded (no popping).
-float dots(vec2 g, float fp, float p, float rr, int salt) {
-  float lv = log2(fp * ${DOT_PX.toFixed(1)});
+vec2 dotClasses(vec2 cell, float p1, float p2) {
+  return cell.x * vec2(step(cell.y, p1), step(p1, cell.y) * step(cell.y, p1 + p2));
+}
+
+// World-anchored dot screen: power-of-two cells >= px pixels, the two nearest LODs cross-faded (no popping).
+// Returns the coverage of class 1 (probability p1) and class 2 (probability p2).
+vec2 dots2(vec2 g, float fp, float px, float p1, float p2, float rr, int salt) {
+  float lv = log2(fp * px);
   float L = max(ceil(lv), -4.0);
   float fr = clamp(L - lv, 0.0, 1.0);
   float c0 = exp2(L);
-  return mix(dotsAt(g, 2.0 * c0, p, rr, fp, salt + 1), dotsAt(g, c0, p, rr, fp, salt), fr);
+  vec2 a = dotClasses(dotCell(g, 2.0 * c0, rr, fp, salt + 1), p1, p2);
+  vec2 b = dotClasses(dotCell(g, c0, rr, fp, salt), p1, p2);
+  return mix(a, b, fr);
+}
+
+float dots(vec2 g, float fp, float px, float p, float rr, int salt) {
+  return dots2(g, fp, px, p, 0.0, rr, salt).x;
 }
 
 void main() {
@@ -74,8 +91,8 @@ void main() {
   vec2 fw = fwidth(w);
   float fp = max(max(fw.x, fw.y), 1e-3);
   // Sea streak space (derivatives taken here, in uniform control flow).
-  vec2 sw = vec2(w.x, w.y * 0.25);
-  float sfp = max(max(fw.x, 0.25 * fw.y), 1e-3);
+  vec2 sw = vec2(w.x, w.y * ${f(1 / STREAK)});
+  float sfp = max(max(fw.x, ${f(1 / STREAK)} * fw.y), 1e-3);
   float land = fxLandSdf(w);
   float isLand = smoothstep(-0.75 * fp, 0.75 * fp, land);
   vec3 col;
@@ -85,25 +102,28 @@ void main() {
     float n = 0.7 * fxNoise(w / 230.0) + 0.3 * fxNoise(w / 55.0);
     float scrubN = smoothstep(0.32, 0.72, n);
     vec3 ground = mix(uGroundBase, uGroundPoints, 0.1 * scrubN);
-    ground = mix(ground, uGroundPoints, 0.85 * dots(w, fp, mix(0.18, 0.62, scrubN), 0.36, 1));
-    ground = mix(ground, uSeaPoints, 0.9 * dots(w, fp, 0.16, 0.3, 3));
+    vec2 d = dots2(w, fp, ${f(DOT_PX)}, mix(0.18, 0.62, scrubN), 0.16, 0.34, 1);
+    ground = mix(ground, uGroundPoints, 0.85 * d.x);
+    ground = mix(ground, uSeaPoints, 0.9 * d.y);
     float sand = 1.0 - smoothstep(${(beachM - 2).toFixed(1)}, ${(beachM + 2).toFixed(1)}, land);
-    if (sand > 0.0) ground = mix(ground, mix(uConcrete, uGroundPoints, 0.35 * dots(w, fp, 0.12, 0.3, 5)), sand);
+    if (sand > 0.0) ground = mix(ground, mix(uConcrete, uGroundPoints, 0.35 * dots(w, fp, ${f(DOT_PX)}, 0.12, 0.3, 5)), sand);
     float cd = fxConcrete(w);
     ground = mix(ground, uConcrete, 1.0 - smoothstep(-0.5 * fp, 0.5 * fp, cd));
     col = ground;
   }
   if (isLand < 1.0) {
-    // Sea: base + crest lightening + white streaks on crests (cells 4× longer along the crest lines) + foam.
+    // Sea: base + crest lightening + white streaks on crests (cells STREAK× longer along the crest lines) + foam.
     float seaD = max(-land, 0.0);
     float wave = fxWaves(w, uTime);
     float crest = smoothstep(0.15, 0.95, wave);
     vec3 sea = mix(uSeaBase, uSeaPoints, 0.14 * crest);
-    sea = mix(sea, uSeaPoints, 0.9 * dots(sw, sfp, 0.04 + 0.5 * crest * crest, 0.34, 7));
+    // Waves shorter than ~4 px alias into noise: fade the crest bias with the pixel footprint.
+    float waveVis = 1.0 - smoothstep(2.0, 6.0, fp);
+    sea = mix(sea, uSeaPoints, 0.9 * dots(sw, sfp, ${f(SEA_DOT_PX)}, 0.1 + waveVis * 0.45 * crest * crest, 0.3, 7));
     if (seaD < ${f(foamM)}) {
       float foam = fxFoam(seaD, w, uTime);
       float swash = 1.0 - smoothstep(0.0, 12.0, seaD);
-      float foamDots = dots(w, fp, 0.25 + 0.75 * foam, 0.42, 9);
+      float foamDots = dots(w, fp, ${f(SEA_DOT_PX)}, 0.25 + 0.75 * foam, 0.42, 9);
       sea = mix(sea, uSeaPoints, max(max(foamDots * foam, 0.8 * foam), swash));
     }
     col = isLand > 0.0 ? mix(sea, col, isLand) : sea;
