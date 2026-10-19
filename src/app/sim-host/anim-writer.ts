@@ -18,7 +18,7 @@ const TAU = Math.PI * 2;
 const DEG = Math.PI / 180;
 
 /** TRANSPORTER `SOCKET_Cargo` at deck rest = stage origin above the transporter, m (sim 5.0b convention). */
-const CARGO_LIFT_M = siteGeometry.transporter.cargoM;
+const CARGO_STAND_M = siteGeometry.transporter.cargoM;
 
 /** CRANE geometry in its root frame (ASSETS_GUIDE §4 CRANE as built): boom foot, boom length, luff and hook range. */
 export const CRANE_GEOM = {
@@ -176,7 +176,7 @@ export function craneRig(world: World, crane: EntityOf<'crane'>): CraneRig {
   const h = vehicles[stage.kind].heightM;
   const p = task.durationTicks > 0 ? task.elapsedTicks / task.durationTicks : 1;
   const pick = aimCrane(crane, stage.pos, stage.pos.y + h);
-  const setDown = { x: sp.pos.x, y: sp.pos.y + CARGO_LIFT_M, z: sp.pos.z };
+  const setDown = { x: sp.pos.x, y: sp.pos.y + CARGO_STAND_M, z: sp.pos.z };
   const place = aimCrane(crane, setDown, setDown.y + h);
   const pickUp = { ...pick, hook: Math.min(CRANE_GEOM.hookMax, pick.hook + LIFT_CLEAR_M) };
   const placeUp = { ...place, hook: Math.min(CRANE_GEOM.hookMax, place.hook + LIFT_CLEAR_M) };
@@ -243,6 +243,11 @@ export interface PoseOut {
   q: Quat;
 }
 
+/** Deck raised to drive loaded, lowered to load / unload so the stage hand-overs stay continuous. */
+function transporterDriving(e: EntityOf<'transporter'>): boolean {
+  return e.cargo !== null && (e.fsm.state === 'MOVING' || e.fsm.state === 'WIND_HOLD');
+}
+
 const GROUND_STATES: ReadonlySet<string> = new Set([
   'IN_YARD',
   'ON_TRANSPORTER',
@@ -290,7 +295,7 @@ export class AnimWriter {
         wheel: m?.wheel ?? 0,
         trailerYaw: simYaw,
         steer: 0,
-        deck: m?.deck ?? 0,
+        deck: m?.deck ?? (e.kind === 'transporter' && transporterDriving(e) ? DECK_RAISED_M : 0),
       };
       this.movers.set(e.id, m);
     } else {
@@ -315,9 +320,7 @@ export class AnimWriter {
       }
     }
     if (e.kind === 'transporter') {
-      // deck raised to drive loaded, lowered to load / unload so the stage hand-overs stay continuous
-      const driving = e.cargo !== null && (e.fsm.state === 'MOVING' || e.fsm.state === 'WIND_HOLD');
-      m.deck = approach(m.deck, driving ? DECK_RAISED_M : 0, DECK_RATE_MPS);
+      m.deck = approach(m.deck, transporterDriving(e) ? DECK_RAISED_M : 0, DECK_RATE_MPS);
     }
   }
 
@@ -351,13 +354,16 @@ export class AnimWriter {
       case 'pad': {
         const b = e.boosterId ? world.entities.byId[e.boosterId] : undefined;
         const st = b?.kind === 'booster' ? b.fsm.state : null;
+        const clampsTo = st && FLOWN.has(st) ? -0.8 : 0;
+        const bqdTo = st && ON_PAD.has(st) ? 0 : -1.5;
         let s = this.pads.get(e.id);
         if (!s) {
-          s = { clamps: 0, bqd: -1.5 };
+          // first write after a reset / jump: start at the target, never animate from an arbitrary rest
+          s = { clamps: clampsTo, bqd: bqdTo };
           this.pads.set(e.id, s);
         }
-        s.clamps = approach(s.clamps, st && FLOWN.has(st) ? -0.8 : 0, 0.4);
-        s.bqd = approach(s.bqd, st && ON_PAD.has(st) ? 0 : -1.5, 0.5);
+        s.clamps = approach(s.clamps, clampsTo, 0.4);
+        s.bqd = approach(s.bqd, bqdTo, 0.5);
         anim[o + ANIM.pad.clampsM] = s.clamps;
         anim[o + ANIM.pad.bqdM] = s.bqd;
         return;
@@ -422,6 +428,8 @@ export class AnimWriter {
     t: number,
   ): void {
     let s = this.stages.get(e.id);
+    // first write after a reset / jump: rate-limited channels start at their target (screenshots right after a jump)
+    const fresh = !s;
     if (!s) {
       s = {
         vx: 0,
@@ -436,15 +444,17 @@ export class AnimWriter {
         gimbalY: 0,
         finA: 0,
         finB: 0,
-        flapF: 45 * DEG,
-        flapA: 45 * DEG,
+        flapF: GROUND_STATES.has(e.fsm.state) ? 45 * DEG : 20 * DEG,
+        flapA: GROUND_STATES.has(e.fsm.state) ? 45 * DEG : 20 * DEG,
         init: false,
       };
       this.stages.set(e.id, s);
     }
     const state = e.fsm.state;
 
-    // Pose refinements (positions are asset origins in world metres, sim 5.0b).
+    // Pose refinements. Positions are asset origins in world metres (sim 5.0b): no mount / cargo / stacking lift is
+    // added here. A stage on a transporter only rides the render-derived deck stroke (≤ 0.6 m above the sim's
+    // deck-rest origin, so it never sinks into the raised stand) and the drawn (rate-limited) transporter yaw.
     if (onCargo) {
       const sp = this.carrier(world, e.id);
       const mv = sp ? this.movers.get(sp.id) : undefined;
@@ -483,8 +493,8 @@ export class AnimWriter {
     const wob = Math.sin(t * 1.7 + e.slot) * 0.6 * DEG; // steering chatter while lit
     const wantP = lit > 0 ? clamp(gMax * Math.tanh(local.z / 15) + wob, -gMax, gMax) : 0;
     const wantY = lit > 0 ? clamp(-gMax * Math.tanh(local.x / 15) - wob, -gMax, gMax) : 0;
-    s.gimbalP = approach(s.gimbalP, wantP, 10 * DEG);
-    s.gimbalY = approach(s.gimbalY, wantY, 10 * DEG);
+    s.gimbalP = fresh ? wantP : approach(s.gimbalP, wantP, 10 * DEG);
+    s.gimbalY = fresh ? wantY : approach(s.gimbalY, wantY, 10 * DEG);
     const ch = e.kind === 'booster' ? ANIM.booster : ANIM.ship;
     anim[o + ch.litFrac] = lit / total;
     anim[o + ch.gimbalPitchRad] = s.gimbalP;
@@ -499,8 +509,8 @@ export class AnimWriter {
       const wantB = steering
         ? clamp(16 * DEG * Math.sin(t * 0.45 + 1.9) - 10 * DEG * Math.tanh(local.x / 20), -finMax, finMax)
         : 0;
-      s.finA = approach(s.finA, wantA, 20 * DEG);
-      s.finB = approach(s.finB, wantB, 20 * DEG);
+      s.finA = fresh ? wantA : approach(s.finA, wantA, 20 * DEG);
+      s.finB = fresh ? wantB : approach(s.finB, wantB, 20 * DEG);
       anim[o + ANIM.booster.finARad] = s.finA;
       anim[o + ANIM.booster.finBRad] = s.finB;
     } else {

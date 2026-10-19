@@ -1,6 +1,6 @@
 // CameraRig (5.5, AC 25): perspective, narrow FOV, high oblique. Follows the selected entity's SOCKET_Focus — or
-// the centre of an attached stack (booster + ship) — and glides 700 ms (motion token `dur.camera`, eased) whenever
-// the target or a preset changes; afterwards it follows rigidly while user orbit/zoom input is damped. Presets:
+// the centre of what is attached to it (booster + ship stack, transporter + cargo, found through the sockets) — and
+// glides 700 ms (motion token `dur.camera`, eased) whenever the target, the stack or a preset changes; afterwards it follows rigidly while user orbit/zoom input is damped. Presets:
 // `home` (site overview, drops the follow), `frame` (fit the followed entity / stack), explicit orbit. Drag =
 // orbit, wheel = zoom, clamped to the strategic range (pitch 8–85°, 40 m–30 km) and never under ground.
 // `controls.snapCamera` (debug `follow/camera(..., { snap })`, jumps) or `frozen` cut instead of gliding.
@@ -32,7 +32,9 @@ export const CAMERA_PRIORITY = -20;
 const INPUT_DAMPING_PER_S = 12;
 const FOCUS = 'SOCKET_Focus';
 const SHIP_MOUNT = 'SOCKET_ShipMount';
-/** Tolerance for "ship sits on the booster's SOCKET_ShipMount", m. */
+const CARGO = 'SOCKET_Cargo';
+const STACKABLE: ReadonlySet<string> = new Set(['booster', 'ship', 'transporter']);
+/** Tolerance for "origin sits on the parent's socket" (ship on booster, stage on transporter), m. */
 const STACK_TOL_M = 1.5;
 
 export interface CameraDeps {
@@ -105,20 +107,39 @@ export class CameraRigCore {
     };
   }
 
-  /** Booster + ship standing on it (or the booster under a followed ship), else just the handle. */
+  /** True when `child`'s origin sits on `parent`'s socket (posed transforms, absolute site metres). */
+  private seated(parent: EntityHandle, socket: string, child: EntityHandle): boolean {
+    const s = parent.info.sockets.get(socket);
+    if (!s) return false;
+    this.v.copy(s).applyQuaternion(parent.object.quaternion).add(parent.object.position);
+    return this.v.distanceTo(child.object.position) < STACK_TOL_M;
+  }
+
+  /** Directly attached neighbours: ship on a booster's SOCKET_ShipMount, stage on a transporter's SOCKET_Cargo. */
+  private attached(a: EntityHandle, b: EntityHandle): boolean {
+    const pair = (p: string, c: string): [EntityHandle, EntityHandle] | null =>
+      a.asset === p && b.asset === c ? [a, b] : b.asset === p && a.asset === c ? [b, a] : null;
+    const bs = pair('booster', 'ship');
+    if (bs) return this.seated(bs[0], SHIP_MOUNT, bs[1]);
+    const tb = pair('transporter', 'booster') ?? pair('transporter', 'ship');
+    // the deck lift (≤ 0.6 m) rides inside the tolerance
+    if (tb) return this.seated(tb[0], CARGO, tb[1]);
+    return false;
+  }
+
+  /** The followed handle plus everything attached to it (booster + ship stack, transporter + cargo). */
   stackOf(h: EntityHandle): EntityHandle[] {
-    if (h.asset !== 'booster' && h.asset !== 'ship') return [h];
-    for (const o of this.d.registry.byId.values()) {
-      if (o === h || !o.object.visible) continue;
-      const booster = h.asset === 'booster' ? h : o.asset === 'booster' ? o : null;
-      const ship = h.asset === 'ship' ? h : o.asset === 'ship' ? o : null;
-      if (!booster || !ship || booster === ship) continue;
-      const mount = booster.info.sockets.get(SHIP_MOUNT);
-      if (!mount) continue;
-      this.v.copy(mount).applyQuaternion(booster.object.quaternion).add(booster.object.position);
-      if (this.v.distanceTo(ship.object.position) < STACK_TOL_M) return [booster, ship];
+    if (!STACKABLE.has(h.asset)) return [h];
+    const out = [h];
+    for (let i = 0; i < out.length; i++) {
+      const cur = out[i];
+      if (!cur) continue;
+      for (const o of this.d.registry.byId.values()) {
+        if (!o.object.visible || !STACKABLE.has(o.asset) || out.includes(o)) continue;
+        if (this.attached(cur, o)) out.push(o);
+      }
     }
-    return [h];
+    return out;
   }
 
   /** World-space bounds of the handles' rest bounds (absolute site metres). */
@@ -135,17 +156,23 @@ export class CameraRigCore {
     return this.box;
   }
 
-  private followTarget(h: EntityHandle, out: Vector3): void {
+  /** Stack size last frame: a stage set onto / lifted off the followed body re-targets with a glide. */
+  private lastStack = 1;
+
+  private followTarget(h: EntityHandle, out: Vector3): boolean {
     const stack = this.stackOf(h);
+    const changed = stack.length !== this.lastStack;
+    this.lastStack = stack.length;
     if (stack.length > 1) {
       this.boundsOf(stack).getCenter(out);
-      return;
+      return changed;
     }
     const focus = h.info.sockets.get(FOCUS);
     out
       .copy(focus ?? this.v.set(0, 0, 0))
       .applyQuaternion(h.object.quaternion)
       .add(h.object.position);
+    return changed;
   }
 
   frame(camera: Camera, delta: number): void {
@@ -177,12 +204,15 @@ export class CameraRigCore {
     }
     if (controls.followId !== this.lastFollow) {
       this.lastFollow = controls.followId;
+      this.lastStack = 1;
       retarget = true;
     }
 
     const followed = controls.followId ? registry.byId.get(controls.followId) : undefined;
-    if (followed?.object.visible) this.followTarget(followed, this.goalTarget);
-    else if (!followed) this.goalTarget.set(...site.target);
+    if (followed?.object.visible && this.followTarget(followed, this.goalTarget) && !retarget && !snap) {
+      // composition changed under a running follow: glide to the new centre (not on the very first frame)
+      retarget = true;
+    } else if (!followed) this.goalTarget.set(...site.target);
     // a followed entity that is hidden (lost stage, off-map truck) keeps the last target
     if (this.goalTarget.y < 0) this.goalTarget.y = 0;
 
