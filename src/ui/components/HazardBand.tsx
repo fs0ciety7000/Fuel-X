@@ -9,7 +9,7 @@ export function HazardBand({
 }: {
   orientation?: 'vertical' | 'horizontal';
   wide?: boolean;
-  className?: string;
+  className?: string | undefined;
 }) {
   return <span aria-hidden="true" className={cx(styles.band, styles[orientation], wide && styles.wide, className)} />;
 }

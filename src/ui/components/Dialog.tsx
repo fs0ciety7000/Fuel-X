@@ -17,7 +17,7 @@ export interface DialogProps {
   onCancel?: () => void;
   /** Render in flow without `showModal` (gallery). */
   inline?: boolean;
-  className?: string;
+  className?: string | undefined;
 }
 
 /** §6.27 confirm dialog: native modal `<dialog>`, 2 px ink frame, danger band for irreversible actions; Esc cancels. */

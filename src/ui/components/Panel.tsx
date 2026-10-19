@@ -10,7 +10,7 @@ export interface PanelProps {
   state?: Extract<Severity, 'neutral' | 'warn' | 'danger' | 'disabled'>;
   as?: 'section' | 'aside';
   level?: 2 | 3;
-  className?: string;
+  className?: string | undefined;
   bodyClassName?: string;
   children?: ReactNode;
 }

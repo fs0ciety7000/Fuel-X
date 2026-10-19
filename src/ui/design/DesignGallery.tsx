@@ -1,8 +1,10 @@
 import type { CSSProperties } from 'react';
 import { tokens } from '@tokens/tokens';
+import { GlyphSprite } from '../components';
+import { ComponentGallery } from './ComponentGallery';
 import styles from './DesignGallery.module.css';
 
-// /design gallery (DESIGN_SYSTEM §8). Phase 2: tokens only; components are added in Phase 6.
+// /design gallery (DESIGN_SYSTEM §9): tokens (Phase 2) + every HUD primitive in every state (6.2).
 
 const kebab = (s: string): string => s.replace(/([a-z])([A-Z0-9])/g, '$1-$2').toLowerCase();
 
@@ -23,8 +25,9 @@ function Swatches({ group, prefix }: { group: Record<string, string>; prefix: st
 export function DesignGallery() {
   return (
     <main className={styles.page}>
+      <GlyphSprite />
       <header className={styles.head}>
-        <p className={styles.label}>[ FUEL-X / DESIGN SYSTEM / REV 0.1 ]</p>
+        <p className={styles.label}>[ FUEL-X / DESIGN SYSTEM / REV 0.2 ]</p>
         <h1 className={styles.title}>TOKENS</h1>
         <p className={styles.label}>SWISS INDUSTRIAL PRINT · ONE ACCENT · RADIUS 0 · NO SHADOW</p>
       </header>
@@ -91,6 +94,15 @@ export function DesignGallery() {
           ))}
         </div>
       </section>
+
+      <header className={styles.head}>
+        <p className={styles.label}>[ PHASE 6 / HUD PRIMITIVES ]</p>
+        <h1 className={styles.title}>COMPONENTS</h1>
+        <p className={styles.label}>
+          FIXTURES ONLY · NO SIM · EVERY STATE INCL. HOVER / FOCUS / STALE / EMPTY / DISABLED
+        </p>
+      </header>
+      <ComponentGallery />
     </main>
   );
 }

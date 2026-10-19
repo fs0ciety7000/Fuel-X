@@ -13,7 +13,7 @@ export interface SparklineProps {
   max?: number;
   threshold?: number;
   stale?: boolean;
-  className?: string;
+  className?: string | undefined;
 }
 
 /** Polyline segments split at null gaps, in the 120×20 box. Pure, exported for tests. */

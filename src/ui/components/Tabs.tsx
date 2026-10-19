@@ -18,7 +18,7 @@ export interface TabsProps {
   onChange?: (id: string) => void;
   children: ReactNode;
   demo?: { id: string; state: DemoState };
-  className?: string;
+  className?: string | undefined;
 }
 
 /** §6.34 tabs: roving tabindex, ←/→/Home/End with automatic activation, hard-cut panels. */

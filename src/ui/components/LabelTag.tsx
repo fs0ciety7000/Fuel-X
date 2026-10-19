@@ -14,7 +14,7 @@ export interface LabelTagProps {
   description?: string;
   onSelect?: () => void;
   demo?: DemoState;
-  className?: string;
+  className?: string | undefined;
 }
 
 /** §6.20 / §6.35 label tag. Button when selectable, span when static (inline mentions). */

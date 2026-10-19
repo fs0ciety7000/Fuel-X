@@ -17,7 +17,7 @@ export interface BadgeProps {
   onClick?: () => void;
   live?: 'polite' | 'assertive' | 'off';
   demo?: DemoState;
-  className?: string;
+  className?: string | undefined;
 }
 
 /** §6.4 / §6.5 status badge (RANGE GO / NO-GO, alert counter): a button carrying an `<output>`. */

@@ -11,7 +11,7 @@ export interface MetricTileProps {
   noSpark?: boolean;
   /** Extra content under the value (sub-line, segmented bar). */
   children?: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }
 
 /** §6.8 metric tile: label / hero value / optional sparkline. Warn = accent frame, danger = accent label strip. */

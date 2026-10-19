@@ -179,7 +179,7 @@ export interface GlyphProps {
   large?: boolean;
   /** Accessible name; omit when an adjacent word carries the meaning (the usual case). */
   label?: string;
-  className?: string;
+  className?: string | undefined;
 }
 
 export function Glyph({ id, large = false, label, className }: GlyphProps) {

@@ -173,8 +173,8 @@ export const range: RangeVM = {
 
 // --- Events / alerts --------------------------------------------------------------------------------
 
-export const events: EventVM[] = [
-  {
+export const event = {
+  danger: {
     id: 'e1',
     time: '13:42:16',
     state: 'danger',
@@ -183,7 +183,7 @@ export const events: EventVM[] = [
     message: 'ENGINE OUT · 32 OF 33',
     acked: false,
   },
-  {
+  warn: {
     id: 'e2',
     time: '13:41:58',
     state: 'warn',
@@ -192,7 +192,7 @@ export const events: EventVM[] = [
     message: 'UPPER WIND 31 M/S · MARGINAL',
     acked: false,
   },
-  {
+  ok: {
     id: 'e3',
     time: '13:40:02',
     state: 'ok',
@@ -201,7 +201,7 @@ export const events: EventVM[] = [
     message: 'TERMINAL COUNT STARTED',
     acked: true,
   },
-  {
+  info: {
     id: 'e4',
     time: '13:38:40',
     state: 'info',
@@ -210,9 +210,11 @@ export const events: EventVM[] = [
     message: 'DISPATCHED · ETA 14 MIN',
     acked: true,
   },
-];
+} satisfies Record<string, EventVM>;
 
-export const alerts: AlertsVM = { open: 2, fresh: 1, state: 'danger', items: events.slice(0, 2) };
+export const events: EventVM[] = [event.danger, event.warn, event.ok, event.info];
+
+export const alerts: AlertsVM = { open: 2, fresh: 1, state: 'danger', items: [event.danger, event.warn] };
 
 // --- Lists ------------------------------------------------------------------------------------------
 

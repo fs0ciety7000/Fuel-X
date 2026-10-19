@@ -14,7 +14,7 @@ export interface StatusChipProps {
   full?: boolean;
   /** `status` for the inspector's live chip; plain span in rows. */
   live?: boolean;
-  className?: string;
+  className?: string | undefined;
 }
 
 /** §6.12 status chip: glyph + uppercase word; treatment per §2.3 (warn = orange line, danger = orange mass). */

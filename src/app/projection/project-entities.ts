@@ -86,6 +86,8 @@ function propFraction(p: Stage['prop']): number {
   return cap > 0 ? (p.loxKg + p.ch4Kg) / cap : 0;
 }
 
+const asStage = (e: Entity | null): Stage | null => (e?.kind === 'booster' || e?.kind === 'ship' ? e : null);
+
 const flying = (e: Entity): e is Stage => (e.kind === 'booster' || e.kind === 'ship') && !!e.flight && !e.flight.done;
 
 const metric = (key: string, label: string, value: DisplayValue, severity: Severity = 'neutral'): MetricVM => ({
@@ -434,9 +436,9 @@ function tasks(c: Ctx, orderActions: ActionVM[]): TaskRowVM[] {
     );
   }
   // Propellant load (both stages).
-  const b = entity(c, cd.boosterId);
-  const sh = entity(c, cd.shipId);
-  if ((b?.kind === 'booster' || b?.kind === 'ship') && (sh?.kind === 'booster' || sh?.kind === 'ship')) {
+  const b = asStage(entity(c, cd.boosterId));
+  const sh = asStage(entity(c, cd.shipId));
+  if (b && sh) {
     const cap = b.prop.loxCapKg + b.prop.ch4CapKg + sh.prop.loxCapKg + sh.prop.ch4CapKg;
     const m = b.prop.loxKg + b.prop.ch4Kg + sh.prop.loxKg + sh.prop.ch4Kg;
     const loading = b.fsm.state === 'LOADING' || sh.fsm.state === 'LOADING';

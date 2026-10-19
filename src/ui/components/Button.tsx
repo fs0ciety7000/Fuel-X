@@ -16,8 +16,12 @@ export interface ButtonProps {
   small?: boolean;
   onClick?: () => void;
   demo?: DemoState;
-  className?: string;
+  className?: string | undefined;
   ariaLabel?: string;
+  id?: string;
+  'aria-haspopup'?: 'dialog' | 'listbox' | 'menu';
+  'aria-expanded'?: boolean;
+  'aria-controls'?: string;
 }
 
 /** §6.33 button: primary (ink fill) · secondary (frame) · danger (accent fill + band on hover); `<kbd>` hint. */
@@ -33,11 +37,13 @@ export function Button({
   demo,
   className,
   ariaLabel,
+  ...aria
 }: ButtonProps) {
   const reasonId = useId();
   const disabled = Boolean(disabledReason) || busy;
   return (
     <button
+      {...aria}
       type="button"
       className={cx(styles.button, small && styles.small, className)}
       data-variant={variant}
