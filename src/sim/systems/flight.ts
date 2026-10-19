@@ -35,6 +35,7 @@ import {
   T_CATCH,
   T_LANDING_BURN,
   T_MECO,
+  boosterThrottle,
   sampleProfile,
 } from '../math/profile';
 import type { Keyframe } from '../math/profile';
@@ -75,6 +76,7 @@ const clamp01 = (x: number): number => Math.min(1, Math.max(0, x));
 
 function setLit(world: World, e: { id: Id; engines: Engines }, lit: number): void {
   const n = Math.max(0, lit);
+  if (n === 0) e.engines.throttle = 0;
   if (e.engines.lit === n) return;
   e.engines.lit = n;
   emit(world, { t: 'EnginesChanged', id: e.id, lit: n, failed: e.engines.failed });
@@ -265,6 +267,7 @@ function liftoffBooster(world: World, cd: Countdown, b: Booster): void {
   };
   updateRecoveryModel(world, b, b.recovery, b.flight);
   setLit(world, b, b.engines.total);
+  b.engines.throttle = boosterThrottle(0, T_CATCH);
   flightEvent(world, cd, b, 'LIFTOFF');
 }
 
@@ -364,6 +367,8 @@ function updateBooster(world: World, cd: Countdown, b: Booster, ship: Ship | nul
     f.nextKeyframe++;
     onKeyframe(world, cd, b, ship, next.event);
   }
+  const end = profileOf(r).at(-1)?.tS ?? T_CATCH;
+  b.engines.throttle = b.engines.lit > 0 ? boosterThrottle(f.profileTimeS, end) : 0;
 }
 
 // --- Ship ---------------------------------------------------------------------------------------------
@@ -390,6 +395,7 @@ function separateShip(world: World, ship: Ship, b: Booster): void {
     f.sepDownrangeM = f.downrangeM;
   }
   setLit(world, ship, ship.engines.total);
+  ship.engines.throttle = fp.throttle.ship;
 }
 
 function updateShip(world: World, cd: Countdown, ship: Ship, b: Booster | null): void {

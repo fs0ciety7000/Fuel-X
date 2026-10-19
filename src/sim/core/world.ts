@@ -1,6 +1,6 @@
 // The world: plain JSON-serializable data (ARCHITECTURE §6, ADR 0003). No classes, functions,
 // Map/Set, undefined or NaN anywhere inside.
-import { economy, logistics, sites as siteDefs } from '@data/index';
+import { economy, logistics, sites as siteDefs, weather as wx } from '@data/index';
 import type {
   AnomalyId,
   Countdown,
@@ -20,7 +20,10 @@ import { seedAllStreams } from './rng';
 import type { RngState, RngStream } from './rng';
 
 /** Bumped on any World shape change; migrations live in src/sim/save (3.10). */
-export const WORLD_SCHEMA = 3;
+export const WORLD_SCHEMA = 4;
+
+/** Mean ground wind direction (meteorological, from), rad. */
+export const WIND_FROM_MEAN_RAD = (wx.groundWind.fromDeg * Math.PI) / 180;
 
 export interface Site {
   id: SiteId;
@@ -188,6 +191,12 @@ export interface WeatherReadings {
   groundGustMPerS: number;
   towerWindMPerS: number;
   upperWindMPerS: number;
+  /**
+   * Ground wind direction (5.10), meteorological convention: compass bearing the wind blows FROM, clockwise from
+   * north, rad in [0, 2π) (0 = from north, π/2 = from east). Site axes (ARCHITECTURE §6: +x east, −z north): the air
+   * (steam, smoke) drifts TOWARD (x, z) = (−sin windFromRad, +cos windFromRad). Mean `weather.groundWind.fromDeg`.
+   */
+  windFromRad: number;
 }
 
 /**
@@ -200,6 +209,8 @@ export interface WeatherState extends WeatherReadings {
   /** Ornstein–Uhlenbeck deviations from the mean, m/s. */
   groundDevMPerS: number;
   upperDevMPerS: number;
+  /** Ornstein–Uhlenbeck deviation of the wind direction from its mean, rad (rng stream 'wind'). */
+  windDirDevRad: number;
   /** Weather front (drives A2): ramps up from `arrivalTick`, holds `durationTicks`, ramps down. */
   front: { arrivalTick: Tick; durationTicks: Tick } | null;
   /** Current front contribution to the upper wind, m/s. */
@@ -364,9 +375,11 @@ export function createWorld({ seed, config }: CreateWorldOptions): World {
       groundGustMPerS: 0,
       towerWindMPerS: 0,
       upperWindMPerS: 0,
+      windFromRad: WIND_FROM_MEAN_RAD,
       initialized: false,
       groundDevMPerS: 0,
       upperDevMPerS: 0,
+      windDirDevRad: 0,
       front: null,
       frontBoostMPerS: 0,
     },

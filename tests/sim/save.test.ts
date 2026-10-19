@@ -1,6 +1,7 @@
 // Save / load (ARCHITECTURE §10): format, canonical round trip, schema guard, migrations scaffold, frozen fixture.
 import { describe, expect, it } from 'vitest';
 import {
+  CATCH_PROFILE,
   MIGRATIONS,
   STANDARD_AUTOPILOT,
   WORLD_SCHEMA,
@@ -9,6 +10,8 @@ import {
   hashWorld,
   loadSave,
   migrateWorld,
+  sampleProfile,
+  seedStream,
   serializeWorld,
   step,
 } from '../../src/sim/index';
@@ -16,6 +19,7 @@ import type { Migration } from '../../src/sim/index';
 import { drive, runMvp } from '../harness';
 import fixture from '../fixtures/saves/schema-1.json?raw';
 import fixture2 from '../fixtures/saves/schema-2.json?raw';
+import fixture3 from '../fixtures/saves/schema-3.json?raw';
 
 const META = { game: '0.1.0', createdAt: '2026-10-18T12:00:00.000Z' };
 
@@ -135,5 +139,35 @@ describe('fixture tests/fixtures/saves/schema-2.json (frozen)', () => {
     drive({ world: loaded.world, countdown: cd, ids: {} }, { maxTicks: 100 });
     expect(loaded.world.tick).toBe(540_100);
     expect(serializeWorld(loaded.world)).not.toBe(before);
+  });
+});
+
+describe('fixture tests/fixtures/saves/schema-3.json (frozen, in flight at T+40 s)', () => {
+  it('3 → 4 adds the wind stream, wind direction and throttle, then runs 100 ticks without error', () => {
+    const old = JSON.parse(fixture3) as { world: { rng: Record<string, unknown>; weather: Record<string, unknown> } };
+    expect(old.world.rng.wind).toBeUndefined();
+    expect(old.world.weather.windFromRad).toBeUndefined();
+    const loaded = loadSave(fixture3);
+    expect(loaded.fromSchema).toBe(3);
+    expect(loaded.world.schema).toBe(WORLD_SCHEMA);
+    const w = loaded.world;
+    expect(w.rng.wind).toEqual(seedStream(w.seed, 'wind'));
+    expect(w.weather.windFromRad).toBeCloseTo((210 * Math.PI) / 180, 12);
+    expect(w.weather.windDirDevRad).toBe(0);
+    const cd = w.countdowns.cd01;
+    if (!cd) throw new Error('no countdown');
+    const b = w.entities.byId[cd.boosterId];
+    const ship = w.entities.byId[cd.shipId];
+    if (b?.kind !== 'booster' || ship?.kind !== 'ship') throw new Error('no stages');
+    expect(b.engines).toMatchObject({ lit: 33, throttle: 1 });
+    expect(ship.engines).toMatchObject({ lit: 0, throttle: 0 });
+    drive({ world: w, countdown: cd, ids: {} }, { maxTicks: 100 });
+    expect(w.tick).toBe(649_302);
+    // A save inside T+0–62 s snaps onto the eased liftoff curve on its next tick (schema 3 flew the straight segment).
+    const f = b.flight;
+    if (!f) throw new Error('no flight');
+    expect(f.altitudeM).toBeCloseTo(sampleProfile(CATCH_PROFILE, f.profileTimeS).altitudeM, 6);
+    expect(b.engines.throttle).toBe(1);
+    expect(w.weather.windDirDevRad).not.toBe(0); // the series moved on
   });
 });

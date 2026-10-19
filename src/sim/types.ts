@@ -174,6 +174,11 @@ export interface Engines {
   lit: number;
   /** Engines out (A4), cumulative for this flight. */
   failed: number;
+  /**
+   * Throttle of the lit engines, 0–1 (5.10, `flightProfile.throttle`); 0 when none is lit. Render scales the plume by
+   * it; the scripted kinematics do not read it.
+   */
+  throttle: number;
 }
 
 /** Flight events in the event log: the booster keyframes plus ship SECO and the divert splashdown. */

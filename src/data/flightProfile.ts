@@ -106,6 +106,31 @@ export const flightProfile = {
     /** Entry / landing-burn reorientation rate limit, rad/s. */
     entryRateRadPerS: 3 * DEG,
   },
+  /**
+   * Eased liftoff (sim addition 5.10, game-designer to review). Replaces the straight LIFTOFF → MAX_Q segment so the
+   * stack accelerates from rest on the mount: vertical acceleration a(t) = a0 + j·t, j solved so the MAX_Q altitude is
+   * met exactly (≈ 0.084 m/s³ → a ≈ 9.7 m/s² at Max-Q as propellant burns off). Downrange stays 0 through the vertical
+   * rise (`attitude.verticalRiseS`), then grows ∝ u² to the MAX_Q downrange. Speed = |velocity| scaled to meet the
+   * MAX_Q speed. Later segments stay piecewise-linear, so MECO / catch timing is untouched.
+   */
+  liftoff: {
+    /** Vertical acceleration off the mount, m/s² (T/W ≈ 1 + a0/g ≈ 1.46). */
+    accelMPerS2: 4.5,
+  },
+  /**
+   * Engine throttle schedule while lit (sim addition 5.10, review), 0–1. Render reads it for plume length/brightness;
+   * no effect on the scripted kinematics. Unlit = 0.
+   */
+  throttle: {
+    ascent: 1,
+    /** Max-Q throttle bucket: `level` between startS and endS (T+, s), linear ramps of rampS either side. */
+    maxQBucket: { startS: 52, endS: 72, rampS: 4, level: 0.8 },
+    boostback: 1,
+    /** Landing burn: from `landingStart` at ignition linearly down to `landingEnd` at the catch / splashdown. */
+    landingStart: 1,
+    landingEnd: 0.4,
+    ship: 1,
+  },
   /** Acceptance tolerances (GDD AC 16), s. */
   tolerance: { mecoS: 2, catchS: 5 },
 };

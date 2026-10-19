@@ -16,6 +16,16 @@ export const weather = {
      */
     towerFactor: 1.3,
   },
+  /**
+   * Ground wind direction (sim addition 5.10, game-designer to review). Meteorological convention: the compass bearing
+   * the wind blows FROM, clockwise from north, rad (0 = from north, π/2 = from east). Ornstein–Uhlenbeck deviation
+   * around `groundWind.fromDeg` on its own rng stream 'wind', clamped to ± clampSd·sd.
+   */
+  windDirection: {
+    sdRad: (15 * Math.PI) / 180,
+    tauS: 2_700,
+    clampSd: 3,
+  },
   upperWind: { meanMPerS: 35, sdMPerS: 10, tauS: 3_600, altitudeM: 12_000 },
   launchLimit: { groundWindMPerS: 13, upperWindMPerS: 60 },
   front: {

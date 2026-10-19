@@ -228,8 +228,8 @@ interface Base<K extends Kind> {
 export interface Booster extends Base<'booster'> {
   fsm: FsmState<BoosterState>;
   prop: { loxKg: number; ch4Kg: number; loxCapKg: number; ch4CapKg: number };
-  engines: { total: 33; lit: number; failed: number[] };
-  flight: { massKg: number; throttle: number; altitudeM: number; downrangeM: number } | null;
+  engines: { total: 33; lit: number; failed: number; throttle: number };   // throttle 0–1, 0 when unlit (5.10)
+  flight: { massKg: number; altitudeM: number; downrangeM: number } | null;
   wear: number; flights: number; history: HistoryEntry[];
 }
 export interface Ship extends Base<'ship'> { fsm: FsmState<ShipState>; prop: Booster['prop']; payloadKg: number }
@@ -346,7 +346,7 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
 ### 7.3 Prep (3.5, `src/sim/systems/prep.ts`)
 
 - **World**: `world.prep[countdownId] = { towerId, transporterId, craneId, stackRequested }` (made by
-  `createMvpFlight`); `world.weather = { groundWindMPerS, groundGustMPerS, towerWindMPerS, upperWindMPerS }` —
+  `createMvpFlight`); `world.weather = { groundWindMPerS, groundGustMPerS, towerWindMPerS, upperWindMPerS, windFromRad }` —
   current readings, calm (0) until the environment system (3.7) writes them each tick.
 - **Rollout** (after `StartRollout`): CR-77 lifts B-09 onto SP-41 (`craneLoadTaskS`), SP-41 drives `sp.yardToOlm1`
   at `speedLoadedMPerS` → `AT_PAD`, `inputs.rolloutComplete`. Arrival = ceil(length / (speed·DT)) ticks after the
@@ -364,7 +364,10 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
 
 ### 7.4 Flight & recovery (3.6, `src/sim/systems/flight.ts`, `src/sim/math/{profile,catch}.ts`)
 
-- **Profile**: booster keyframes (BALANCING §6) interpolated piecewise-linearly in *profile time*, which equals mission
+- **Profile**: booster keyframes (BALANCING §6) interpolated piecewise-linearly in *profile time* — except LIFTOFF →
+  MAX_Q, the **eased liftoff** (5.10, `flightProfile.liftoff`, `LIFTOFF_CURVE`): h = 20 + a0·t²/2 + j·t³/6 from rest
+  (a0 4.5 m/s², j solved to meet Max-Q), downrange 0 through the vertical rise then ∝ u², speed |v| scaled to the Max-Q
+  speed; tower tip cleared ≈ T+7.3 s, ≈ 1 km at T+20 s. Profile time equals mission
   time except between an ascent engine-out and MECO (the remaining burn stretches by `ascentMecoDelayS` per engine).
   Ground track along `launchHeadingRad`; until a CATCH is committed the aim offset ramps to the offshore divert point
   (boostback start → landing burn); a CATCH converges it on the tower by the catch time. Divert profile = same keyframes
@@ -378,7 +381,10 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   landing-burn ignition (tilt 0 at the catch). The stacked ship rides on `SOCKET_ShipMount` along the booster's tilted
   axis with the same attitude; after separation it flies prograde on its own (≈ 86° by SECO), lerping altitude /
   downrange from its separation point (`sepAltitudeM`, `sepDownrangeM`) to the SECO values.
-- **Entity fields**: booster `engines {total, lit, failed}`, `flight` (telemetry `altitudeM, downrangeM, speedMPerS,
+- **Throttle** (5.10): `engines.throttle` 0–1 on booster and ship, 0 when unlit; booster from `boosterThrottle(profileTimeS,
+  endS)` (`flightProfile.throttle`: ascent 1 with the Max-Q bucket 0.8 at T+52–72 s, boostback 1, landing burn 1 → 0.4 at
+  the catch/splashdown); ship `throttle.ship` from separation to SECO. Render reads it for the plume; kinematics ignore it.
+- **Entity fields**: booster `engines {total, lit, failed, throttle}`, `flight` (telemetry `altitudeM, downrangeM, speedMPerS,
   verticalSpeedMPerS, headingRad` + profile state), `recovery {p, sigmaM, landingPropKg, towerWindMPerS, forcedDivert,
   decisionRequiredTick, deadlineTick, mode, decidedBy, result, roll}` (live p for the UI); ship `engines`, `flight`.
   Booster propellant = profile − engine-out penalty, split by tank-capacity ratio.
@@ -426,6 +432,10 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   deviations (one Box–Muller pair per tick); gust = ground × `gustFactor`, tower = ground × `towerFactor`; a front
   (35 % of runs, arrival uniform scenario start → window close) adds a trapezoid boost to the upper wind.
   `weatherForecast(world, leadS)` = OU expectation ± `errorGrowth · lead`; a front is only forecast once it blows.
+  **Wind direction** (5.10, rng `wind`, so it never shifts the speed series): `weather.windFromRad` = meteorological
+  bearing the wind blows FROM, clockwise from north, rad in [0, 2π) — OU deviation `windDirDevRad` (sd 15°, τ 2 700 s,
+  clamped ± 3 sd) around `groundWind.fromDeg` 210°. In site axes (+x east, −z north) the air drifts TOWARD
+  `(x, z) = (−sin windFromRad, +cos windFromRad)`. MANUAL leaves it as written (createWorld: the mean).
 - **Range** (slot 3, before the countdown): PICKET loops (`lc1Layout.patrols`, patrol speed), A1 intercept
   (straight leg at `picketSpeed`, escort `clearAfterIntercept` s seaward, UNK-01 despawns, picket returns to its loop),
   crew vans (leave at `crew.vanDepartTS`, staggered, return after the attempt). Stations are evaluated at 10 Hz
@@ -541,7 +551,7 @@ interface FuelxDebug {
 
 ## 10. Save / load
 
-- `save = { format: 'fuelx-save', schema: 3, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream`.
+- `save = { format: 'fuelx-save', schema: 4, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream`.
 - Storage: IndexedDB (thin in-house wrapper, store `saves`, keys `auto-<n>`, `slot-<n>`), plus export/import as `.fuelx.json.gz` file. Autosave on `Milestone` (debrief = natural save point, GDD §3) and on `visibilitychange → hidden`.
 - **Versioning**: `schema` is an integer bumped on any `World` shape change; `src/sim/save/migrations.ts` holds `migrations[n]: (w_n) => w_{n+1}`, applied in order on load. Each migration ships with a fixture save under `tests/fixtures/saves/schema-<n>.json` and a test (load old fixture → migrate → validate → run 100 ticks without error). Saves newer than the app are rejected with a clear message.
 - Equivalence test: run K ticks → save → load → M ticks ≡ K+M ticks (canonical-JSON hash).
@@ -550,7 +560,8 @@ interface FuelxDebug {
   JSON; `createdAt` comes from the host, the sim has no clock) and `loadSave(json, migrations?)` → `{ world, commandLog,
   game, createdAt, fromSchema }`; errors are codes `SAVE_NOT_JSON`, `SAVE_BAD_FORMAT`, `SAVE_FROM_NEWER_GAME`,
   `SAVE_MIGRATION_MISSING`, `WORLD_INVALID`. `src/sim/save/migrations.ts` — `MIGRATIONS` (1 → 2: tower mechanisms, 5.0; 2 → 3: asset-origin stage heights,
-  `flight.tiltRad`, ship `sepAltitudeM/sepDownrangeM`, 5.0b; fixture `schema-2.json`) +
+  `flight.tiltRad`, ship `sepAltitudeM/sepDownrangeM`, 5.0b; fixture `schema-2.json`; 3 → 4: rng stream `wind`,
+  `weather.windFromRad/windDirDevRad`, `engines.throttle`, 5.10; fixture `schema-3.json`, in flight at T+40 s) +
   `migrateWorld(raw, from, to, table)`. Fixture `tests/fixtures/saves/schema-1.json` (seed 42 at sim tick 540 000, under
   the A3 LEAK_FIX hold), written once by `scripts/sim/make-save-fixture.ts`. Compression / IndexedDB stay in
   `src/app/persistence` (8.3).

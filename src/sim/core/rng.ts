@@ -7,7 +7,7 @@ import type { World } from './world';
 /** [a, b, c, d] — unsigned 32-bit integers. */
 export type RngState = [number, number, number, number];
 
-export const RNG_STREAMS = ['weather', 'director', 'anomaly', 'catch', 'logistics', 'flight'] as const;
+export const RNG_STREAMS = ['weather', 'director', 'anomaly', 'catch', 'logistics', 'flight', 'wind'] as const;
 export type RngStream = (typeof RNG_STREAMS)[number];
 
 const WARMUP_DRAWS = 15;

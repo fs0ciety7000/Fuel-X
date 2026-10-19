@@ -64,7 +64,7 @@ function specFor(world: World, p: Placement): AnyEntitySpec {
         kind: 'booster',
         fsm: fsm('IN_YARD'),
         prop: emptyProp(vehicles.booster),
-        engines: { total: vehicles.booster.engines, lit: 0, failed: 0 },
+        engines: { total: vehicles.booster.engines, lit: 0, failed: 0, throttle: 0 },
         flight: null,
         recovery: null,
         wear: vehicles.mvpBooster.wear,
@@ -76,7 +76,7 @@ function specFor(world: World, p: Placement): AnyEntitySpec {
         kind: 'ship',
         fsm: fsm('IN_YARD'),
         prop: emptyProp(vehicles.ship),
-        engines: { total: vehicles.ship.engines, lit: 0, failed: 0 },
+        engines: { total: vehicles.ship.engines, lit: 0, failed: 0, throttle: 0 },
         flight: null,
       } satisfies EntitySpec<'ship'>;
     case 'tank': {

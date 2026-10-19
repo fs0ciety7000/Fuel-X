@@ -2,10 +2,12 @@
 // Ground and upper wind are Ornstein–Uhlenbeck deviations around their means (exact discretisation per
 // tick, one normal draw each on the 'weather' stream); gust and tower wind are fixed factors of the ground
 // wind; a scripted front adds a trapezoid boost to the upper wind (A2). `config.weather = 'MANUAL'` leaves
-// the readings to the caller (tests force series).
+// the readings to the caller (tests force series). The wind direction (5.10) is an OU deviation around the mean
+// bearing on its own rng stream 'wind' (one normal draw per tick), so it never shifts the speed series.
 import { countdown as cdData, weather as wx } from '@data/index';
 import { rng } from '../core/rng';
 import { DT_S, secondsToTicks } from '../core/time';
+import { WIND_FROM_MEAN_RAD } from '../core/world';
 import type { WeatherState, World } from '../core/world';
 import type { Tick } from '../types';
 
@@ -19,6 +21,19 @@ const G_DECAY = Math.exp(-DT_S / G.tauS);
 const U_DECAY = Math.exp(-DT_S / U.tauS);
 const G_NOISE = G.sdMPerS * Math.sqrt(1 - G_DECAY * G_DECAY);
 const U_NOISE = U.sdMPerS * Math.sqrt(1 - U_DECAY * U_DECAY);
+const D = wx.windDirection;
+const D_DECAY = Math.exp(-DT_S / D.tauS);
+const D_NOISE = D.sdRad * Math.sqrt(1 - D_DECAY * D_DECAY);
+const D_LIMIT = D.clampSd * D.sdRad;
+const TWO_PI = 2 * Math.PI;
+
+const clampDir = (dev: number): number => Math.min(D_LIMIT, Math.max(-D_LIMIT, dev));
+
+/** Wind direction (from), wrapped to [0, 2π), rad. */
+export function windFromRadOf(devRad: number): number {
+  const a = (WIND_FROM_MEAN_RAD + devRad) % TWO_PI;
+  return a < 0 ? a + TWO_PI : a;
+}
 
 /** Front contribution to the upper wind at `tick`, m/s (0 before arrival, ramp, plateau, ramp down). */
 export function frontBoostAt(front: WeatherState['front'], tick: Tick): number {
@@ -40,6 +55,7 @@ function writeReadings(w: WeatherState, tick: Tick): void {
   w.towerWindMPerS = ground * G.towerFactor;
   w.frontBoostMPerS = frontBoostAt(w.front, tick);
   w.upperWindMPerS = Math.max(0, U.meanMPerS + w.upperDevMPerS + w.frontBoostMPerS);
+  w.windFromRad = windFromRadOf(w.windDirDevRad);
 }
 
 /** First tick: start deviations from the stationary distribution, and the natural front roll. */
@@ -48,6 +64,7 @@ function initialize(world: World): void {
   const r = rng(world, 'weather');
   w.groundDevMPerS = r.normal(0, G.sdMPerS);
   w.upperDevMPerS = r.normal(0, U.sdMPerS);
+  w.windDirDevRad = clampDir(rng(world, 'wind').normal(0, D.sdRad));
   if (r.chance(F.probabilityPerRun)) {
     const arrivalTS = r.range(F.arrivalEarliestTS, F.arrivalLatestTS);
     w.front = {
@@ -88,6 +105,7 @@ export function environmentSystem(world: World): void {
     const ang = 2 * Math.PI * r.float();
     w.groundDevMPerS = w.groundDevMPerS * G_DECAY + G_NOISE * rad * Math.cos(ang);
     w.upperDevMPerS = w.upperDevMPerS * U_DECAY + U_NOISE * rad * Math.sin(ang);
+    w.windDirDevRad = clampDir(w.windDirDevRad * D_DECAY + D_NOISE * rng(world, 'wind').normal());
   }
   writeReadings(w, world.tick);
 }

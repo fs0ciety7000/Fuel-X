@@ -4,7 +4,11 @@
 //   1 → 2 (5.0): tower carriage / arm / QD arm state (fixture `schema-1.json`).
 //   2 → 3 (5.0b): stage positions = asset origins (mount 20 m, cargo deck +4.6 m), flight attitude `tiltRad`, ship
 //                separation start (fixture `schema-2.json`).
+//   3 → 4 (5.10): rng stream 'wind', weather wind direction (`windFromRad`, `windDirDevRad`), `engines.throttle`
+//                (fixture `schema-3.json`, saved in flight at T+40 s).
 import { flightProfile as fp, lc1Layout, siteGeometry as geo, tower as td } from '@data/index';
+import { seedStream } from '../core/rng';
+import { WIND_FROM_MEAN_RAD } from '../core/world';
 import { CARRIAGE_STACK_BOOSTER_M, CARRIAGE_STACK_SHIP_M, carriageForBoosterM } from '../math/tower';
 
 /** A world as parsed from JSON, before validation (shape of an older schema). */
@@ -85,7 +89,34 @@ function addMountHeightsAndAttitude(world: RawWorld): RawWorld {
   return world;
 }
 
-export const MIGRATIONS: Readonly<Record<number, Migration>> = { 1: addTowerMechanisms, 2: addMountHeightsAndAttitude };
+/**
+ * Schema 3 → 4: the 'wind' rng stream is seeded from the world seed (as `createWorld` does), the wind direction starts
+ * on its mean (deviation 0; the series moves on from there), lit stages get throttle 1 (the flight system rewrites the
+ * booster's from its schedule on the next tick), unlit ones 0. A save made inside T+0–62 s keeps its profile time, so
+ * the booster snaps from the old straight LIFTOFF → MAX_Q segment onto the eased liftoff on its next tick (cosmetic,
+ * up to ≈ 2.4 km lower; keyframe events and timings are unchanged).
+ */
+function addWindDirectionAndThrottle(world: RawWorld): RawWorld {
+  const rngs = obj(world.rng);
+  if (!Array.isArray(rngs.wind)) rngs.wind = seedStream(Number(world.seed), 'wind');
+  world.rng = rngs;
+  const w = obj(world.weather);
+  w.windFromRad = WIND_FROM_MEAN_RAD;
+  w.windDirDevRad = 0;
+  world.weather = w;
+  for (const e of Object.values(obj(obj(world.entities).byId)).map(obj)) {
+    if (e.kind !== 'booster' && e.kind !== 'ship') continue;
+    const engines = obj(e.engines);
+    engines.throttle = Number(engines.lit) > 0 ? 1 : 0;
+  }
+  return world;
+}
+
+export const MIGRATIONS: Readonly<Record<number, Migration>> = {
+  1: addTowerMechanisms,
+  2: addMountHeightsAndAttitude,
+  3: addWindDirectionAndThrottle,
+};
 
 /**
  * Migrates `world` from `fromSchema` up to `toSchema` with `table` (default: the shipped migrations). Throws

@@ -232,6 +232,72 @@ describe('nominal flight, no input (AC 16, 19–21)', () => {
   });
 });
 
+describe('eased liftoff and throttle in flight (5.10)', () => {
+  const f = toLiftoff();
+  const b0 = { ...f.booster.engines };
+  const samples = new Map<number, { alt: number; v: number; vv: number; dr: number; thr: number; shipThr: number }>();
+  fly(f, (tS) => {
+    const s = Math.round(tS * 30) / 30;
+    if (s * 2 !== Math.round(s * 2)) return; // every 0.5 s
+    const ship = f.world.entities.byId[f.ship.id];
+    const bf = f.booster.flight;
+    if (!bf) return;
+    samples.set(s, {
+      alt: bf.altitudeM,
+      v: bf.speedMPerS,
+      vv: bf.verticalSpeedMPerS,
+      dr: bf.downrangeM,
+      thr: f.booster.engines.throttle,
+      shipThr: ship?.kind === 'ship' ? ship.engines.throttle : 0,
+    });
+  });
+  const get = (t: number) => {
+    const s = samples.get(t);
+    if (!s) throw new Error(`no sample at T+${t}`);
+    return s;
+  };
+
+  it('accelerates from rest: v and h at T+1, 3, 8, 20 s within the BALANCING ranges', () => {
+    expect(get(1)).toMatchObject({ dr: 0 });
+    expect(get(1).alt).toBeGreaterThan(21);
+    expect(get(1).alt).toBeLessThan(24);
+    expect(get(1).v).toBeLessThan(6);
+    expect(get(3).alt).toBeLessThan(45);
+    expect(get(3).v).toBeLessThan(17);
+    expect(get(8).alt).toBeGreaterThan(150);
+    expect(get(8).alt).toBeLessThan(190);
+    expect(get(20).alt).toBeGreaterThan(950);
+    expect(get(20).alt).toBeLessThan(1_150);
+    expect(get(20).v).toBeGreaterThan(95);
+    expect(get(20).v).toBeLessThan(125);
+  });
+
+  it('altitude and vertical speed rise monotonically to Max-Q; clears the 146 m tower tip at T+7–8 s', () => {
+    for (let t = 1; t <= 62; t += 0.5) {
+      expect(get(t).alt).toBeGreaterThan(get(t - 0.5).alt);
+      if (t >= 1.5) expect(get(t).vv).toBeGreaterThan(get(t - 0.5).vv);
+    }
+    expect(get(7).alt).toBeLessThan(146);
+    expect(get(8).alt).toBeGreaterThan(146);
+  });
+
+  it('throttle: 1 off the mount, Max-Q bucket, 0 after MECO, boostback 1, landing ramp to 0.4', () => {
+    expect(b0).toMatchObject({ lit: vehicles.booster.engines, throttle: 1 }); // set on the liftoff tick
+    expect(get(1).thr).toBe(1);
+    expect(get(62).thr).toBe(fp.throttle.maxQBucket.level);
+    expect(get(100).thr).toBe(1);
+    expect(get(158).thr).toBe(0);
+    expect(get(190).thr).toBe(fp.throttle.boostback);
+    expect(get(230).thr).toBe(0);
+    expect(get(381).thr).toBeLessThan(1);
+    expect(get(414).thr).toBeGreaterThan(fp.throttle.landingEnd);
+    expect(get(414).thr).toBeLessThan(0.45);
+    expect(f.booster.engines.throttle).toBe(0); // caught, engines off
+    expect(get(100).shipThr).toBe(0); // stacked, unlit
+    expect(get(200).shipThr).toBe(fp.throttle.ship);
+  });
+});
+
 describe('flight telemetry (AC 17 inputs)', () => {
   it('altitude, speed, propellant, heading and position follow the profile in SI', () => {
     const f = toLiftoff();
@@ -307,7 +373,7 @@ describe('mount heights and attitude (5.0b)', () => {
   it('rises vertically, then pitches over toward the profile climb angle (no faster than the rate limit)', () => {
     expect(get(5).tilt).toBe(0);
     expect(get(30).tilt).toBeGreaterThan(5 * DEG);
-    // Liftoff → Max-Q climb angle atan2(4 000, 11 980) ≈ 18.5°; Max-Q → MECO 45°.
+    // Near Max-Q the eased liftoff climbs at ≈ atan2(4 000, 11 980) ≈ 18.5° (5.10: 18.7° at T+60); Max-Q → MECO 45°.
     expect(get(60).tilt).toBeCloseTo(Math.atan2(4_000, 12_000 - geo.pad.vehicleMountM), 2);
     expect(get(150).tilt).toBeCloseTo(45 * DEG, 2);
     for (let t = 2; t < 160; t++) {

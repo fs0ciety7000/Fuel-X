@@ -139,6 +139,27 @@ Sim additions (3.6, plausibility only — **game-designer to review**): ground t
 offshore divert point until a CATCH is committed. "Landing propellant" (forced-divert and low-prop σ input) =
 predicted booster propellant at landing-burn ignition (90 000 kg nominal − engine-out penalties).
 
+Eased liftoff (sim addition 5.10, `flightProfile.liftoff` — **game-designer to review**): the LIFTOFF → MAX_Q segment
+is no longer a straight line (it left the mount at ≈ 190 m/s). Vertical acceleration a(t) = a0 + j·t from rest, j solved
+so the Max-Q keyframe (12 000 m at T+62 s) is met exactly; downrange stays 0 through the vertical rise (8 s) then grows
+∝ u² to 4 000 m; speed = |velocity| scaled to meet 450 m/s at Max-Q. Every keyframe (time and value) is unchanged, so
+MECO (T+155 s, 68 km) and the catch (T+415 s) do not move.
+
+| Key | Unit | Default | Range | Rationale |
+|---|---|---|---|---|
+| liftoff.accel (a0) | m/s² | 4.5 | 3.9–4.9 | T/W ≈ 1.46 off the mount; derived jerk j ≈ 0.084 m/s³ → a ≈ 9.7 m/s² at Max-Q as propellant burns off |
+
+Resulting profile (booster origin above ground / speed): T+1 s 22 m / 4.4 m/s · T+3 s 41 m / 13 m/s · tower tip (146 m)
+cleared at **T+7.3 s** · T+8 s 171 m / 38 m/s · T+20 s 1 030 m / 108 m/s · Max-Q 12 000 m / 450 m/s.
+
+Throttle (sim addition 5.10, `flightProfile.throttle` — **review**; cosmetic: render plume only, kinematics are scripted):
+
+| Key | Unit | Default | Range | Rationale |
+|---|---|---|---|---|
+| throttle.ascent / boostback / ship | 0–1 | 1 / 1 / 1 | — | full thrust |
+| throttle.maxQBucket | s, s, s, 0–1 | T+52 → T+72, 4 s ramps, 0.8 | 0.6–0.9 | readable throttle-down through Max-Q |
+| throttle.landingStart → landingEnd | 0–1 | 1 → 0.4 | 0.3–0.6 | landing burn throttles down toward the catch |
+
 Attitude program (sim addition 5.0b, `flightProfile.attitude` — **game-designer to review**): tilt from vertical,
 rate-limited toward a target per phase.
 
@@ -184,6 +205,7 @@ Reference cases (tower wind V<sub>t</sub>; §13): nominal calm 0.997 · nominal 
 | Key | Unit | Default | Range | Rationale |
 |---|---|---|---|---|
 | groundWind.mean / sd / tau | m/s, m/s, s | 7 / 2.5 / 1 800 | — | Ornstein–Uhlenbeck, seeded. Onshore, from ~210° |
+| windDirection.sd / tau / clamp (sim addition 5.10, **review**) | rad, s, sd | 15° (0.262) / 2 700 / ±3 sd | sd 10–25° | ground wind direction: OU deviation around `groundWind.fromDeg` (210°) on rng stream `wind`; meteorological "from" bearing, clockwise from north. Cosmetic for now (steam / plume drift); no limit reads it |
 | upperWind.mean / sd / tau | m/s, m/s, s | 35 / 10 / 3 600 | — | at ~12 km |
 | limit.launch.groundWind | m/s | 13 (≈ 25 kn) | 11–16 | typical launch ground wind constraint |
 | limit.launch.upperWind | m/s | 60 | 50–75 | shear loads |

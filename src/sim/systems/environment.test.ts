@@ -147,3 +147,65 @@ describe('forecast', () => {
     expect(peakUpperForecast(w, 10_001)).toBeLessThan(peak);
   });
 });
+
+describe('wind direction (5.10, meteorological "from", rad)', () => {
+  const MEAN = (wx.groundWind.fromDeg * Math.PI) / 180;
+  const LIMIT = wx.windDirection.clampSd * wx.windDirection.sdRad;
+  /** Signed angular distance a − b, wrapped to (−π, π]. */
+  const angDiff = (a: number, b: number): number => {
+    const d = (((a - b) % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI);
+    return d - Math.PI;
+  };
+
+  it('starts on the mean bearing; MANUAL leaves it as written', () => {
+    const w = createWorld({ seed: 1 });
+    expect(w.weather.windFromRad).toBeCloseTo(MEAN, 12);
+    w.weather.windFromRad = 1;
+    step(w);
+    expect(w.weather.windFromRad).toBe(1);
+  });
+
+  it('is deterministic per seed, differs between seeds, and does not touch the wind-speed stream', () => {
+    const a = liveWorld(5);
+    const b = liveWorld(5);
+    const c = liveWorld(6);
+    const speeds: number[] = [];
+    for (let i = 0; i < 2_000; i++) {
+      [a, b, c].forEach(environmentSystem);
+      speeds.push(a.weather.groundWindMPerS);
+    }
+    expect(a.weather.windFromRad).toBe(b.weather.windFromRad);
+    expect(c.weather.windFromRad).not.toBe(a.weather.windFromRad);
+    // Same speed series with the direction stream perturbed: the direction lives on rng stream 'wind'.
+    const d = liveWorld(5);
+    d.rng.wind = [1, 2, 3, 4];
+    for (let i = 0; i < 2_000; i++) {
+      environmentSystem(d);
+      expect(d.weather.groundWindMPerS).toBe(speeds[i]);
+    }
+    expect(d.weather.windFromRad).not.toBe(a.weather.windFromRad);
+  });
+
+  it('stays in [0, 2π) within ± clampSd·sd of the mean, varies slowly, and has the configured spread', () => {
+    const w = liveWorld(3);
+    const n = T(20 * wx.windDirection.tauS);
+    let prev: number | null = null;
+    let maxStep = 0;
+    let s2 = 0;
+    for (let i = 0; i < n; i++) {
+      environmentSystem(w);
+      const dir = w.weather.windFromRad;
+      expect(dir).toBeGreaterThanOrEqual(0);
+      expect(dir).toBeLessThan(2 * Math.PI);
+      const dev = angDiff(dir, MEAN);
+      expect(Math.abs(dev)).toBeLessThanOrEqual(LIMIT + 1e-12);
+      s2 += dev * dev;
+      if (prev !== null) maxStep = Math.max(maxStep, Math.abs(angDiff(dir, prev)));
+      prev = dir;
+    }
+    expect(maxStep).toBeLessThan((0.5 * Math.PI) / 180); // < 0.5° per tick (≈ 0.03° typical)
+    const sd = Math.sqrt(s2 / n);
+    expect(sd).toBeGreaterThan(wx.windDirection.sdRad * 0.6);
+    expect(sd).toBeLessThan(wx.windDirection.sdRad * 1.4);
+  });
+});
