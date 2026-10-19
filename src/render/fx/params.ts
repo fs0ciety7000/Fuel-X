@@ -62,20 +62,56 @@ export interface PlumeShape {
  * the plume lengthens and balloons with altitude (ambient pressure drops), saturating by ~40 km. Engine-outs shrink
  * the body radius (≈ √ of the burning nozzle area) and thin the sprite count, so a lost engine is visible.
  */
-export function plumeShape(lit: number, engines: number, clusterRadiusM: number, altitudeM: number): PlumeShape {
+export function plumeShape(
+  lit: number,
+  engines: number,
+  clusterRadiusM: number,
+  altitudeM: number,
+  throttle = 1,
+): PlumeShape {
   const frac = engines > 0 ? clamp01(lit / engines) : 0;
   const a = clamp01(altitudeM / 40_000);
   const area = Math.sqrt(frac);
   const r0 = Math.max(0.9, clusterRadiusM * area);
+  // throttle (6.6, `engines.throttle`): a throttled-down burn is a shorter, thinner plume (never below 55 % length)
+  const thr = clamp01(throttle);
   return {
-    lengthM: (30 + 70 * area) * (1 + 5 * a),
+    lengthM: (30 + 70 * area) * (1 + 5 * a) * (0.55 + 0.45 * thr),
     r0M: r0,
-    rEndM: r0 * (1.6 + 8 * a),
-    jetM: 7 + 10 * a,
+    rEndM: r0 * (1.6 + 8 * a) * (0.8 + 0.2 * thr),
+    jetM: (7 + 10 * a) * (0.6 + 0.4 * thr),
     sizeScale: 1 + 2.2 * a,
-    keep: lit > 0 ? 0.3 + 0.7 * frac : 0,
+    keep: lit > 0 ? (0.3 + 0.7 * frac) * (0.6 + 0.4 * thr) : 0,
   };
 }
+
+/** Throttle channel → plume throttle: 0 while engines burn means the channel is not written (full throttle). */
+export function plumeThrottle(channel: number, lit: number): number {
+  return lit > 0 && channel <= 0 ? 1 : clamp01(channel);
+}
+
+/** Pre-5.10 fallback breeze (no wind channel yet): from 95°, carrying steam at 2.5 m/s. */
+export const FALLBACK_WIND = { fromRad: (95 * Math.PI) / 180, driftMPerS: 2.5 } as const;
+
+/**
+ * Steam / low-exhaust drift velocity in site axes (+x east, −z north), m/s, from the pad wind channels. The air moves
+ * TOWARD (−sin from, +cos from); steam drifts at ~40 % of the ground wind (0.8–6 m/s). Both channels 0 = unwritten.
+ */
+export function windDrift(fromRad: number, windMPerS: number, out: { x: number; z: number }): { x: number; z: number } {
+  const unset = fromRad === 0 && windMPerS === 0;
+  const from = unset ? FALLBACK_WIND.fromRad : fromRad;
+  const speed = unset ? FALLBACK_WIND.driftMPerS : Math.min(6, Math.max(0.8, 0.4 * windMPerS));
+  out.x = -Math.sin(from) * speed;
+  out.z = Math.cos(from) * speed;
+  return out;
+}
+
+/** Share of the ground wind drift applied to an exhaust plume at `altitudeM` (full below 300 m, none above 3 km). */
+export function exhaustDriftShare(altitudeM: number): number {
+  return 1 - clamp01((altitudeM - 300) / 2_700);
+}
+/** Seconds of drift a body sprite accumulates at the end of its life (tail bends downwind). */
+export const EXHAUST_DRIFT_S = 6;
 
 /** Deluge / steam timeline on the pad, in T-clock seconds (`ANIM.pad.delugeS`). */
 export const DELUGE = {

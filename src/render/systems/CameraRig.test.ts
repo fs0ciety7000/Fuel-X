@@ -84,4 +84,32 @@ describe('CameraRigCore', () => {
     rig.frame(camera, 1 / 60);
     expect(controls.followId).toBeNull();
   });
+
+  it('map-control nudges zoom and rotate the goal orbit inside the clamps', () => {
+    const { controls, shared, rig, camera } = setup();
+    controls.cameraRequest = { kind: 'orbit', yawDeg: 350, pitchDeg: 30, distM: 1000 };
+    controls.snapCamera = true;
+    rig.frame(camera, 1 / 60);
+    expect(shared.camHeadingDeg).toBeCloseTo(170, 6);
+    rig.nudge({ zoom: 0.5, yawDeg: 20 });
+    controls.snapCamera = true;
+    rig.frame(camera, 1 / 60);
+    expect(shared.camDist).toBeCloseTo(500, 6);
+    expect(shared.camHeadingDeg).toBeCloseTo(190, 6);
+    rig.nudge({ zoom: 1e9 });
+    controls.snapCamera = true;
+    rig.frame(camera, 1 / 60);
+    expect(shared.camDist).toBe(CAMERA_LIMITS.distMaxM);
+    rig.nudge({ zoom: Number.NaN, yawDeg: Number.POSITIVE_INFINITY });
+    controls.snapCamera = true;
+    rig.frame(camera, 1 / 60);
+    expect(shared.camDist).toBe(CAMERA_LIMITS.distMaxM);
+  });
+
+  it('reuses its stack array (no per-frame allocation while following)', () => {
+    const { registry, rig } = setup();
+    const b = handle('B-09', 'booster', new Vector3(0, 20, 0), { SOCKET_ShipMount: new Vector3(0, 71, 0) });
+    registry.add(b);
+    expect(rig.stackOf(b)).toBe(rig.stackOf(b));
+  });
 });

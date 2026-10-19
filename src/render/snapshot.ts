@@ -79,10 +79,15 @@ export function hasFlag(flags: number, bit: number): boolean {
 export const ANIM = {
   tower: { carriageM: 0, armLRad: 1, armRRad: 2, qdArmRad: 3 },
   /** `delugeS`: T-clock seconds of the countdown on this pad, clamped to [FX_T_MIN_S, FX_T_MAX_S] (deluge / steam, 5.6);
-   * `hazardM`: pad hazard radius while the road is closed, else 0 (dashed hazard zone, 5.6). */
-  pad: { clampsM: 0, bqdM: 1, delugeS: 2, hazardM: 3 },
-  booster: { litFrac: 0, gimbalPitchRad: 1, gimbalYawRad: 2, finARad: 3, finBRad: 4 },
-  ship: { litFrac: 0, gimbalPitchRad: 1, gimbalYawRad: 2, flapForeRad: 3, flapAftRad: 4 },
+   * `hazardM`: pad hazard radius while the road is closed, else 0 (dashed hazard zone, 5.6);
+   * `windFromRad` / `windMPerS` (6.6): ground wind at the pad, `world.weather.windFromRad` (meteorological "from",
+   * compass rad) and `groundWindMPerS` — steam and low exhaust drift. Both 0 = not written: render falls back to the
+   * pre-5.10 breeze (from 95°). */
+  pad: { clampsM: 0, bqdM: 1, delugeS: 2, hazardM: 3, windFromRad: 4, windMPerS: 5 },
+  /** `throttle` (6.6): `engines.throttle` 0–1 of the lit engines (plume length / sprite share); 0 while lit = not
+   * written, render assumes full throttle. */
+  booster: { litFrac: 0, gimbalPitchRad: 1, gimbalYawRad: 2, finARad: 3, finBRad: 4, throttle: 5 },
+  ship: { litFrac: 0, gimbalPitchRad: 1, gimbalYawRad: 2, flapForeRad: 3, flapAftRad: 4, throttle: 5 },
   transporter: { deckM: 0, yawRateRadPerS: 1, speedMPerS: 2, wheelRad: 3 },
   tanker: { steerRad: 0, trailerRad: 1, axleRad: 2 },
   crane: { slewRad: 0, luffRad: 1, hookM: 2 },
@@ -110,6 +115,7 @@ export type AnimatedAsset = keyof typeof ANIM;
 
 /** Channels that are angles on a circle (spin / slew): interpolated along the shortest arc, never through 0. */
 export const ANIM_WRAP: Readonly<Partial<Record<AnimatedAsset, number>>> = {
+  pad: 1 << ANIM.pad.windFromRad,
   transporter: 1 << ANIM.transporter.wheelRad,
   tanker: 1 << ANIM.tanker.axleRad,
   crane: 1 << ANIM.crane.slewRad,

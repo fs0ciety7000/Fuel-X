@@ -8,6 +8,7 @@ import {
   groundPitchFloorDeg,
   mixOrbit,
   orbitOffset,
+  viewHeadingDeg,
 } from './camera-math';
 
 describe('camera maths', () => {
@@ -44,5 +45,17 @@ describe('camera maths', () => {
     const d = frameDistance(72, 30, 16 / 9);
     expect(d).toBeGreaterThan(72 / Math.sin(Math.PI / 12));
     expect(frameDistance(72, 30, 0.5)).toBeGreaterThan(d); // portrait: horizontal FOV limits
+  });
+
+  it('writes in place when given an out orbit (aliasing allowed)', () => {
+    const a = { yawDeg: 350, pitchDeg: 10, distM: 100 };
+    const b = { yawDeg: 10, pitchDeg: 30, distM: 400 };
+    const fresh = mixOrbit(a, b, 0.5);
+    expect(mixOrbit(a, b, 0.5, a)).toBe(a);
+    expect(a).toEqual(fresh);
+    const o = { yawDeg: -30, pitchDeg: 100, distM: 1 };
+    expect(clampOrbit(o, o)).toBe(o);
+    expect(o).toEqual({ yawDeg: 330, pitchDeg: CAMERA_LIMITS.pitchMaxDeg, distM: CAMERA_LIMITS.distMinM });
+    expect(viewHeadingDeg({ yawDeg: 245, pitchDeg: 24, distM: 1 })).toBe(65);
   });
 });

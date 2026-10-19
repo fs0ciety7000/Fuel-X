@@ -15,7 +15,15 @@ import type { AssetInfo } from '../assets/useAsset';
 import type { RenderControls } from '../controls';
 import type { FrameShared } from '../frame';
 import { PlumeFx } from '../fx/plume';
-import { RECOVERY_RINGS_M, RECOVERY_SWEEP_S, ZONE_STROKE_PX, litCount, selectionRadiusM } from '../fx/params';
+import {
+  RECOVERY_RINGS_M,
+  RECOVERY_SWEEP_S,
+  ZONE_STROKE_PX,
+  litCount,
+  plumeThrottle,
+  selectionRadiusM,
+  windDrift,
+} from '../fx/params';
 import { SteamFx } from '../fx/steam';
 import { ZoneFx } from '../fx/zones';
 import type { EntityHandle, EntityRegistry } from '../registry';
@@ -26,9 +34,6 @@ import { SUN_DIR } from '../world/sun';
 
 export const FX_PRIORITY = -7;
 
-/** Steam drift: the prevailing breeze (anim-writer WIND_FROM_RAD, 95°) carries the cloud west, m/s. */
-const WIND_DRIFT_MPS = 2.5;
-const WIND_TO_RAD = ((95 + 180) * Math.PI) / 180;
 /** A channel jump larger than this within one tick is a reset (new count, jump): use `curr`, never sweep through. */
 const CHANNEL_JUMP_S = 2;
 /** Selection ring only under entities near the ground (not a booster in flight), m. */
@@ -76,6 +81,7 @@ export class FxCore {
   private readonly clock = new VisualClock();
   private readonly pos = new Vector3();
   private readonly one = new Vector3(1, 1, 1);
+  private readonly wind = { x: 0, z: 0 };
   private readonly sunView = new Vector3();
   private readonly sun = new Vector3(...SUN_DIR);
   private readonly selColor = new Color(tokens.world.selectionRing);
@@ -152,13 +158,29 @@ export class FxCore {
     const pxScale = hPx / (2 * tanHalf);
     const dpr = gl.getPixelRatio();
 
+    // Ground wind at the pad (steam + low exhaust drift); pre-5.10 breeze when the channels are not written.
+    let pad: EntityHandle | undefined;
+    for (const h of this.list('pad')) {
+      if (h.object.visible) {
+        pad = h;
+        break;
+      }
+    }
+    const wind = windDrift(
+      pad ? (pad.anim[ANIM.pad.windFromRad] ?? 0) : 0,
+      pad ? (pad.anim[ANIM.pad.windMPerS] ?? 0) : 0,
+      this.wind,
+    );
+
     // Exhaust: first burning booster and ship.
     let boosterSet = false;
     for (const h of this.list('booster')) {
       if (!h.object.visible) continue;
       const lit = litCount(h.anim[ANIM.booster.litFrac] ?? 0, 33);
       if (lit <= 0) continue;
-      this.plume.setStage(0, this.scenePos(h), h.object.quaternion, lit, h.object.position.y, this.one);
+      const thr = plumeThrottle(h.anim[ANIM.booster.throttle] ?? 0, lit);
+      const p = this.scenePos(h);
+      this.plume.setStage(0, p, h.object.quaternion, lit, h.object.position.y, this.one, thr, wind.x, wind.z);
       boosterSet = true;
       break;
     }
@@ -168,26 +190,19 @@ export class FxCore {
       if (!h.object.visible) continue;
       const lit = litCount(h.anim[ANIM.ship.litFrac] ?? 0, 6);
       if (lit <= 0) continue;
-      this.plume.setStage(1, this.scenePos(h), h.object.quaternion, lit, h.object.position.y, this.one);
+      const thr = plumeThrottle(h.anim[ANIM.ship.throttle] ?? 0, lit);
+      const p = this.scenePos(h);
+      this.plume.setStage(1, p, h.object.quaternion, lit, h.object.position.y, this.one, thr, wind.x, wind.z);
       shipSet = true;
       break;
     }
     if (!shipSet) this.plume.setStage(1, this.pos.set(0, 0, 0), camera.quaternion, 0, 0, this.one);
     this.plume.frame(t, pxScale);
 
-    // Pad deluge / steam (first pad on the site).
-    let pad: EntityHandle | undefined;
-    for (const h of this.list('pad')) {
-      if (h.object.visible) {
-        pad = h;
-        break;
-      }
-    }
+    // Pad deluge / steam (first pad on the site), drifting with the ground wind.
     if (pad) {
       const tS = this.channel(pad, ANIM.pad.delugeS);
-      const wx = Math.sin(WIND_TO_RAD) * WIND_DRIFT_MPS;
-      const wz = -Math.cos(WIND_TO_RAD) * WIND_DRIFT_MPS;
-      this.steam.setPad(this.scenePos(pad), pad.object.quaternion, tS, wx, wz, this.one);
+      this.steam.setPad(this.scenePos(pad), pad.object.quaternion, tS, wind.x, wind.z, this.one);
     } else this.steam.clearPad();
 
     // Wakes + hull foam.

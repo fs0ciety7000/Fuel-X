@@ -16,12 +16,20 @@ export const FRAME_MARGIN = 1.15;
 const clamp = (v: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, v));
 const RAD = Math.PI / 180;
 
-export function clampOrbit(o: CameraOrbit): CameraOrbit {
-  return {
-    yawDeg: ((o.yawDeg % 360) + 360) % 360,
-    pitchDeg: clamp(o.pitchDeg, CAMERA_LIMITS.pitchMinDeg, CAMERA_LIMITS.pitchMaxDeg),
-    distM: clamp(o.distM, CAMERA_LIMITS.distMinM, CAMERA_LIMITS.distMaxM),
-  };
+/** Clamped copy of `o`; pass `out` (may be `o` itself) to write in place without allocating (per-frame paths). */
+export function clampOrbit(o: CameraOrbit, out: CameraOrbit = { yawDeg: 0, pitchDeg: 0, distM: 0 }): CameraOrbit {
+  out.yawDeg = ((o.yawDeg % 360) + 360) % 360;
+  out.pitchDeg = clamp(o.pitchDeg, CAMERA_LIMITS.pitchMinDeg, CAMERA_LIMITS.pitchMaxDeg);
+  out.distM = clamp(o.distM, CAMERA_LIMITS.distMinM, CAMERA_LIMITS.distMaxM);
+  return out;
+}
+
+/** Copies an orbit's three fields into `out` (no allocation). */
+export function copyOrbit(src: CameraOrbit, out: CameraOrbit): CameraOrbit {
+  out.yawDeg = src.yawDeg;
+  out.pitchDeg = src.pitchDeg;
+  out.distM = src.distM;
+  return out;
 }
 
 /** Camera offset from its target (compass yaw: 0 = camera north of the target = −Z, 90 = east = +X). */
@@ -41,15 +49,30 @@ export function easeInOutCubic(t: number): number {
   return x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
 }
 
-/** Orbit blend: yaw along the shortest arc, pitch linear, distance geometric (zooms feel even). */
-export function mixOrbit(a: CameraOrbit, b: CameraOrbit, t: number): CameraOrbit {
+/**
+ * Orbit blend: yaw along the shortest arc, pitch linear, distance geometric (zooms feel even). `out` may alias `a`
+ * or `b` (computed before writing), so the per-frame damping writes in place.
+ */
+export function mixOrbit(
+  a: CameraOrbit,
+  b: CameraOrbit,
+  t: number,
+  out: CameraOrbit = { yawDeg: 0, pitchDeg: 0, distM: 0 },
+): CameraOrbit {
   let dYaw = b.yawDeg - a.yawDeg;
   dYaw = ((((dYaw + 180) % 360) + 360) % 360) - 180;
-  return {
-    yawDeg: (((a.yawDeg + dYaw * t) % 360) + 360) % 360,
-    pitchDeg: a.pitchDeg + (b.pitchDeg - a.pitchDeg) * t,
-    distM: a.distM * (b.distM / a.distM) ** t,
-  };
+  const yawDeg = (((a.yawDeg + dYaw * t) % 360) + 360) % 360;
+  const pitchDeg = a.pitchDeg + (b.pitchDeg - a.pitchDeg) * t;
+  const distM = a.distM * (b.distM / a.distM) ** t;
+  out.yawDeg = yawDeg;
+  out.pitchDeg = pitchDeg;
+  out.distM = distM;
+  return out;
+}
+
+/** Compass heading the camera looks along (from the camera toward its target), degrees [0, 360). */
+export function viewHeadingDeg(o: CameraOrbit): number {
+  return (o.yawDeg + 180) % 360;
 }
 
 /** Pitch floor keeping the camera ≥ CAMERA_MIN_HEIGHT_M above ground for a target at `targetY`. */

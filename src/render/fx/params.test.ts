@@ -5,8 +5,12 @@ import {
   FX_CAPACITY,
   delugeActive,
   engineRanks,
+  FALLBACK_WIND,
+  exhaustDriftShare,
   litCount,
   plumeShape,
+  plumeThrottle,
+  windDrift,
   selectionRadiusM,
   wakeLengthM,
 } from './params';
@@ -46,6 +50,39 @@ describe('fx params', () => {
     expect(high.lengthM).toBeGreaterThan(4 * full.lengthM);
     expect(high.rEndM).toBeGreaterThan(4 * full.rEndM);
     expect(plumeShape(0, 33, 4.6, 0).keep).toBe(0);
+  });
+
+  it('shortens the plume when throttled down and treats an unwritten throttle as full', () => {
+    const full = plumeShape(33, 33, 4.6, 0, 1);
+    const bucket = plumeShape(33, 33, 4.6, 0, 0.7);
+    expect(plumeShape(33, 33, 4.6, 0)).toEqual(full);
+    expect(bucket.lengthM).toBeLessThan(full.lengthM);
+    expect(bucket.keep).toBeLessThan(full.keep);
+    expect(plumeShape(33, 33, 4.6, 0, 0).lengthM).toBeCloseTo(0.55 * full.lengthM, 6);
+    expect(plumeThrottle(0, 33)).toBe(1);
+    expect(plumeThrottle(0.7, 33)).toBe(0.7);
+    expect(plumeThrottle(0, 0)).toBe(0);
+  });
+
+  it('drifts steam downwind of world.weather.windFromRad (meteorological from, site +x east / −z north)', () => {
+    const out = { x: 0, z: 0 };
+    // wind from the north (0): air moves south = +z
+    windDrift(0, 10, out);
+    expect(out.x).toBeCloseTo(0, 9);
+    expect(out.z).toBeCloseTo(4, 9);
+    // wind from the east (π/2): air moves west = −x, clamped speed
+    windDrift(Math.PI / 2, 40, out);
+    expect(out.x).toBeCloseTo(-6, 9);
+    expect(out.z).toBeCloseTo(0, 9);
+    // calm still drifts a little
+    windDrift(Math.PI, 0.1, out);
+    expect(Math.hypot(out.x, out.z)).toBeCloseTo(0.8, 9);
+    // channels unwritten: the pre-5.10 breeze from 95° at 2.5 m/s (west, slightly north)
+    windDrift(0, 0, out);
+    expect(Math.hypot(out.x, out.z)).toBeCloseTo(FALLBACK_WIND.driftMPerS, 9);
+    expect(out.x).toBeLessThan(0);
+    expect(exhaustDriftShare(0)).toBe(1);
+    expect(exhaustDriftShare(5_000)).toBe(0);
   });
 
   it('runs the deluge from T-3 s and clears it by ~T+20 s', () => {

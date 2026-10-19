@@ -4,6 +4,8 @@
 // `home` (site overview, drops the follow), `frame` (fit the followed entity / stack), explicit orbit. Drag =
 // orbit, wheel = zoom, clamped to the strategic range (pitch 8–85°, 40 m–30 km) and never under ground.
 // `controls.snapCamera` (debug `follow/camera(..., { snap })`, jumps) or `frozen` cut instead of gliding.
+// Map controls (6.6) nudge the goal orbit through the `fuelx:camera-nudge` window event (zoom factor / yaw step), the
+// same path as wheel and drag. Per frame: no allocation (scratch orbits / vectors, reused stack array; 5.9 L2).
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useState } from 'react';
 import { Box3, PerspectiveCamera, Sphere, Vector3 } from 'three';
@@ -19,12 +21,16 @@ import {
   CAMERA_GLIDE_MS,
   CAMERA_MIN_HEIGHT_M,
   clampOrbit,
+  copyOrbit,
   easeInOutCubic,
   frameDistance,
   groundPitchFloorDeg,
   mixOrbit,
   orbitOffset,
+  viewHeadingDeg,
 } from './camera-math';
+import { CAMERA_NUDGE_EVENT } from '../dom-contract';
+import type { CameraNudge } from '../dom-contract';
 
 export { CAMERA_FOV_DEG } from './camera-math';
 export const CAMERA_PRIORITY = -20;
@@ -44,17 +50,29 @@ export interface CameraDeps {
 }
 
 interface Glide {
+  active: boolean;
   fromTarget: Vector3;
   fromOrbit: CameraOrbit;
   t: number;
 }
 
+const orbitOf = (o: CameraOrbit): CameraOrbit => ({ yawDeg: o.yawDeg, pitchDeg: o.pitchDeg, distM: o.distM });
+
 export class CameraRigCore {
-  private orbit: CameraOrbit;
-  private goal: CameraOrbit;
+  private readonly orbit: CameraOrbit;
+  private readonly goal: CameraOrbit;
+  /** Orbit actually drawn this frame (pitch raised to the ground floor). */
+  private readonly drawn: CameraOrbit = { yawDeg: 0, pitchDeg: 0, distM: 0 };
   private readonly target: Vector3;
   private readonly goalTarget = new Vector3();
-  private glide: Glide | null = null;
+  private readonly glide: Glide = {
+    active: false,
+    fromTarget: new Vector3(),
+    fromOrbit: { yawDeg: 0, pitchDeg: 0, distM: 0 },
+    t: 0,
+  };
+  /** Reused by `stackOf` (valid until the next call). */
+  private readonly stack: EntityHandle[] = [];
   private lastFollow: Id | null = null;
   private readonly box = new Box3();
   private readonly tmpBox = new Box3();
@@ -65,8 +83,8 @@ export class CameraRigCore {
 
   constructor(private readonly d: CameraDeps) {
     const site = siteView(d.controls.siteId);
-    this.orbit = { ...site.home };
-    this.goal = { ...site.home };
+    this.orbit = orbitOf(site.home);
+    this.goal = orbitOf(site.home);
     this.target = new Vector3(...site.target);
     this.lastFollow = d.controls.followId;
   }
@@ -80,12 +98,11 @@ export class CameraRigCore {
     };
     const move = (e: PointerEvent): void => {
       if (!drag) return;
-      this.goal = clampOrbit({
-        ...this.goal,
-        yawDeg: this.goal.yawDeg - (e.clientX - drag.x) * 0.25,
-        pitchDeg: this.goal.pitchDeg + (e.clientY - drag.y) * 0.2,
-      });
-      drag = { x: e.clientX, y: e.clientY };
+      this.goal.yawDeg -= (e.clientX - drag.x) * 0.25;
+      this.goal.pitchDeg += (e.clientY - drag.y) * 0.2;
+      clampOrbit(this.goal, this.goal);
+      drag.x = e.clientX;
+      drag.y = e.clientY;
     };
     const up = (e: PointerEvent): void => {
       drag = null;
@@ -93,18 +110,32 @@ export class CameraRigCore {
     };
     const wheel = (e: WheelEvent): void => {
       e.preventDefault();
-      this.goal = clampOrbit({ ...this.goal, distM: this.goal.distM * Math.exp(e.deltaY * 0.001) });
+      this.nudge({ zoom: Math.exp(e.deltaY * 0.001) });
     };
+    const nudged = (e: Event): void => {
+      const d = (e as CustomEvent<CameraNudge | undefined>).detail;
+      if (d) this.nudge(d);
+    };
+    const win = dom.ownerDocument.defaultView;
     dom.addEventListener('pointerdown', down);
     dom.addEventListener('pointermove', move);
     dom.addEventListener('pointerup', up);
     dom.addEventListener('wheel', wheel, { passive: false });
+    win?.addEventListener(CAMERA_NUDGE_EVENT, nudged);
     return () => {
       dom.removeEventListener('pointerdown', down);
       dom.removeEventListener('pointermove', move);
       dom.removeEventListener('pointerup', up);
       dom.removeEventListener('wheel', wheel);
+      win?.removeEventListener(CAMERA_NUDGE_EVENT, nudged);
     };
+  }
+
+  /** Relative user input on the goal orbit (wheel, map controls): distance × `zoom`, yaw + `yawDeg`. Clamped. */
+  nudge(n: CameraNudge): void {
+    if (n.zoom !== undefined && Number.isFinite(n.zoom) && n.zoom > 0) this.goal.distM *= n.zoom;
+    if (n.yawDeg !== undefined && Number.isFinite(n.yawDeg)) this.goal.yawDeg += n.yawDeg;
+    clampOrbit(this.goal, this.goal);
   }
 
   /** True when `child`'s origin sits on `parent`'s socket (posed transforms, absolute site metres). */
@@ -127,10 +158,15 @@ export class CameraRigCore {
     return false;
   }
 
-  /** The followed handle plus everything attached to it (booster + ship stack, transporter + cargo). */
-  stackOf(h: EntityHandle): EntityHandle[] {
-    if (!STACKABLE.has(h.asset)) return [h];
-    const out = [h];
+  /**
+   * The followed handle plus everything attached to it (booster + ship stack, transporter + cargo). Returns a reused
+   * array, valid until the next call (no per-frame allocation).
+   */
+  stackOf(h: EntityHandle): readonly EntityHandle[] {
+    const out = this.stack;
+    out.length = 0;
+    out.push(h);
+    if (!STACKABLE.has(h.asset)) return out;
     for (let i = 0; i < out.length; i++) {
       const cur = out[i];
       if (!cur) continue;
@@ -189,16 +225,17 @@ export class CameraRigCore {
       retarget = true;
       if (req.kind === 'home') {
         controls.followId = null;
-        this.goal = { ...site.home };
+        copyOrbit(site.home, this.goal);
       } else if (req.kind === 'orbit') {
-        this.goal = clampOrbit(req);
+        clampOrbit(req, this.goal);
       } else {
         const f = controls.followId ? registry.byId.get(controls.followId) : undefined;
         if (f) {
           const sphere = this.boundsOf(this.stackOf(f)).getBoundingSphere(this.sphere);
-          this.goal = clampOrbit({ ...this.goal, distM: frameDistance(sphere.radius, camera.fov, camera.aspect) });
+          this.goal.distM = frameDistance(sphere.radius, camera.fov, camera.aspect);
+          clampOrbit(this.goal, this.goal);
         } else {
-          this.goal = { ...site.home };
+          copyOrbit(site.home, this.goal);
         }
       }
     }
@@ -216,28 +253,34 @@ export class CameraRigCore {
     // a followed entity that is hidden (lost stage, off-map truck) keeps the last target
     if (this.goalTarget.y < 0) this.goalTarget.y = 0;
 
+    const g = this.glide;
     if (snap) {
-      this.glide = null;
+      g.active = false;
       this.target.copy(this.goalTarget);
-      this.orbit = { ...this.goal };
+      copyOrbit(this.goal, this.orbit);
     } else {
-      if (retarget) this.glide = { fromTarget: this.target.clone(), fromOrbit: { ...this.orbit }, t: 0 };
-      const g = this.glide;
-      if (g) {
+      if (retarget) {
+        g.active = true;
+        g.t = 0;
+        g.fromTarget.copy(this.target);
+        copyOrbit(this.orbit, g.fromOrbit);
+      }
+      if (g.active) {
         g.t = Math.min(1, g.t + (Math.min(delta, 0.1) * 1000) / CAMERA_GLIDE_MS);
         const e = easeInOutCubic(g.t);
         this.target.lerpVectors(g.fromTarget, this.goalTarget, e);
-        this.orbit = mixOrbit(g.fromOrbit, this.goal, e);
-        if (g.t >= 1) this.glide = null;
+        mixOrbit(g.fromOrbit, this.goal, e, this.orbit);
+        if (g.t >= 1) g.active = false;
       } else {
         this.target.copy(this.goalTarget);
-        this.orbit = mixOrbit(this.orbit, this.goal, 1 - Math.exp(-Math.min(delta, 0.1) * INPUT_DAMPING_PER_S));
+        mixOrbit(this.orbit, this.goal, 1 - Math.exp(-Math.min(delta, 0.1) * INPUT_DAMPING_PER_S), this.orbit);
       }
     }
 
     // Never under ground: raise the pitch rather than sliding the camera up (keeps the framing consistent).
     const floor = groundPitchFloorDeg(this.target.y, this.orbit.distM);
-    const drawn = this.orbit.pitchDeg < floor ? { ...this.orbit, pitchDeg: floor } : this.orbit;
+    const drawn = copyOrbit(this.orbit, this.drawn);
+    if (drawn.pitchDeg < floor) drawn.pitchDeg = floor;
 
     // Scene space = absolute − floating origin.
     this.rel.copy(this.target).sub(shared.origin);
@@ -257,6 +300,8 @@ export class CameraRigCore {
     }
     shared.targetAbs.copy(this.target);
     shared.camDist = drawn.distM;
+    shared.camHeadingDeg = viewHeadingDeg(drawn);
+    shared.camPitchDeg = drawn.pitchDeg;
   }
 }
 

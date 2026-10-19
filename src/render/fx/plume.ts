@@ -16,12 +16,13 @@ import {
   ShaderMaterial,
   UniformsLib,
   UniformsUtils,
+  Vector3,
   Vector4,
 } from 'three';
-import type { Quaternion, Vector3 } from 'three';
+import type { Quaternion } from 'three';
 import { mulberry32 } from '../world/rng';
 import { FX_COMMON_FRAG, FX_COMMON_VERT } from './glsl';
-import { FX_CAPACITY, engineRanks, plumeShape } from './params';
+import { EXHAUST_DRIFT_S, FX_CAPACITY, engineRanks, exhaustDriftShare, plumeShape } from './params';
 
 /** Engine socket rest positions (asset space, Y-up) of one stage, socket order. */
 export interface StageEngines {
@@ -40,6 +41,8 @@ uniform vec4 uShape0; // length, r0, rEnd, jet
 uniform vec4 uShape1;
 uniform vec4 uMisc0;  // lit, sizeScale, keep, engine-plane y
 uniform vec4 uMisc1;
+uniform vec3 uWind0;  // tail drift at the end of a body sprite's life, scene m (ground wind, 6.6)
+uniform vec3 uWind1;
 varying float vCore;
 ${FX_COMMON_VERT}
 ${ShaderChunk.fog_pars_vertex}
@@ -56,6 +59,7 @@ void main() {
   if (jet < 0.5 && aSeed.w > misc.z) { fxCull(); return; }
 
   float ang = 6.2831853 * aSeed.z;
+  float drift = 0.0;
   vec3 local;
   float size;
   float fade;
@@ -76,8 +80,9 @@ void main() {
     size = (2.2 + 4.0 * ph) * misc.y;
     fade = pow(1.0 - ph, 0.75);
     vCore = (ph < 0.22 && rr < 0.55) ? 1.0 : 0.0;
+    drift = ph * ph;
   }
-  vec3 p = (M * vec4(local, 1.0)).xyz;
+  vec3 p = (M * vec4(local, 1.0)).xyz + (booster ? uWind0 : uWind1) * drift;
   fxProject(p, size);
   vFade = fade;
   vec4 mvPosition = viewMatrix * vec4(p, 1.0);
@@ -110,6 +115,8 @@ export interface PlumeUniforms {
   uShape1: { value: Vector4 };
   uMisc0: { value: Vector4 };
   uMisc1: { value: Vector4 };
+  uWind0: { value: Vector3 };
+  uWind1: { value: Vector3 };
 }
 
 /** Builds the static buffers: per stage, jets for each engine socket then the body sprites. */
@@ -184,6 +191,8 @@ export class PlumeFx {
         uShape1: { value: new Vector4() },
         uMisc0: { value: new Vector4() },
         uMisc1: { value: new Vector4() },
+        uWind0: { value: new Vector3() },
+        uWind1: { value: new Vector3() },
         uCore: { value: new Color(w.exhaustCore) },
         uGlow: { value: new Color(w.exhaustGlow) },
       },
@@ -211,7 +220,21 @@ export class PlumeFx {
    * One stage's emitter for this frame. `pos` is the scene-space origin (absolute − floating origin), `altitudeM`
    * above site ground; `lit` = engines burning (0 hides the stage's sprites).
    */
-  setStage(index: 0 | 1, pos: Vector3, quat: Quaternion, lit: number, altitudeM: number, one: Vector3): void {
+  /**
+   * Poses one stage's plume. `throttle` 0–1 (`engines.throttle`) scales length / sprite share; `driftX/Z` = ground
+   * wind drift, m/s (site axes = scene axes), applied to the tail near the ground (`exhaustDriftShare`).
+   */
+  setStage(
+    index: 0 | 1,
+    pos: Vector3,
+    quat: Quaternion,
+    lit: number,
+    altitudeM: number,
+    one: Vector3,
+    throttle = 1,
+    driftX = 0,
+    driftZ = 0,
+  ): void {
     const st = this.stages[index];
     const u = this.uniforms;
     const misc = index === 0 ? u.uMisc0.value : u.uMisc1.value;
@@ -219,7 +242,9 @@ export class PlumeFx {
       misc.set(0, 1, 0, st.planeY);
       return;
     }
-    const sh = plumeShape(lit, st.engines, st.radiusM, altitudeM);
+    const sh = plumeShape(lit, st.engines, st.radiusM, altitudeM, throttle);
+    const k = exhaustDriftShare(altitudeM) * EXHAUST_DRIFT_S;
+    (index === 0 ? u.uWind0.value : u.uWind1.value).set(driftX * k, 0, driftZ * k);
     (index === 0 ? u.uStage0.value : u.uStage1.value).compose(pos, quat, one);
     (index === 0 ? u.uShape0.value : u.uShape1.value).set(sh.lengthM, sh.r0M, sh.rEndM, sh.jetM);
     misc.set(lit, sh.sizeScale, sh.keep, st.planeY);

@@ -34,6 +34,10 @@ export interface FrameShared {
   targetAbs: Vector3;
   /** Camera distance to target, m. */
   camDist: number;
+  /** Compass heading the camera looks along, degrees [0, 360) (compass tape, 6.6). */
+  camHeadingDeg: number;
+  /** Camera elevation above the horizon, degrees. */
+  camPitchDeg: number;
   /** Something moved near the camera target since the last frame (shadow map refresh). */
   movedNear: boolean;
   /** Frames rendered so far. */
@@ -55,6 +59,8 @@ export function createFrameShared(): FrameShared {
     origin: new Vector3(),
     targetAbs: new Vector3(),
     camDist: 1000,
+    camHeadingDeg: 0,
+    camPitchDeg: 30,
     movedNear: true,
     frames: 0,
     postReady: false,
