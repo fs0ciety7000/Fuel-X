@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /design.html
+
+Sitemap: https://fuelx.fs0ciety.org/sitemap.xml

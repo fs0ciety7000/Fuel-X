@@ -94,7 +94,7 @@ function frame(now: number) {
 - **Background tab**: rAF stops → `MAX_FRAME_DT` clamp → on return the game resumes, it does not fast-forward.
 
 **As built (5.1/5.2/5.8)** — `src/app/{loop.ts, game.ts, bus.ts, jump.ts, debug.ts, time/time-control.ts, sim-host/}`, `src/render/{Scene.tsx, snapshot.ts, systems/, views/, world/}`. No new dependencies (three's own `GLTFLoader` + `MeshoptDecoder` via R3F `useLoader`; drei not used; adaptive DPR is in-house).
-- **Entry**: the game is `play.html` → `src/main.tsx` (`index.html` is the public showcase). `Game` is built once outside React; `App` renders `<Scene>` once + a temporary readout written imperatively at 4 Hz.
+- **Entry**: the game is `play.html` → `src/main.tsx`, served at `/play` (`index.html` is the public showcase, prerendered at build time: ADR 0009, `docs/SHOWCASE.md`). `Game` is built once outside React; `App` renders `<Scene>` once + a temporary readout written imperatively at 4 Hz.
 - **SimHost**: `InlineSimHost` implements the worker-ready `SimHost` (`send`, `advance({maxSteps, budgetMs, stopOn})`, `drainEvents`, Promise-shaped `newGame/jump/save/load`). Autopilot (= `STANDARD_AUTOPILOT`, default on until the HUD exists) commands are logged with queued commands as session inputs. The outbox is moved into a host buffer every tick and drained to the bus once per frame. `jump` steps headless and writes the snapshot once at the end; a unit test proves it reaches the golden harness world hash.
 - **RenderSnapshot** (`src/render/snapshot.ts`): `prev/curr` are **Float64Array** (x y z qx qy qz qw flags) so the floating origin subtracts before float32; copies touch only `[0, used)`. Flags: `ALIVE, SNAP, HIDDEN, ON_MOUNT, ON_CARGO`. Written per tick by `src/app/sim-host/snapshot-writer.ts` (adapter until the sim's bookkeeping owns it — same contract). Since 5.0b `pos` is the asset origin in world metres: render places the GLB at `pos` as-is, no attachment lift (`ON_MOUNT` / `ON_CARGO` stay as attachment markers only). `animPrev/animCurr` carry the per-asset channels (5.4, below).
 - **Render systems** are plain classes driven from `useFrame` (React Compiler lint forbids mutating props in components): RenderSync (−30, lerp/nlerp, floating origin on the followed entity), CameraRig (−20, 5.5 below), ViewSystem (−15, LOD + rigs + instance pools, 5.4 below), Environment (−10), Ground (−5), RenderPass (+1, renders + copies `renderer.info`, main + shadow passes).
@@ -559,7 +559,7 @@ interface FuelxDebug {
 ```
 docs/DESIGN_SYSTEM.md (values, authority)
         │ (ui-design-system edits)
-src/tokens/tokens.ts  ──npm run tokens──►  src/tokens/generated/tokens.css   (:root { --fx-* }, imported once by main.tsx, vitrine.tsx and design.tsx)
+src/tokens/tokens.ts  ──npm run tokens──►  src/tokens/generated/tokens.css   (:root { --fx-* }, imported once by main.tsx, showcase.tsx and design.tsx)
    │                                       src/tokens/generated/tokens.json  ({ srgb: '#F4F4F0', linear: [r,g,b] } per color + all scalars)
    │                                                    └──► blender/lib/materials.py materials_from_tokens(...)  (MAT_* colors, preview bg)
    └──► import { tokens } from '@tokens/tokens'  (render: background, fog, clay ramp, accent for exhaust/selection/rings)
@@ -572,7 +572,7 @@ Generated files are committed (Blender runs need them) and `npm run lint` runs `
 ```
 index.html · play.html · design.html     Vite entries (public showcase, pad shell, /design gallery)
 src/
-  vitrine.tsx · main.tsx · design.tsx     entry points
+  showcase.tsx (+ showcase.server.tsx, build-time prerender, ADR 0009) · main.tsx · design.tsx     entry points
   app/       loop.ts, time/, sim-host/ (inline + worker-ready), projection/, bus.ts, persistence/, debug.ts, App.tsx
   bridge/    stores.ts (projectionStore, viewStore), commands.ts
   sim/       core/ (world, rng, fsm, events, commands, serialize), systems/, entities/ (factories),
