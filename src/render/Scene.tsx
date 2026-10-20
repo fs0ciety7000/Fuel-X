@@ -20,6 +20,7 @@ import { GroundSystem } from './systems/GroundSystem';
 import { RenderPass } from './systems/RenderPass';
 import { RenderSync } from './systems/RenderSync';
 import { ViewSystem } from './systems/ViewSystem';
+import { WorldOverlaySystem } from './systems/WorldOverlaySystem';
 import { InstancePools } from './views/pools';
 import { EntityViews } from './views/EntityViews';
 
@@ -119,6 +120,7 @@ export function Scene({ snapshot, controls, input, onApi, className }: SceneProp
       <EnvironmentSystem shared={core.shared} />
       <AdaptiveDpr input={input} />
       <GroundSystem shared={core.shared} controls={controls} />
+      <WorldOverlaySystem controls={controls} registry={core.registry} shared={core.shared} />
       <RenderPass shared={core.shared} controls={controls} />
       <Suspense fallback={null}>
         <FxSystem controls={controls} registry={core.registry} shared={core.shared} snapshot={snapshot} />

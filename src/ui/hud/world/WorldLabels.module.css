@@ -1,0 +1,66 @@
+/* In-world label layer (DESIGN_SYSTEM §6.20). Positions come from the render loop (transform on .label, anchor point
+   in viewport px); data-mode = tag | anchor | hidden. Nothing shows before the first placement. */
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--fx-z-world-labels);
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  will-change: transform;
+}
+
+.label[data-mode='tag'],
+.label[data-mode='anchor'] {
+  visibility: visible;
+}
+
+/* 3 px ink square on SOCKET_Label, centred on the anchor point */
+.anchor {
+  position: absolute;
+  top: calc(-1.5 * var(--fx-rule-hair));
+  left: calc(-1.5 * var(--fx-rule-hair));
+  width: calc(3 * var(--fx-rule-hair));
+  height: calc(3 * var(--fx-rule-hair));
+  background: var(--fx-color-ink);
+  pointer-events: none;
+}
+
+/* vertical leader from the tag's bottom-centre down to the anchor */
+.leader {
+  position: absolute;
+  bottom: 0;
+  left: calc(-0.5 * var(--fx-rule-hair));
+  width: var(--fx-rule-hair);
+  height: var(--fx-space-5);
+  background: var(--fx-color-ink-4);
+  pointer-events: none;
+}
+
+.label[data-selected] .leader {
+  background: var(--fx-color-accent);
+}
+
+.tag {
+  position: absolute;
+  bottom: var(--fx-space-5);
+  left: 0;
+  display: inline-flex;
+  width: max-content;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.label[data-mode='anchor'] .tag,
+.label[data-mode='anchor'] .leader {
+  visibility: hidden;
+}

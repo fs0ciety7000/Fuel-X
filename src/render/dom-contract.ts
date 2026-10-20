@@ -45,6 +45,13 @@ export const DOM = {
   compassReadout: 'data-fx-compass-readout',
 } as const;
 
+/**
+ * Everything a label must not sit under (DESIGN_SYSTEM §6.20 "tags under a card are hidden"): explicit occluders plus
+ * the cards of the 6.3 HUD frame = direct children of its interactive slots (`data-slot` + `data-interactive`).
+ * Empty (zero-area) matches are ignored.
+ */
+export const OCCLUDER_SELECTOR = '[data-fx-occluder], [data-slot][data-interactive] > *';
+
 /** Compass tape extent: degrees −180 … 540, so any heading ± the 60° window stays on the tape. */
 export const COMPASS_TAPE_FROM_DEG = -180;
 export const COMPASS_TAPE_SPAN_DEG = 720;

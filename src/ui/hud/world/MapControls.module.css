@@ -1,0 +1,56 @@
+/* Map controls (DESIGN_SYSTEM §6.19): 32 px squares, 1 px ink frame, 1 px gap column. Hover paper-2, pressed
+   paper-3, active mode ink fill + paper glyph, disabled hatched ink-4. */
+.bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fx-rule-hair);
+  pointer-events: auto;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--fx-size-control);
+  height: var(--fx-size-control);
+  padding: 0;
+  border: var(--fx-rule-frame);
+  border-radius: var(--fx-radius);
+  background: var(--fx-color-paper);
+  color: var(--fx-color-ink);
+  font-family: var(--fx-font-micro);
+  font-size: var(--fx-type-title);
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  touch-action: none;
+}
+
+.btn:hover {
+  background: var(--fx-color-paper-2);
+}
+
+.btn:active {
+  background: var(--fx-color-paper-3);
+}
+
+.btn:focus-visible {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+.btn[data-active] {
+  background: var(--fx-color-ink);
+  color: var(--fx-color-paper);
+}
+
+.btn[aria-disabled='true'] {
+  background-image: var(--fx-pattern-hatch);
+  border-color: var(--fx-color-ink-4);
+  color: var(--fx-color-ink-4);
+  cursor: not-allowed;
+}
+
+.ch {
+  font-weight: var(--fx-type-title-weight);
+}

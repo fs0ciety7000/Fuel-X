@@ -1,0 +1,76 @@
+/* Compass tape (DESIGN_SYSTEM §6.22): ±60° window (±45° compact), numerals type-tick ink-3, minor ticks ink-4,
+   centre caret ink, readout type-label fixed 4ch. The tape is 720° wide = 6 windows (8 in compact); render
+   translates it by −(heading + 180) / 720 × 100 % from the caret. Read-only: transparent to the pointer. */
+.root {
+  --compass-window: calc(3 * var(--fx-size-tile));
+  --compass-windows: 6;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--fx-space-1);
+  padding-bottom: var(--fx-space-2);
+  color: var(--fx-color-ink-3);
+  font-family: var(--fx-font-micro);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+@container hud (width < 1600px) or (height < 900px) {
+  .root {
+    --compass-window: calc(2 * var(--fx-size-tile));
+    --compass-windows: 8;
+  }
+}
+
+.window {
+  position: relative;
+  width: var(--compass-window);
+  height: var(--fx-size-tag);
+  overflow: hidden;
+}
+
+.tape {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: calc(var(--compass-windows) * 100%);
+  will-change: transform;
+}
+
+.major,
+.minor {
+  position: absolute;
+  bottom: 0;
+}
+
+.major {
+  transform: translateX(-50%);
+  font-size: var(--fx-type-tick);
+  line-height: 1;
+  letter-spacing: var(--fx-type-tick-tracking);
+  white-space: nowrap;
+}
+
+.minor {
+  width: var(--fx-rule-hair);
+  height: var(--fx-space-2);
+  background: var(--fx-color-ink-4);
+}
+
+.caret {
+  width: var(--fx-space-3);
+  height: var(--fx-space-2);
+  background: var(--fx-color-ink);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.readout {
+  width: 4ch;
+  color: var(--fx-color-ink);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  text-align: center;
+}

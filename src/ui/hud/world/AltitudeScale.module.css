@@ -1,0 +1,94 @@
+/* Altitude scale (DESIGN_SYSTEM §6.21): ink-4 hairline ticks, type-tick ink-3 numerals, ink triangle marker
+   (accent when the followed entity is in danger), type-label readout. Read-only: transparent to the pointer. */
+.root {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--fx-space-3);
+  width: 100%;
+  min-height: 0;
+  padding: var(--fx-space-7) 0 var(--fx-space-6);
+  color: var(--fx-color-ink-3);
+  font-family: var(--fx-font-micro);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.root:not([data-mode='shown']) {
+  visibility: hidden;
+}
+
+.track {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tick,
+.minor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+}
+
+.tick {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+}
+
+.num {
+  min-width: 3ch;
+  transform: translateY(-0.5em);
+  font-size: var(--fx-type-tick);
+  line-height: 1;
+  letter-spacing: var(--fx-type-tick-tracking);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.mark {
+  width: var(--fx-space-3);
+  height: var(--fx-rule-hair);
+  background: var(--fx-color-ink-4);
+}
+
+.minor::after {
+  content: '';
+  position: absolute;
+  left: calc(3ch + var(--fx-space-2));
+  width: var(--fx-space-2);
+  height: var(--fx-rule-hair);
+  background: var(--fx-color-ink-4);
+}
+
+/* Rail = full track height, the marker sits on its top edge; render translates the rail by (1 − fraction) × 100 %. */
+.rail {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.marker {
+  position: absolute;
+  top: calc(-0.5 * var(--fx-space-4));
+  left: calc(3ch + var(--fx-space-2) + var(--fx-space-3) + var(--fx-space-1));
+  width: var(--fx-space-3);
+  height: var(--fx-space-4);
+  background: var(--fx-color-ink);
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+}
+
+.root[data-danger] .marker {
+  background: var(--fx-color-accent);
+}
+
+.readout {
+  color: var(--fx-color-ink);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  white-space: nowrap;
+}
