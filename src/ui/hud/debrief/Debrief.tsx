@@ -41,6 +41,13 @@ function Delta({ label, d }: { label: string; d: DebriefVM['money'] }) {
   );
 }
 
+/** Disabled reason of an exit action: the projected one, or `NOT AVAILABLE YET` while the app has no handler. */
+export function actionBlock(a: ActionVM, handlers: DebriefHandlers): string | null {
+  if (!a.enabled) return a.reason ?? 'UNAVAILABLE';
+  const k = debriefActionId(a.id);
+  return k && handlers[k] ? null : 'NOT AVAILABLE YET';
+}
+
 export interface DebriefProps {
   d: DebriefVM;
   handlers?: DebriefHandlers;
@@ -64,7 +71,7 @@ export function Debrief({ d, handlers = {}, inline = false }: DebriefProps) {
   const actions = debriefActions(d);
   const run = (a: ActionVM): void => {
     const k = debriefActionId(a.id);
-    if (!a.enabled || !k) return;
+    if (actionBlock(a, handlers) || !k) return;
     handlers[k]?.();
   };
   const danger = d.state === 'danger';
@@ -197,7 +204,7 @@ export function Debrief({ d, handlers = {}, inline = false }: DebriefProps) {
                 key={a.id}
                 variant={a.variant}
                 {...(a.key ? { kbd: a.key } : {})}
-                disabledReason={a.enabled ? null : (a.reason ?? 'UNAVAILABLE')}
+                disabledReason={actionBlock(a, handlers)}
                 onClick={() => run(a)}
               >
                 {a.label}

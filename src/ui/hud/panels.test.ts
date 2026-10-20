@@ -5,8 +5,16 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import * as fx from '../fixtures';
 import * as px from '../fixtures/panels';
-import type { EventVM } from '../types';
-import { Debrief, debriefActionId, debriefActions, decisionCode, isDebriefOpen, debriefKey } from './debrief';
+import type { ActionVM, EventVM } from '../types';
+import {
+  Debrief,
+  actionBlock,
+  debriefActionId,
+  debriefActions,
+  decisionCode,
+  isDebriefOpen,
+  debriefKey,
+} from './debrief';
 import {
   EventLog,
   MAX_VISIBLE,
@@ -230,5 +238,16 @@ describe('debrief', () => {
     expect(out).toContain('<samp');
     expect(out).toContain('TOWER-1 DAMAGED · 21 D');
     expect(out).toContain('REPLAY SAME SEED');
+  });
+});
+
+describe('debrief exit actions without app handlers', () => {
+  it('are disabled with a reason until the app wires them; VIEW SITE always works in the HUD', () => {
+    const [replay] = debriefActions({ actions: [] });
+    expect(actionBlock(replay as ActionVM, {})).toBe('NOT AVAILABLE YET');
+    expect(actionBlock(replay as ActionVM, { REPLAY: () => undefined })).toBeNull();
+    expect(actionBlock({ ...(replay as ActionVM), enabled: false, reason: 'BUSY' }, { REPLAY: () => undefined })).toBe(
+      'BUSY',
+    );
   });
 });

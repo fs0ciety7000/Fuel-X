@@ -45,6 +45,9 @@ const INSPECTORS: [string, InspectorVM][] = [
   ['LOST', px.inspectorLost],
 ];
 
+const noop = (): void => undefined;
+const HANDLERS = { REPLAY: noop, NEW_SEED: noop, EXPORT_LOG: noop, VIEW_SITE: noop };
+
 const toast = (key: string, e: (typeof fx.events)[number], source: ToastItem['source']): ToastItem => ({
   key,
   source,
@@ -126,16 +129,16 @@ export function PanelsGallery() {
       <Section id="debrief" title="DEBRIEF" refs="§6.29 · AC 22 · REPLAY / NEW SEED / EXPORT LOG / VIEW SITE">
         <div className={styles.debriefs}>
           <Specimen caption="CAUGHT">
-            <Debrief d={px.debriefCaught} inline />
+            <Debrief d={px.debriefCaught} inline handlers={HANDLERS} />
           </Specimen>
           <Specimen caption="DIVERTED">
-            <Debrief d={px.debriefDiverted} inline />
+            <Debrief d={px.debriefDiverted} inline handlers={HANDLERS} />
           </Specimen>
           <Specimen caption="CATCH FAILED">
-            <Debrief d={px.debriefFailed} inline />
+            <Debrief d={px.debriefFailed} inline handlers={HANDLERS} />
           </Specimen>
           <Specimen caption="SCRUBBED">
-            <Debrief d={px.debriefScrubbed} inline />
+            <Debrief d={px.debriefScrubbed} inline handlers={HANDLERS} />
           </Specimen>
           <Specimen caption="COLLAPSED (VIEW SITE) · B REOPENS">
             <div className={styles.badgeBox}>

@@ -1,5 +1,10 @@
 import type { ComponentType } from 'react';
 import type { HudSlotName } from './frame/slots';
+import { DebriefContainer } from './debrief';
+import { ToastsContainer } from './events';
+import { FlightCardContainer } from './flight';
+import { InspectorContainer } from './inspector';
+import { TabbedPanelContainer } from './tabs';
 import { CountdownTimeline } from './timeline/CountdownTimeline';
 import { TopBar } from './topbar/TopBar';
 import { AltitudeScale, CompassTape, MapControls } from './world';
@@ -14,4 +19,9 @@ export const HUD_MOUNTS: Partial<Record<HudSlotName, ComponentType>> = {
   alt: AltitudeScale,
   compass: CompassTape,
   ctrl: MapControls,
+  flight: FlightCardContainer,
+  inspect: InspectorContainer,
+  tabs: TabbedPanelContainer,
+  toasts: ToastsContainer,
+  overlay: DebriefContainer,
 };
