@@ -217,9 +217,10 @@ describe('debrief', () => {
     expect(debriefActionId('something')).toBeNull();
   });
 
-  it('prints spec decision codes only', () => {
-    expect(decisionCode('D3b')).toBe('D3B');
-    expect(decisionCode('0:POLL')).toBe('');
+  it('prints the projected decision code, else a spec-shaped id', () => {
+    expect(decisionCode({ id: '3:LEAK', code: 'D3B' })).toBe('D3B');
+    expect(decisionCode({ id: 'D3b' })).toBe('D3B');
+    expect(decisionCode({ id: '0:POLL' })).toBe('');
   });
 
   it('collapse is keyed per run', () => {

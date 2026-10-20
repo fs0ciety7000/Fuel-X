@@ -23,8 +23,9 @@ export type DebriefHandlers = Partial<Record<DebriefActionId, () => void>>;
 
 const negative = (v: ValueVM): boolean => v.text.startsWith('−');
 
-/** Decision ids are `D1`…`D3B` in the spec; the 6.1 projector emits a row key (`0:POLL`), printed only if it is one. */
-export const decisionCode = (id: string): string => (/^D\d[A-Z]?$/i.test(id) ? id.toUpperCase() : '');
+/** Decision code column: the projected `code` (`D1`…`D3B`); fixtures without it fall back to a spec-shaped `id`. */
+export const decisionCode = (x: { id: string; code?: string }): string =>
+  x.code ?? (/^D\d[A-Z]?$/i.test(x.id) ? x.id.toUpperCase() : '');
 
 function Delta({ label, d }: { label: string; d: DebriefVM['money'] }) {
   return (
@@ -179,7 +180,7 @@ export function Debrief({ d, handlers = {}, inline = false }: DebriefProps) {
                 <li key={`${x.id}-${x.time}`}>
                   <samp className={styles.samp}>
                     <time>{x.time}</time>
-                    <span className={styles.code}>{decisionCode(x.id)}</span>
+                    <span className={styles.code}>{decisionCode(x)}</span>
                     <span>{x.detail}</span>
                     <span className={styles.by} data-by={x.by}>
                       {x.by}
