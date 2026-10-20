@@ -15,7 +15,6 @@
   height: var(--fx-size-control);
   padding: 0;
   border: var(--fx-rule-frame);
-  border-radius: var(--fx-radius);
   background: var(--fx-color-paper);
   color: var(--fx-color-ink);
   font-family: var(--fx-font-micro);
