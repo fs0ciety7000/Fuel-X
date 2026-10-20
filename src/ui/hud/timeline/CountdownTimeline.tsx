@@ -1,9 +1,12 @@
-import type { KeyboardEvent, ReactNode } from 'react';
+import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useStore } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import { commands, projectionStore } from '@bridge/index';
+import { commands, projectionStore, view } from '@bridge/index';
 import { Button, Glyph } from '../../components';
-import type { ActionVM, CountdownVM, Severity } from '../../types';
+import type { ActionVM, CountdownVM, PhaseVM, Severity } from '../../types';
+import { announce } from '../frame/live';
+import { crossedMilestone } from './bar';
+import { PhaseBar } from './PhaseBar';
 import { RateControl } from '../topbar/RateControl';
 import styles from './CountdownTimeline.module.css';
 
@@ -38,10 +41,12 @@ export interface CountdownTimelineViewProps {
   /** Rate control node (live `RateControl` in the game, a fixture view in `/design`). */
   rate?: ReactNode;
   onAction?: (a: ActionVM) => void;
+  /** Click on a phase label (→ Tasks tab). */
+  onPhase?: (p: PhaseVM) => void;
 }
 
 /** §6.17 countdown band: `[ COUNTDOWN ]` + context, rate control, HOLD (counting only), big T-clock. */
-export function CountdownTimelineView({ head, rate, onAction }: CountdownTimelineViewProps) {
+export function CountdownTimelineView({ head, rate, onAction, onPhase }: CountdownTimelineViewProps) {
   const cd = head.countdown;
   const hold = headerAction(cd);
   const cs = clockState(head);
@@ -84,6 +89,11 @@ export function CountdownTimelineView({ head, rate, onAction }: CountdownTimelin
             </span>
           ) : null}
         </header>
+        {cd ? (
+          <PhaseBar cd={cd} {...(onPhase ? { onPhase } : {})} />
+        ) : (
+          <p className={styles.empty}>NO COUNT SCHEDULED</p>
+        )}
       </div>
       <div className={styles.clock} data-state={cs.state} data-testid="t-clock">
         <time className={styles.clockDigits} aria-live="off">
@@ -107,10 +117,22 @@ export function CountdownTimeline() {
       paused: p.timeScale.paused,
     })),
   );
+  // The T-clock is not live; phase changes and T−10 / T−5 / T−0 are announced politely (§6.17).
+  const cd = head.countdown;
+  const phase = cd?.phases.find((p) => p.state === 'current' || p.state === 'held')?.label ?? null;
+  const last = useRef<{ phase: string | null; t: number | null | undefined }>({ phase, t: cd?.tClockS });
+  useEffect(() => {
+    const prev = last.current;
+    if (phase && prev.phase !== null && phase !== prev.phase) announce(`PHASE: ${phase}`);
+    const m = crossedMilestone(prev.t, cd?.tClockS);
+    if (m !== null) announce(m === 0 ? 'T-ZERO' : `T MINUS ${-m}`);
+    last.current = { phase, t: cd?.tClockS };
+  }, [phase, cd?.tClockS]);
   return (
     <CountdownTimelineView
       head={head}
       rate={<RateControl compact />}
+      onPhase={() => view.tab('tasks')}
       onAction={(a) => {
         if (a.enabled && a.command) commands.send(a.command);
       }}

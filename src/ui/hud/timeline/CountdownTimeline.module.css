@@ -112,3 +112,206 @@
     padding: var(--fx-space-1) var(--fx-space-3);
   }
 }
+
+/* --- phase bar (§6.17) --------------------------------------------------------------------------------- */
+.empty {
+  align-self: center;
+  padding: var(--fx-space-0) var(--fx-space-3);
+  color: var(--fx-color-ink-3);
+  font-size: var(--fx-type-label);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.barBlock {
+  display: grid;
+  align-content: center;
+  gap: var(--fx-space-2);
+  min-width: 0;
+  padding: var(--fx-space-2) var(--fx-space-3);
+}
+
+.bar {
+  position: relative;
+  display: grid;
+  gap: var(--fx-rule-hair);
+  height: var(--fx-size-tag);
+  background: var(--fx-color-ink);
+  border: var(--fx-rule-frame);
+}
+
+.seg {
+  position: relative;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--fx-color-paper-3);
+}
+
+.seg[data-state='pending'],
+.seg[data-state='skipped'] {
+  background-color: var(--fx-color-paper);
+  background-image: var(--fx-pattern-hatch);
+}
+
+.segFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--fx-color-ink);
+  transition: width var(--fx-dur-base) var(--fx-ease-linear);
+}
+
+.window {
+  position: absolute;
+  top: calc(100% + var(--fx-space-1));
+  height: var(--fx-space-2);
+  border: var(--fx-rule-heavy);
+  border-top: 0;
+}
+
+.pollMark {
+  position: absolute;
+  top: calc(-1 * var(--fx-space-2));
+  bottom: 0;
+  width: var(--fx-space-1);
+  transform: translateX(-50%);
+  background: var(--fx-color-ink-4);
+}
+
+.pollMark[data-state='passed'] {
+  background: var(--fx-color-ink);
+}
+
+.pollMark[data-state='open'] {
+  background: var(--fx-color-accent);
+  outline: var(--fx-rule-hair) solid var(--fx-color-ink);
+}
+
+.holdBlock {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--fx-space-3);
+  background: var(--fx-color-accent);
+  outline: var(--fx-rule-frame);
+}
+
+.playhead {
+  position: absolute;
+  top: calc(-1 * var(--fx-space-2));
+  bottom: calc(-1 * var(--fx-space-2));
+  width: var(--fx-space-1);
+  transform: translateX(-50%);
+  background: var(--fx-color-accent);
+  transition: left var(--fx-dur-base) var(--fx-ease-linear);
+}
+
+.playhead::before {
+  content: '';
+  position: absolute;
+  top: calc(-1 * var(--fx-space-2));
+  left: calc(-1 * var(--fx-space-2) + var(--fx-rule-hair));
+  border-left: var(--fx-space-2) solid var(--fx-color-paper);
+  border-right: var(--fx-space-2) solid var(--fx-color-paper);
+  border-top: var(--fx-space-2) solid var(--fx-color-ink);
+}
+
+.barBlock[data-scrubbed] .seg {
+  background-color: var(--fx-color-paper);
+  background-image: var(--fx-pattern-hatch);
+}
+
+.phases {
+  display: grid;
+  gap: var(--fx-rule-hair);
+  list-style: none;
+}
+
+.phase {
+  min-width: 0;
+}
+
+.phaseButton {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-1);
+  width: 100%;
+  min-height: var(--fx-size-hit-min);
+  padding: var(--fx-space-0) var(--fx-space-1);
+  overflow: hidden;
+  background: var(--fx-color-paper);
+  border: 0;
+  color: var(--fx-color-ink-2);
+  font: inherit;
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.phaseButton:hover {
+  background: var(--fx-color-paper-2);
+}
+
+.phaseButton:focus-visible {
+  outline: var(--fx-focus-ring);
+  outline-offset: calc(-1 * var(--fx-focus-offset));
+}
+
+.phase[data-state='current'] .phaseButton,
+.phase[data-state='held'] .phaseButton {
+  color: var(--fx-color-ink);
+  font-weight: var(--fx-type-strong-weight);
+}
+
+.phase[data-state='held'] .phaseButton {
+  color: var(--fx-color-accent-text);
+}
+
+.phaseLong {
+  display: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.phaseShort {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The current phase prints its full name; the others their short code (§6.17, compact §3.3). */
+.phase[data-state='current'] .phaseLong,
+.phase[data-state='held'] .phaseLong {
+  display: inline;
+}
+
+.phase[data-state='current'] .phaseShort,
+.phase[data-state='held'] .phaseShort {
+  display: none;
+}
+
+@container hud (width < 1600px) or (height < 900px) {
+  .barBlock {
+    gap: var(--fx-space-1);
+    padding: var(--fx-space-1) var(--fx-space-3);
+  }
+
+  .bar {
+    height: var(--fx-size-glyph-lg);
+  }
+
+  .phase .phaseLong {
+    display: none;
+  }
+
+  .phase .phaseShort {
+    display: inline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segFill,
+  .playhead {
+    transition: none;
+  }
+}

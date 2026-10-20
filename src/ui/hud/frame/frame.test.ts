@@ -202,7 +202,9 @@ describe('countdown header (§6.17, AC 28)', () => {
         head: { countdown: counting, tClock: 'T−00:10:00', holding: false, holdLabel: '', paused: false },
       }),
     );
-    expect(out.match(/<button/g)).toHaveLength(1);
+    // Count commands only (phase labels are buttons too, they open the Tasks tab).
+    expect(out.match(/aria-keyshortcuts="H"/g)).toHaveLength(1);
+    expect(out).not.toMatch(/>(GO|RECYCLE|SCRUB)</);
     expect(out).toContain('T−00:10:00');
     const held = html(
       h(CountdownTimelineView, {
@@ -215,7 +217,7 @@ describe('countdown header (§6.17, AC 28)', () => {
         },
       }),
     );
-    expect(held).not.toContain('<button');
+    expect(held).not.toContain('aria-keyshortcuts="H"');
     expect(held).toContain('HOLD · POLL');
   });
 });
