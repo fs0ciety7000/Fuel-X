@@ -174,6 +174,20 @@ Component sizes (added in 6.2, all `tokens.size.*`):
 | `--fx-size-debrief` | 880px | Debrief sheet width (§6.29) |
 | `--fx-size-tile` | 160px | Metric tile min width (§6.8) |
 
+HUD frame sizes (added in 6.3, `tokens.size.*`; compact values apply through the `hud` container query, §3.5):
+
+| Token | Standard · compact | Use |
+|---|---|---|
+| `--fx-hud-gutter` · `--fx-size-hud-gutter-compact` | 16px · 12px | Outer gutter columns/rows |
+| `--fx-size-topbar` · `--fx-size-topbar-compact` | 40px · 36px | Top-bar row |
+| `--fx-size-hud-left` · `-compact` | 320px · 272px | Left column (flight card, poll) |
+| `--fx-size-hud-alt` · `-compact` | 56px · 44px | Altitude-scale rail |
+| `--fx-size-hud-rail` · `-compact` | 40px · 32px | Map-control column and compass row |
+| `--fx-size-hud-right` · `-compact` | 400px · 336px | Right column (inspector over tabs) |
+| `--fx-size-hud-timeline` · `-compact` | 112px · 88px | Countdown band row |
+| `--fx-size-hud-tabs` · `-compact` | 600px · 260px | Tabbed-panel height (inspector takes the rest) |
+| `--fx-size-hud-sites` | 440px | Site-switcher sheet width |
+
 State semantics added in 6.2: a **capped** segment (rate above the current cap, §6.25) is hatched but keeps `ink-3` text (5.91, still selectable); only `aria-disabled` items drop to `ink-4`. Stale values (§6.36) print in `ink-3` over the hatch, not `ink-4`, because they stay readable data.
 
 | Token | TS | Value | Use |
@@ -313,6 +327,35 @@ Crosshair `+` marks (ink-4) sit on the outer corners of every card and at the fo
 - World label layer: `none`; each label tag: `auto` (click = select/follow). Leader lines: `none`.
 - Altitude scale, compass tape, noise, stamp: `none` (read-only).
 - The canvas receives everything else (orbit, pick). Wheel over a scrollable panel scrolls the panel, not the camera.
+
+### 3.5 Slot API (as built 6.3)
+
+`src/ui/hud/HudRoot.tsx` mounts `HudFrame` (`src/ui/hud/frame/HudFrame.tsx`) over the canvas. It also holds the glyph sprite, the two live regions (`#fx-live-polite`, `#fx-live-assertive`, written through `announce(text, level)` from `frame/live.tsx`, throttled to one message per 2 s with merging), the `SKIP TO PANELS` link (target `#hud-panels` = the right column) and the global keys (`frame/keys.ts`: `Space`, `,` `.`). The app passes its debug readout through `debug`. It shows at the bottom left of the world area and ignores the pointer.
+
+**Slots** (`frame/slots.ts`, names are an API):
+
+| Slot | Grid area | Pointer | Owner |
+|---|---|---|---|
+| `top` | top bar row | auto | 6.3 |
+| `flight` | left column, row 3 | auto | 6.4 |
+| `poll` | left column, rows 4–5 | auto | 6.5 |
+| `alt` | altitude rail, rows 3–5 | **none** | 6.6 |
+| `toasts` | over the world, row 3 (z-toast) | auto | 6.7 |
+| `compass` | world column, row 5 | **none** | 6.6 |
+| `ctrl` | rail, rows 4–5, bottom-right aligned | auto | 6.6 |
+| `inspect` | right column, flexes above `tabs`, takes the remaining height | auto | 6.4 |
+| `tabs` | right column bottom, height `--hud-tabs` | auto | 6.4 |
+| `strip` | row 6 (auto height, grows up into the world) | auto | 6.5 |
+| `time` | row 7, countdown band | auto | 6.5 |
+| `overlay` | rows 3–7 × cols 2–7, centred, z-stamp | auto | 6.7 (stamp, debrief) |
+
+**How to mount:** add one line to `src/ui/hud/mounts.tsx` (`HUD_MOUNTS: Partial<Record<HudSlotName, ComponentType>>`). Each mounted component takes no props and reads the projection itself through a narrow selector. A slot with no mount renders no DOM. Each slot wrapper is a flex column with `min-width/height: 0` and `pointer-events: none`. In interactive slots the direct children get `pointer-events: auto` at zero specificity (`:where()`), so a component can still opt out on its own root. A panel that may overflow should set `min-height: 0; overflow: auto` on its own root. `HudFrame` also takes a `slots` object, which lets `/design` render presentational views. `contained` positions it inside a sized parent, and `outline` prints empty slot names.
+
+**Compact and minimum viewport** use container queries on the HUD host (`container: hud / size`): `@container hud (width < 1600px) or (height < 900px)` for compact, and `(width < 1280px) or (height < 720px)` for the `[ VIEWPORT 1280×720 MIN ]` plate. Component CSS can use the same `hud` container query for its own compact rules. Deviations from §3.1: the right column ends on row 7, keeping the bottom gutter, and inspector + tabs are one flex column, so they never overlap. The wide ≥ 2560 root multiplier and pausing the sim under the minimum plate are not built yet.
+
+**Top bar (6.3):** `FX` mark · `CALDER / VARNE COAST / [LC-1 BRACKWATER ▾]` · sim UTC · `SIM n×` readout (warn frame when paused or lagging) · RANGE badge (→ `view.tab('range')`, tooltip = worst reason, hatched `RANGE —` without a launch) · alert counter (→ `view.tab('events')`, assertive announcement only for a new danger alert) · `LAUNCH DIRECTOR`. Org/region are UI constants (not projected). Locked sites stay navigable listbox options (`aria-disabled`, hatch, status + `LOCKED IN THIS BUILD`, ink-3 so the reason stays AA). The search (§6.3) and the 1/s danger invert of the alert counter are not built: the invert would break the frozen-frame e2e equality.
+
+**Rate control (6.3)** lives in the countdown band header, as §6.25 places it. The top bar mirrors only the readout. In compact mode the SKIP button keeps its glyph and key and drops the milestone text. At run end (`timeScale.runEnded`, falling back to `debrief !== null`) every segment and SKIP are `aria-disabled` with `RUN ENDED`. A one-shot drop (`timeScale.drop`) prints its own chip next to the cap chip and never hatches segments.
 
 ---
 

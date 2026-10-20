@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { tokens } from '@tokens/tokens';
 import { GlyphSprite } from '../components';
 import { ComponentGallery } from './ComponentGallery';
+import { HudGallery } from './HudGallery';
 import { PanelsGallery } from './PanelsGallery';
 import styles from './DesignGallery.module.css';
 
@@ -104,6 +105,7 @@ export function DesignGallery() {
         </p>
       </header>
       <ComponentGallery />
+      <HudGallery />
       <PanelsGallery />
     </main>
   );

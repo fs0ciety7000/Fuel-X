@@ -1,0 +1,248 @@
+/* HUD blueprint grid (DESIGN_SYSTEM §3.1 standard, §3.3 compact). Every region is transparent to the pointer;
+   only the cards and controls inside catch it (§3.4). Sizes come from the hud* size tokens. */
+.host {
+  --hud-gutter: var(--fx-hud-gutter);
+  --hud-head-gap: var(--fx-hud-gutter);
+  --hud-top: var(--fx-size-topbar);
+  --hud-left: var(--fx-size-hud-left);
+  --hud-alt: var(--fx-size-hud-alt);
+  --hud-rail: var(--fx-size-hud-rail);
+  --hud-right: var(--fx-size-hud-right);
+  --hud-time: var(--fx-size-hud-timeline);
+  --hud-tabs: var(--fx-size-hud-tabs);
+
+  position: fixed;
+  inset: 0;
+  z-index: var(--fx-z-hud);
+  container: hud / size;
+  pointer-events: none;
+}
+
+.host[data-contained] {
+  position: absolute;
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns:
+    var(--hud-gutter) var(--hud-left) var(--hud-alt) minmax(0, 1fr) var(--hud-rail) var(--fx-space-3)
+    var(--hud-right) var(--hud-gutter);
+  grid-template-rows:
+    var(--hud-top) var(--hud-head-gap) auto minmax(0, 1fr) var(--hud-rail) auto var(--hud-time)
+    var(--hud-gutter);
+  grid-template-areas:
+    'top    top    top    top     top     top   top     top'
+    '.      .      .      .       .       .     .       .'
+    '.      flight alt    toast   .       .     right   .'
+    '.      poll   alt    world   ctrl    .     right   .'
+    '.      poll   alt    compass ctrl    .     right   .'
+    '.      strip  strip  strip   strip   .     right   .'
+    '.      time   time   time    time    .     right   .'
+    '.      .      .      .       .       .     .       .';
+  pointer-events: none;
+}
+
+@container hud (width < 1600px) or (height < 900px) {
+  .frame {
+    --hud-gutter: var(--fx-size-hud-gutter-compact);
+    --hud-head-gap: var(--fx-space-3);
+    --hud-top: var(--fx-size-topbar-compact);
+    --hud-left: var(--fx-size-hud-left-compact);
+    --hud-alt: var(--fx-size-hud-alt-compact);
+    --hud-rail: var(--fx-size-hud-rail-compact);
+    --hud-right: var(--fx-size-hud-right-compact);
+    --hud-time: var(--fx-size-hud-timeline-compact);
+    --hud-tabs: var(--fx-size-hud-tabs-compact);
+  }
+}
+
+/* --- slots ------------------------------------------------------------------------------------------- */
+.slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  pointer-events: none;
+}
+
+/* Zero specificity: a component's own root class can still opt out (e.g. a read-only scale). */
+:where(.slot[data-interactive]) > * {
+  pointer-events: auto;
+}
+
+.slot[data-slot='top'] {
+  grid-area: top;
+  z-index: var(--fx-z-popover);
+}
+
+.slot[data-slot='flight'] {
+  grid-area: flight;
+}
+
+.slot[data-slot='poll'] {
+  grid-area: poll;
+  padding-top: var(--fx-space-3);
+}
+
+.slot[data-slot='alt'] {
+  grid-area: alt;
+  align-items: center;
+}
+
+.slot[data-slot='toasts'] {
+  grid-area: toast;
+  z-index: var(--fx-z-toast);
+  align-items: center;
+}
+
+.slot[data-slot='compass'] {
+  grid-area: compass;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot[data-slot='ctrl'] {
+  grid-area: ctrl;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.slot[data-slot='strip'] {
+  grid-area: strip;
+  padding-bottom: var(--fx-space-3);
+}
+
+.slot[data-slot='time'] {
+  grid-area: time;
+}
+
+/* Centred over the world, wide enough for the debrief sheet at the compact size; above every card. */
+.slot[data-slot='overlay'] {
+  grid-row: 3 / 8;
+  grid-column: 2 / 8;
+  z-index: var(--fx-z-stamp);
+  align-items: center;
+  justify-content: center;
+}
+
+.right {
+  grid-area: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--fx-space-3);
+  min-height: 0;
+  pointer-events: none;
+}
+
+.slot[data-slot='inspect'] {
+  flex: 1 1 auto;
+}
+
+.slot[data-slot='tabs'] {
+  flex: 0 1 var(--hud-tabs);
+}
+
+.right:focus-visible {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+.debug {
+  grid-area: world;
+  align-self: end;
+  justify-self: start;
+  margin: var(--fx-space-3);
+  pointer-events: none;
+}
+
+/* --- world corners ------------------------------------------------------------------------------------- */
+.world {
+  grid-area: world;
+  position: relative;
+  pointer-events: none;
+  color: var(--fx-color-ink-4);
+}
+
+.cross {
+  position: absolute;
+  display: flex;
+  line-height: 0;
+}
+
+.cross[data-corner='tl'] {
+  top: 0;
+  left: 0;
+}
+
+.cross[data-corner='tr'] {
+  top: 0;
+  right: 0;
+}
+
+.cross[data-corner='bl'] {
+  bottom: 0;
+  left: 0;
+}
+
+.cross[data-corner='br'] {
+  right: 0;
+  bottom: 0;
+}
+
+/* --- /design outline ----------------------------------------------------------------------------------- */
+.slot[data-outline] {
+  outline: var(--fx-rule-hair) dashed var(--fx-color-ink-4);
+  outline-offset: calc(-1 * var(--fx-rule-hair));
+}
+
+.slotName {
+  align-self: flex-start;
+  margin: var(--fx-space-2);
+  padding: var(--fx-space-1) var(--fx-space-2);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+  color: var(--fx-color-ink-3);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  white-space: nowrap;
+}
+
+/* --- minimum viewport (§2.9) ------------------------------------------------------------------------- */
+.minPlate {
+  position: absolute;
+  inset: 0;
+  z-index: var(--fx-z-dialog);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--fx-space-3);
+  background: var(--fx-color-paper);
+  color: var(--fx-color-ink);
+  font-size: var(--fx-type-title);
+  font-weight: var(--fx-type-title-weight);
+  letter-spacing: var(--fx-type-title-tracking);
+  pointer-events: auto;
+}
+
+.minSub {
+  color: var(--fx-color-ink-3);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+@container hud (width < 1280px) or (height < 720px) {
+  .minPlate {
+    display: flex;
+  }
+
+  .frame {
+    visibility: hidden;
+  }
+}

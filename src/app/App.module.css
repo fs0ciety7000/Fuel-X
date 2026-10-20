@@ -12,19 +12,7 @@
   z-index: var(--fx-z-world);
 }
 
-/* Temporary readouts until the 6.3 HUD frame: ink on paper, one hairline frame, top-left gutter. */
-.readouts {
-  position: absolute;
-  top: var(--fx-hud-gutter);
-  left: var(--fx-hud-gutter);
-  z-index: var(--fx-z-hud);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--fx-space-1);
-  pointer-events: none;
-}
-
+/* Debug readout (placed by the HUD frame, bottom-left of the world): ink on paper, one hairline frame. */
 .readout {
   margin: 0;
   padding: var(--fx-space-2) var(--fx-space-3);

@@ -1,0 +1,42 @@
+.rate {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-3);
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+.readout {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  min-height: var(--fx-size-hit-min);
+  padding: var(--fx-space-0) var(--fx-space-2);
+  border: var(--fx-rule-warn);
+  border-color: var(--fx-color-paper);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.readout[data-state='warn'] {
+  border: var(--fx-rule-warn);
+  color: var(--fx-color-accent-text);
+}
+
+.reason {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  color: var(--fx-color-ink-2);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+/* Compact (§3.3): the skip button keeps its glyph + key, the milestone name moves to its accessible name. */
+@container hud (width < 1600px) or (height < 900px) {
+  .skipText {
+    display: none;
+  }
+}

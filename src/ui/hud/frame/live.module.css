@@ -1,0 +1,9 @@
+/* Screen-reader only: present in the accessibility tree, outside the visual grid. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

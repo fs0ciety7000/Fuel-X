@@ -1,0 +1,114 @@
+/* §6.17 countdown band: opaque paper card, ink frame; the macro T-clock owns the right edge. */
+.band {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  height: 100%;
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-frame);
+  color: var(--fx-color-ink);
+  pointer-events: auto;
+}
+
+.band[data-state='danger'] {
+  border-top: var(--fx-rule-band) solid var(--fx-color-accent);
+}
+
+.main {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--fx-space-3);
+  min-height: var(--fx-size-control);
+  padding: var(--fx-space-1) var(--fx-space-3);
+  border-bottom: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+  white-space: nowrap;
+}
+
+.title {
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+}
+
+.context {
+  overflow: hidden;
+  color: var(--fx-color-ink-2);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  text-overflow: ellipsis;
+}
+
+.fill {
+  flex: 1 1 auto;
+}
+
+.holdTag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  min-height: var(--fx-size-hit-min);
+  padding: var(--fx-space-0) var(--fx-space-3);
+  border: var(--fx-rule-warn);
+  color: var(--fx-color-accent-text);
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+}
+
+/* --- T-clock (§6.18): right-aligned in a fixed box, never re-centres ------------------------------------ */
+.clock {
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  gap: var(--fx-space-1);
+  min-width: 14ch;
+  padding: var(--fx-space-2) var(--fx-space-4);
+  border-left: var(--fx-rule-frame);
+}
+
+.clockDigits {
+  font-family: var(--fx-font-macro);
+  font-size: var(--fx-type-macro-clock);
+  font-weight: var(--fx-type-macro-clock-weight);
+  line-height: var(--fx-type-macro-clock-leading);
+  letter-spacing: var(--fx-type-macro-clock-tracking);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.clockWord {
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+}
+
+.clock[data-state='warn'] {
+  outline: var(--fx-rule-warn);
+  outline-offset: calc(-1 * var(--fx-space-1));
+}
+
+.clock[data-state='warn'] .clockWord {
+  color: var(--fx-color-accent-text);
+}
+
+.clock[data-state='danger'] {
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+}
+
+@container hud (width < 1600px) or (height < 900px) {
+  .context {
+    display: none;
+  }
+
+  .clock {
+    padding: var(--fx-space-1) var(--fx-space-3);
+  }
+}

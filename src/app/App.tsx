@@ -1,11 +1,11 @@
 import { Scene } from '@render/index';
+import { HudRoot } from '@ui/hud/HudRoot';
 import { useEffect, useRef } from 'react';
 import styles from './App.module.css';
 import type { Game } from './game';
-import { ProjectionReadout } from './ProjectionReadout';
 
-// Composition root view: full-screen scene + temporary readouts (the HUD frame arrives in 6.3). The debug readout
-// is written imperatively by the game loop at 4 Hz; the projection readout is a throttled store subscriber.
+// Composition root view: full-screen scene + the HUD frame (6.3) over it. The HUD reads the throttled projection
+// through its own store selectors; the debug readout is written imperatively by the game loop at 4 Hz.
 export function App({ game }: { game: Game }) {
   const readout = useRef<HTMLParagraphElement>(null);
   useEffect(() => game.bindReadout(readout.current), [game]);
@@ -22,12 +22,13 @@ export function App({ game }: { game: Game }) {
         input={game.input}
         onApi={game.attachScene}
       />
-      <div className={styles.readouts}>
-        <p ref={readout} className={styles.readout} data-testid="debug-readout">
-          LOADING
-        </p>
-        <ProjectionReadout className={styles.readout} />
-      </div>
+      <HudRoot
+        debug={
+          <p ref={readout} className={styles.readout} data-testid="debug-readout">
+            LOADING
+          </p>
+        }
+      />
     </main>
   );
 }

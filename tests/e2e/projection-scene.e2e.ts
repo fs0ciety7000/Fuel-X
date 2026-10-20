@@ -1,5 +1,4 @@
-// UI projection end to end (6.1): `__fuelx.state()` is the real UiProjection, the placeholder React subscriber
-// renders it, React commits stay ≤ 12/s (ARCHITECTURE §13.1) at 1× and 100×, and the published projection is
+// UI projection end to end (6.1): `__fuelx.state()` is the real UiProjection, the HUD (6.3) renders it, React commits stay ≤ 12/s (ARCHITECTURE §13.1) at 1× and 100×, and the published projection is
 // ≤ 250 ms old while running (AC 17). Runs in the serial `scene` project (name matches SCENE_SPECS); low-cost visuals.
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
@@ -72,13 +71,13 @@ test.describe('projection', () => {
     expect(s0.lists.tanks.length).toBe(6);
     expect(s0.labels.length).toBeGreaterThan(10);
 
-    // 100× in Rollout (allowed), placeholder subscriber re-renders on every clock change.
+    // 100× in Rollout (allowed), the HUD re-renders on every clock change.
     await page.evaluate(() => (window as unknown as { __fuelx?: Fx }).__fuelx?.setTimeScale(100));
     const fast = await measure(page, 4_000);
     console.log('100x', JSON.stringify(fast));
     expect(fast.reactCommitsPerS).toBeLessThanOrEqual(12);
     expect(fast.projections.ageMs).toBeLessThanOrEqual(250 + 1000 / Math.max(1, fast.fps));
-    await expect(page.getByTestId('projection-readout')).toContainText('100×'); // `SIM 100×` or, lagging under SwiftShader, `SIM 22.0× OF 100×`
+    await expect(page.getByTestId('topbar-sim')).toContainText('100×'); // `SIM 100×` or, lagging under SwiftShader, `SIM 22.0× OF 100×`
 
     // 1× at the terminal count (forced 1×).
     await page.evaluate(async () => {
@@ -91,7 +90,7 @@ test.describe('projection', () => {
     const slow = await measure(page, 4_000);
     console.log('1x', JSON.stringify(slow));
     expect(slow.reactCommitsPerS).toBeLessThanOrEqual(12);
-    await expect(page.getByTestId('projection-readout')).toContainText('TERMINAL COUNT');
+    await expect(page.getByTestId('countdown')).toContainText('TERMINAL COUNT'); // rate lock chip `1× LOCKED · TERMINAL COUNT`
     expect(errors).toEqual([]);
   });
 });

@@ -1,0 +1,98 @@
+/* /design HUD section (6.3+): same specimen grammar as the component gallery. */
+.gallery {
+  display: grid;
+  gap: var(--fx-space-7);
+}
+
+.section {
+  display: grid;
+  gap: var(--fx-space-3);
+  scroll-margin-top: var(--fx-space-6);
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--fx-space-4);
+  border-bottom: var(--fx-rule-heavy);
+  padding-bottom: var(--fx-space-2);
+}
+
+.sectionTitle {
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+}
+
+.ref,
+.caption {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+}
+
+.stack {
+  display: grid;
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+}
+
+.specimen {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--fx-space-3);
+  padding: var(--fx-space-4);
+  background: var(--fx-color-paper);
+  min-width: 0;
+}
+
+.bar {
+  justify-self: stretch;
+  height: var(--fx-size-topbar);
+}
+
+.band {
+  justify-self: stretch;
+  height: var(--fx-size-hud-timeline);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.scaled {
+  position: relative;
+  overflow: hidden;
+  border: var(--fx-rule-frame);
+}
+
+.frameBox {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+/* Static stand-in for the scene: the world's paper with the halftone sea hinted by the hatch pattern. */
+.frameBg {
+  position: absolute;
+  inset: 0;
+  background-color: var(--fx-3d-ground-base);
+  background-image: var(--fx-pattern-hatch);
+}

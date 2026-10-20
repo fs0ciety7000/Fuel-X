@@ -1,0 +1,21 @@
+/* §8 skip link: first focusable, off-screen until focused, then an ink plate over the top bar. */
+.skip {
+  position: absolute;
+  top: var(--fx-space-2);
+  left: var(--fx-space-2);
+  z-index: var(--fx-z-dialog);
+  padding: var(--fx-space-2) var(--fx-space-3);
+  background: var(--fx-color-ink);
+  color: var(--fx-color-paper);
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+  text-decoration: none;
+  pointer-events: auto;
+  clip-path: inset(50%);
+}
+
+.skip:focus,
+.skip:focus-visible {
+  clip-path: none;
+}
