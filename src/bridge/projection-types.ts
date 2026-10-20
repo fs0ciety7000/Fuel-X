@@ -478,7 +478,7 @@ export interface DecisionOptionVM {
   auto: boolean;
   /** Irreversible: open the confirm dialog first. */
   confirm: boolean;
-  /** Exact sim command to send. */
+  /** Exact sim command to send; absent = UI-only option (D1 `NO_ORDER` just collapses the strip). */
   command?: Command;
 }
 
@@ -514,6 +514,8 @@ interface DecisionBase {
   blocking: boolean;
   /** Other decisions waiting behind this one. */
   queued: number;
+  /** Their kinds, in priority order D3 (CATCH) > D3b (LEAK) > D2 (POLL) > D1 (PROP_MARGIN). */
+  queuedKinds?: DecisionKind[];
   /** Command sent, awaiting projection confirmation (UI-local; the projector always emits null). */
   pending: string | null;
 }
@@ -538,6 +540,11 @@ export interface PollDecisionVM extends DecisionBase {
   /** `1 MARGINAL · 1 NO-GO · 3 OF 5 GO`. */
   result?: string;
   riskNote: string | null;
+  /**
+   * Strip header evidence (GDD §13.2.2): window left, earliest liftoff if GO vs window close, LOX / CH4 reserve
+   * (hold-minutes), crew shift left, and the cost of each 10 min held.
+   */
+  evidence?: ConsequenceVM[];
 }
 
 export interface CatchDriverVM {

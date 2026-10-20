@@ -860,11 +860,47 @@
       "state": "neutral"
      },
      {
-      "label": "COST",
+      "label": "EARLIEST LIFTOFF",
       "value": {
-       "text": "TIME ONLY",
+       "text": "13:44:56 UTC",
        "unit": "",
        "value": null
+      },
+      "state": "neutral"
+     },
+     {
+      "label": "WINDOW CLOSES",
+      "value": {
+       "text": "14:30:00 UTC",
+       "unit": "",
+       "value": null
+      },
+      "state": "neutral"
+     },
+     {
+      "label": "WINDOW LEFT AT LIFTOFF",
+      "value": {
+       "text": "45",
+       "unit": "MIN",
+       "value": 2700
+      },
+      "state": "neutral"
+     },
+     {
+      "label": "LOX RESERVE AT LIFTOFF",
+      "value": {
+       "text": "42",
+       "unit": "HOLD-MIN",
+       "value": 2520
+      },
+      "state": "warn"
+     },
+     {
+      "label": "CH4 RESERVE AT LIFTOFF",
+      "value": {
+       "text": "72",
+       "unit": "HOLD-MIN",
+       "value": 4320
       },
       "state": "neutral"
      }
@@ -881,24 +917,6 @@
     },
     "confirm": [
      {
-      "label": "DETANK",
-      "value": {
-       "text": "PART OF THE LOAD IS LOST",
-       "unit": "",
-       "value": null
-      },
-      "state": "warn"
-     },
-     {
-      "label": "NEXT ATTEMPT",
-      "value": {
-       "text": "REBOOK +24 H",
-       "unit": "",
-       "value": null
-      },
-      "state": "neutral"
-     },
-     {
       "label": "WINDOW-MISS PENALTY",
       "value": {
        "text": "−15.00",
@@ -906,6 +924,51 @@
        "value": -15000000
       },
       "state": "danger"
+     },
+     {
+      "label": "REPUTATION",
+      "value": {
+       "text": "−10",
+       "unit": "REP",
+       "value": -10
+      },
+      "state": "danger"
+     },
+     {
+      "label": "DETANK LOSS LOX",
+      "value": {
+       "text": "575",
+       "unit": "T",
+       "value": 575000
+      },
+      "state": "warn"
+     },
+     {
+      "label": "DETANK LOSS CH4",
+      "value": {
+       "text": "160",
+       "unit": "T",
+       "value": 160000
+      },
+      "state": "warn"
+     },
+     {
+      "label": "NEXT ATTEMPT",
+      "value": {
+       "text": "REBOOK +24 H (NOT PLAYED IN MVP)",
+       "unit": "",
+       "value": null
+      },
+      "state": "neutral"
+     },
+     {
+      "label": "RUN",
+      "value": {
+       "text": "ENDS AT DEBRIEF",
+       "unit": "",
+       "value": null
+      },
+      "state": "warn"
      }
     ]
    }
@@ -1520,11 +1583,11 @@
       "reasonCode": "ROAD_CLOSED",
       "confirm": [
        {
-        "label": "CARGO",
+        "label": "COST",
         "value": {
-         "text": "20",
-         "unit": "T LOX",
-         "value": 20000
+         "text": "−0.01",
+         "unit": "M CR",
+         "value": -9000
         },
         "state": "neutral"
        },
@@ -1538,13 +1601,22 @@
         "state": "neutral"
        },
        {
-        "label": "PROPELLANT",
+        "label": "CARGO",
         "value": {
-         "text": "0.00",
-         "unit": "M CR",
-         "value": -3000
+         "text": "20",
+         "unit": "T LOX",
+         "value": 20000
         },
         "state": "neutral"
+       },
+       {
+        "label": "HOLD-MIN BOUGHT",
+        "value": {
+         "text": "9",
+         "unit": "HOLD-MIN",
+         "value": 540
+        },
+        "state": "ok"
        },
        {
         "label": "AT GATE",
@@ -1554,6 +1626,24 @@
          "value": null
         },
         "state": "warn"
+       },
+       {
+        "label": "RESERVE AFTER ORDERS",
+        "value": {
+         "text": "LOX 0.9 → 1.0",
+         "unit": "HOLD-H",
+         "value": 3600
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "TRUCKS BOOKED",
+        "value": {
+         "text": "1 OF 6",
+         "unit": "",
+         "value": null
+        },
+        "state": "neutral"
        }
       ]
      },
@@ -1571,11 +1661,11 @@
       "reasonCode": "ROAD_CLOSED",
       "confirm": [
        {
-        "label": "CARGO",
+        "label": "COST",
         "value": {
-         "text": "20",
-         "unit": "T LOX",
-         "value": 20000
+         "text": "−0.12",
+         "unit": "M CR",
+         "value": -123000
         },
         "state": "neutral"
        },
@@ -1589,13 +1679,22 @@
         "state": "neutral"
        },
        {
-        "label": "PROPELLANT",
+        "label": "CARGO",
         "value": {
-         "text": "0.00",
-         "unit": "M CR",
-         "value": -3000
+         "text": "20",
+         "unit": "T LOX",
+         "value": 20000
         },
         "state": "neutral"
+       },
+       {
+        "label": "HOLD-MIN BOUGHT",
+        "value": {
+         "text": "9",
+         "unit": "HOLD-MIN",
+         "value": 540
+        },
+        "state": "ok"
        },
        {
         "label": "AT GATE",
@@ -1605,6 +1704,24 @@
          "value": null
         },
         "state": "warn"
+       },
+       {
+        "label": "RESERVE AFTER ORDERS",
+        "value": {
+         "text": "LOX 0.9 → 1.0",
+         "unit": "HOLD-H",
+         "value": 3600
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "TRUCKS BOOKED",
+        "value": {
+         "text": "0 OF 6",
+         "unit": "",
+         "value": null
+        },
+        "state": "neutral"
        }
       ]
      },
@@ -1622,11 +1739,11 @@
       "reasonCode": "ROAD_CLOSED",
       "confirm": [
        {
-        "label": "CARGO",
+        "label": "COST",
         "value": {
-         "text": "16",
-         "unit": "T CH4",
-         "value": 16000
+         "text": "−0.01",
+         "unit": "M CR",
+         "value": -14000
         },
         "state": "neutral"
        },
@@ -1640,13 +1757,22 @@
         "state": "neutral"
        },
        {
-        "label": "PROPELLANT",
+        "label": "CARGO",
         "value": {
-         "text": "−0.01",
-         "unit": "M CR",
-         "value": -8000
+         "text": "16",
+         "unit": "T CH4",
+         "value": 16000
         },
         "state": "neutral"
+       },
+       {
+        "label": "HOLD-MIN BOUGHT",
+        "value": {
+         "text": "37",
+         "unit": "HOLD-MIN",
+         "value": 2220
+        },
+        "state": "ok"
        },
        {
         "label": "AT GATE",
@@ -1656,6 +1782,24 @@
          "value": null
         },
         "state": "warn"
+       },
+       {
+        "label": "RESERVE AFTER ORDERS",
+        "value": {
+         "text": "CH4 1.4 → 2.0",
+         "unit": "HOLD-H",
+         "value": 7200
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "TRUCKS BOOKED",
+        "value": {
+         "text": "1 OF 6",
+         "unit": "",
+         "value": null
+        },
+        "state": "neutral"
        }
       ]
      },
@@ -1673,11 +1817,11 @@
       "reasonCode": "ROAD_CLOSED",
       "confirm": [
        {
-        "label": "CARGO",
+        "label": "COST",
         "value": {
-         "text": "16",
-         "unit": "T CH4",
-         "value": 16000
+         "text": "−0.13",
+         "unit": "M CR",
+         "value": -128000
         },
         "state": "neutral"
        },
@@ -1691,13 +1835,22 @@
         "state": "neutral"
        },
        {
-        "label": "PROPELLANT",
+        "label": "CARGO",
         "value": {
-         "text": "−0.01",
-         "unit": "M CR",
-         "value": -8000
+         "text": "16",
+         "unit": "T CH4",
+         "value": 16000
         },
         "state": "neutral"
+       },
+       {
+        "label": "HOLD-MIN BOUGHT",
+        "value": {
+         "text": "37",
+         "unit": "HOLD-MIN",
+         "value": 2220
+        },
+        "state": "ok"
        },
        {
         "label": "AT GATE",
@@ -1707,6 +1860,24 @@
          "value": null
         },
         "state": "warn"
+       },
+       {
+        "label": "RESERVE AFTER ORDERS",
+        "value": {
+         "text": "CH4 1.4 → 2.0",
+         "unit": "HOLD-H",
+         "value": 7200
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "TRUCKS BOOKED",
+        "value": {
+         "text": "0 OF 6",
+         "unit": "",
+         "value": null
+        },
+        "state": "neutral"
        }
       ]
      }

@@ -1545,11 +1545,11 @@
       "reasonCode": "NO_COUNT",
       "confirm": [
        {
-        "label": "CARGO",
+        "label": "COST",
         "value": {
-         "text": "20",
-         "unit": "T LOX",
-         "value": 20000
+         "text": "−0.01",
+         "unit": "M CR",
+         "value": -9000
         },
         "state": "neutral"
        },
@@ -1563,13 +1563,22 @@
         "state": "neutral"
        },
        {
-        "label": "PROPELLANT",
+        "label": "CARGO",
         "value": {
-         "text": "0.00",
-         "unit": "M CR",
-         "value": -3000
+         "text": "20",
+         "unit": "T LOX",
+         "value": 20000
         },
         "state": "neutral"
+       },
+       {
+        "label": "HOLD-MIN BOUGHT",
+        "value": {
+         "text": "—",
+         "unit": "HOLD-MIN",
+         "value": null
+        },
+        "state": "ok"
        },
        {
         "label": "AT GATE",
@@ -1579,6 +1588,24 @@
          "value": null
         },
         "state": "warn"
+       },
+       {
+        "label": "RESERVE AFTER ORDERS",
+        "value": {
+         "text": "—",
+         "unit": "HOLD-H",
+         "value": null
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "TRUCKS BOOKED",
+        "value": {
+         "text": "1 OF 6",
+         "unit": "",
+         "value": null
+        },
+        "state": "neutral"
        }
       ]
      },
@@ -1596,11 +1623,11 @@
       "reasonCode": "NO_COUNT",
       "confirm": [
        {
-        "label": "CARGO",
+        "label": "COST",
         "value": {
-         "text": "20",
-         "unit": "T LOX",
-         "value": 20000
+         "text": "−0.12",
+         "unit": "M CR",
+         "value": -123000
         },
         "state": "neutral"
        },
@@ -1614,13 +1641,22 @@
         "state": "neutral"
        },
        {
-        "label": "PROPELLANT",
+        "label": "CARGO",
         "value": {
-         "text": "0.00",
-         "unit": "M CR",
-         "value": -3000
+         "text": "20",
+         "unit": "T LOX",
+         "value": 20000
         },
         "state": "neutral"
+       },
+       {
+        "label": "HOLD-MIN BOUGHT",
+        "value": {
+         "text": "—",
+         "unit": "HOLD-MIN",
+         "value": null
+        },
+        "state": "ok"
        },
        {
         "label": "AT GATE",
@@ -1630,6 +1666,24 @@
          "value": null
         },
         "state": "warn"
+       },
+       {
+        "label": "RESERVE AFTER ORDERS",
+        "value": {
+         "text": "—",
+         "unit": "HOLD-H",
+         "value": null
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "TRUCKS BOOKED",
+        "value": {
+         "text": "0 OF 6",
+         "unit": "",
+         "value": null
+        },
+        "state": "neutral"
        }
       ]
      },
@@ -1647,11 +1701,11 @@
       "reasonCode": "NO_COUNT",
       "confirm": [
        {
-        "label": "CARGO",
+        "label": "COST",
         "value": {
-         "text": "16",
-         "unit": "T CH4",
-         "value": 16000
+         "text": "−0.01",
+         "unit": "M CR",
+         "value": -14000
         },
         "state": "neutral"
        },
@@ -1665,13 +1719,22 @@
         "state": "neutral"
        },
        {
-        "label": "PROPELLANT",
+        "label": "CARGO",
         "value": {
-         "text": "−0.01",
-         "unit": "M CR",
-         "value": -8000
+         "text": "16",
+         "unit": "T CH4",
+         "value": 16000
         },
         "state": "neutral"
+       },
+       {
+        "label": "HOLD-MIN BOUGHT",
+        "value": {
+         "text": "—",
+         "unit": "HOLD-MIN",
+         "value": null
+        },
+        "state": "ok"
        },
        {
         "label": "AT GATE",
@@ -1681,6 +1744,24 @@
          "value": null
         },
         "state": "warn"
+       },
+       {
+        "label": "RESERVE AFTER ORDERS",
+        "value": {
+         "text": "—",
+         "unit": "HOLD-H",
+         "value": null
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "TRUCKS BOOKED",
+        "value": {
+         "text": "1 OF 6",
+         "unit": "",
+         "value": null
+        },
+        "state": "neutral"
        }
       ]
      },
@@ -1698,11 +1779,11 @@
       "reasonCode": "NO_COUNT",
       "confirm": [
        {
-        "label": "CARGO",
+        "label": "COST",
         "value": {
-         "text": "16",
-         "unit": "T CH4",
-         "value": 16000
+         "text": "−0.13",
+         "unit": "M CR",
+         "value": -128000
         },
         "state": "neutral"
        },
@@ -1716,13 +1797,22 @@
         "state": "neutral"
        },
        {
-        "label": "PROPELLANT",
+        "label": "CARGO",
         "value": {
-         "text": "−0.01",
-         "unit": "M CR",
-         "value": -8000
+         "text": "16",
+         "unit": "T CH4",
+         "value": 16000
         },
         "state": "neutral"
+       },
+       {
+        "label": "HOLD-MIN BOUGHT",
+        "value": {
+         "text": "—",
+         "unit": "HOLD-MIN",
+         "value": null
+        },
+        "state": "ok"
        },
        {
         "label": "AT GATE",
@@ -1732,6 +1822,24 @@
          "value": null
         },
         "state": "warn"
+       },
+       {
+        "label": "RESERVE AFTER ORDERS",
+        "value": {
+         "text": "—",
+         "unit": "HOLD-H",
+         "value": null
+        },
+        "state": "neutral"
+       },
+       {
+        "label": "TRUCKS BOOKED",
+        "value": {
+         "text": "0 OF 6",
+         "unit": "",
+         "value": null
+        },
+        "state": "neutral"
        }
       ]
      }

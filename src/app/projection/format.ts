@@ -87,6 +87,12 @@ export function hoursMinutes(s: number | null | undefined): ValueVM {
 }
 /** s → hours with fixed decimals (`0.60 H`). */
 export const hours = (s: number | null | undefined, decimals = 2): ValueVM => num(s, decimals, 'H', 1 / 3600);
+/** s → whole minutes (`52 MIN`). */
+export const minutes = (s: number | null | undefined): ValueVM => num(s, 0, 'MIN', 1 / 60);
+/** Hold time a reserve covers, s → `36 HOLD-MIN` (GDD §13.2.2). */
+export const holdMinutes = (s: number | null | undefined): ValueVM => num(s, 0, 'HOLD-MIN', 1 / 60);
+/** Hold time a reserve covers, s → `0.6 HOLD-H` (GDD §13.2.2 D1). */
+export const holdHours = (s: number | null | undefined): ValueVM => num(s, 1, 'HOLD-H', 1 / 3600);
 /** s → days (`3.0 D`). */
 export const days = (s: number | null | undefined, decimals = 1): ValueVM => num(s, decimals, 'D', 1 / 86_400);
 
