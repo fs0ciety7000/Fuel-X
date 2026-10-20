@@ -1,0 +1,67 @@
+.card {
+  width: 100%;
+}
+
+.body {
+  grid-template-columns: 1fr 1fr;
+}
+
+.body > .tile {
+  min-width: 0;
+}
+
+.body dt {
+  overflow-wrap: anywhere;
+}
+
+.sub {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--fx-space-2);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-2);
+  white-space: nowrap;
+}
+
+.reserve {
+  display: grid;
+  gap: var(--fx-space-1);
+}
+
+/* Farm reserve tick (§6.7, GDD §10): reserve ÷ the 1 hold-hour MARGINAL limit; full track = at the limit. */
+.gauge {
+  position: relative;
+  display: block;
+  height: var(--fx-space-1);
+  background: var(--fx-color-paper-3);
+}
+
+.gaugeFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--fx-color-ink);
+}
+
+.link {
+  min-height: var(--fx-size-hit-min);
+  padding: var(--fx-space-0) var(--fx-space-2);
+  border: var(--fx-rule-hair) solid transparent;
+  background: transparent;
+  color: var(--fx-color-ink);
+  font: inherit;
+  font-size: var(--fx-type-label);
+  letter-spacing: var(--fx-type-label-tracking);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.link:hover {
+  border-color: var(--fx-color-ink);
+}
+
+.link:focus-visible {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}

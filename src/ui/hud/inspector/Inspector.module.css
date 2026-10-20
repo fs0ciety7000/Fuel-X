@@ -1,0 +1,136 @@
+.inspector {
+  display: grid;
+  align-content: start;
+  gap: var(--fx-rule-hair);
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+  pointer-events: auto;
+  scrollbar-color: var(--fx-color-ink) var(--fx-color-paper-3);
+  scrollbar-width: thin;
+}
+
+.head {
+  display: grid;
+  gap: var(--fx-space-2);
+  padding: var(--fx-space-3);
+  background: var(--fx-color-paper);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--fx-space-3);
+}
+
+.callSign {
+  font-size: var(--fx-type-title);
+  font-weight: var(--fx-type-title-weight);
+  letter-spacing: var(--fx-type-title-tracking);
+  line-height: var(--fx-type-title-leading);
+}
+
+/* Macro-type use #2 (§1.3): the followed call-sign. */
+.callSignHero {
+  font-family: var(--fx-font-macro);
+  font-size: var(--fx-type-macro-callsign);
+  font-weight: var(--fx-type-macro-callsign-weight);
+  letter-spacing: var(--fx-type-macro-callsign-tracking);
+  line-height: var(--fx-type-macro-callsign-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+.sub {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--fx-rule-hair);
+}
+
+.cell {
+  display: grid;
+  gap: var(--fx-space-1);
+  padding: var(--fx-space-0);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-hair) solid transparent;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  line-height: var(--fx-type-label-leading);
+  color: var(--fx-color-ink-3);
+}
+
+.cell .label {
+  padding: var(--fx-space-2) var(--fx-space-3) var(--fx-space-0);
+}
+
+.value {
+  padding: var(--fx-space-0) var(--fx-space-3) var(--fx-space-2);
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+}
+
+.cell:last-child:nth-child(odd) {
+  grid-column: span 2;
+}
+
+.cell[data-state='warn'] {
+  border: var(--fx-rule-warn);
+}
+
+.cell[data-state='danger'] .label {
+  padding: var(--fx-space-1) var(--fx-space-3);
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+}
+
+.section,
+.chart,
+.actions {
+  padding: var(--fx-space-3);
+  background: var(--fx-color-paper);
+}
+
+.chart {
+  display: grid;
+  gap: var(--fx-space-2);
+  margin: 0;
+}
+
+.chart svg {
+  width: 100%;
+  height: calc(var(--fx-space-8) + var(--fx-space-5));
+}
+
+/* The sparkline's 3 px last-point square would scale with the stretched viewBox; the chart prints the line only. */
+.chart svg rect {
+  visibility: hidden;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fx-space-2);
+}
+
+.inspector[data-state='disabled'] .head,
+.inspector[data-state='disabled'] .cell {
+  background-image: var(--fx-pattern-hatch);
+  color: var(--fx-color-ink-4);
+}

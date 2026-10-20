@@ -1,0 +1,132 @@
+/* Events tab log (§6.23) */
+.log {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 0;
+  background: var(--fx-color-paper);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--fx-space-3);
+  padding: var(--fx-space-2) var(--fx-space-3);
+  border-bottom: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+}
+
+.count {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+}
+
+.lines {
+  display: grid;
+  align-content: start;
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  list-style: none;
+}
+
+.line {
+  background: var(--fx-color-paper);
+  border-left: var(--fx-rule-heavy);
+  border-left-color: transparent;
+}
+
+.line[data-state='warn'] {
+  border-left-color: var(--fx-color-accent);
+}
+
+.line[data-state='danger'] {
+  border-left: var(--fx-rule-band) solid var(--fx-color-accent);
+}
+
+.samp {
+  display: grid;
+  grid-template-columns: 9ch var(--fx-size-glyph) 8ch 1fr;
+  align-items: center;
+  column-gap: var(--fx-space-3);
+  min-height: var(--fx-size-row);
+  padding: var(--fx-space-1) var(--fx-space-3);
+  font-family: var(--fx-font-micro);
+  font-size: var(--fx-type-body);
+  letter-spacing: var(--fx-type-body-tracking);
+  line-height: var(--fx-type-body-leading);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.time,
+.tclock {
+  color: var(--fx-color-ink-3);
+}
+
+.entity,
+.entityStatic {
+  justify-self: start;
+  font: inherit;
+  font-weight: var(--fx-type-strong-weight);
+  color: var(--fx-color-ink);
+  white-space: nowrap;
+}
+
+.entity {
+  min-height: var(--fx-size-hit-min);
+  padding: var(--fx-space-0) var(--fx-space-1);
+  border: var(--fx-rule-hair) solid transparent;
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: var(--fx-space-1);
+  cursor: pointer;
+}
+
+.entity:hover {
+  border-color: var(--fx-color-ink);
+}
+
+.entity:focus-visible,
+.more:focus-visible {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+.message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  padding: var(--fx-space-4) var(--fx-space-3);
+  color: var(--fx-color-ink-3);
+  font-size: var(--fx-type-label);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+/* Toast stack (§6.23) */
+.stack {
+  display: grid;
+  gap: var(--fx-space-3);
+  width: var(--fx-size-toast);
+  max-width: 100%;
+  pointer-events: none;
+}
+
+.more {
+  justify-self: start;
+  min-height: var(--fx-size-hit-min);
+  padding: var(--fx-space-1) var(--fx-space-3);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-frame);
+  color: var(--fx-color-ink);
+  font: inherit;
+  font-size: var(--fx-type-label);
+  letter-spacing: var(--fx-type-label-tracking);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.more:hover {
+  background: var(--fx-color-paper-2);
+}

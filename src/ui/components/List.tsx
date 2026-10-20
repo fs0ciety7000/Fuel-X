@@ -1,4 +1,4 @@
-import { useRef, type KeyboardEvent } from 'react';
+import { useRef, type KeyboardEvent, type ReactNode } from 'react';
 import type { ListRowVM } from '../types';
 import type { DemoState } from './cx';
 import { Glyph } from './Glyph';
@@ -6,9 +6,11 @@ import { HazardBand } from './HazardBand';
 import { Value } from './Value';
 import styles from './List.module.css';
 
-export interface ListProps {
+export interface ListProps<R extends ListRowVM = ListRowVM> {
   label: string;
-  rows: ListRowVM[];
+  rows: R[];
+  /** Replaces the key-value cell (tank fill bar, …); defaults to `<Value v={row.keyValue}>`. */
+  trail?: (row: R) => ReactNode;
   onSelect?: (id: string) => void;
   onFollow?: (id: string) => void;
   /** Shown when `rows` is empty. */
@@ -17,7 +19,15 @@ export interface ListProps {
 }
 
 /** §6.13 list rows in a single-select listbox: ↑/↓/Home/End move, Enter selects, F follows. */
-export function List({ label, rows, onSelect, onFollow, emptyText = 'NO ITEMS', demo }: ListProps) {
+export function List<R extends ListRowVM = ListRowVM>({
+  label,
+  rows,
+  trail,
+  onSelect,
+  onFollow,
+  emptyText = 'NO ITEMS',
+  demo,
+}: ListProps<R>) {
   const refs = useRef<(HTMLLIElement | null)[]>([]);
   if (rows.length === 0) {
     return (
@@ -48,8 +58,10 @@ export function List({ label, rows, onSelect, onFollow, emptyText = 'NO ITEMS', 
     } else if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onSelect?.(id);
-    } else if (e.key === 'f' || e.key === 'F') {
-      onFollow?.(id);
+    } else if ((e.key === 'f' || e.key === 'F') && onFollow) {
+      // Handled here: the HUD's global `F` (follow / unfollow the selection) skips prevented events.
+      e.preventDefault();
+      onFollow(id);
     }
   };
   return (
@@ -84,7 +96,7 @@ export function List({ label, rows, onSelect, onFollow, emptyText = 'NO ITEMS', 
               {r.following ? ' · FOLLOWING' : ''}
             </span>
           </span>
-          <Value v={r.keyValue} className={styles.key} />
+          {trail ? <span className={styles.key}>{trail(r)}</span> : <Value v={r.keyValue} className={styles.key} />}
         </li>
       ))}
     </ul>

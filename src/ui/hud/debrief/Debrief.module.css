@@ -1,0 +1,313 @@
+/* §6.29 debrief sheet: opaque paper, 2 px ink frame, 1 px grid-gap compartments on ink-5. */
+.sheet {
+  width: var(--fx-size-debrief);
+  max-width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 0;
+  background: var(--fx-color-ink-5);
+  color: var(--fx-color-ink);
+  border: var(--fx-rule-heavy);
+  z-index: var(--fx-z-dialog);
+  pointer-events: auto;
+}
+
+.sheet[open] {
+  display: grid;
+  gap: var(--fx-rule-hair);
+}
+
+.sheet::backdrop {
+  background: transparent;
+}
+
+.inline {
+  position: static;
+  margin: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-3);
+  min-height: var(--fx-size-control);
+  padding: var(--fx-space-0) var(--fx-space-4);
+  background: var(--fx-color-paper);
+  border-bottom: var(--fx-rule-heavy);
+}
+
+.title {
+  flex: 1;
+  font-size: var(--fx-type-title);
+  font-weight: var(--fx-type-title-weight);
+  letter-spacing: var(--fx-type-title-tracking);
+}
+
+.title:focus-visible {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+.meta {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+}
+
+.sheet[data-state='danger'] .head {
+  padding-left: 0;
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+}
+
+.sheet[data-state='danger'] .meta {
+  color: var(--fx-color-on-accent);
+}
+
+.rowTop,
+.rowMid,
+.rowLow {
+  display: grid;
+  gap: var(--fx-rule-hair);
+}
+
+.rowTop {
+  grid-template-columns: 3fr 2fr;
+}
+
+.rowMid {
+  grid-template-columns: 1fr 1fr 2fr;
+}
+
+.rowLow {
+  grid-template-columns: 1fr 1fr;
+}
+
+.cell,
+.stampCell,
+.facts,
+.ledger {
+  background: var(--fx-color-paper);
+}
+
+.cell {
+  display: grid;
+  align-content: start;
+  gap: var(--fx-space-2);
+  padding: var(--fx-space-3) var(--fx-space-4);
+}
+
+/* Outcome word: the one macro element on screen while the sheet is open (the T-clock is behind it). It uses the
+   T-clock scale — macro-stamp would overflow the 880 px sheet for CATCH FAILED (DESIGN_SYSTEM §6.29 note). */
+.stampCell {
+  display: grid;
+  align-content: center;
+  gap: var(--fx-space-3);
+  padding: var(--fx-space-4);
+}
+
+.stamp {
+  justify-self: start;
+  padding: var(--fx-space-2) var(--fx-space-3);
+  border: var(--fx-rule-hair) solid transparent;
+  font-family: var(--fx-font-macro);
+  font-size: var(--fx-type-macro-clock);
+  font-weight: var(--fx-type-macro-clock-weight);
+  letter-spacing: var(--fx-type-macro-clock-tracking);
+  line-height: var(--fx-type-macro-clock-leading);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.stamp[data-outcome='DIVERTED'] {
+  border: var(--fx-rule-warn);
+}
+
+.stamp[data-outcome='CATCH_FAILED'] {
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+  border: var(--fx-rule-frame);
+}
+
+.facts {
+  display: grid;
+  align-content: center;
+  gap: var(--fx-space-1);
+  padding: var(--fx-space-3) var(--fx-space-4);
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: var(--fx-size-label-column) 1fr;
+  gap: var(--fx-space-3);
+  font-size: var(--fx-type-body);
+  letter-spacing: var(--fx-type-body-tracking);
+}
+
+.fact dt,
+.label {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+}
+
+.label {
+  text-align: left;
+}
+
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  font-size: var(--fx-type-value);
+  font-weight: var(--fx-type-value-weight);
+  letter-spacing: var(--fx-type-value-tracking);
+  line-height: var(--fx-type-value-leading);
+}
+
+.fromTo,
+.line {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--fx-space-2);
+  font-size: var(--fx-type-body);
+  letter-spacing: var(--fx-type-body-tracking);
+  color: var(--fx-color-ink-2);
+}
+
+.ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fx-type-body);
+  letter-spacing: var(--fx-type-body-tracking);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.ledger caption {
+  background: var(--fx-color-paper);
+  padding: var(--fx-space-3) var(--fx-space-4) var(--fx-space-2);
+}
+
+.ledger th,
+.ledger td {
+  padding: var(--fx-space-1) var(--fx-space-4);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.ledger thead th {
+  border-bottom: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+}
+
+.ledger tbody th {
+  font-weight: var(--fx-type-body-weight);
+}
+
+.ledger .num {
+  text-align: right;
+}
+
+.decisions {
+  display: grid;
+  gap: var(--fx-space-1);
+  list-style: none;
+}
+
+.samp {
+  display: grid;
+  grid-template-columns: 12ch 4ch 1fr auto;
+  gap: var(--fx-space-3);
+  font-family: var(--fx-font-micro);
+  font-size: var(--fx-type-body);
+  letter-spacing: var(--fx-type-body-tracking);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+.code {
+  font-weight: var(--fx-type-strong-weight);
+}
+
+.by {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.by[data-by='AUTO'] {
+  color: var(--fx-color-ink-3);
+}
+
+.by[data-by='FORCED'] {
+  color: var(--fx-color-accent-text);
+}
+
+.anomalies {
+  padding-top: var(--fx-space-2);
+  border-top: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+  font-size: var(--fx-type-label);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-2);
+}
+
+.actions,
+.actionGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fx-space-3);
+}
+
+.actions {
+  justify-content: space-between;
+  padding: var(--fx-space-3) var(--fx-space-4);
+  background: var(--fx-color-paper);
+  border-top: var(--fx-rule-heavy);
+}
+
+/* Collapsed sheet (VIEW SITE): badge at the top of the overlay region. */
+.readyWrap {
+  position: absolute;
+  inset: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ready {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-3);
+  min-height: var(--fx-size-control);
+  padding: var(--fx-space-0) var(--fx-space-4);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-heavy);
+  color: var(--fx-color-ink);
+  font: inherit;
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.ready:hover {
+  background: var(--fx-color-paper-2);
+}
+
+.ready:focus-visible {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+.kbd {
+  padding: var(--fx-space-0) var(--fx-space-1);
+  border: var(--fx-rule-hair) solid currentcolor;
+  font: inherit;
+  font-size: var(--fx-type-label);
+}

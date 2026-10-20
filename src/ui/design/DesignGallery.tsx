@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { tokens } from '@tokens/tokens';
 import { GlyphSprite } from '../components';
 import { ComponentGallery } from './ComponentGallery';
+import { PanelsGallery } from './PanelsGallery';
 import styles from './DesignGallery.module.css';
 
 // /design gallery (DESIGN_SYSTEM §9): tokens (Phase 2) + every HUD primitive in every state (6.2).
@@ -103,6 +104,7 @@ export function DesignGallery() {
         </p>
       </header>
       <ComponentGallery />
+      <PanelsGallery />
     </main>
   );
 }

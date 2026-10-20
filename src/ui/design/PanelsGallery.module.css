@@ -1,0 +1,46 @@
+.inspectors {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--fx-size-toast), 1fr));
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+}
+
+.tabsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--fx-size-toast), 1fr));
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+}
+
+/* Same fixed height as the HUD tabs slot so the internal scroll is visible. */
+.tabsBox {
+  height: calc(var(--fx-size-debrief) / 2);
+  display: grid;
+}
+
+.debriefs {
+  display: grid;
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+}
+
+/* HUD flight column width (§3.1: 320 px). */
+.flightBox {
+  width: calc(var(--fx-size-tile) * 2);
+}
+
+.badgeBox {
+  position: relative;
+  height: var(--fx-size-control);
+}
+
+.flights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+}
