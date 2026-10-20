@@ -3740,6 +3740,8 @@
    "kind": "pad",
    "glyph": "stacked",
    "state": "ok",
+   "statusLabel": "OCCUPIED",
+   "ariaLabel": "OLM-1, LAUNCH MOUNT, OCCUPIED",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3750,6 +3752,8 @@
    "kind": "tower",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "IDLE",
+   "ariaLabel": "TOWER-1, TOWER, IDLE",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3760,6 +3764,8 @@
    "kind": "tank",
    "glyph": "warn",
    "state": "warn",
+   "statusLabel": "STORING",
+   "ariaLabel": "LOX-1, TANK, STORING, WARNING",
    "selected": false,
    "following": false,
    "priority": 4
@@ -3770,6 +3776,8 @@
    "kind": "tank",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "STORING",
+   "ariaLabel": "LOX-2, TANK, STORING",
    "selected": false,
    "following": false,
    "priority": 0
@@ -3780,6 +3788,8 @@
    "kind": "tank",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "STORING",
+   "ariaLabel": "LOX-3, TANK, STORING",
    "selected": false,
    "following": false,
    "priority": 0
@@ -3790,6 +3800,8 @@
    "kind": "tank",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "STORING",
+   "ariaLabel": "CH4-1, TANK, STORING",
    "selected": false,
    "following": false,
    "priority": 0
@@ -3800,6 +3812,8 @@
    "kind": "tank",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "STORING",
+   "ariaLabel": "CH4-2, TANK, STORING",
    "selected": false,
    "following": false,
    "priority": 0
@@ -3810,6 +3824,8 @@
    "kind": "tank",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "STORING",
+   "ariaLabel": "LN2-1, TANK, STORING",
    "selected": false,
    "following": false,
    "priority": 0
@@ -3820,6 +3836,8 @@
    "kind": "building",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "NOMINAL",
+   "ariaLabel": "HB-1, BUILDING, NOMINAL",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3830,6 +3848,8 @@
    "kind": "building",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "NOMINAL",
+   "ariaLabel": "TH-1, BUILDING, NOMINAL",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3840,6 +3860,8 @@
    "kind": "booster",
    "glyph": "stacked",
    "state": "ok",
+   "statusLabel": "LOADED",
+   "ariaLabel": "B-09, BOOSTER, LOADED",
    "selected": true,
    "following": true,
    "priority": 5
@@ -3850,6 +3872,8 @@
    "kind": "ship",
    "glyph": "stacked",
    "state": "ok",
+   "statusLabel": "LOADED",
+   "ariaLabel": "S-21, SHIP, LOADED",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3860,6 +3884,8 @@
    "kind": "transporter",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "IDLE",
+   "ariaLabel": "SP-41, TRANSPORTER, IDLE",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3870,6 +3896,8 @@
    "kind": "transporter",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "IDLE",
+   "ariaLabel": "SP-42, TRANSPORTER, IDLE",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3880,6 +3908,8 @@
    "kind": "crane",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "IDLE",
+   "ariaLabel": "CR-77, CRANE, IDLE",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3890,6 +3920,8 @@
    "kind": "van",
    "glyph": "parked",
    "state": "neutral",
+   "statusLabel": "PARKED",
+   "ariaLabel": "CV-01, CREW VAN, PARKED",
    "selected": false,
    "following": false,
    "priority": 0
@@ -3900,6 +3932,8 @@
    "kind": "van",
    "glyph": "parked",
    "state": "neutral",
+   "statusLabel": "PARKED",
+   "ariaLabel": "CV-02, CREW VAN, PARKED",
    "selected": false,
    "following": false,
    "priority": 0
@@ -3910,6 +3944,8 @@
    "kind": "van",
    "glyph": "parked",
    "state": "neutral",
+   "statusLabel": "PARKED",
+   "ariaLabel": "CV-03, CREW VAN, PARKED",
    "selected": false,
    "following": false,
    "priority": 0
@@ -3920,6 +3956,8 @@
    "kind": "boat",
    "glyph": "patrol",
    "state": "active",
+   "statusLabel": "PATROL",
+   "ariaLabel": "PK-03, PICKET, PATROL",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3930,6 +3968,8 @@
    "kind": "boat",
    "glyph": "patrol",
    "state": "active",
+   "statusLabel": "PATROL",
+   "ariaLabel": "PK-04, PICKET, PATROL",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3940,6 +3980,8 @@
    "kind": "boat",
    "glyph": "holding",
    "state": "ok",
+   "statusLabel": "ON STATION",
+   "ariaLabel": "RV-1, RECOVERY VESSEL, ON STATION",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3950,6 +3992,8 @@
    "kind": "wxStation",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "NOMINAL",
+   "ariaLabel": "WX-1, WEATHER STATION, NOMINAL",
    "selected": false,
    "following": false,
    "priority": 1
@@ -3960,6 +4004,8 @@
    "kind": "wxStation",
    "glyph": "idle",
    "state": "neutral",
+   "statusLabel": "NOMINAL",
+   "ariaLabel": "WX-2, WEATHER STATION, NOMINAL",
    "selected": false,
    "following": false,
    "priority": 1

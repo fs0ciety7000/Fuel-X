@@ -64,8 +64,6 @@ const RADAR_PERIOD_S = { boat_range: 2.5, vessel_recovery: 3.2 } as const;
 /** Anemometer: cup-arm radius, m, and cup efficiency (rotor tip speed / wind speed). */
 const ANEMO_R_M = 0.35;
 const ANEMO_EFF = 0.35;
-/** The sim has no wind direction yet: prevailing onshore sea breeze from the east (compass, rad). */
-export const WIND_FROM_RAD = 95 * DEG;
 
 /** Recovery-zone rings stay up this long after a divert splashdown, s. */
 const ZONE_LINGER_S = 60;
@@ -415,6 +413,9 @@ export class AnimWriter {
         anim[o + ANIM.pad.bqdM] = s.bqd;
         anim[o + ANIM.pad.delugeS] = padClockS(world, e.id);
         anim[o + ANIM.pad.hazardM] = world.logistics.roadClosed ? logistics.hazardPadRadiusM : 0;
+        // Ground wind (6.6): steam / low-exhaust drift. Sim values verbatim (both 0 only in a dead calm from north).
+        anim[o + ANIM.pad.windFromRad] = world.weather.windFromRad;
+        anim[o + ANIM.pad.windMPerS] = world.weather.groundWindMPerS;
         return;
       }
       case 'booster':
@@ -459,7 +460,7 @@ export class AnimWriter {
         const w = world.weather;
         // vane points into the wind: local +Z toward the compass heading the wind comes from
         const gustSway = (w.groundGustMPerS - w.groundWindMPerS) * 1.5 * DEG * Math.sin(t * 0.9 + e.slot);
-        const worldYaw = Math.atan2(Math.sin(WIND_FROM_RAD), -Math.cos(WIND_FROM_RAD));
+        const worldYaw = Math.atan2(Math.sin(w.windFromRad), -Math.cos(w.windFromRad));
         anim[o + ANIM.wx_station.vaneRad] = wrapTau(worldYaw - yawOf(e.rot) + gustSway);
         const prev = this.wheels.get(e.id) ?? 0;
         const next = wrapTau(prev + ((w.groundWindMPerS * ANEMO_EFF) / ANEMO_R_M) * DT_S);
@@ -551,6 +552,7 @@ export class AnimWriter {
     s.gimbalY = fresh ? wantY : approach(s.gimbalY, wantY, 10 * DEG);
     const ch = e.kind === 'booster' ? ANIM.booster : ANIM.ship;
     anim[o + ch.litFrac] = lit / total;
+    anim[o + ch.throttle] = lit > 0 ? e.engines.throttle : 0;
     anim[o + ch.gimbalPitchRad] = s.gimbalP;
     anim[o + ch.gimbalYawRad] = s.gimbalY;
 

@@ -43,6 +43,33 @@ describe('AnimWriter', () => {
     expect(snap.animCurr[o + ANIM.tower.qdArmRad]).toBeCloseTo(1.2, 6);
   });
 
+  it('writes the sim ground wind into the pad channels and the WX vane, engine throttle into the stages (6.6)', () => {
+    const { world } = createMvpScenario({ seed: 42 });
+    const snap = createRenderSnapshot(256);
+    const writer = new SnapshotWriter(snap);
+    world.weather.windFromRad = 1.2;
+    world.weather.groundWindMPerS = 7.5;
+    const b = Object.values(world.entities.byId).find((e) => e.kind === 'booster');
+    if (b?.kind !== 'booster') throw new Error('layout');
+    b.engines.lit = 33;
+    b.engines.throttle = 0.8;
+    writer.write(world);
+    const pad = Object.values(world.entities.byId).find((e) => e.kind === 'pad');
+    if (!pad) throw new Error('layout');
+    const op = pad.slot * ANIM_STRIDE;
+    expect(snap.animCurr[op + ANIM.pad.windFromRad]).toBeCloseTo(1.2, 6);
+    expect(snap.animCurr[op + ANIM.pad.windMPerS]).toBeCloseTo(7.5, 6);
+    expect(snap.animCurr[b.slot * ANIM_STRIDE + ANIM.booster.throttle]).toBeCloseTo(0.8, 6);
+    const vaneAt = (from: number): number => {
+      world.weather.windFromRad = from;
+      writer.write(world);
+      const wx = Object.values(world.entities.byId).find((e) => e.kind === 'wxStation');
+      return snap.animCurr[(wx?.slot ?? 0) * ANIM_STRIDE + ANIM.wx_station.vaneRad] ?? 0;
+    };
+    const d = (((vaneAt(1.0) - vaneAt(0.5)) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    expect(Math.min(d, 2 * Math.PI - d)).toBeGreaterThan(0.3); // the vane follows the sim wind direction
+  });
+
   it('matches the CRANE as-built rest tip (≈ 94.7 m high, 36 m ahead) and round-trips yaw', () => {
     const tip = craneTip(CRANE_GEOM.luffRest);
     expect(tip.y).toBeCloseTo(94.8, 1);

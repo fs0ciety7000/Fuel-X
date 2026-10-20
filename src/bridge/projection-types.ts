@@ -628,6 +628,10 @@ export interface LabelVM {
   kind?: string;
   glyph: GlyphId;
   state: Severity;
+  /** Status word(s) of the entity, e.g. `ASCENT`, `CAUGHT, SAFING`, `GATE WAIT` (same as the inspector chip). */
+  statusLabel?: string;
+  /** Full accessible name of the world tag, e.g. `B-09, BOOSTER, ASCENT` (+ `, WARNING` / `, DANGER`). */
+  ariaLabel?: string;
   selected: boolean;
   following?: boolean;
   /** Declutter priority, higher first: selected 5 > alert 4 > followed 3 > flying 2 > rest 1 > tanks/vans 0. */

@@ -560,6 +560,8 @@ export function labelsVM(c: Ctx, alertEntityIds: ReadonlySet<Id>): LabelVM[] {
       kind: e.kind,
       glyph: alert && severity === 'danger' ? 'danger' : alert ? 'warn' : st.glyph,
       state: severity,
+      statusLabel: st.label,
+      ariaLabel: `${e.callSign}, ${kindLabel(e)}, ${st.label}${alert ? `, ${severity === 'danger' ? 'DANGER' : 'WARNING'}` : ''}`,
       selected,
       following: followed,
       priority: selected ? 5 : alert ? 4 : followed ? 3 : flying(e) ? 2 : e.kind === 'tank' || e.kind === 'van' ? 0 : 1,
