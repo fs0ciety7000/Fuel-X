@@ -25,6 +25,17 @@
   white-space: nowrap;
 }
 
+.vehicles {
+  display: block;
+  overflow: hidden;
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-2);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .reserve {
   display: grid;
   gap: var(--fx-space-1);
@@ -64,4 +75,19 @@
 .link:focus-visible {
   outline: var(--fx-focus-ring);
   outline-offset: var(--fx-focus-offset);
+}
+
+/* Compact column (§3.3: 272 px): values only — sparklines hidden, hero values at title size so `T+00:01:45` fits. */
+.card {
+  container: flight / inline-size;
+}
+
+@container flight (width < 300px) {
+  .body dd {
+    font-size: var(--fx-type-title);
+  }
+
+  .body svg[role='img'] {
+    display: none;
+  }
 }

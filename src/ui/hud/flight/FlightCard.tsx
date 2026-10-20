@@ -32,7 +32,7 @@ export function FlightCard({ card, compact = false, onOpenTasks }: FlightCardPro
       }
     >
       <MetricTile metric={card.nextLaunch} noSpark={compact} className={styles.tile}>
-        <span className={styles.sub}>
+        <span className={styles.vehicles}>
           {card.vehicles}
           {card.contract ? ` · ${card.contract.id}` : ''}
         </span>
