@@ -1,4 +1,4 @@
-import { projectionStore } from '@bridge/index';
+import { projectionStore, session } from '@bridge/index';
 import { useEffect, useId, useRef } from 'react';
 import { useStore } from 'zustand';
 import { Button, Glyph, HazardBand, SegmentedProgress, StatusChip, Value } from '../../components';
@@ -18,7 +18,7 @@ import styles from './Debrief.module.css';
 // §6.29 debrief sheet (GDD §4.9, §9, AC 22): outcome, money / reputation deltas, booster wear and flights, tower,
 // ledger and the timestamped decision log, plus the exit actions. Every number is projected; no client maths.
 
-/** Handlers of the exit actions. REPLAY / NEW SEED / EXPORT LOG are app session commands (see report, 6.7). */
+/** Handlers of the exit actions (the HUD container binds them to the `session` port). */
 export type DebriefHandlers = Partial<Record<DebriefActionId, () => void>>;
 
 const negative = (v: ValueVM): boolean => v.text.startsWith('−');
@@ -97,7 +97,9 @@ export function Debrief({ d, handlers = {}, inline = false }: DebriefProps) {
           {d.title}
           <span aria-hidden="true"> ]</span>
         </h2>
-        {d.stamp && d.stamp !== d.outcomeLabel ? <span className={styles.meta}>{d.stamp}</span> : null}
+        {d.meta || (d.stamp && d.stamp !== d.outcomeLabel) ? (
+          <span className={styles.meta}>{d.meta ?? d.stamp}</span>
+        ) : null}
       </header>
 
       <div className={styles.rowTop}>
@@ -142,31 +144,33 @@ export function Debrief({ d, handlers = {}, inline = false }: DebriefProps) {
       </div>
 
       <div className={styles.rowLow}>
-        <table className={styles.ledger}>
-          <caption className={styles.label}>LEDGER</caption>
-          <thead>
-            <tr>
-              <th scope="col">ITEM</th>
-              <th scope="col" className={styles.num}>
-                AMOUNT
-              </th>
-              <th scope="col" className={styles.num}>
-                REP
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {d.ledger.map((l) => (
-              <tr key={l.label}>
-                <th scope="row">{l.label}</th>
-                <td className={styles.num}>
-                  <Value v={l.amount} />
-                </td>
-                <td className={styles.num}>{l.reputation ? <Value v={l.reputation} /> : '—'}</td>
+        <div className={styles.ledgerCell}>
+          <table className={styles.ledger}>
+            <caption className={styles.label}>LEDGER</caption>
+            <thead>
+              <tr>
+                <th scope="col">ITEM</th>
+                <th scope="col" className={styles.num}>
+                  AMOUNT
+                </th>
+                <th scope="col" className={styles.num}>
+                  REP
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {d.ledger.map((l) => (
+                <tr key={l.label}>
+                  <th scope="row">{l.label}</th>
+                  <td className={styles.num}>
+                    <Value v={l.amount} />
+                  </td>
+                  <td className={styles.num}>{l.reputation ? <Value v={l.reputation} /> : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <div className={styles.cell}>
           <span className={styles.label}>DECISION LOG</span>
           {d.decisions.length ? (
@@ -234,7 +238,14 @@ export function DebriefReadyBadge({ onOpen }: { onOpen: () => void }) {
  * Store-connected debrief for the HUD `overlay` slot: modal sheet while open, ready badge once collapsed (`B`
  * reopens). `handlers` wires REPLAY / NEW SEED / EXPORT LOG; VIEW SITE (Esc) always collapses.
  */
-export function DebriefContainer({ handlers = {} }: { handlers?: DebriefHandlers }) {
+/** The app's session commands (GDD §13.2.3, AC 32) behind the exit actions. */
+export const SESSION_DEBRIEF_HANDLERS: DebriefHandlers = {
+  REPLAY: () => session.replaySameSeed(),
+  NEW_SEED: () => session.newSeed(),
+  EXPORT_LOG: () => session.exportLog(),
+};
+
+export function DebriefContainer({ handlers = SESSION_DEBRIEF_HANDLERS }: { handlers?: DebriefHandlers }) {
   const d = useStore(projectionStore, (p) => p.debrief);
   const ui = useStore(debriefUi);
   const open = isDebriefOpen(d, ui);
@@ -250,5 +261,16 @@ export function DebriefContainer({ handlers = {} }: { handlers?: DebriefHandlers
   }, [d, open]);
   if (!d) return null;
   if (!open) return <DebriefReadyBadge onOpen={reopenDebrief} />;
-  return <Debrief d={d} handlers={{ ...handlers, VIEW_SITE: () => collapseDebrief(d) }} />;
+  return (
+    <Debrief
+      d={d}
+      handlers={{
+        ...handlers,
+        VIEW_SITE: () => {
+          collapseDebrief(d);
+          session.viewSite();
+        },
+      }}
+    />
+  );
 }

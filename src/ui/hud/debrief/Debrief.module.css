@@ -12,6 +12,18 @@
   pointer-events: auto;
 }
 
+/* Modal: centred over the viewport (the global reset removes the UA's auto margins; auto margins are not allowed). */
+.sheet:not(.inline) {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.ledgerCell {
+  background: var(--fx-color-paper);
+}
+
 .sheet[open] {
   display: grid;
   gap: var(--fx-rule-hair);
