@@ -313,6 +313,9 @@ export interface ConsequenceVM {
   state: Severity;
 }
 
+/** App session actions (not sim commands): `session.run(id)` from `src/bridge/commands.ts`. */
+export type SessionActionId = 'SKIP' | 'CANCEL_SKIP' | 'REPLAY' | 'NEW_SEED' | 'EXPORT_LOG' | 'VIEW_SITE';
+
 export interface ActionVM {
   id: string;
   label: string;
@@ -326,6 +329,8 @@ export interface ActionVM {
   confirm?: ConsequenceVM[];
   /** Exact sim command: `commands.send(action.command)` when enabled (null = UI-only action). */
   command?: Command | null;
+  /** App session action behind the button (debrief exits): `session.run(action.session)` when enabled. */
+  session?: SessionActionId;
 }
 
 export interface ProgressVM {
@@ -602,9 +607,17 @@ export interface DebriefVM {
   tower: { label: string; state: Severity };
   turnaround: ValueVM;
   ledger: { label: string; amount: ValueVM; reputation: ValueVM | null }[];
-  decisions: { time: string; id: string; detail: string; by: 'PLAYER' | 'AUTO' | 'FORCED' }[];
+  /** `id` is a unique row key; `code` is the decision id `D1` / `D2` / `D3` / `D3B` ('' for other commands). */
+  decisions: { time: string; id: string; code?: string; detail: string; by: 'PLAYER' | 'AUTO' | 'FORCED' }[];
   anomalies: { id: string; label: string; time: string }[];
+  /** Exit actions REPLAY / NEW_SEED / EXPORT_LOG / VIEW_SITE (`id` = `session` = the SessionActionId). */
   actions: ActionVM[];
+  /** Run seed (header `SEED 42`, URL `/play?seed=42`). */
+  seed?: number;
+  /** Header meta, e.g. `REV 3F2A91C0 · SEED 42`. */
+  meta?: string;
+  /** Data revision: first 8 hex of the hash of `src/data` (same in the exported session file). */
+  revision?: string;
 }
 
 // --- World labels, sites, economy, view ---------------------------------------------------------------

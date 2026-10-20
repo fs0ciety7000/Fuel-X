@@ -2,7 +2,7 @@
 // safe (commands, events, typed-array snapshot, JSON saves) so a WorkerSimHost can implement the same interface:
 // the per-frame calls (`send`, `advance`, `drainEvents`, `snapshot`) become messages answered with the next
 // snapshot, and the long operations are already Promise-shaped.
-import type { Command, Countdown, Phase, SimEvent, SimEventType, World } from '@sim/types';
+import type { Command, Countdown, Phase, SimEvent, SimEventType, StampedCommand, World } from '@sim/types';
 import type { RenderSnapshot } from '@render/snapshot';
 
 export interface NewGameOptions {
@@ -46,6 +46,22 @@ export interface SimTimings {
   lastJump: { ticks: number; ms: number };
 }
 
+/** Everything a run consumed and produced since `newGame` / `load` (EXPORT LOG). */
+export interface SessionLog {
+  seed: number;
+  scenario: 'mvp';
+  autopilot: boolean;
+  /** Tick the log starts at (0 for a new game; the save's tick after a load). */
+  fromTick: number;
+  /** Tick the log ends at. */
+  tick: number;
+  /** Player + autopilot commands, stamped (replay input). */
+  commandLog: StampedCommand[];
+  events: SimEvent[];
+  /** `MAX_SESSION_EVENTS` reached: later events are missing. */
+  eventsTruncated: boolean;
+}
+
 export interface SimHost {
   readonly snapshot: RenderSnapshot;
   newGame(opts: NewGameOptions): Promise<void>;
@@ -59,6 +75,7 @@ export interface SimHost {
   save(meta: { game: string; createdAt: string }): Promise<string>;
   load(json: string): Promise<void>;
   timings(): SimTimings;
+  sessionLog(): SessionLog;
   /** Read-only world access for the projector / debug hooks (inline host; a worker host mirrors a projection). */
   inspect(): { world: Readonly<World>; countdown: Readonly<Countdown> | null; seed: number; autopilot: boolean };
 }

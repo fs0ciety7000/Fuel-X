@@ -1,6 +1,6 @@
 // Composition root object (ARCHITECTURE §2): wires SimHost ↔ GameLoop ↔ render scene ↔ bus. Created once in
 // main.tsx outside React so StrictMode double-mounts never build a second world.
-import { commands, projectionStore, session, viewStore } from '@bridge/index';
+import { commands, projectionStore, session, view, viewStore } from '@bridge/index';
 import type { ViewState } from '@bridge/index';
 import { createFrameInput, createRenderControls, DEFAULT_SITE, SLOT_STRIDE, SlotFlag } from '@render/index';
 import type { FrameInput, RenderControls, SceneApi } from '@render/index';
@@ -10,6 +10,8 @@ import { GameLoop } from './loop';
 import { formatTClock } from './jump';
 import { Projector } from './projection/projector';
 import type { TimeInputs } from './projection/context';
+import { SessionController } from './session/controller';
+import type { RunOptions, SessionEnv } from './session/controller';
 import { InlineSimHost } from './sim-host/inline';
 import type { SkipBlockCode } from './time/rules';
 import { TimeControl } from './time/time-control';
@@ -23,11 +25,13 @@ export class Game {
   readonly loop: GameLoop;
   /** UI projection (6.1): ≤ 10 Hz + salient flushes into `projectionStore`. */
   readonly projector: Projector;
+  /** Runs: URL seed, REPLAY SAME SEED, NEW SEED, EXPORT LOG (GDD §13.2.3). */
+  readonly session: SessionController;
   scene: SceneApi | null = null;
   private readout: HTMLElement | null = null;
   private readoutAt = 0;
 
-  constructor() {
+  constructor(env: SessionEnv = browserSessionEnv()) {
     this.loop = new GameLoop({
       host: this.host,
       time: this.time,
@@ -56,9 +60,14 @@ export class Game {
     this.bus.onBatch((batch) => this.projector.onEvents(batch));
     this.loop.onAfterFrame(() => this.projector.frame(performance.now()));
     commands.bind((cmd) => this.host.send(cmd));
+    this.session = new SessionController(this.host, env, () => this.afterNewRun());
     session.bind({
       skipToNextMilestone: () => void this.skipToNextMilestone(),
       cancelSkip: () => this.cancelSkip(),
+      replaySameSeed: () => void this.session.replaySameSeed(),
+      newSeed: () => void this.session.newSeed(),
+      exportLog: () => void this.session.exportLog(),
+      viewSite: () => this.cancelSkip(),
     });
     viewStore.subscribe((s, prev) => this.applyView(s, prev));
   }
@@ -107,6 +116,19 @@ export class Game {
     this.scene = api;
   };
 
+  /** New run (seed in the URL unless `url: false`): fresh world, time rules, projector, view and camera reset. */
+  newRun(seed: number, opts?: RunOptions): Promise<void> {
+    return this.session.start(seed, opts);
+  }
+
+  private afterNewRun(): void {
+    this.time.resetRun();
+    this.projector.reset();
+    view.reset();
+    view.camera({ kind: 'home' });
+    this.afterTeleport();
+  }
+
   /** After a new game / load / jump: start exactly on the new tick and cut the camera. */
   afterTeleport(): void {
     this.loop.resetAccumulator();
@@ -152,4 +174,27 @@ export class Game {
       .filter(Boolean)
       .join(' · ');
   }
+}
+
+/** Browser effects for the session controller (address bar, download, crypto entropy). */
+export function browserSessionEnv(): SessionEnv {
+  const hasWindow = typeof window !== 'undefined';
+  return {
+    entropy: () => crypto.getRandomValues(new Uint32Array(1))[0] ?? 1,
+    nowIso: () => new Date().toISOString(),
+    ...(hasWindow
+      ? {
+          getSearch: () => window.location.search,
+          setSearch: (search: string) => window.history.replaceState(window.history.state, '', search),
+          download: (name: string, json: string) => {
+            const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = name;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+          },
+        }
+      : {}),
+  };
 }

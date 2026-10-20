@@ -10,14 +10,15 @@ import { App } from '@app/App';
 import { installDebug } from '@app/debug';
 import { debugEnabled } from '@app/debug/enabled';
 import { Game } from '@app/game';
+import { drawSeed, seedFromSearch } from '@app/session/session';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('#root missing');
 
 const game = new Game();
-const seedParam = Number(new URLSearchParams(location.search).get('seed'));
-const seed = Number.isInteger(seedParam) && seedParam > 0 ? seedParam : crypto.getRandomValues(new Uint32Array(1))[0];
-void game.host.newGame({ seed: seed ?? 1 });
+// `/play?seed=N` replays a shared run; otherwise a fresh seed, written back into the URL (GDD §13.2.3).
+const seed = seedFromSearch(location.search) ?? drawSeed(() => crypto.getRandomValues(new Uint32Array(1))[0] ?? 1);
+void game.newRun(seed);
 if (debugEnabled()) installDebug(game);
 
 createRoot(root).render(

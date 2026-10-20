@@ -1,16 +1,46 @@
 // Debrief panel view model (GDD §4.9, AC 22; DESIGN_SYSTEM §6.29): outcome, money / reputation deltas, booster
 // wear, ledger, timestamped decision log.
-import type { DebriefVM, ValueVM } from '@bridge/projection-types';
+import type { ActionVM, DebriefVM, SessionActionId, ValueVM } from '@bridge/projection-types';
 import { DT_S } from '@sim/index';
 import type { Ctx } from './context';
 import { credits, days, duration, num, pct, prob, signed, tClock, tonnes, utc, words } from './format';
 import { ANOMALY_LABEL, LEDGER_LABEL, OUTCOME_LABEL, OUTCOME_STATUS } from './labels';
+import { dataRevision } from '../session/session';
 
 const rep = (x: number, delta = false): ValueVM => ({
   text: delta ? signed(x, 0) : num(x, 0, '').text,
   unit: 'REP',
   value: x,
 });
+
+/** Debrief decision-log kind (sim command type) → decision id (GDD §13.2). */
+const DECISION_CODE: Record<string, string> = {
+  OrderDelivery: 'D1',
+  Go: 'D2',
+  Hold: 'D2',
+  Recycle: 'D2',
+  Scrub: 'D2',
+  CatchDecision: 'D3',
+  LeakResponse: 'D3B',
+};
+
+const exit = (session: SessionActionId, label: string, variant: ActionVM['variant'], key?: string): ActionVM => ({
+  id: session,
+  label,
+  enabled: true,
+  variant,
+  command: null,
+  session,
+  ...(key ? { key } : {}),
+});
+
+/** GDD §13.2.3 exit actions: `session.run(action.session)`; VIEW SITE also collapses the sheet (UI state). */
+export const DEBRIEF_ACTIONS: readonly ActionVM[] = [
+  exit('REPLAY', 'REPLAY SAME SEED', 'primary'),
+  exit('NEW_SEED', 'NEW SEED', 'secondary'),
+  exit('EXPORT_LOG', 'EXPORT LOG', 'secondary'),
+  exit('VIEW_SITE', 'VIEW SITE', 'secondary', 'Esc'),
+];
 
 export function debriefVM(c: Ctx): DebriefVM | null {
   const cd = c.cd;
@@ -73,6 +103,7 @@ export function debriefVM(c: Ctx): DebriefVM | null {
     decisions: d.decisions.map((x, i) => ({
       time: tClock(x.tClockTicks),
       id: `${i}:${x.kind}`,
+      code: DECISION_CODE[x.kind] ?? '',
       detail: `${words(x.kind)}${x.detail ? ` · ${x.detail}` : ''}`,
       by: x.by,
     })),
@@ -81,6 +112,9 @@ export function debriefVM(c: Ctx): DebriefVM | null {
       label: `${ANOMALY_LABEL[a.anomaly]} · ${a.source}`,
       time: utc(c.utc0 + a.tick * DT_S),
     })),
-    actions: [],
+    actions: DEBRIEF_ACTIONS as ActionVM[],
+    seed: c.world.seed,
+    revision: dataRevision(),
+    meta: `REV ${dataRevision()} · SEED ${c.world.seed}`,
   };
 }

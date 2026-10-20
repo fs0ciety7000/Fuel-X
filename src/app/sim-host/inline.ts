@@ -17,11 +17,21 @@ import type { Command, Countdown, SimEvent, StampedCommand, World } from '@sim/t
 import { createRenderSnapshot } from '@render/snapshot';
 import type { RenderSnapshot } from '@render/snapshot';
 import { SnapshotWriter } from './snapshot-writer';
-import type { AdvanceReport, AdvanceRequest, JumpTarget, NewGameOptions, SimHost, SimTimings } from './types';
+import type {
+  AdvanceReport,
+  AdvanceRequest,
+  JumpTarget,
+  NewGameOptions,
+  SessionLog,
+  SimHost,
+  SimTimings,
+} from './types';
 
 /** jumpTo guard: 30 h of sim time (same as the golden harness). */
 export const MAX_JUMP_TICKS = 30 * 3_600 * 30;
 const TIMING_WINDOW = 120;
+/** Session event log cap (a full MVP run is ~1e4 events; the cap only guards pathological sessions). */
+export const MAX_SESSION_EVENTS = 500_000;
 
 export function reached(world: World, cd: Countdown | null, target: JumpTarget): boolean {
   if ('tick' in target) return world.tick >= target.tick;
@@ -40,6 +50,10 @@ export class InlineSimHost implements SimHost {
   private queue: CommandQueue = createCommandQueue();
   private log: StampedCommand[] = [];
   private events: SimEvent[] = [];
+  /** Every event since the run started / was loaded (EXPORT LOG). */
+  private sessionEvents: SimEvent[] = [];
+  private sessionFromTick = 0;
+  private sessionTruncated = false;
   private readonly usPerTick = new Float64Array(TIMING_WINDOW);
   private timingN = 0;
   private lastMs = 0;
@@ -58,6 +72,9 @@ export class InlineSimHost implements SimHost {
     this.queue = createCommandQueue();
     this.log = log;
     this.events = [];
+    this.sessionEvents = [];
+    this.sessionFromTick = world.tick;
+    this.sessionTruncated = false;
     this.writer.invalidate();
     this.writer.write(world);
   }
@@ -78,7 +95,24 @@ export class InlineSimHost implements SimHost {
     const cmds = takeCommands(this.queue, w.tick);
     if (this.autopilot && this.cdId) cmds.push(...autopilotCommands(w, this.cdId, STANDARD_AUTOPILOT));
     for (const cmd of cmds) this.log.push({ tick: w.tick, seq: this.log.length, cmd });
-    return step(w, cmds);
+    const evs = step(w, cmds);
+    if (this.sessionEvents.length + evs.length <= MAX_SESSION_EVENTS) for (const e of evs) this.sessionEvents.push(e);
+    else this.sessionTruncated = true;
+    return evs;
+  }
+
+  /** Inputs and outputs of the current run (EXPORT LOG, GDD §13.2.3). Arrays are copies. */
+  sessionLog(): SessionLog {
+    return {
+      seed: this.seed,
+      scenario: 'mvp',
+      autopilot: this.autopilot,
+      fromTick: this.sessionFromTick,
+      tick: this.world.tick,
+      commandLog: this.log.slice(),
+      events: this.sessionEvents.slice(),
+      eventsTruncated: this.sessionTruncated,
+    };
   }
 
   advance(req: AdvanceRequest): AdvanceReport {

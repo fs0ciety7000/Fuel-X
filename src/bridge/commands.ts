@@ -3,6 +3,7 @@
 // binds the sink to `SimHost.send` (stamped for the next tick); rejections come back as `CommandRejected` events in
 // the projection (events log). The bridge cannot import the app, so this is a port the composition root plugs in.
 import type { Command } from '@sim/types';
+import type { SessionActionId } from './projection-types';
 
 export type CommandSink = (cmd: Command) => void;
 
@@ -45,13 +46,24 @@ export const commands: CommandPort = createCommandPort();
 // call is a no-op (counted as dropped) while unbound. Results show up in the projection (`timeScale.skip`, …).
 
 /** Stable ids of the session actions (`ActionVM.session` carries one; `session.run(id)` dispatches it). */
-export type SessionActionId = 'SKIP' | 'CANCEL_SKIP';
+export type { SessionActionId } from './projection-types';
 
 export interface SessionHandlers {
   /** SKIP TO NEXT MILESTONE (GDD §6): ignored when `timeScale.skip.enabled` is false. */
   skipToNextMilestone(): void;
   /** Stop a running skip at the current tick (the requested rate is unchanged). */
   cancelSkip(): void;
+  /** REPLAY SAME SEED (GDD §13.2.3): fresh `mvp` world, same seed, empty command log. */
+  replaySameSeed(): void;
+  /** NEW SEED: same as replay with a seed drawn by the app; the URL becomes `/play?seed=N`. */
+  newSeed(): void;
+  /** EXPORT LOG: downloads the session file (JSON: scenario, seed, data revision, commands, events, debrief). */
+  exportLog(): void;
+  /**
+   * VIEW SITE (Esc): the sheet collapse is UI state (`src/ui/hud/debrief/debrief-ui.ts`); the app only makes sure
+   * the run stays paused (rate control disabled `RUN ENDED`) and no skip runs.
+   */
+  viewSite(): void;
 }
 
 export interface SessionPort extends SessionHandlers {
@@ -62,30 +74,34 @@ export interface SessionPort extends SessionHandlers {
   readonly stats: { calls: number; dropped: number };
 }
 
+const SESSION_METHOD: Record<SessionActionId, keyof SessionHandlers> = {
+  SKIP: 'skipToNextMilestone',
+  CANCEL_SKIP: 'cancelSkip',
+  REPLAY: 'replaySameSeed',
+  NEW_SEED: 'newSeed',
+  EXPORT_LOG: 'exportLog',
+  VIEW_SITE: 'viewSite',
+};
+
 export function createSessionPort(): SessionPort {
   let h: SessionHandlers | null = null;
   const stats = { calls: 0, dropped: 0 };
-  const call = (fn: (x: SessionHandlers) => void): void => {
+  const call = (m: keyof SessionHandlers): void => {
     if (!h) {
       stats.dropped++;
       return;
     }
     stats.calls++;
-    fn(h);
+    h[m]();
   };
-  const port: SessionPort = {
-    skipToNextMilestone: () => call((x) => x.skipToNextMilestone()),
-    cancelSkip: () => call((x) => x.cancelSkip()),
-    run(id) {
-      switch (id) {
-        case 'SKIP':
-          port.skipToNextMilestone();
-          break;
-        case 'CANCEL_SKIP':
-          port.cancelSkip();
-          break;
-      }
-    },
+  return {
+    skipToNextMilestone: () => call('skipToNextMilestone'),
+    cancelSkip: () => call('cancelSkip'),
+    replaySameSeed: () => call('replaySameSeed'),
+    newSeed: () => call('newSeed'),
+    exportLog: () => call('exportLog'),
+    viewSite: () => call('viewSite'),
+    run: (id) => call(SESSION_METHOD[id]),
     bind(next) {
       h = next;
       return () => {
@@ -94,7 +110,6 @@ export function createSessionPort(): SessionPort {
     },
     stats,
   };
-  return port;
 }
 
 /** The game's session port (one per page). */
