@@ -204,6 +204,7 @@
 }
 
 .caption {
+  background: var(--fx-color-paper);
   padding: var(--fx-space-2) var(--fx-space-3);
   text-align: left;
   font-size: var(--fx-type-label);

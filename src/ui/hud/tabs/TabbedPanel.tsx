@@ -56,7 +56,7 @@ export function TabbedPanel({ lists, tab, onTab, onSelect, onFollow, onAction }:
   return (
     <section className={styles.panel} aria-label="Site panels" data-testid="tabbed-panel" data-tab={tab}>
       <Tabs
-        label="Panels"
+        label="Site lists"
         tabs={tabDefs(lists)}
         active={tab}
         onChange={(id) => onTab?.(id as HudTab)}
