@@ -1,17 +1,15 @@
 // Shared inputs of the projection sub-projectors.
 import type { EventVM, UiProjection } from '@bridge/projection-types';
 import type { ViewState } from '@bridge/stores';
+import { time as timeData } from '@data/index';
 import { DT_S, isPreLiftoff } from '@sim/index';
 import type { Countdown, Entity, Id, Kind, World } from '@sim/types';
 import type { DropCode, SkipBlockCode, SkipTarget } from '../time/rules';
 import type { TimeScale } from '../time/time-control';
 import type { SparkKey } from './spark';
 
-/**
- * Sim UTC at tick 0, s since 00:00 (scenario start T-06:00:00 = 07:15:00 UTC, planned T-0 13:15:00 UTC).
- * Display-only; moves to src/data/time.ts when the designer fixes a scenario date (open question, 6.1).
- */
-export const UTC_AT_TICK0_S = 7 * 3_600 + 15 * 60;
+/** Sim UTC at tick 0, s since 00:00 (`src/data/time.ts` `scenarioStartUtcS`, display-only). */
+export const UTC_AT_TICK0_S: number = timeData.scenarioStartUtcS;
 
 /** Time-control state the projector reads (app-owned, not sim state). */
 export interface TimeInputs {

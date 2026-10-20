@@ -26,6 +26,11 @@ export const time = {
   force1xFromTS: countdown.force1xFromTS,
   /** … until this long after catch/divert (entering Safing), s. */
   force1xAfterRecoveryS: 30,
+  /**
+   * Scenario clock (display only, the sim never reads it): sim UTC at scenario start (tick 0, T-06:00:00), s since
+   * 00:00 UTC. 07:15:00 → planned T-0 13:15:00 UTC. Placeholder until game-designer fixes a scenario date/time.
+   */
+  scenarioStartUtcS: 7 * 3_600 + 15 * 60,
   /** UI projection freshness guarantee, s (GDD AC 17). */
   uiProjectionMaxAgeS: 0.25,
 };
