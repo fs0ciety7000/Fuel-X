@@ -34,9 +34,9 @@ export function nudgeCamera(n: CameraNudge): void {
 export const NUDGES = {
   zoomIn: { zoom: ZOOM_STEP },
   zoomOut: { zoom: 1 / ZOOM_STEP },
-  // rotate left = the view turns left = the camera orbits clockwise around the target
-  rotateLeft: { yawDeg: ROTATE_STEP_DEG },
-  rotateRight: { yawDeg: -ROTATE_STEP_DEG },
+  // rotate right = the view heading turns clockwise (compass tape reads higher); the camera orbits the target
+  rotateLeft: { yawDeg: -ROTATE_STEP_DEG },
+  rotateRight: { yawDeg: ROTATE_STEP_DEG },
 } as const satisfies Record<string, CameraNudge>;
 
 /** Map-control keys → action (null = not ours). */
