@@ -19,6 +19,7 @@ import {
 import { nextIndex, SiteSwitcher } from '../topbar/SiteSwitcher';
 import { alertBadge, rangeBadge, TopBarView } from '../topbar/TopBar';
 import { HudFrame, HudSlot } from './HudFrame';
+import { boundKeys, HUD_KEYS } from './keys';
 import { createAnnouncer, LIVE_THROTTLE_MS } from './live';
 import { HUD_SLOTS, SLOT_META } from './slots';
 
@@ -245,5 +246,14 @@ describe('live regions (§8)', () => {
     t = LIVE_THROTTLE_MS;
     timers.shift()?.();
     expect(out).toEqual(['RATE 10×', 'RATE 100×. PAUSED']);
+  });
+});
+
+describe('keymap (§8)', () => {
+  it('binds every key once; HOLD is Shift+H, plain H stays the camera home', () => {
+    const keys = boundKeys();
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys).toContain('Shift+H');
+    expect(HUD_KEYS.find((k) => k.keys === 'H')?.action).toMatch(/^Home view/);
   });
 });

@@ -223,16 +223,16 @@ export function Debrief({ d, handlers = {}, inline = false }: DebriefProps) {
 }
 
 /** Collapsed state: the `[■ DEBRIEF READY B]` badge that reopens the sheet. */
-export function DebriefReadyBadge({ onOpen }: { onOpen: () => void }) {
-  return (
-    <div className={styles.readyWrap}>
-      <button type="button" className={styles.ready} onClick={onOpen} data-testid="debrief-ready">
-        <Glyph id="parked" />
-        DEBRIEF READY
-        <kbd className={styles.kbd}>B</kbd>
-      </button>
-    </div>
+export function DebriefReadyBadge({ onOpen, inline = false }: { onOpen: () => void; inline?: boolean }) {
+  const button = (
+    <button type="button" className={styles.ready} onClick={onOpen} data-testid="debrief-ready">
+      <Glyph id="parked" />
+      DEBRIEF READY
+      <kbd className={styles.kbd}>B</kbd>
+    </button>
   );
+  // `inline`: a top-bar cell (§6.29 VIEW SITE collapses the sheet to a badge in the top bar).
+  return inline ? button : <div className={styles.readyWrap}>{button}</div>;
 }
 
 /**
@@ -261,7 +261,8 @@ export function DebriefContainer({ handlers = SESSION_DEBRIEF_HANDLERS }: { hand
     return () => window.removeEventListener('keydown', onKey);
   }, [d, open]);
   if (!d) return null;
-  if (!open) return <DebriefReadyBadge onOpen={reopenDebrief} />;
+  // Collapsed: the DEBRIEF READY badge lives in the top bar (6.3 TopBar); `B` still reopens from here.
+  if (!open) return null;
   return (
     <Debrief
       d={d}

@@ -1,0 +1,43 @@
+/* §6.26 phase stamp: centred over the world, never catches the pointer; 3-step print, hold, hard cut (JS). */
+.stamp {
+  display: grid;
+  justify-items: center;
+  gap: var(--fx-space-3);
+  padding: var(--fx-space-5) var(--fx-space-7);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-heavy);
+  color: var(--fx-color-ink);
+  pointer-events: none;
+  animation: print var(--fx-dur-stamp) var(--fx-ease-step) both;
+}
+
+.stamp[data-still] {
+  animation: none;
+}
+
+.head {
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+}
+
+.word {
+  font-family: var(--fx-font-macro);
+  font-size: var(--fx-type-macro-stamp);
+  font-weight: var(--fx-type-macro-stamp-weight);
+  line-height: var(--fx-type-macro-stamp-leading);
+  letter-spacing: var(--fx-type-macro-stamp-tracking);
+  white-space: nowrap;
+}
+
+/* Prints in three steps over the first third, then holds until the component cuts it. */
+@keyframes print {
+  0% {
+    clip-path: inset(0 0 100% 0);
+  }
+
+  33%,
+  100% {
+    clip-path: inset(0);
+  }
+}

@@ -66,5 +66,5 @@ test('debrief: ledger table, decision log and the four exit actions per outcome'
     for (const name of ['REPLAY SAME SEED', 'NEW SEED', 'EXPORT LOG', /VIEW SITE/])
       await expect(d.getByRole('button', { name })).toBeVisible();
   }
-  await expect(page.getByTestId('debrief-ready')).toBeVisible();
+  await expect(page.getByTestId('gallery-debrief').getByTestId('debrief-ready')).toBeVisible();
 });

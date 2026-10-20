@@ -7,6 +7,7 @@ import { RateControlView } from '../hud/topbar/RateControl';
 import { SiteSwitcher } from '../hud/topbar/SiteSwitcher';
 import { TopBarView } from '../hud/topbar/TopBar';
 import { DecisionStripView, PollPanelView } from '../hud/decision';
+import { PhaseStampView } from '../hud/stamp';
 import type {
   ActionVM,
   AlertsVM,
@@ -334,6 +335,18 @@ export function HudGallery() {
               />
             </div>
           </Specimen>
+          <Specimen caption="RUN ENDED · DEBRIEF COLLAPSED (VIEW SITE) · DEBRIEF READY B">
+            <div className={styles.bar}>
+              <TopBarView
+                utc="14:31:12"
+                timeScale={ended}
+                range={rangeGo}
+                alerts={alertsNone}
+                sites={sites}
+                onDebrief={() => undefined}
+              />
+            </div>
+          </Specimen>
           <Specimen caption="NO LAUNCH SCHEDULED · RANGE — (DISABLED)">
             <div className={styles.bar}>
               <TopBarView utc="07:15:00" timeScale={ts.running} range={rangeNone} alerts={alertsNone} sites={sites} />
@@ -481,6 +494,17 @@ export function HudGallery() {
             <div className={styles.col}>
               <PollPanelView vm={{ stations: allGo, pollLabel: '', tClock: 'T−00:31:07', result: '', open: false }} />
             </div>
+          </Specimen>
+        </div>
+      </Section>
+
+      <Section id="hud-stamp" title="PHASE STAMP" refs="§6.26 · OVERLAY SLOT · 640 MS / STILL 1 S">
+        <div className={styles.stack}>
+          <Specimen caption="LIFTOFF (STILL, AS UNDER REDUCED MOTION)">
+            <PhaseStampView still stamp={{ id: 'Liftoff', label: 'LIFTOFF', header: 'PHASE 05 / 08' }} />
+          </Specimen>
+          <Specimen caption="TOWER CATCH (STILL)">
+            <PhaseStampView still stamp={{ id: 'TowerCatch', label: 'TOWER CATCH', header: 'PHASE 07 / 08' }} />
           </Specimen>
         </div>
       </Section>

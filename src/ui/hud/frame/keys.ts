@@ -14,7 +14,22 @@ export const HUD_KEYS: readonly { keys: string; action: string; owner: string }[
   { keys: 'Shift+H', action: 'Hold the count (while counting; timeline header). Plain H = camera home', owner: '6.5' },
   { keys: 'G', action: 'Focus the decision strip (when open)', owner: '6.5' },
   { keys: 'O', action: 'Expand the D1 propellant strip', owner: '6.5' },
+  { keys: 'F', action: 'Follow / unfollow the selected entity', owner: '6.4 inspector' },
+  { keys: 'B', action: 'Reopen the collapsed debrief', owner: '6.7 debrief' },
+  { keys: 'Alt+1…5', action: 'Vehicles / Tanks / Tasks / Range / Events tab', owner: '6.4 tabs' },
+  { keys: '+ / −', action: 'Zoom in / out (hold to repeat)', owner: '6.6 map controls' },
+  { keys: 'Q / E', action: 'Rotate view left / right', owner: '6.6 map controls' },
+  { keys: 'Z', action: 'Frame the selection', owner: '6.6 map controls' },
+  { keys: 'C', action: 'Recenter on the followed entity', owner: '6.6 map controls' },
+  { keys: 'H', action: 'Home view (reserved; not Shift+H, which holds the count)', owner: '6.6 map controls' },
 ];
+
+/** Every single key a HUD_KEYS entry binds (`', / .'` → `,` `.`; `Alt+1…5` → `Alt+1` … `Alt+5`). */
+export function boundKeys(entries: readonly { keys: string }[] = HUD_KEYS): string[] {
+  return entries.flatMap((k) =>
+    k.keys === 'Alt+1…5' ? ['Alt+1', 'Alt+2', 'Alt+3', 'Alt+4', 'Alt+5'] : k.keys.split(' / ').map((x) => x.trim()),
+  );
+}
 
 const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
 const ACTIVATES = new Set(['BUTTON', 'A', 'SUMMARY']);

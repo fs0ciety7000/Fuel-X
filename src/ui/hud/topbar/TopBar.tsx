@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { projectionStore, view } from '@bridge/index';
 import { Badge, Glyph } from '../../components';
 import type { AlertsVM, GlyphId, RangeVM, SiteVM, TimeScaleVM } from '../../types';
+import { debriefUi, DebriefReadyBadge, isDebriefOpen, reopenDebrief } from '../debrief';
 import { announce } from '../frame/live';
 import { readout } from './rate';
 import { SiteSwitcher } from './SiteSwitcher';
@@ -52,6 +53,8 @@ export interface TopBarViewProps {
   onAlerts?: () => void;
   /** Gallery: force the site list open. */
   sitesOpen?: boolean;
+  /** Collapsed debrief (§6.29): `DEBRIEF READY B` cell that reopens the sheet. */
+  onDebrief?: (() => void) | null;
 }
 
 /**
@@ -68,10 +71,12 @@ export function TopBarView({
   onRange,
   onAlerts,
   sitesOpen,
+  onDebrief,
 }: TopBarViewProps) {
   const rb = rangeBadge(range);
   const ab = alertBadge(alerts);
-  const warn = timeScale.lagging || timeScale.paused;
+  // Paused after the run ended is the normal state, not a warning.
+  const warn = !timeScale.runEnded && (timeScale.lagging || timeScale.paused);
   return (
     <header className={styles.bar} data-testid="topbar">
       <span className={styles.mark} title="FUEL-X · REV 0.6 · UNIT LC-1" aria-label="Fuel-X">
@@ -99,6 +104,11 @@ export function TopBarView({
         {readout(timeScale)}
       </output>
       <span className={styles.spacer} />
+      {onDebrief ? (
+        <div className={styles.cell}>
+          <DebriefReadyBadge inline onOpen={onDebrief} />
+        </div>
+      ) : null}
       <div className={styles.cell}>
         <Badge
           label="RANGE"
@@ -127,10 +137,11 @@ export function TopBarView({
 
 /** Live top bar: narrow selectors over the throttled projection (structural sharing keeps re-renders rare). */
 export function TopBar() {
-  const [utc, timeScale, range, alerts, sites] = useStore(
+  const [utc, timeScale, range, alerts, sites, debrief] = useStore(
     projectionStore,
-    useShallow((p) => [p.clock.utc, p.timeScale, p.range, p.alerts, p.sites] as const),
+    useShallow((p) => [p.clock.utc, p.timeScale, p.range, p.alerts, p.sites, p.debrief] as const),
   );
+  const debriefCollapsed = useStore(debriefUi, (u) => debrief !== null && !isDebriefOpen(debrief, u));
   // Assertive announcement only when a new danger alert arrives (§6.5).
   const fresh = useRef(alerts.fresh);
   useEffect(() => {
@@ -150,6 +161,7 @@ export function TopBar() {
       onSite={(id) => view.site(id)}
       onRange={() => view.tab('range')}
       onAlerts={() => view.tab('events')}
+      onDebrief={debriefCollapsed ? reopenDebrief : null}
     />
   );
 }
