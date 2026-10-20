@@ -96,3 +96,13 @@
   background-color: var(--fx-3d-ground-base);
   background-image: var(--fx-pattern-hatch);
 }
+
+.wide {
+  justify-self: stretch;
+  max-width: calc(var(--fx-size-debrief) + var(--fx-size-dialog));
+}
+
+.col {
+  justify-self: stretch;
+  width: var(--fx-size-hud-left);
+}

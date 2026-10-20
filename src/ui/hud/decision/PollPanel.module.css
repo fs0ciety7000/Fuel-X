@@ -1,0 +1,135 @@
+/* §6.24 poll panel: card in the left column; warn = accent left rule rows, danger = hazard band rows. */
+.panel {
+  position: relative;
+  min-height: 0;
+  overflow: auto;
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-frame);
+  color: var(--fx-color-ink);
+  pointer-events: auto;
+}
+
+.panel[data-state='danger'] {
+  padding-top: var(--fx-rule-band);
+}
+
+.band {
+  position: absolute;
+  inset: 0 0 auto;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  min-height: var(--fx-size-control);
+  padding: var(--fx-space-1) var(--fx-space-3);
+}
+
+.panel[data-open] .head {
+  border-bottom: var(--fx-rule-frame);
+}
+
+.title {
+  flex: 1 1 auto;
+  overflow: hidden;
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toggle,
+.code {
+  min-height: var(--fx-size-hit-min);
+  padding: var(--fx-space-0) var(--fx-space-2);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+  color: var(--fx-color-ink);
+  font: inherit;
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.toggle:hover,
+button.code:hover {
+  background: var(--fx-color-paper-2);
+}
+
+span.code {
+  border-color: var(--fx-color-paper);
+  cursor: default;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fx-type-body);
+}
+
+.table th,
+.table td {
+  padding: var(--fx-space-1) var(--fx-space-2);
+  border-bottom: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.table thead th {
+  color: var(--fx-color-ink-3);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.table tbody tr[data-state='warn'] th {
+  box-sizing: border-box;
+  border-left: var(--fx-rule-warn);
+}
+
+.table tbody tr[data-state='danger'] th {
+  border-left: var(--fx-rule-band) solid var(--fx-color-accent);
+}
+
+.status {
+  white-space: nowrap;
+  font-weight: var(--fx-type-strong-weight);
+}
+
+.status > svg {
+  margin-right: var(--fx-space-2);
+}
+
+tr[data-state='warn'] .status {
+  color: var(--fx-color-accent-text);
+}
+
+.driver {
+  color: var(--fx-color-ink-2);
+}
+
+.result {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--fx-space-3);
+  padding: var(--fx-space-2) var(--fx-space-3);
+  font-weight: var(--fx-type-strong-weight);
+}
+
+.label {
+  color: var(--fx-color-ink-3);
+  font-size: var(--fx-type-label);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

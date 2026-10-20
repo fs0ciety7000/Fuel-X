@@ -1,10 +1,20 @@
 import { useStore } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import { projectionStore, view } from '@bridge/index';
+import { useEffect } from 'react';
+import { projectionStore, session, view } from '@bridge/index';
 import { Button, Glyph, SegmentedControl, type SegmentOption } from '../../components';
 import type { Rate, TimeScaleVM } from '../../types';
 import { announce } from '../frame/live';
-import { capLabel, rateAnnouncement, rateSegments, readout, runEnded, selectedRate } from './rate';
+import {
+  capLabel,
+  dropAnnouncement,
+  rateAnnouncement,
+  rateSegments,
+  readout,
+  runEnded,
+  selectedRate,
+  skipIntent,
+} from './rate';
 import styles from './RateControl.module.css';
 
 export interface RateControlViewProps {
@@ -32,7 +42,11 @@ export function RateControlView({ ts, ended, onRate, onSkip, compact = false }: 
   }));
   const cap = ended ? ts.lockLabel || 'RUN ENDED' : capLabel(ts);
   const drop = !ended && ts.drop ? ts.drop.label : null;
-  const skipReason = ended ? 'RUN ENDED' : ts.skip.enabled && onSkip ? null : (ts.skip.reason ?? 'NO MILESTONE');
+  const skipReason = ended
+    ? 'RUN ENDED'
+    : ts.skip.active || (ts.skip.enabled && onSkip)
+      ? null
+      : (ts.skip.reason ?? 'NO MILESTONE');
   const warn = !ended && (ts.lagging || ts.paused);
   return (
     <div className={styles.rate} data-testid="rate-control" data-ended={ended || undefined}>
@@ -44,15 +58,14 @@ export function RateControlView({ ts, ended, onRate, onSkip, compact = false }: 
         {...(onRate && !ended ? { onChange: onRate } : {})}
       />
       <Button
-        glyph="skip"
+        glyph={ts.skip.active ? 'current' : 'skip'}
         kbd="N"
         small
-        disabledReason={ts.skip.active ? null : skipReason}
-        busy={ts.skip.active}
-        ariaLabel={`Skip to ${ts.skip.target ?? 'next milestone'}`}
+        disabledReason={skipReason}
+        ariaLabel={ts.skip.active ? 'Cancel skip' : `Skip to ${ts.skip.target ?? 'next milestone'}`}
         {...(onSkip ? { onClick: onSkip } : {})}
       >
-        <span className={styles.skipText}>{ts.skip.active ? 'SKIPPING…' : (ts.skip.target ?? 'SKIP')}</span>
+        <span className={styles.skipText}>{ts.skip.active ? 'SKIPPING… · CANCEL' : (ts.skip.target ?? 'SKIP')}</span>
       </Button>
       {compact ? null : (
         <output className={styles.readout} data-state={warn ? 'warn' : undefined} data-testid="rate-readout">
@@ -83,15 +96,34 @@ export function RateControl({ compact = false }: { compact?: boolean }) {
     useShallow((p) => [p.timeScale, p.debrief !== null] as const),
   );
   const ended = runEnded(ts, debriefOpen);
+  const dropTick = ts.drop?.tick ?? null;
+  useEffect(() => {
+    if (dropTick === null) return;
+    const line = dropAnnouncement(projectionStore.getState().timeScale);
+    if (line) announce(line);
+  }, [dropTick]);
   return (
     <RateControlView
       ts={ts}
       ended={ended}
       compact={compact}
+      onSkip={() => runSkip(ts, ended)}
       onRate={(r) => {
         view.timeScale(r);
         announce(rateAnnouncement(r, ts));
       }}
     />
   );
+}
+
+/** SKIP button and `N`: start / cancel through the session port, or announce why not. */
+export function runSkip(ts: TimeScaleVM, ended: boolean): void {
+  const i = skipIntent(ts, ended);
+  if (i === 'start') {
+    session.skipToNextMilestone();
+    announce(`SKIPPING TO ${ts.skip.target ?? 'NEXT MILESTONE'}`);
+  } else if (i === 'cancel') {
+    session.cancelSkip();
+    announce('SKIP CANCELLED');
+  } else announce(`SKIP UNAVAILABLE, ${i.blocked}`);
 }

@@ -1,0 +1,301 @@
+/* §6.28 decision strip: one opaque strip above the countdown band, compartments on 1 px ink-5 gaps. */
+.strip {
+  position: relative;
+  display: grid;
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+  color: var(--fx-color-ink);
+  pointer-events: auto;
+}
+
+.strip:focus-visible {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+.strip[data-state='warn'] {
+  border: var(--fx-rule-warn);
+}
+
+.strip[data-state='danger'] {
+  padding-top: var(--fx-rule-band);
+}
+
+.band {
+  position: absolute;
+  inset: 0 0 auto;
+}
+
+.head,
+.line,
+.body > *,
+.drivers,
+.option {
+  background: var(--fx-color-paper);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-3);
+  min-height: var(--fx-size-control);
+  padding: var(--fx-space-1) var(--fx-space-3);
+  white-space: nowrap;
+}
+
+.kind {
+  padding: var(--fx-space-0) var(--fx-space-2);
+  background: var(--fx-color-ink);
+  color: var(--fx-color-paper);
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+}
+
+.strip[data-state='danger'] .kind {
+  background: var(--fx-color-accent);
+  color: var(--fx-color-on-accent);
+}
+
+.title {
+  overflow: hidden;
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-strong-tracking);
+  text-overflow: ellipsis;
+}
+
+.fill {
+  flex: 1 1 auto;
+}
+
+.queued,
+.drop,
+.auto,
+.label,
+.note,
+.reason,
+.effect {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.queued {
+  padding: var(--fx-space-0) var(--fx-space-2);
+  border: var(--fx-rule-frame);
+}
+
+.drop {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  color: var(--fx-color-ink-2);
+}
+
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--fx-space-2) var(--fx-space-4);
+  padding: var(--fx-space-2) var(--fx-space-3);
+}
+
+.lineText {
+  font-size: var(--fx-type-body);
+}
+
+/* --- body: question · evidence · deadline ------------------------------------------------------------- */
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 0.9fr);
+  gap: var(--fx-rule-hair);
+}
+
+.question,
+.evidence,
+.deadline {
+  display: grid;
+  align-content: start;
+  gap: var(--fx-space-2);
+  min-width: 0;
+  padding: var(--fx-space-3);
+}
+
+.q {
+  font-size: var(--fx-type-title);
+  font-weight: var(--fx-type-title-weight);
+  letter-spacing: var(--fx-type-title-tracking);
+  line-height: var(--fx-type-title-leading);
+}
+
+.note,
+.label,
+.effect {
+  color: var(--fx-color-ink-3);
+}
+
+/* σ must not become Σ under the global uppercase. */
+.effect,
+.sigma {
+  text-transform: none;
+}
+
+.forced {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  font-weight: var(--fx-type-strong-weight);
+}
+
+.pLine {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-3);
+}
+
+.pValue {
+  font-size: var(--fx-type-value);
+  font-weight: var(--fx-type-value-weight);
+  letter-spacing: var(--fx-type-value-tracking);
+  line-height: var(--fx-type-value-leading);
+}
+
+.pBar {
+  position: relative;
+  height: var(--fx-size-deadline);
+  background: var(--fx-color-paper-3);
+  border: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+}
+
+.pFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--fx-color-ink);
+}
+
+.pTick {
+  position: absolute;
+  top: calc(-1 * var(--fx-space-1));
+  bottom: calc(-1 * var(--fx-space-1));
+  width: var(--fx-space-1);
+  background: var(--fx-color-accent);
+  outline: var(--fx-rule-hair) solid var(--fx-color-ink);
+  transform: translateX(-50%);
+}
+
+.stations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fx-space-2);
+  list-style: none;
+}
+
+.fleet {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-3);
+}
+
+/* --- consequences ------------------------------------------------------------------------------------ */
+.cq {
+  display: grid;
+  gap: var(--fx-space-1);
+}
+
+.cqInline {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--fx-space-4);
+}
+
+.cqRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--fx-space-3);
+  font-size: var(--fx-type-body);
+}
+
+.cqRow dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-1);
+  color: var(--fx-color-ink-2);
+}
+
+.cqRow dd {
+  text-align: right;
+}
+
+/* --- drivers (D3) -------------------------------------------------------------------------------------- */
+.drivers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--fx-space-2) var(--fx-space-5);
+  padding: var(--fx-space-2) var(--fx-space-3);
+  list-style: none;
+}
+
+.driver {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  font-size: var(--fx-type-body);
+}
+
+/* --- options -------------------------------------------------------------------------------------------- */
+.options {
+  display: grid;
+  gap: var(--fx-rule-hair);
+}
+
+.option {
+  display: grid;
+  align-content: start;
+  gap: var(--fx-space-2);
+  min-width: 0;
+  padding: var(--fx-space-3);
+}
+
+.optionHead {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-3);
+}
+
+.auto {
+  padding: var(--fx-space-0) var(--fx-space-2);
+  border: var(--fx-rule-hair) solid var(--fx-color-ink-3);
+  color: var(--fx-color-ink-3);
+}
+
+.reason {
+  color: var(--fx-color-ink-2);
+}
+
+.ev {
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--fx-space-2);
+  border-top: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+  font-size: var(--fx-type-strong);
+  font-weight: var(--fx-type-strong-weight);
+}
+
+@container hud (width < 1600px) or (height < 900px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 0.9fr);
+  }
+
+  .question,
+  .evidence,
+  .deadline,
+  .option {
+    padding: var(--fx-space-2);
+  }
+
+  .cqInline {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

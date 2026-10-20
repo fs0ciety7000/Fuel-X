@@ -203,7 +203,7 @@ describe('countdown header (§6.17, AC 28)', () => {
       }),
     );
     // Count commands only (phase labels are buttons too, they open the Tasks tab).
-    expect(out.match(/aria-keyshortcuts="H"/g)).toHaveLength(1);
+    expect(out.match(/<kbd[^>]*>⇧H<\/kbd>/g)).toHaveLength(1);
     expect(out).not.toMatch(/>(GO|RECYCLE|SCRUB)</);
     expect(out).toContain('T−00:10:00');
     const held = html(
@@ -217,7 +217,7 @@ describe('countdown header (§6.17, AC 28)', () => {
         },
       }),
     );
-    expect(held).not.toContain('aria-keyshortcuts="H"');
+    expect(held).not.toContain('⇧H');
     expect(held).toContain('HOLD · POLL');
   });
 });

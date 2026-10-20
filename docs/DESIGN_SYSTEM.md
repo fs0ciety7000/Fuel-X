@@ -679,7 +679,7 @@ skipping   [ II | 1× | 10× | 100× |◐ SKIPPING… ]  SIM SKIP → T-01:20:00
 
 ### 6.28 Decision strip (D1, D2, D3, D3b)
 
-One opaque strip in the `strip` grid area, directly above the countdown timeline, full width of `flight → ctrl`. It is **the only place the four MVP decisions are taken** (GDD §10, §13.2): a question, its deadline, the evidence, the consequences of each branch and 2–4 buttons. At most one strip at a time; a newer decision queues behind (`+1 QUEUED` chip) by priority D3 > D2 > D3b > D1.
+One opaque strip in the `strip` grid area, directly above the countdown timeline, full width of `flight → ctrl`. It is **the only place the four MVP decisions are taken** (GDD §10, §13.2): a question, its deadline, the evidence, the consequences of each branch and 2–4 buttons. At most one strip at a time; a newer decision queues behind (`+1 QUEUED · D2 D1` chip from `queuedKinds`) by priority **D3 > D3b > D2 > D1** (the projector picks; aligned in 6.5 with GDD §13.2.1, AC 30).
 
 Anatomy (1920 wide):
 ```
@@ -781,6 +781,12 @@ The §6.20 in-world tag as a reusable primitive (also used inline in rows, the d
 ### 6.36 Value cell
 Every number on screen goes through one primitive: `<data value="{SI}">{text}</data>` + unit in `type-label` ink-2, tabular, right-aligned in a fixed `ch` slot supplied by the projection (`width` = text length of the widest legal value). Missing → `—` (same slot). Stale (projection older than 2 s or source offline) → value kept, ink-4, `pattern-hatch` underlay and `aria-description="stale"`.
 
+### 6.37 As built (6.5) — countdown band, poll panel, decision strip
+
+- **Countdown band** (`src/ui/hud/timeline/*`, slot `time`): header `[ COUNTDOWN ]` · context · rate control (§6.25) · HOLD `⇧H` while counting / hold tag `↺ HOLD · POLL` while holding (AC 28) · macro T-clock box (hold/paused = accent frame + word, scrub = accent plate). Phase bar: each phase gets a 5 % floor (`MIN_SHARE`), the rest is proportional to the planned share; playhead, poll ticks (passed ink / open accent / pending ink-4) and the window bracket go through the same piecewise-linear map (`bar.ts`), so a mark never leaves its phase. The current phase prints its full label, the others their `short` code (all short in compact). Clicking a phase opens the Tasks tab. Phase changes and T−10 / T−5 / T−0 are announced politely; the T-clock is never live. The hold *span* is a single accent block at the playhead (the projection has no hold history yet).
+- **Poll panel** (`src/ui/hud/decision/PollPanel.tsx`, slot `poll`): station table (`<table>`, row header = station code button → `view.select(sourceId)`), status glyph + word, driver detail, `RESULT` output. Open while a D2 is projected or the clock holds; otherwise collapsed to its header with a `▸ n OF 5 GO` toggle. Hidden after liftoff. No count buttons.
+- **Decision strip** (`src/ui/hud/decision/*`, slot `strip`): header `D-code [ DECISION · title ]` · queued chip · rate-drop chip (`timeScale.drop.label`) · D1 `ORDER ▸ O` toggle. Body = question + auto policy · per-kind evidence (D3 *p*, band chip, *p* bar with break-even tick, σ; D2 station chips, result, blocker, risk note, `evidence` lines; D3b load-complete ETAs; D1 reserves, open orders, trucks) · deadline bar. D3 adds the drivers row. Then one column per option: button with key hint, `AUTO` tag, reason when disabled, consequences `<dl>`, EV. A press sends `option.command`; `confirm: true` opens the §6.27 dialog first; an option without a command (D1 `NO ORDER`) collapses the strip; the pressed button reads `◐ SENT · …` until the next projection. Blocking decisions take focus and announce assertively when they open; `G` focuses, `O` toggles D1.
+
 ---
 
 ## 7. Iconography & glyph set
@@ -846,13 +852,14 @@ Syntax decoration (structure, not ornament): `[ TITLE ]` card heads, `>>>` for "
 | `Enter` | Select + focus camera on row/tag |
 | `F` | Follow / unfollow selected |
 | `C` / `H` / `Z` | Recenter on followed / home view / frame selection |
+| `Shift+H` | **Hold the count** (while counting; the timeline header's only count button, hint `⇧H`). Deliberately not plain `H` (home view): holding is high-stakes and must never fire from a camera habit (6.5) |
 | `+` / `−` | Zoom · `Q` / `E` rotate |
 | `Space` | Pause / resume |
 | `,` / `.` | Time scale down / up |
 | `A` | Jump to oldest unacknowledged alert · `Shift+A` ack focused alert |
-| `G` | Focus the decision strip (when open) · inside it: option keys of §6.28 (`Enter` GO / GO FOR CATCH, `H` hold, `R` recycle, `D` divert, `C` continue, `S`/`R` order) |
+| `G` | Focus the decision strip (when open) · inside it: the option keys the projector prints on each button (`⏎` GO, `R` recycle, `D` divert, `C` continue / catch, `H` hold-to-fix, `Esc` D1 no order / collapse). Strip keys are scoped: they act only with focus inside the strip and stop propagation, so `H`/`C`/`D` there never reach the camera |
 | `O` | Expand the D1 propellant strip |
-| `N` | Skip to next milestone (when allowed) |
+| `N` | Skip to next milestone (when allowed); again while skipping = cancel (`session.skipToNextMilestone()` / `cancelSkip()`) |
 | `B` | Reopen the debrief |
 | `?` | Shortcut sheet |
 
@@ -970,7 +977,7 @@ Severity everywhere is the §2.3 vocabulary `neutral | info | ok | active | warn
 
 **Resolutions (game-designer, 6.0):**
 1. RESOLVED — D1 is advisory, no rate change; blocking = D2/D3/D3b. Note: a decision is a one-shot **drop** of the requested rate, not a cap, so `⊘ 1× · DECISION OPEN` must not hatch 10× (holds stay compressible up to the 10× cap). → GDD §6 (cap vs drop), AC 23.
-2. RESOLVED — D1 is in the strip (collapsed) and on Tasks rows; the only decision allowed two surfaces (orders are additive). Priority is **D3 > D3b > D2 > D1** (matches the projection; §6.28 says D3 > D2 > D3b, please align). → GDD §10, §13.2.1, AC 30.
+2. RESOLVED — D1 is in the strip (collapsed) and on Tasks rows; the only decision allowed two surfaces (orders are additive). Priority is **D3 > D3b > D2 > D1** (matches the projection; §6.28 aligned in 6.5). → GDD §10, §13.2.1, AC 30.
 3. RESOLVED — D3b default = CONTINUE DEGRADED, committed by the sim at `min(onset + 300 s, window close)` (`by: AUTO`); one-shot. → GDD §13.2.1, AC 29 (sim follow-up).
 4. RESOLVED — stations GO / MARGINAL / NO-GO (+ POLLING); HOLD only on the T-clock. → GDD §4.5 Vocabulary, AC 28.
 5. RESOLVED — counting: HOLD only, in the timeline header; holding: GO / RECYCLE / SCRUB only, in the D2 strip. → GDD §4.5 One command surface, AC 28.

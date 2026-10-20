@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import type { HudSlotName } from './frame/slots';
 import { DebriefContainer } from './debrief';
+import { DecisionStrip, PollPanel } from './decision';
 import { ToastsContainer } from './events';
 import { FlightCardContainer } from './flight';
 import { InspectorContainer } from './inspector';
@@ -16,6 +17,8 @@ import { AltitudeScale, CompassTape, MapControls } from './world';
 export const HUD_MOUNTS: Partial<Record<HudSlotName, ComponentType>> = {
   top: TopBar,
   time: CountdownTimeline,
+  poll: PollPanel,
+  strip: DecisionStrip,
   alt: AltitudeScale,
   compass: CompassTape,
   ctrl: MapControls,

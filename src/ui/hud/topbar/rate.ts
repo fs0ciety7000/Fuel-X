@@ -5,6 +5,7 @@ import type { Rate, TimeScaleVM } from '../../types';
 export const RATES: readonly Rate[] = [0, 1, 10, 100];
 const RUNNING: readonly Exclude<Rate, 0>[] = [1, 10, 100];
 export const RUN_ENDED = 'RUN ENDED';
+export const SKIPPING = 'SKIPPING';
 
 export interface RateSegment {
   value: Rate;
@@ -38,8 +39,8 @@ export function rateSegments(ts: TimeScaleVM, ended: boolean): RateSegment[] {
     value: r,
     text: r === 0 ? 'II' : `${r}×`,
     ariaLabel: r === 0 ? 'Pause' : `${r} times`,
-    disabledReason: ended ? RUN_ENDED : null,
-    capReason: !ended && r !== 0 && r > ts.maxAllowed ? cap : null,
+    disabledReason: ended ? RUN_ENDED : ts.skip.active ? SKIPPING : null,
+    capReason: !ended && !ts.skip.active && r !== 0 && r > ts.maxAllowed ? cap : null,
   }));
 }
 
@@ -72,4 +73,18 @@ export function rateAnnouncement(rate: Rate, ts: TimeScaleVM): string {
 /** Top-bar / header readout: `SIM 10×`, `SIM PAUSED`, `SIM 7.4× OF 100×`. */
 export function readout(ts: TimeScaleVM): string {
   return ts.readout ?? (ts.paused ? 'SIM PAUSED' : `SIM ${ts.effectiveRate}`);
+}
+
+/** `N` / SKIP button: start a skip when allowed, cancel a running one, else say why not. */
+export function skipIntent(ts: TimeScaleVM, ended: boolean): 'start' | 'cancel' | { blocked: string } {
+  if (ts.skip.active) return 'cancel';
+  if (ended) return { blocked: RUN_ENDED };
+  if (ts.skip.enabled) return 'start';
+  return { blocked: ts.skip.reason ?? 'NO MILESTONE SCHEDULED' };
+}
+
+/** Polite line for a one-shot drop to 1× (GDD §6), e.g. `RATE 1×, DECISION OPEN`. */
+export function dropAnnouncement(ts: TimeScaleVM): string | null {
+  if (!ts.drop) return null;
+  return `RATE DROPPED TO ${ts.drop.label}`;
 }

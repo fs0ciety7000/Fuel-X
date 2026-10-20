@@ -4,13 +4,14 @@ import { useEffect } from 'react';
 import { projectionStore, view } from '@bridge/index';
 import { announce } from './live';
 import { rateAnnouncement, runEnded, steppedRate, toggledRate } from '../topbar/rate';
+import { runSkip } from '../topbar/RateControl';
 
 /** Keymap source for the `?` sheet and `/design` (§9.10). Entries owned by other tasks are listed by them. */
 export const HUD_KEYS: readonly { keys: string; action: string; owner: string }[] = [
   { keys: 'Space', action: 'Pause / resume', owner: '6.3' },
   { keys: ', / .', action: 'Time rate down / up (capped steps announce their reason)', owner: '6.3' },
-  { keys: 'N', action: 'Skip to next milestone (when allowed)', owner: '6.3 / 7.2' },
-  { keys: 'H', action: 'Hold the count (while counting; timeline header)', owner: '6.5' },
+  { keys: 'N', action: 'Skip to next milestone (when allowed) · again = cancel the skip', owner: '6.3 / 7.2' },
+  { keys: 'Shift+H', action: 'Hold the count (while counting; timeline header). Plain H = camera home', owner: '6.5' },
   { keys: 'G', action: 'Focus the decision strip (when open)', owner: '6.5' },
   { keys: 'O', action: 'Expand the D1 propellant strip', owner: '6.5' },
 ];
@@ -61,6 +62,10 @@ export function handleHudKey(e: KeyboardEvent, extra?: (e: KeyboardEvent) => boo
       view.timeScale(rate);
       announce(rateAnnouncement(rate, p.timeScale));
     } else if (blocked) announce(`RATE LOCKED, ${blocked}`);
+    return true;
+  }
+  if (e.key.toLowerCase() === 'n' && !e.shiftKey) {
+    runSkip(p.timeScale, ended);
     return true;
   }
   return extra ? extra(e) : false;

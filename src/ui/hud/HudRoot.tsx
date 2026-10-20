@@ -44,7 +44,7 @@ export function HudRoot({ debug, contained = false, outline = false }: HudRootPr
       {contained ? null : (
         <>
           {contained ? null : <WorldLabels />}
-      <GlyphSprite />
+          <GlyphSprite />
           <LiveRegions />
         </>
       )}

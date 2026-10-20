@@ -6,7 +6,19 @@ import { CountdownTimelineView, type TimelineHeadVM } from '../hud/timeline/Coun
 import { RateControlView } from '../hud/topbar/RateControl';
 import { SiteSwitcher } from '../hud/topbar/SiteSwitcher';
 import { TopBarView } from '../hud/topbar/TopBar';
-import type { ActionVM, AlertsVM, RangeVM, SiteVM, TimeScaleVM } from '../types';
+import { DecisionStripView, PollPanelView } from '../hud/decision';
+import type {
+  ActionVM,
+  AlertsVM,
+  CountdownVM,
+  DecisionOptionVM,
+  LeakDecisionVM,
+  PropMarginDecisionVM,
+  RangeVM,
+  SiteVM,
+  StationVM,
+  TimeScaleVM,
+} from '../types';
 import styles from './HudGallery.module.css';
 
 // /design HUD section (DESIGN_SYSTEM §9.8–9.9, 6.3+): top bar, site switcher, rate control and countdown band in
@@ -117,7 +129,18 @@ const holdAction: ActionVM = {
   variant: 'secondary',
   command: { t: 'Hold', countdownId: 'cd-1' },
 };
-const counting = { ...fx.countdown, holding: false, actions: [holdAction] };
+const polls: NonNullable<CountdownVM['polls']> = [
+  { id: 'load', at: 'T−01:20:00', position: 0.42, label: 'LOAD POLL', state: 'passed' },
+  { id: 'terminal', at: 'T−00:10:00', position: 0.54, label: 'TERMINAL POLL', state: 'open' },
+  { id: 'final', at: 'T−00:00:40', position: 0.548, label: 'FINAL POLL', state: 'pending' },
+];
+const counting: CountdownVM = {
+  ...fx.countdown,
+  holding: false,
+  actions: [holdAction],
+  playhead: 0.6,
+  polls,
+};
 const heads: [string, TimelineHeadVM][] = [
   [
     'COUNTING · HOLD IS THE ONLY COUNT BUTTON',
@@ -151,6 +174,107 @@ const heads: [string, TimelineHeadVM][] = [
 ];
 
 /** A viewport-sized HUD (data: the specimen's viewport), scaled down to fit the page. */
+const v = (text: string, value: number | null, unit?: string) => ({ text, value, ...(unit ? { unit } : {}) });
+const o = (x: Partial<DecisionOptionVM> & Pick<DecisionOptionVM, 'id' | 'label'>): DecisionOptionVM => ({
+  key: '',
+  variant: 'secondary',
+  enabled: true,
+  consequences: [],
+  auto: false,
+  confirm: false,
+  ...x,
+});
+const d1: PropMarginDecisionVM = {
+  ...fx.decisionProp,
+  title: 'D1 PROPELLANT MARGIN · LOX 0.60 H RESERVE',
+  question: 'ORDER EXTRA DELIVERIES BEFORE THE ROAD CLOSES?',
+  autoNote: 'NO ANSWER: NOTHING ORDERED',
+  deadline: { ...fx.decisionProp.deadline, label: 'ROAD CLOSURE' },
+  queued: 0,
+  reserves: [
+    { key: 'lox', label: 'LOX RESERVE', value: v('0.60', 2160, 'H'), state: 'warn' },
+    { key: 'ch4', label: 'CH4 RESERVE', value: v('0.90', 3240, 'H'), state: 'neutral' },
+  ],
+  options: [
+    o({
+      id: 'ORDER_LOX_STANDARD',
+      label: 'LX STANDARD',
+      variant: 'primary',
+      consequences: [
+        { label: 'COST', value: v('−0.41', -0.41e6, 'M CR'), state: 'neutral' },
+        { label: 'HOLD-MIN BOUGHT', value: v('38', 2280, 'MIN'), state: 'ok' },
+        { label: 'AT GATE', value: v('T−01:52:00', -6720), state: 'neutral' },
+      ],
+    }),
+    o({
+      id: 'ORDER_LOX_RUSH',
+      label: 'LX RUSH',
+      consequences: [
+        { label: 'COST', value: v('−0.52', -0.52e6, 'M CR'), state: 'neutral' },
+        { label: 'HOLD-MIN BOUGHT', value: v('38', 2280, 'MIN'), state: 'ok' },
+        { label: 'AT GATE', value: v('T−02:41:00', -9660), state: 'neutral' },
+      ],
+    }),
+    o({
+      id: 'ORDER_CH4_STANDARD',
+      label: 'MX STANDARD',
+      enabled: false,
+      reason: 'ARRIVES AFTER ROAD CLOSURE',
+      consequences: [{ label: 'AT GATE', value: v('T−00:31:00', -1860), state: 'warn' }],
+    }),
+    o({
+      id: 'NO_ORDER',
+      label: 'NO ORDER',
+      key: 'Esc',
+      auto: true,
+      consequences: [{ label: 'LOX RESERVE STAYS', value: v('0.60', 2160, 'HOLD-H'), state: 'warn' }],
+    }),
+  ],
+};
+const d3b: LeakDecisionVM = {
+  ...fx.decisionLeak,
+  autoNote: 'AUTO AT DEADLINE: CONTINUE DEGRADED',
+  pending: null,
+  options: [
+    o({
+      id: 'DEGRADED',
+      label: 'CONTINUE DEGRADED',
+      key: 'C',
+      variant: 'primary',
+      auto: true,
+      consequences: [
+        { label: 'LOAD COMPLETE', value: v('T−00:02:10', -130), state: 'danger' },
+        { label: 'AUTO-HOLD AT', value: v('T−00:03:00', -180), state: 'warn' },
+      ],
+    }),
+    o({
+      id: 'FIX',
+      label: 'HOLD 20 MIN TO FIX',
+      key: 'H',
+      consequences: [
+        { label: 'LOAD COMPLETE', value: v('T−00:12:40', -760), state: 'ok' },
+        { label: 'WINDOW AFTER FIX', value: v('00:41:00', 2460), state: 'warn' },
+      ],
+    }),
+  ],
+};
+const d2 = {
+  ...fx.decisionPoll,
+  queuedKinds: ['PROP_MARGIN' as const],
+  result: '1 MARGINAL · 1 NO-GO · 3 OF 5 GO',
+  blocker: 'RANGE NO-GO · UNK-01 IN AREA BRAVO',
+  evidence: [
+    { label: 'WINDOW LEFT', value: v('00:41:00', 2460), state: 'warn' as const },
+    { label: 'EARLIEST LIFTOFF', value: v('14:31:00', 52260, 'UTC'), state: 'neutral' as const },
+    { label: 'LOX RESERVE', value: v('36', 2160, 'HOLD-MIN'), state: 'warn' as const },
+    { label: 'COST / 10 MIN HELD', value: v('−0.08', -0.08e6, 'M CR'), state: 'neutral' as const },
+  ],
+};
+const allGo: StationVM[] = fx.stations.map((st) => ({ ...st, status: 'GO', state: 'ok', glyph: 'ok' }));
+const polling: StationVM[] = fx.stations.map((st, i) =>
+  i < 2 ? st : { ...st, status: 'PENDING', state: 'neutral', glyph: 'pending' },
+);
+
 function FullFrame({ w, h, scale, outline }: { w: number; h: number; scale: number; outline: boolean }) {
   return (
     <div className={styles.scaled} style={{ width: `${w * scale}px`, height: `${h * scale}px` }}>
@@ -293,6 +417,71 @@ export function HudGallery() {
               </div>
             </Specimen>
           ))}
+        </div>
+      </Section>
+
+      <Section id="hud-strip" title="DECISION STRIP" refs="§6.28 · D3 > D3B > D2 > D1 · AC 19 · 30 · 31">
+        <div className={styles.stack}>
+          <Specimen caption="D3 RECOVERY · LEAN · DROP TO 1× · EV ON BOTH OPTIONS">
+            <div className={styles.wide}>
+              <DecisionStripView d={fx.decisionCatch} dropLabel="1× · DECISION OPEN" />
+            </div>
+          </Specimen>
+          <Specimen caption="D3 · SENT (AWAITING PROJECTION)">
+            <div className={styles.wide}>
+              <DecisionStripView d={fx.decisionCatch} pending="catch" />
+            </div>
+          </Specimen>
+          <Specimen caption="D3B GSE LEAK · AUTO CONTINUE DEGRADED">
+            <div className={styles.wide}>
+              <DecisionStripView d={d3b} />
+            </div>
+          </Specimen>
+          <Specimen caption="D2 GO / NO-GO · HOLDING · NO-GO BLOCKS GO · D1 QUEUED">
+            <div className={styles.wide}>
+              <DecisionStripView d={d2} dropLabel="1× · NO-GO" />
+            </div>
+          </Specimen>
+          <Specimen caption="D1 PROPELLANT MARGIN · ADVISORY · COLLAPSED">
+            <div className={styles.wide}>
+              <DecisionStripView d={d1} collapsed />
+            </div>
+          </Specimen>
+          <Specimen caption="D1 · EXPANDED (O) · STANDARD MX PAST ITS CUT-OFF">
+            <div className={styles.wide}>
+              <DecisionStripView d={d1} />
+            </div>
+          </Specimen>
+        </div>
+      </Section>
+
+      <Section id="hud-poll" title="GO / NO-GO POLL PANEL" refs="§6.24 · EVIDENCE ONLY · AC 28">
+        <div className={styles.row}>
+          <Specimen caption="NO-GO · HOLD">
+            <div className={styles.col}>
+              <PollPanelView
+                vm={{
+                  stations: fx.stations,
+                  pollLabel: 'TERMINAL POLL',
+                  tClock: 'T−00:10:00',
+                  result: d2.result,
+                  open: true,
+                }}
+              />
+            </div>
+          </Specimen>
+          <Specimen caption="POLLING">
+            <div className={styles.col}>
+              <PollPanelView
+                vm={{ stations: polling, pollLabel: 'LOAD POLL', tClock: 'T−01:20:00', result: '', open: true }}
+              />
+            </div>
+          </Specimen>
+          <Specimen caption="ALL GO · COLLAPSED (COUNTING)">
+            <div className={styles.col}>
+              <PollPanelView vm={{ stations: allGo, pollLabel: '', tClock: 'T−00:31:07', result: '', open: false }} />
+            </div>
+          </Specimen>
         </div>
       </Section>
 

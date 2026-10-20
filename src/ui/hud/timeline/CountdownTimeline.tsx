@@ -1,9 +1,10 @@
-import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useStore } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { commands, projectionStore, view } from '@bridge/index';
 import { Button, Glyph } from '../../components';
 import type { ActionVM, CountdownVM, PhaseVM, Severity } from '../../types';
+import { ownedByTarget } from '../frame/keys';
 import { announce } from '../frame/live';
 import { crossedMilestone } from './bar';
 import { PhaseBar } from './PhaseBar';
@@ -28,6 +29,12 @@ export function headerAction(cd: CountdownVM | null): ActionVM | null {
   return cd.actions?.find((a) => a.id === 'HOLD') ?? null;
 }
 
+/** HOLD is deliberate (GDD §4.5: high stakes): Shift+H, global outside text fields; plain H = camera home (§8). */
+export const HOLD_KEY_HINT = '⇧H';
+export function isHoldKey(e: Pick<KeyboardEvent, 'key' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'altKey'>): boolean {
+  return e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && e.key.toLowerCase() === 'h';
+}
+
 /** Clock box state: scrub = danger plate, hold = warn frame, paused = warn plate; else ink. */
 export function clockState(h: TimelineHeadVM): { state: Severity; word: string | null } {
   if (h.countdown?.scrubbed) return { state: 'danger', word: 'SCRUB' };
@@ -50,23 +57,8 @@ export function CountdownTimelineView({ head, rate, onAction, onPhase }: Countdo
   const cd = head.countdown;
   const hold = headerAction(cd);
   const cs = clockState(head);
-  const onKey = (e: KeyboardEvent<HTMLElement>): void => {
-    // Option keys are scoped to the band (H is the camera's home key elsewhere, §8).
-    if (e.key.toLowerCase() === 'h' && hold?.enabled && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      const t = e.target as HTMLElement;
-      if (t.tagName === 'INPUT') return;
-      e.preventDefault();
-      onAction?.(hold);
-    }
-  };
   return (
-    <section
-      className={styles.band}
-      aria-label="Countdown"
-      data-testid="countdown"
-      data-state={cd?.state ?? 'neutral'}
-      onKeyDown={onKey}
-    >
+    <section className={styles.band} aria-label="Countdown" data-testid="countdown" data-state={cd?.state ?? 'neutral'}>
       <div className={styles.main}>
         <header className={styles.head}>
           <h2 className={styles.title}>[ COUNTDOWN ]</h2>
@@ -75,7 +67,7 @@ export function CountdownTimelineView({ head, rate, onAction, onPhase }: Countdo
           {rate}
           {hold ? (
             <Button
-              kbd="H"
+              kbd={HOLD_KEY_HINT}
               small
               disabledReason={hold.enabled ? null : (hold.reason ?? 'UNAVAILABLE')}
               onClick={() => onAction?.(hold)}
@@ -128,6 +120,20 @@ export function CountdownTimeline() {
     if (m !== null) announce(m === 0 ? 'T-ZERO' : `T MINUS ${-m}`);
     last.current = { phase, t: cd?.tClockS };
   }, [phase, cd?.tClockS]);
+  const hold = headerAction(cd);
+  useEffect(() => {
+    if (!hold) return;
+    const onKey = (e: globalThis.KeyboardEvent): void => {
+      if (e.defaultPrevented || !isHoldKey(e) || ownedByTarget(e.target, e.key)) return;
+      e.preventDefault();
+      if (hold.enabled && hold.command) {
+        commands.send(hold.command);
+        announce('HOLD SENT');
+      } else announce(`HOLD UNAVAILABLE${hold.reason ? `, ${hold.reason}` : ''}`);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [hold]);
   return (
     <CountdownTimelineView
       head={head}
