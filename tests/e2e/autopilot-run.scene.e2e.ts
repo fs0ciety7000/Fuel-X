@@ -248,6 +248,9 @@ test.describe('autopilot run', () => {
     expect(log.filter((d) => d.code === 'D2')).toHaveLength(3);
     expect(log.find((d) => d.code === 'D3B')?.detail).toMatch(/HOLD/);
     expect(log.find((d) => d.code === 'D3')?.detail).toMatch(/^CATCH CALL · CATCH/);
+    // AC 33: the director's calls read DIRECTOR, never PLAYER (only AUTO defaults besides).
+    expect(log.some((d) => d.by === 'PLAYER')).toBe(false);
+    expect(log.filter((d) => d.code === 'D1').every((d) => d.by === 'DIRECTOR')).toBe(true);
     const sheet = page.getByTestId('debrief');
     await expect(sheet).toHaveAttribute('data-outcome', 'CAUGHT');
 
