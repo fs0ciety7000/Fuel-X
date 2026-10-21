@@ -49,6 +49,8 @@ test.describe('fx', () => {
       if (m.type() === 'error') errors.push(m.text());
     });
     await page.goto('/play.html?debug=1');
+    // The dev readout prints a live FPS digit inside the compared region: it is not part of the frozen world.
+    await page.addStyleTag({ content: '[data-testid="debug-readout"] { visibility: hidden !important; }' });
     await page.waitForFunction(() => '__fuelx' in window);
 
     // Home framing (pad + tank farm with the sea behind).
