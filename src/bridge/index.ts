@@ -5,3 +5,11 @@ export type { CommandPort, CommandSink, SessionHandlers, SessionPort } from './c
 export { emptyProjection, missing } from './empty-projection';
 export { DEFAULT_SITE_ID, initialViewState, projectionStore, view, viewStore } from './stores';
 export type { CameraIntent, ViewState } from './stores';
+export { createPersistencePort, initialPersistenceState, persistence, persistenceStore } from './persistence';
+export type {
+  PersistenceHandlers,
+  PersistencePort,
+  PersistenceState,
+  PersistenceStatusVM,
+  ResumeOfferVM,
+} from './persistence';

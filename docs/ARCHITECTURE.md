@@ -590,12 +590,13 @@ interface FuelxDebug {
              simUsPerTick: { mean: number; p95: number }; simMsPerFrame: number; entities: number;
              tick: number; timeScale: number; effectiveTimeScale: number; reactCommitsPerS: number };
   save(): string; load(json: string): Promise<void>;
+  autosaves(): Promise<AutosaveMeta[]>; autosaveJson(): Promise<string | null>; // 8.3: ring, latest first
 }
 ```
 
 ## 10. Save / load
 
-- `save = { format: 'fuelx-save', schema: 6, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream`.
+- `save = { format: 'fuelx-save', schema: 6, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream` for exported files (IndexedDB keeps the plain JSON, see 8.3 below).
 - Storage: IndexedDB (thin in-house wrapper, store `saves`, keys `auto-<n>`, `slot-<n>`), plus export/import as `.fuelx.json.gz` file. Autosave on `Milestone` (debrief = natural save point, GDD §3) and on `visibilitychange → hidden`.
 - **Versioning**: `schema` is an integer bumped on any `World` shape change; `src/sim/save/migrations.ts` holds `migrations[n]: (w_n) => w_{n+1}`, applied in order on load. Each migration ships with a fixture save under `tests/fixtures/saves/schema-<n>.json` and a test (load old fixture → migrate → validate → run 100 ticks without error). Saves newer than the app are rejected with a clear message.
 - Equivalence test: run K ticks → save → load → M ticks ≡ K+M ticks (canonical-JSON hash).
@@ -610,6 +611,37 @@ interface FuelxDebug {
   `migrateWorld(raw, from, to, table)`. Fixture `tests/fixtures/saves/schema-1.json` (seed 42 at sim tick 540 000, under
   the A3 LEAK_FIX hold), written once by `scripts/sim/make-save-fixture.ts`. Compression / IndexedDB stay in
   `src/app/persistence` (8.3).
+- **Implementation (8.3)** — `src/app/persistence/` (no new dependency):
+  - `store.ts`: `SaveStore` interface (`list/get/put/delete`) with `IdbSaveStore` (thin wrapper: database `fuelx` v1,
+    store `saves`, keyPath `key`, one connection per page, writes resolve on transaction commit, 3 s open timeout) and
+    `MemorySaveStore` (unit tests; fallback). Records = `{ key, seq, reason, detail?, savedAt, seed, tick, tClockTicks,
+    phase, finished, autopilot, game, schema, json }`. **IndexedDB holds the canonical JSON uncompressed** (~15–60 KB,
+    structured clone): the `hidden` autosave must open its transaction in the same task as the event, before a closing
+    tab is gone, and an async CompressionStream would delay it. gzip is for files only.
+  - Ring: `auto-<seq % N>`, `N = AUTOSAVE_RING = 5` (`config.ts`, app config — not a game tunable); `seq` continues from
+    the stored records, latest = highest `seq`. `slot-<n>` keys are reserved for manual slots (API only, no UI in MVP).
+  - Triggers (`controller.ts`, bus `onBatch`): `Milestone` (detail = milestone name), `PhaseChanged → Debrief` (record
+    `finished: true`), `visibilitychange → hidden`, and after an import. Skipped for autopilot runs (`?autopilot=1` or
+    debug `seed(…, { autopilot: true })` — demo runs never evict the player's run), while the boot offer is open, and
+    when the same run already has a record at the same tick. A headless `jumpTo` dispatches no events, so it never
+    autosaves. The save is serialised synchronously at the trigger (frame end), then written in order.
+  - Boot (`main.tsx` → `persistence.boot`): the page's fresh run starts **held paused**; the latest autosave is offered
+    (RESUME RUN: CONTINUE vs NEW RUN) iff it is unfinished, not autopilot, and the URL has no `?seed=` **or the same
+    seed** (every run mirrors its seed into the URL, so a plain reload must still offer it; a link to another seed starts
+    that run). `?autopilot=1` never offers. Any new run started meanwhile (`__fuelx.seed`) supersedes the offer.
+    CONTINUE = `SimHost.load(record.json)` + `Game.afterLoad()`; the run resumes **paused** on the saved tick (identical
+    world, unit + e2e). NEW RUN releases the fresh tick-0 world; the autosave stays in the ring.
+  - Files (`codec.ts`): export = `host.save` → gzip via `CompressionStream` → `fuelx-save-seed<S>-t<tick>.fuelx.json.gz`
+    (plain `.fuelx.json` without it). Import accepts both (gzip sniffed by magic `1F 8B`), validates + migrates with
+    `loadSave` **before** touching the running world, recognises an EXPORT LOG session file (a different format,
+    GDD §13.2.3) and maps every failure to a specific message (`CORRUPT SAVE · …`, `SAVE FROM A NEWER VERSION · SCHEMA n,
+    THIS BUILD READS UP TO 6 · RELOAD TO UPDATE`, `SAVE TOO OLD …`, `NOT A FUEL-X SAVE …`, `THIS IS A SESSION LOG …`).
+    An imported run resumes paused and is autosaved. Autopilot is not part of the save: a loaded run keeps the page's
+    setting (off unless `?autopilot=1`).
+  - UI: bridge port `persistence` + `persistenceStore` (`src/bridge/persistence.ts`; app writes, `menuOpen` is a UI
+    intent) → `src/ui/hud/persistence/` (DESIGN_SYSTEM §6.38), mounted in the overlay slot. Debug hooks:
+    `__fuelx.autosaves()`, `__fuelx.autosaveJson()`. Tests: `src/app/persistence/persistence.test.ts`,
+    `tests/e2e/persistence.e2e.ts`.
 
 ## 11. Token pipeline
 

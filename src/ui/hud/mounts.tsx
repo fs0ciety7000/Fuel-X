@@ -5,6 +5,7 @@ import { DecisionStrip, PollPanel } from './decision';
 import { ToastsContainer } from './events';
 import { FlightCardContainer } from './flight';
 import { InspectorContainer } from './inspector';
+import { PersistenceContainer } from './persistence';
 import { TabbedPanelContainer } from './tabs';
 import { CountdownTimeline } from './timeline/CountdownTimeline';
 import { PhaseStamp } from './stamp';
@@ -21,6 +22,7 @@ function Overlay() {
     <>
       <PhaseStamp />
       <DebriefContainer />
+      <PersistenceContainer />
     </>
   );
 }

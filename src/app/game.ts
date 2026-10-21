@@ -1,6 +1,6 @@
 // Composition root object (ARCHITECTURE §2): wires SimHost ↔ GameLoop ↔ render scene ↔ bus. Created once in
 // main.tsx outside React so StrictMode double-mounts never build a second world.
-import { commands, projectionStore, session, view, viewStore } from '@bridge/index';
+import { commands, persistence, projectionStore, session, view, viewStore } from '@bridge/index';
 import type { ViewState } from '@bridge/index';
 import { createFrameInput, createRenderControls, DEFAULT_SITE, SLOT_STRIDE, SlotFlag } from '@render/index';
 import type { FrameInput, RenderControls, SceneApi } from '@render/index';
@@ -8,6 +8,7 @@ import type { Countdown, World } from '@sim/types';
 import { EventBus } from './bus';
 import { GameLoop } from './loop';
 import { formatTClock } from './jump';
+import { PersistenceController, browserPersistenceEnv, openBrowserSaveStore } from './persistence';
 import { Projector } from './projection/projector';
 import type { TimeInputs } from './projection/context';
 import { SessionController } from './session/controller';
@@ -27,6 +28,8 @@ export class Game {
   readonly projector: Projector;
   /** Runs: URL seed, REPLAY SAME SEED, NEW SEED, EXPORT LOG (GDD §13.2.3). */
   readonly session: SessionController;
+  /** Autosave ring, resume offer, export / import (8.3, ARCHITECTURE §10). */
+  readonly persistence: PersistenceController;
   scene: SceneApi | null = null;
   private readout: HTMLElement | null = null;
   private readoutAt = 0;
@@ -73,6 +76,18 @@ export class Game {
       viewSite: () => this.cancelSkip(),
     });
     viewStore.subscribe((s, prev) => this.applyView(s, prev));
+    this.persistence = new PersistenceController({
+      host: this.host,
+      bus: this.bus,
+      store: openBrowserSaveStore(),
+      env: browserPersistenceEnv(),
+      setPaused: (on) => {
+        this.time.paused = on;
+        this.projector.markDirty();
+      },
+      afterLoad: () => this.afterLoad(),
+    });
+    persistence.bind(this.persistence.handlers);
   }
 
   timeInputs(world: Readonly<World>, cd: Readonly<Countdown> | null): TimeInputs {
@@ -136,6 +151,16 @@ export class Game {
   }
 
   private afterNewRun(): void {
+    this.persistence.onNewRun();
+    this.time.resetRun();
+    this.projector.reset();
+    view.reset();
+    view.camera({ kind: 'home' });
+    this.afterTeleport();
+  }
+
+  /** After a load (save import, CONTINUE, debug `load`): same resets as a new run, the URL is the caller's. */
+  afterLoad(): void {
     this.time.resetRun();
     this.projector.reset();
     view.reset();

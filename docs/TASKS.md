@@ -92,7 +92,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · **owner** · ← depend
 ## Phase 8 — Polish & perf
 - [ ] 8.1 Perf against full budget on production build; fixes
 - [ ] 8.2 Accessibility & keyboard map audit (DESIGN_SYSTEM)
-- [ ] 8.3 Autosave/IndexedDB + export/import
+- [x] 8.3 Autosave/IndexedDB + export/import: `src/app/persistence/` (in-house IndexedDB wrapper, ring of 5 `auto-<n>`, autosave on Milestone / Debrief / tab hidden / import; boot RESUME RUN · CONTINUE vs NEW RUN; `Ctrl/⌘+S` SAVE · LOAD sheet, `.fuelx.json.gz` export / import with validation, migration and explicit errors), ARCHITECTURE §10, DESIGN_SYSTEM §6.38, unit + `tests/e2e/persistence.e2e.ts`
 - [x] 8.4 Deploy on Coolify (ADR 0008): `Dockerfile` + `deploy/nginx.conf`, `docker build .` green, Coolify app `fuel-x` on `coolify.fs0ciety.org`, domain `https://fuel.fs0ciety.org` (since 2026-10-19 also `https://fuelx.fs0ciety.org`, showcase at `/`, game at `/play`, ADR 0009)
 - [ ] ⛳ Gate 8 — release candidate
 

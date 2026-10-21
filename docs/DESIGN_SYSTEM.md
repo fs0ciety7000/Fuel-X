@@ -790,6 +790,27 @@ Every number on screen goes through one primitive: `<data value="{SI}">{text}</d
 - **Poll panel** (`src/ui/hud/decision/PollPanel.tsx`, slot `poll`): station table (`<table>`, row header = station code button → `view.select(sourceId)`), status glyph + word, driver detail, `RESULT` output. Open while a D2 is projected or the clock holds; otherwise collapsed to its header with a `▸ n OF 5 GO` toggle. Hidden after liftoff. No count buttons.
 - **Decision strip** (`src/ui/hud/decision/*`, slot `strip`): header `D-code [ DECISION · title ]` · queued chip · rate-drop chip (`timeScale.drop.label`) · D1 `ORDER ▸ O` toggle. Body = question + auto policy · per-kind evidence (D3 *p*, band chip, *p* bar with break-even tick, σ; D2 station chips, result, blocker, risk note, `evidence` lines; D3b load-complete ETAs; D1 reserves, open orders, trucks) · deadline bar. D3 adds the drivers row. Then one column per option: button with key hint, `AUTO` tag, reason when disabled, consequences `<dl>`, EV. A press sends `option.command`; `confirm: true` opens the §6.27 dialog first; an option without a command (D1 `NO ORDER`) collapses the strip; the pressed button reads `◐ SENT · …` until the next projection. Blocking decisions take focus and announce assertively when they open; `G` focuses, `O` toggles D1.
 
+
+### 6.38 Resume offer and SAVE · LOAD sheet (as built, 8.3)
+
+Both are §6.27 dialogs (native modal `<dialog>`, `--fx-size-dialog`, 2 px ink frame), centred like the debrief sheet, from `src/ui/hud/persistence/*`, mounted in the `overlay` slot. Texts come from `persistenceStore` (app-written, ARCHITECTURE §10); no client maths.
+```
++[ RESUME RUN ]──────────────────────────────+      +[ SAVE · LOAD ]──────────────────────────────────+
+| AN UNFINISHED RUN WAS AUTOSAVED IN THIS    |      | AUTOSAVE  T-04:44:59 · 2026-10-21 14:22 UTC ·   |
+| BROWSER.                                   |      |           MILESTONE STANDARD ORDER LAST CALL    |
+| SEED     42                                |      | FILE      .FUELX.JSON.GZ · IMPORT .GZ OR .JSON  |
+| T-CLOCK  T-04:44:59                        |      |▌▲ SAVE FROM A NEWER VERSION · SCHEMA 99, …     |
+| PHASE    STANDBY                           |      |        [ CLOSE Esc ] [ IMPORT SAVE ] [■EXPORT SAVE] |
+| SAVED    2026-10-21 14:22 UTC              |      +-------------------------------------------------+
+| AT       MILESTONE STANDARD ORDER LAST CALL|
+|                 [■CONTINUE ⏎] [ NEW RUN ]  |
++--------------------------------------------+
+```
+- **Resume offer** — shown at boot when the latest autosave is an unfinished player run (rules in ARCHITECTURE §10); the run behind it is paused. `CONTINUE` (primary, default focus) loads it — the run resumes **paused** on the saved tick, so the player re-orients before pressing `Space`; `NEW RUN` (secondary) plays the fresh world the page booted (the autosave is kept). It must be answered: `Esc` does nothing (no third, ambiguous outcome). Facts as a `<dl>` table (label column `--fx-size-label-column`, `type-label` ink-3 / `type-strong` values). A failed CONTINUE prints its reason under the table and keeps both buttons.
+- **SAVE · LOAD sheet** — `Ctrl/⌘+S` (pre-empts the browser's "save page"; ignored while the offer is open), or any control calling `persistence.openMenu()` (intended home: the user-chip popover §6.6, not wired yet). Rows: last autosave (or `OFF · DEMO RUN (AUTOPILOT)` / `OFF · STORAGE UNAVAILABLE`) and the file format. Buttons: `CLOSE` (default focus, `Esc`), `IMPORT SAVE` (opens the native file picker, `.gz`/`.json`), `EXPORT SAVE` (primary, downloads `fuelx-save-seed<S>-t<tick>.fuelx.json.gz`). Both import / export show `◐` busy while running.
+- **Status line** — one line under the table: ok = 2 px ink left rule, `role="status"`; error = `--fx-space-2` accent left edge + ▲ glyph + `accent-text` small label text, `role="alert"` (never orange on a large word). Error texts name the cause and the way out: `CORRUPT SAVE · THE .GZ FILE IS DAMAGED OR TRUNCATED`, `CORRUPT SAVE · NOT READABLE JSON`, `CORRUPT SAVE · WORLD DATA FAILED VALIDATION`, `SAVE FROM A NEWER VERSION · SCHEMA n, THIS BUILD READS UP TO m · RELOAD TO UPDATE`, `SAVE TOO OLD · NO MIGRATION PATH TO THIS VERSION`, `NOT A FUEL-X SAVE · …`, `THIS IS A SESSION LOG (EXPORT LOG), NOT A SAVE · LOGS CANNOT BE LOADED YET`. A failed import never touches the running world. Success: `LOADED · SEED 42 · T-04:00:00 · STANDBY[ · MIGRATED FROM SCHEMA n]` (the loaded run is paused).
+- Screens: `docs/screens/persistence-resume.png`, `docs/screens/persistence-save-sheet.png`.
+
 ---
 
 ## 7. Iconography & glyph set
@@ -864,6 +885,7 @@ Syntax decoration (structure, not ornament): `[ TITLE ]` card heads, `>>>` for "
 | `O` | Expand the D1 propellant strip |
 | `N` | Skip to next milestone (when allowed); again while skipping = cancel (`session.skipToNextMilestone()` / `cancelSkip()`) |
 | `B` | Reopen the debrief |
+| `Ctrl/⌘+S` | SAVE · LOAD sheet: export / import a save file (§6.38) |
 | `?` | Shortcut sheet |
 
 (Camera WASD/drag bindings belong to ARCHITECTURE/render; they must not collide with the above.)
