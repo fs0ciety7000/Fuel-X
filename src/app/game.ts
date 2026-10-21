@@ -58,6 +58,9 @@ export class Game {
       hidden: (id) => this.isHidden(id),
     });
     this.bus.onBatch((batch) => this.projector.onEvents(batch));
+    this.bus.onBatch((batch) => {
+      if (batch.some((e) => e.t === 'PhaseChanged' && e.to === 'Liftoff')) this.followLaunch();
+    });
     this.loop.onAfterFrame(() => this.projector.frame(performance.now()));
     commands.bind((cmd) => this.host.send(cmd));
     this.session = new SessionController(this.host, env, () => this.afterNewRun());
@@ -99,6 +102,15 @@ export class Game {
   cancelSkip(): void {
     this.time.cancelSkip();
     this.projector.markDirty();
+  }
+
+  /** AC 25: at liftoff the camera follows the booster unless the player has selected something else. */
+  private followLaunch(): void {
+    const { countdown } = this.host.inspect();
+    if (!countdown) return;
+    const s = viewStore.getState();
+    if (s.followId !== null || (s.selectedId !== null && s.selectedId !== countdown.boosterId)) return;
+    view.follow(countdown.boosterId);
   }
 
   /** viewStore intents → render controls / time control (the only writer of those from the UI side). */

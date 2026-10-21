@@ -13,6 +13,7 @@ interface Fx {
   exportSession(): { autopilot: boolean };
   state(): {
     clock: { tClock: string; phase: string | null };
+    view: { follow: string | null };
     decision: { kind: string; options: { id: string; enabled: boolean }[] } | null;
     debrief: {
       outcome: string;
@@ -44,7 +45,10 @@ const policy = (d3: 'CATCH' | 'DIVERT') => ['GO', 'HOLD_FIX', d3];
 const CONFIRMED = new Set(['DIVERT']);
 
 /** Seed 42 played from HUD clicks only (Tasks tab + decision strip), `step` as the rate control. */
-async function playFromHud(page: Page, d3: 'CATCH' | 'DIVERT'): Promise<{ stacked: boolean; errors: string[] }> {
+async function playFromHud(
+  page: Page,
+  d3: 'CATCH' | 'DIVERT',
+): Promise<{ stacked: boolean; errors: string[]; flightFollow: string | null | undefined }> {
   const PREFERRED = policy(d3);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -67,9 +71,12 @@ async function playFromHud(page: Page, d3: 'CATCH' | 'DIVERT'): Promise<{ stacke
 
   const answered = new Set<string>();
   let stacked = false;
+  // AC 25: nothing selected → the camera follows the booster from liftoff (first look in flight).
+  let flightFollow: string | null | undefined;
   for (let i = 0; i < 1000; i++) {
     const s = await state(page);
     if (s.debrief) break;
+    if (flightFollow === undefined && ['Liftoff', 'Ascent'].includes(s.clock.phase ?? '')) flightFollow = s.view.follow;
     if (!stacked && s.clock.phase === 'Stack') {
       await press(page, tasks.getByRole('button', { name: /^STACK/ }).first());
       stacked = true;
@@ -94,7 +101,7 @@ async function playFromHud(page: Page, d3: 'CATCH' | 'DIVERT'): Promise<{ stacke
     }
     await step(page, 1800); // one sim minute
   }
-  return { stacked, errors };
+  return { stacked, errors, flightFollow };
 }
 
 test.describe('hud run', () => {
@@ -113,7 +120,8 @@ test.describe('hud run', () => {
   });
 
   test('every MVP decision is reachable from the HUD, run ends CAUGHT', async ({ page }) => {
-    const { stacked, errors } = await playFromHud(page, 'CATCH');
+    const { stacked, errors, flightFollow } = await playFromHud(page, 'CATCH');
+    expect(flightFollow).toBe('B-09');
 
     const s = await state(page);
     expect(stacked).toBe(true);
