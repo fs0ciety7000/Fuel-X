@@ -37,7 +37,7 @@ export interface AdvanceReport {
 }
 
 export interface SimTimings {
-  /** Mean / p95 µs per tick over the recent advance calls. */
+  /** µs per tick over the recent advance calls: mean = Σ wall ms / Σ steps; p95 of the per-call ratios. */
   usPerTickMean: number;
   usPerTickP95: number;
   /** ms spent stepping in the last advance call. */

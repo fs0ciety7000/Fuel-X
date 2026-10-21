@@ -55,7 +55,9 @@ export class InlineSimHost implements SimHost {
   private sessionEvents: SimEvent[] = [];
   private sessionFromTick = 0;
   private sessionTruncated = false;
-  private readonly usPerTick = new Float64Array(TIMING_WINDOW);
+  /** Last TIMING_WINDOW advance calls: wall ms and steps (ring, `timingN` = calls so far). */
+  private readonly advMs = new Float64Array(TIMING_WINDOW);
+  private readonly advSteps = new Float64Array(TIMING_WINDOW);
   private timingN = 0;
   private lastMs = 0;
   private lastJump = { ticks: 0, ms: 0 };
@@ -145,7 +147,9 @@ export class InlineSimHost implements SimHost {
     }
     const ms = this.now() - t0;
     if (steps > 0) {
-      this.usPerTick[this.timingN++ % TIMING_WINDOW] = (ms * 1000) / steps;
+      const i = this.timingN++ % TIMING_WINDOW;
+      this.advMs[i] = ms;
+      this.advSteps[i] = steps;
       this.lastMs = ms;
     }
     return { steps, stopped, ms };
@@ -195,14 +199,28 @@ export class InlineSimHost implements SimHost {
     return Promise.resolve();
   }
 
+  /**
+   * Mean = Σ ms / Σ steps over the window (8.1 F5): a mean of per-advance ratios over-weights the many 1-step
+   * advances at 1×, whose wall time is mostly `performance.now()` clamp (100 µs in a page) and scheduling noise.
+   * p95 stays per advance (µs/tick of the slowest calls), over the same window.
+   */
   timings(): SimTimings {
     const n = Math.min(this.timingN, TIMING_WINDOW);
     if (n === 0) return { usPerTickMean: 0, usPerTickP95: 0, lastAdvanceMs: 0, lastJump: this.lastJump };
-    const xs = Array.from(this.usPerTick.subarray(0, n)).sort((a, b) => a - b);
-    const mean = xs.reduce((a, b) => a + b, 0) / n;
+    let ms = 0;
+    let steps = 0;
+    const ratios: number[] = [];
+    for (let i = 0; i < n; i++) {
+      const s = this.advSteps[i] ?? 0;
+      const m = this.advMs[i] ?? 0;
+      ms += m;
+      steps += s;
+      ratios.push((m * 1000) / s);
+    }
+    ratios.sort((a, b) => a - b);
     return {
-      usPerTickMean: mean,
-      usPerTickP95: xs[Math.min(n - 1, Math.floor(n * 0.95))] ?? 0,
+      usPerTickMean: (ms * 1000) / steps,
+      usPerTickP95: ratios[Math.min(n - 1, Math.floor(n * 0.95))] ?? 0,
       lastAdvanceMs: this.lastMs,
       lastJump: this.lastJump,
     };

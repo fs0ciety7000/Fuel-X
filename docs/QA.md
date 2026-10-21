@@ -255,8 +255,11 @@ Reference scenes (`tests/e2e/scenes.perf.ts`, counts on a frozen frame, budget �
    terminal count. Owner: **systems-architect / three-graphics-engineer** (write only the last two ticks of a batch).
 4. **F4 — Low — JS heap +0.1–0.35 MB per new run, decaying** (table above). Re-check after 8.3 autosave lands; take
    a heap-snapshot diff if it stops decaying. Owner: **qa-perf**.
-5. **F5 — Low — 5.9 L3 still open**: `stats().simUsPerTick` is a mean of per-advance ratios (`inline.ts:148`),
-   200–300 µs here under SwiftShader; use Σ ms / Σ steps. Owner: **systems-architect**.
+5. **F5 — FIXED (`app: simUsPerTick = total ms / total steps (8.1 F5)`) — Low — 5.9 L3**: `stats().simUsPerTick` was a
+   mean of per-advance ratios (`inline.ts:148`), 200–300 µs here under SwiftShader. `InlineSimHost.timings()` now keeps
+   ms and steps per advance (window 120) and reports mean = Σ ms / Σ steps; p95 stays per call. Unit test
+   (`src/app/sim-host/inline.test.ts`): a 1-step 1 ms call + a 99-step 9.9 ms call read **109 µs/tick** (the old
+   formula said 550).
 6. **F6 — Low (latent)** — `InstancedParts` (`src/render/views/instanced-parts.ts`) creates an `InstancedMesh` per
    transporter / tanker view and `Pool.lod` (`src/render/views/pools.ts`) keys by entity id; neither is released on
    unmount. Harmless today (ids are stable, the leak spec shows flat GL buffers), but a future spawn / despawn flow

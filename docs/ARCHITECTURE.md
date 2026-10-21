@@ -587,7 +587,8 @@ interface FuelxDebug {
              shadowDrawCalls: number; triangles: number;
              points: number; geometries: number; textures: number; programs: number;
              particles: number; fxPoints: number;            // 5.6: live FX sprites, FX point vertices in `points`
-             simUsPerTick: { mean: number; p95: number }; simMsPerFrame: number; entities: number;
+             simUsPerTick: { mean: number; p95: number };  // last 120 advances: mean = Σ ms / Σ steps, p95 per call (8.1 F5)
+             simMsPerFrame: number; entities: number;
              tick: number; timeScale: number; effectiveTimeScale: number; reactCommitsPerS: number };
   save(): string; load(json: string): Promise<void>;
   autosaves(): Promise<AutosaveMeta[]>; autosaveJson(): Promise<string | null>; // 8.3: ring, latest first
