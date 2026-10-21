@@ -164,7 +164,8 @@ describe('propellant load + topping (AC 15)', () => {
 describe('auto-hold at T-00:03:00 (AC 15)', () => {
   it('a late load holds the count at T-00:03:00 and releases it when the load completes', () => {
     const s = loadSetup(-2_000);
-    const log = runUntil(s.world, () => s.cd.liftoffTick !== null);
+    // Up to the final poll (it always asks for a GO, countdown.autoGoAtPoll.final = false).
+    const log = runUntil(s.world, () => s.cd.hold?.poll === 'final');
     const hold = log.find((e) => e.t === 'HoldStarted');
     expect(hold).toMatchObject({ reason: 'LOAD_INCOMPLETE', tClockTicks: T(cdData.loadMustCompleteByTS) });
     const release = log.find((e) => e.t === 'HoldReleased');

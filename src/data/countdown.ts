@@ -30,8 +30,11 @@ export const countdown = {
   engineIgnitionTS: -3,
   /** RECYCLE returns the T-clock to this offset (T-00:10:00). */
   recycleToTS: -600,
-  /** Polls pass automatically when every station is GO; MARGINAL always asks. */
-  autoGoWhenAllGreen: true,
+  /**
+   * Per-poll auto-GO: the poll passes by itself when every station is GO (MARGINAL always asks). The final poll
+   * (T-00:00:40) always asks for the launch director's GO (GDD §15 q6, answered 7.5b; was one global flag).
+   */
+  autoGoAtPoll: { load: true, terminal: true, final: false } satisfies Record<PollId, boolean>,
   /** MARGINAL = within this fraction of a limit (unitless). */
   marginalBand: 0.15,
   /**

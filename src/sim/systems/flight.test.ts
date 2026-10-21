@@ -608,7 +608,7 @@ describe('catch outcome', () => {
 // --- End to end ---------------------------------------------------------------------------------
 
 describe('T-06:00:00 → Debrief with the real systems, StartRollout + Stack only', () => {
-  it('walks every phase, no holds, catches on the auto policy', () => {
+  it('walks every phase, only the final poll holds (one GO), catches on the auto policy', () => {
     const s = mvpSetup();
     const log: SimEvent[] = [];
     log.push(...step(s.world, [{ t: 'StartRollout', boosterId: s.cd.boosterId }]));
@@ -616,6 +616,8 @@ describe('T-06:00:00 → Debrief with the real systems, StartRollout + Stack onl
     while (s.cd.phase.state !== 'Debrief' && s.world.tick < T(30_000)) {
       const cmds: Command[] = !stacked && s.cd.inputs.rolloutComplete ? [{ t: 'Stack', padId: s.cd.padId }] : [];
       stacked ||= cmds.length > 0;
+      // The final poll always asks for the GO (countdown.autoGoAtPoll.final = false).
+      if (s.cd.hold?.reason === 'POLL') cmds.push({ t: 'Go', countdownId: s.cd.id });
       log.push(...step(s.world, cmds));
     }
     const phases = log.flatMap((e) => (e.t === 'PhaseChanged' ? [e.to] : []));
@@ -630,8 +632,8 @@ describe('T-06:00:00 → Debrief with the real systems, StartRollout + Stack onl
       'Safing',
       'Debrief',
     ]);
-    expect(log.some((e) => e.t === 'HoldStarted')).toBe(false);
-    expect(s.cd.liftoffTick).toBe(T(-cdData.scenarioStartTS) - 1);
+    expect(log.flatMap((e) => (e.t === 'HoldStarted' ? [e.poll] : []))).toEqual(['final']);
+    expect(s.cd.liftoffTick).toBe(T(-cdData.scenarioStartTS) - 1 + 1);
     expect(log.find((e) => e.t === 'RecoveryOutcome')).toMatchObject({ result: 'CAUGHT' });
     expect(
       log.filter((e) => e.t === 'RoadClosureChanged').map((e) => e.t === 'RoadClosureChanged' && e.closed),

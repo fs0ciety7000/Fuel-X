@@ -292,13 +292,16 @@ describe('wind limits (AC 6)', () => {
 });
 
 describe('prep → load → T-0 with the real systems (no scripted inputs)', () => {
-  it('nominal: no holds, liftoff exactly at T-0, both stages LOADED', () => {
+  it('nominal: only the final poll holds (one GO), liftoff one tick after T-0 time, both stages LOADED', () => {
     const s = mvpSetup();
     const log = nominalPrep(s);
-    log.push(...runUntil(s.world, () => s.cd.liftoffTick !== null));
-    expect(log.some((e) => e.t === 'HoldStarted')).toBe(false);
+    // The final poll always asks (countdown.autoGoAtPoll.final = false): GO on the tick after it opens.
+    while (s.cd.liftoffTick === null && s.world.tick < T(30_000)) {
+      log.push(...step(s.world, s.cd.hold?.reason === 'POLL' ? [{ t: 'Go', countdownId: s.cd.id }] : []));
+    }
+    expect(log.flatMap((e) => (e.t === 'HoldStarted' ? [e.poll] : []))).toEqual(['final']);
     expect(s.cd.pollsPassed).toEqual(['load', 'terminal', 'final']);
-    expect(s.cd.liftoffTick).toBe(T(-cdData.scenarioStartTS) - 1);
+    expect(s.cd.liftoffTick).toBe(T(-cdData.scenarioStartTS) - 1 + 1);
     const a = prepAssets(s);
     // Fully loaded at T-0, then the flight system takes over in the liftoff tick.
     expect(

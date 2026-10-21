@@ -101,7 +101,7 @@ Nominal prep (no holds) from start T-06:00:00: booster lifted → rolled → sta
 | autoAbort.after | T s | −10 | — | hard fault → abort → RECYCLE |
 | engineIgnition | T s | −3 | — | |
 | recycle.to | T s | −600 | — | |
-| autoGoWhenAllGreen | bool | true | — | removes busywork; MARGINAL always asks |
+| autoGoAtPoll (7.5b, was `autoGoWhenAllGreen` true) | bool per poll | load true · terminal true · **final false** | — | removes busywork; MARGINAL always asks; the final poll always asks for the launch director's GO (GDD §15 q6, user yes) |
 | marginalBand | – | 0.15 | 0.1–0.25 | MARGINAL = within 15 % of a limit |
 | stationHysteresisFraction (sim addition 3.7) | – | 0.03 → **0.05 proposed** (pass 7.5, §15 P4) | 0.02–0.08 | deadband before a station improves; 0.03 of the 60 m/s upper limit (1.8 m/s) is re-crossed within a minute by the upper-wind series |
 | milestones (skip stops) | T s | ROAD_CLOSURE, TERMINAL_FORCE_1X, ENGINE_IGNITION, LIFTOFF + **3 D1 marks proposed** (§15 P2) | — | D1 is advisory and must not be skipped over |
@@ -519,7 +519,7 @@ next lever is `propellant.mvpStart.farmLoxKg` (range 4.17–4.25 M kg), which wo
 | `weather.launchLimit` 13 / 60 m/s, `front.probabilityPerRun` 0.35, `front.upperWindBoostMPerS` 18 | grounded limits; the fix is the front's length, not its existence |
 | `anomalies.A3.*`, `propellant.load.degradedFactor` | F7: D3b is a real trade-off |
 | `logistics.ambientTransporter.dwellYardS / dwellFarmS` 240 / 300 | GDD §14.1 call 5: cycle 610 + 300 + 610 + 240 = 1 760 s, moving 69 % of it, ≈ 18 s real per cycle at 100×; cosmetic |
-| `countdown.autoGoWhenAllGreen` true | F2 is real, but the fix (final poll always asks) needs a per-poll flag in code: user call, GDD §15 q6 |
+| `countdown.autoGoWhenAllGreen` true | F2 is real, but the fix (final poll always asks) needs a per-poll flag in code: user call, GDD §15 q6. **Answered yes; applied in 7.5b** as `countdown.autoGoAtPoll` (final false) |
 
 Non-data follow-ups from the same pass (GDD §14.1): `src/app/game.ts` `followLaunch` must ignore a plain selection
 (AC 25); `DIRECTOR` decision-log tag (AC 33); held transporters must read `WIND HOLD` with the gust (AC 26).

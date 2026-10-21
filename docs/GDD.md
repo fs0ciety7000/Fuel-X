@@ -385,7 +385,7 @@ D1, D2 and D3 are always presented, so the slice always has ≥ 2 meaningful dec
 | **Open while** | PROPELLANT ≠ GO **and** road open (T-clock before T-00:40:00) **and** not in terminal count. Opens at scenario start in the MVP (PROPELLANT starts MARGINAL, §13.1) | the T-clock is holding before liftoff, any hold reason | from `DecisionRequired{CATCH}` (≤ boostback end) until committed or the landing-burn deadline | from `DecisionRequired{LEAK}` until answered or its deadline |
 | **Rate effect (§6)** | none | drop to 1× when opened by a POLL, NO_GO or LOAD_INCOMPLETE hold; no drop for a MANUAL or LEAK_FIX hold | drop to 1× (already inside the forced-1× window) | drop to 1× |
 | **Deadline** | road closure T-00:40:00; per option cut-off = closure − lead time (standard 4 h → T-04:40:00, rush 1.5 h → T-02:10:00); an option past its cut-off is disabled with reason `ARRIVES AFTER ROAD CLOSURE` | window close (keeps moving closer during the hold) | landing-burn ignition | `min(onset + anomalies.A3.decisionTimeoutS, window close)`; default 300 s sim |
-| **Default with no input** | nothing ordered | the hold continues; auto-GO only at a poll hold when all five are GO and `autoGoWhenAllGreen`; window close → auto-scrub | catch if *p* ≥ `autoCatchThreshold` (0.65 = LEAN floor, §4.8), else divert; forced divert if landing prop < min | **CONTINUE DEGRADED**, committed by the sim at the deadline (`by: AUTO`) |
+| **Default with no input** | nothing ordered | the hold continues; auto-GO only at the load and terminal poll holds when all five are GO (`countdown.autoGoAtPoll`); the final poll (T-00:00:40) always asks for GO (§15 q6); window close → auto-scrub | catch if *p* ≥ `autoCatchThreshold` (0.65 = LEAN floor, §4.8), else divert; forced divert if landing prop < min | **CONTINUE DEGRADED**, committed by the sim at the deadline (`by: AUTO`) |
 | **Commit** | each press = one `OrderDelivery` (one truck); repeatable until fleet cap / cut-off | `Go` / `Recycle` / `Scrub` (SCRUB confirms) | `CatchDecision` (one-shot) | `LeakResponse` (**one-shot**: after a DEGRADED answer, player or auto, the fix option is gone) |
 | **Decision log entry** | one per order (`ORDER 1× LX STANDARD`) | each GO / RECYCLE / SCRUB, each auto-GO (`AUTO`), auto-scrub (`AUTO`) | the commit (`PLAYER`, `AUTO`, `FORCED` or `DIRECTOR`) + the roll | the answer (`PLAYER`, `AUTO` or `DIRECTOR`) |
 
@@ -444,7 +444,7 @@ Post-MVP: CONTINUE → turnaround (refurb level choice, §4.9), rebook flow, cam
 
 **Count down**
 10. The five stations (WEATHER, RANGE, PROPELLANT, VEHICLE, PAD/CREW) each show GO/MARGINAL/NO-GO with the driving value, derived from sim state per the table in §4.5.
-11. Polls happen at T-01:20:00, T-00:10:00 and T-00:00:40. The clock does not pass a poll without player GO (or the default auto-GO if all stations are GO and `autoGoWhenAllGreen` is on).
+11. Polls happen at T-01:20:00, T-00:10:00 and T-00:00:40. The clock does not pass a poll without player GO (or, at the load and terminal polls only, the default auto-GO if all stations are GO, `countdown.autoGoAtPoll`). The final poll always asks for GO, even all green (§15 q6).
 12. HOLD stops the T-clock while sim time, window time, topping drain and crew shift time continue. RECYCLE returns to T-00:10:00. SCRUB detanks with the configured loss and ends the attempt.
 13. If the window closes during a hold, the run auto-scrubs and applies the penalty.
 14. GO with a MARGINAL station applies the configured risk multiplier (verified by a seeded test comparing anomaly rates).

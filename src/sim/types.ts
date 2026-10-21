@@ -474,6 +474,7 @@ export interface Countdown {
   /** Launch window in absolute sim ticks (keeps closing during holds). */
   windowOpenTick: Tick;
   windowCloseTick: Tick;
+  /** Master switch for auto-GO at an all-green poll (tests turn it off); per-poll flags: `countdown.autoGoAtPoll`. */
   autoGoWhenAllGreen: boolean;
   liftoffTick: Tick | null;
   scrubReason: ScrubReason | null;

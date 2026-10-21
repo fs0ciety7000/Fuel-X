@@ -5,7 +5,8 @@
 //   clock: Counting ⇄ Holding → Stopped — the T-clock only advances while Counting.
 // The phase keeps running underneath a hold (stacking, loading and topping continue), which is what
 // ARCHITECTURE calls `Holding` with a `resumePhase`. Polls are holds with reason POLL that need a GO
-// (or pass automatically when every station is GO and `autoGoWhenAllGreen` is on).
+// (or pass automatically when every station is GO, the countdown's `autoGoWhenAllGreen` switch is on and the
+// data flag `autoGoAtPoll[poll]` allows it — never at the final poll, GDD §13.2.1).
 import { STATION_IDS, contracts, countdown as cdData, time as timeData } from '@data/index';
 import type { PollId, TimeScale } from '@data/index';
 import { emit } from '../core/events';
@@ -291,7 +292,7 @@ export function createCountdown(world: World, opts: CreateCountdownOptions): Cou
     goWithMarginal: [],
     windowOpenTick,
     windowCloseTick: windowOpenTick + secondsToTicks(contract.windowDurationS),
-    autoGoWhenAllGreen: opts.autoGoWhenAllGreen ?? cdData.autoGoWhenAllGreen,
+    autoGoWhenAllGreen: opts.autoGoWhenAllGreen ?? true,
     liftoffTick: null,
     scrubReason: null,
     inputs: defaultCountdownInputs(),
@@ -365,10 +366,15 @@ function autoHold(world: World, cd: Countdown, hold: CountdownHold): void {
   clockFsm.fire(cd.clock, 'AutoHold', ctx(world, cd, hold));
 }
 
+/** The poll passes by itself when all five stations are GO (per-poll data flag × the countdown's switch). */
+function autoGoAt(cd: Countdown, poll: PollId): boolean {
+  return cd.autoGoWhenAllGreen && cdData.autoGoAtPoll[poll];
+}
+
 function tryAutoRelease(world: World, cd: Countdown): void {
   const hold = cd.hold;
   if (!hold || !cd.autoGoWhenAllGreen || !allGo(cd)) return;
-  if (hold.reason === 'POLL' && hold.poll && pollBlocker(world, cd, hold.poll) === null) {
+  if (hold.reason === 'POLL' && hold.poll && autoGoAt(cd, hold.poll) && pollBlocker(world, cd, hold.poll) === null) {
     passPoll(world, cd, hold.poll, true);
     clockFsm.fire(cd.clock, 'AutoRelease', ctx(world, cd));
   } else if (hold.reason === 'LOAD_INCOMPLETE' && cd.inputs.loadComplete) {
@@ -396,7 +402,7 @@ function advancePreLiftoff(world: World, cd: Countdown): void {
   const poll = pollAt(cd.tClockTicks);
   if (poll && !cd.pollsPassed.includes(poll)) {
     emit(world, { t: 'PollOpened', countdownId: cd.id, poll });
-    if (cd.autoGoWhenAllGreen && allGo(cd) && pollBlocker(world, cd, poll) === null) {
+    if (autoGoAt(cd, poll) && allGo(cd) && pollBlocker(world, cd, poll) === null) {
       passPoll(world, cd, poll, true);
     } else {
       autoHold(world, cd, { reason: 'POLL', poll });
