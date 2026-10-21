@@ -65,7 +65,6 @@ export function ResumeDialog({
       title="RESUME RUN"
       open={offer !== null}
       inline={inline}
-      className={inline ? undefined : styles.modal}
       actions={
         <>
           <Button variant="primary" kbd="⏎" busy={busy} onClick={onContinue}>
@@ -136,7 +135,6 @@ export function PersistenceContainer() {
         title="SAVE · LOAD"
         open={s.menuOpen && !blocked}
         onCancel={persistence.closeMenu}
-        className={styles.modal}
         actions={
           <>
             <Button kbd="Esc" onClick={persistence.closeMenu}>

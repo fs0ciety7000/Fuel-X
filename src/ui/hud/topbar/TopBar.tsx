@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useStore } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
-import { projectionStore, view } from '@bridge/index';
-import { Badge, Glyph } from '../../components';
+import { persistence, projectionStore, view } from '@bridge/index';
+import { Badge, Button, Glyph } from '../../components';
 import type { AlertsVM, GlyphId, RangeVM, SiteVM, TimeScaleVM } from '../../types';
 import { debriefUi, DebriefReadyBadge, isDebriefOpen, reopenDebrief } from '../debrief';
 import { announce } from '../frame/live';
+import { SearchField, SearchFieldView } from '../search';
 import { readout } from './rate';
 import { SiteSwitcher } from './SiteSwitcher';
 import styles from './TopBar.module.css';
@@ -55,6 +56,10 @@ export interface TopBarViewProps {
   sitesOpen?: boolean;
   /** Collapsed debrief (§6.29): `DEBRIEF READY B` cell that reopens the sheet. */
   onDebrief?: (() => void) | null;
+  /** §6.3 search cell (game: the store-connected field); defaults to an empty presentational field. */
+  search?: ReactNode;
+  /** SAVE · LOAD sheet (§6.38, 8.3) — the visible entry point next to `Ctrl/⌘+S` until the user-chip popover exists. */
+  onSaveLoad?: () => void;
 }
 
 /**
@@ -72,6 +77,8 @@ export function TopBarView({
   onAlerts,
   sitesOpen,
   onDebrief,
+  search,
+  onSaveLoad,
 }: TopBarViewProps) {
   const rb = rangeBadge(range);
   const ab = alertBadge(alerts);
@@ -95,6 +102,7 @@ export function TopBarView({
           </li>
         </ol>
       </nav>
+      {search ?? <SearchFieldView query="" />}
       <time className={styles.cell} data-testid="topbar-utc">
         <span className={styles.digits}>{utc || '—'}</span>
         <span className={styles.unit}>UTC</span>
@@ -130,6 +138,13 @@ export function TopBarView({
           {...(onAlerts ? { onClick: onAlerts } : {})}
         />
       </div>
+      {onSaveLoad ? (
+        <div className={styles.cell}>
+          <Button small aria-haspopup="dialog" onClick={onSaveLoad}>
+            SAVE · LOAD
+          </Button>
+        </div>
+      ) : null}
       <span className={styles.role}>{ROLE}</span>
     </header>
   );
@@ -162,6 +177,8 @@ export function TopBar() {
       onRange={() => view.tab('range')}
       onAlerts={() => view.tab('events')}
       onDebrief={debriefCollapsed ? reopenDebrief : null}
+      search={<SearchField />}
+      onSaveLoad={persistence.openMenu}
     />
   );
 }

@@ -6,6 +6,8 @@ import styles from './Tabs.module.css';
 export interface TabDef {
   id: string;
   label: string;
+  /** Compact label (§3.3, `VEH`); the full label stays the accessible name. */
+  short?: string;
   /** Count of items in warn/danger (§6.14 tab badge). */
   badge?: { count: number; state: 'warn' | 'danger' };
   disabledReason?: string;
@@ -70,7 +72,16 @@ export function Tabs({ label, tabs, active, onChange, children, demo, className 
               if (!t.disabledReason) onChange?.(t.id);
             }}
           >
-            {t.label}
+            {t.short ? (
+              <>
+                <span className={styles.full}>{t.label}</span>
+                <span className={styles.short} aria-hidden="true">
+                  {t.short}
+                </span>
+              </>
+            ) : (
+              t.label
+            )}
             {t.badge && t.badge.count > 0 ? (
               <span className={styles.count} data-state={t.badge.state}>
                 <Glyph id={t.badge.state} />

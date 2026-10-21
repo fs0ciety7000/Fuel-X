@@ -39,6 +39,14 @@ body {
   }
 }
 
+/* §8 (built in 8.2): more contrast = tertiary text one step darker, interior 1 px rules in ink. Token remap only. */
+@media (prefers-contrast: more) {
+  :root {
+    --fx-color-ink-3: var(--fx-color-ink-2);
+    --fx-color-ink-5: var(--fx-color-ink);
+  }
+}
+
 a {
   color: inherit;
   text-decoration: underline;

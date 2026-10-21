@@ -5,6 +5,7 @@ import { List, Tabs } from '../../components';
 import type { TabDef } from '../../components/Tabs';
 import type { ActionVM, HudTab, ListsVM } from '../../types';
 import { EventLog } from '../events/EventLog';
+import { filterLists, needle, searchUi } from '../search';
 import { sendAction } from '../inspector/Inspector';
 import { TAB_ORDER, tabForKey } from './keys';
 import { RangeList, TankList, TaskList } from './rows';
@@ -22,6 +23,9 @@ const LABEL: Record<HudTab, string> = {
   events: 'EVENTS',
 };
 
+/** Compact tab codes (§3.3). */
+const SHORT: Record<HudTab, string> = { vehicles: 'VEH', tanks: 'TNK', tasks: 'TSK', range: 'RNG', events: 'EVT' };
+
 /** Tab defs with the §6.14 badge: danger count if any, else warn count. Pure, exported for tests. */
 export function tabDefs(lists: Pick<ListsVM, 'badges'>): TabDef[] {
   return TAB_ORDER.map((id) => {
@@ -32,7 +36,7 @@ export function tabDefs(lists: Pick<ListsVM, 'badges'>): TabDef[] {
         : b && b.warn > 0
           ? { count: b.warn, state: 'warn' as const }
           : undefined;
-    return { id, label: LABEL[id], ...(badge ? { badge } : {}) };
+    return { id, label: LABEL[id], short: SHORT[id], ...(badge ? { badge } : {}) };
   });
 }
 
@@ -48,9 +52,14 @@ export interface TabbedPanelProps {
   onSelect?: (id: string) => void;
   onFollow?: (id: string) => void;
   onAction?: (a: ActionVM) => void;
+  /** Top-bar search (§6.3 MVP stub): narrows the open tab's rows; '' = everything. */
+  query?: string;
 }
 
-export function TabbedPanel({ lists, tab, onTab, onSelect, onFollow, onAction }: TabbedPanelProps) {
+export function TabbedPanel({ lists: all, tab, onTab, onSelect, onFollow, onAction, query = '' }: TabbedPanelProps) {
+  const filtering = needle(query) !== '';
+  const lists = filterLists(all, query);
+  const shown = tabCount(lists, tab);
   const sel = onSelect ? { onSelect } : {};
   const fol = onFollow ? { onFollow } : {};
   return (
@@ -65,10 +74,15 @@ export function TabbedPanel({ lists, tab, onTab, onSelect, onFollow, onAction }:
         <p className={styles.header}>
           <span>{LABEL[tab]}</span>
           <span>
-            {tabCount(lists, tab)} ITEMS <kbd className={styles.kbd}>ALT {TAB_ORDER.indexOf(tab) + 1}</kbd>
+            {filtering ? `${shown} OF ${tabCount(all, tab)}` : shown} ITEMS{' '}
+            <kbd className={styles.kbd}>ALT {TAB_ORDER.indexOf(tab) + 1}</kbd>
           </span>
         </p>
-        {tab === 'vehicles' ? (
+        {filtering && shown === 0 ? (
+          <p className={styles.empty} data-testid="search-no-match">
+            NO MATCH · {query.trim().toUpperCase()}
+          </p>
+        ) : tab === 'vehicles' ? (
           <List label="Vehicles" rows={lists.vehicles} emptyText="NO VEHICLES" {...sel} {...fol} />
         ) : tab === 'tanks' ? (
           <TankList rows={lists.tanks} {...sel} />
@@ -88,6 +102,7 @@ export function TabbedPanel({ lists, tab, onTab, onSelect, onFollow, onAction }:
 export function TabbedPanelContainer() {
   const lists = useStore(projectionStore, (p) => p.lists);
   const tab = useStore(viewStore, (s) => s.tab);
+  const query = useStore(searchUi, (s) => s.query);
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
       const t = tabForKey(e);
@@ -106,6 +121,7 @@ export function TabbedPanelContainer() {
       onSelect={(id) => view.select(id)}
       onFollow={(id) => view.follow(id)}
       onAction={sendAction}
+      query={query}
     />
   );
 }

@@ -1,5 +1,7 @@
 .inspector {
   display: grid;
+  /* 8.2: one track that never grows past the card (a long status chip used to widen and clip the whole body). */
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: var(--fx-rule-hair);
   width: 100%;

@@ -78,6 +78,11 @@
   border: var(--fx-rule-frame);
 }
 
+/* ARIA rows (required parents of the cells) must not become grid items. */
+.matrixRow {
+  display: contents;
+}
+
 .matrix [role='cell'],
 .matrix [role='rowheader'],
 .matrix [role='columnheader'] {
@@ -217,4 +222,14 @@
 .hudColumn {
   width: var(--fx-size-toast);
   border: var(--fx-rule-frame);
+}
+
+/* Screen-reader only (name prefixes that mirror the game, e.g. the skip button's `Skip to`). */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

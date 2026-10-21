@@ -62,9 +62,12 @@ export function RateControlView({ ts, ended, onRate, onSkip, compact = false }: 
         kbd="N"
         small
         disabledReason={skipReason}
-        ariaLabel={ts.skip.active ? 'Cancel skip' : `Skip to ${ts.skip.target ?? 'next milestone'}`}
         {...(onSkip ? { onClick: onSkip } : {})}
       >
+        {/* Name = visible text with an sr-only verb (WCAG 2.5.3 label in name); compact clips the text, keeps it. */}
+        <span className={styles.sr}>
+          {ts.skip.active ? 'Cancel skip · ' : ts.skip.target ? 'Skip to ' : 'Skip to next milestone · '}
+        </span>
         <span className={styles.skipText}>{ts.skip.active ? 'SKIPPING… · CANCEL' : (ts.skip.target ?? 'SKIP')}</span>
       </Button>
       {compact ? null : (

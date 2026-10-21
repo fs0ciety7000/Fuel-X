@@ -31,7 +31,8 @@ export function List<R extends ListRowVM = ListRowVM>({
   const refs = useRef<(HTMLLIElement | null)[]>([]);
   if (rows.length === 0) {
     return (
-      <div className={styles.list} role="listbox" aria-label={label}>
+      // An empty listbox is invalid ARIA (no options): a named group carrying the empty text instead.
+      <div className={styles.list} role="group" aria-label={label}>
         <p className={styles.empty}>{emptyText}</p>
       </div>
     );

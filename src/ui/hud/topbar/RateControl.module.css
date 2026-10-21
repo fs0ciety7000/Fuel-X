@@ -34,9 +34,24 @@
   letter-spacing: var(--fx-type-label-tracking);
 }
 
-/* Compact (§3.3): the skip button keeps its glyph + key, the milestone name moves to its accessible name. */
+/* Screen-reader only: in the accessibility tree, not on screen. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Compact (§3.3): the skip button keeps its glyph + key; the milestone name is clipped (still its accessible name). */
 @container hud (width < 1600px) or (height < 900px) {
   .skipText {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }

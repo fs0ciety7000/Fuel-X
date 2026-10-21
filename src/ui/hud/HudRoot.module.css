@@ -19,3 +19,13 @@
 .skip:focus-visible {
   clip-path: none;
 }
+
+/* Screen-reader only (the page h1): in the accessibility tree, outside the visual grid. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

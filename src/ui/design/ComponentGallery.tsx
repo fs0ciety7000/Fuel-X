@@ -100,14 +100,16 @@ const TAG_FOR: Record<Severity | 'selected', TagState> = {
 function StatesMatrix() {
   return (
     <div className={styles.matrix} role="table" aria-label="Semantic states">
-      <span className={styles.matrixHead} role="columnheader">
-        STATE
-      </span>
-      {['CHIP', 'BADGE', 'ROW', 'TILE', 'TAG'].map((h) => (
-        <span key={h} className={styles.matrixHead} role="columnheader">
-          {h}
+      <div role="row" className={styles.matrixRow}>
+        <span className={styles.matrixHead} role="columnheader">
+          STATE
         </span>
-      ))}
+        {['CHIP', 'BADGE', 'ROW', 'TILE', 'TAG'].map((h) => (
+          <span key={h} className={styles.matrixHead} role="columnheader">
+            {h}
+          </span>
+        ))}
+      </div>
       {STATES.map((s) => {
         const sev: Severity = s === 'selected' ? 'active' : s;
         const row: ListRowVM = {
@@ -122,7 +124,7 @@ function StatesMatrix() {
         };
         const tile: MetricVM = { key: s, label: 'PROPELLANT', value: val('68.5', 0.685, '%'), state: sev };
         return (
-          <div key={s} role="row" style={{ display: 'contents' }}>
+          <div key={s} role="row" className={styles.matrixRow}>
             <span className={styles.matrixHead} role="rowheader">
               {s.toUpperCase()}
             </span>
@@ -211,14 +213,8 @@ function RateSpecimen({ t, interactive = false }: { t: TimeScaleVM; interactive?
         effective={interactive ? effective : t.effective}
         {...(interactive ? { onChange: setRequested } : {})}
       />
-      <Button
-        glyph="skip"
-        kbd="N"
-        small
-        disabledReason={t.skip.enabled ? null : t.skip.reason}
-        busy={t.skip.active}
-        ariaLabel={`Skip to ${t.skip.target ?? 'next milestone'}`}
-      >
+      <Button glyph="skip" kbd="N" small disabledReason={t.skip.enabled ? null : t.skip.reason} busy={t.skip.active}>
+        <span className={styles.sr}>{t.skip.target ? 'Skip to ' : 'Skip to next milestone · '}</span>
         {t.skip.target ?? 'SKIP'}
       </Button>
       <output className={styles.readout} data-state={t.lagging || t.paused ? 'warn' : undefined}>
@@ -553,10 +549,10 @@ export function ComponentGallery() {
           ))}
           <Specimen caption="SMALL · WITH GLYPH">
             <div className={styles.row}>
-              <Button small glyph="plus" ariaLabel="One more truck">
+              <Button small glyph="plus" ariaLabel="LX · one more truck">
                 LX
               </Button>
-              <Button small glyph="minus" ariaLabel="One less truck">
+              <Button small glyph="minus" ariaLabel="LX · one less truck">
                 LX
               </Button>
               <Button small glyph="ok" variant="primary" kbd="⏎">

@@ -19,6 +19,26 @@ export const HUD_SLOTS = [
 export type HudSlotName = (typeof HUD_SLOTS)[number];
 
 /**
+ * DOM (= Tab) order of the slots, DESIGN_SYSTEM §8: top bar → toasts → flight card → poll → inspector → tabs →
+ * decision strip → countdown → map controls → (world labels, after the frame). Grid placement is by `grid-area`, so
+ * this order never moves anything on screen. `inspect` + `tabs` render together in the right column wrapper.
+ */
+export const FOCUS_ORDER: readonly HudSlotName[] = [
+  'top',
+  'toasts',
+  'flight',
+  'poll',
+  'inspect',
+  'tabs',
+  'strip',
+  'time',
+  'ctrl',
+  'alt',
+  'compass',
+  'overlay',
+];
+
+/**
  * Per-slot behaviour. `interactive`: the slot's direct children get `pointer-events: auto` (zero specificity, a
  * component may still opt out on its root); read-only slots (altitude scale, compass) stay transparent to the
  * pointer (§3.4). `owner` documents which task fills it.
