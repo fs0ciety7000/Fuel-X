@@ -252,7 +252,12 @@ export class WorldOverlayCore {
       if (v.z < -1 || v.z > 1) continue;
       s.x = rect.left + ((v.x + 1) / 2) * viewW;
       s.y = rect.top + ((1 - v.y) / 2) * viewH;
-      if (s.x < -VIEW_MARGIN_PX || s.x > viewW + VIEW_MARGIN_PX || s.y < -VIEW_MARGIN_PX || s.y > viewH + VIEW_MARGIN_PX)
+      if (
+        s.x < -VIEW_MARGIN_PX ||
+        s.x > viewW + VIEW_MARGIN_PX ||
+        s.y < -VIEW_MARGIN_PX ||
+        s.y > viewH + VIEW_MARGIN_PX
+      )
         continue;
       s.visible = true;
     }
@@ -325,7 +330,8 @@ export class WorldOverlayCore {
     if (!c) return;
     const h = this.followed();
     const q = h?.object.quaternion;
-    const deg = h && q && headingFollowsEntity(h.asset) ? headingOfQuat(q.x, q.y, q.z, q.w) : this.d.shared.camHeadingDeg;
+    const deg =
+      h && q && headingFollowsEntity(h.asset) ? headingOfQuat(q.x, q.y, q.z, q.w) : this.d.shared.camHeadingDeg;
     const frac = Math.round(((deg - COMPASS_TAPE_FROM_DEG) / COMPASS_TAPE_SPAN_DEG) * 100_000) / 100_000;
     if (frac !== this.hdgFrac && c.tape) {
       this.hdgFrac = frac;
