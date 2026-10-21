@@ -260,11 +260,15 @@ Reference scenes (`tests/e2e/scenes.perf.ts`, counts on a frozen frame, budget �
    ms and steps per advance (window 120) and reports mean = Σ ms / Σ steps; p95 stays per call. Unit test
    (`src/app/sim-host/inline.test.ts`): a 1-step 1 ms call + a 99-step 9.9 ms call read **109 µs/tick** (the old
    formula said 550).
-6. **F6 — Low (latent)** — `InstancedParts` (`src/render/views/instanced-parts.ts`) creates an `InstancedMesh` per
-   transporter / tanker view and `Pool.lod` (`src/render/views/pools.ts`) keys by entity id; neither is released on
-   unmount. Harmless today (ids are stable, the leak spec shows flat GL buffers), but a future spawn / despawn flow
-   (more tankers, other sites) would leak one instance-matrix buffer per view. Owner: **three-graphics-engineer**
-   (`im.dispose()` in the view's cleanup, `lod.delete(id)` when a handle leaves).
+6. **F6 — FIXED (`render: release instanced parts and pool LODs on view exit (8.1 F6)`) — Low (latent)** —
+   `InstancedParts` (`src/render/views/instanced-parts.ts`) created an `InstancedMesh` per transporter / tanker view
+   and `Pool.lod` (`src/render/views/pools.ts`) keyed by entity id; neither was released on unmount. Now the rig
+   pushes `parts.dispose()` (frees the instance-matrix buffers; the GLB geometry / materials are shared and stay) into
+   the view's disposers and `EntityView`'s cleanup runs them (a StrictMode re-mount keeps drawing: three re-uploads a
+   disposed instance buffer on its next draw); a pool drops the LOD entry of a handle that left (exact, no per-frame
+   set: a surplus key count triggers the prune). Unit test `src/render/views/release.test.ts` (dispose events per LOD
+   clone, shared geometry untouched, pool entries 3 → 2 on a despawn, hidden live handles kept). Ids are stable in the
+   MVP, so `leaks.perf.ts` counts do not move; not re-run.
 7. **L1 (5.9) unchanged** — point cloud at 297.7 k of 300 k (99 %).
 
 ## Phase 8 accessibility & keyboard audit (8.2)

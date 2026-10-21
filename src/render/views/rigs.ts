@@ -121,7 +121,10 @@ export function bogieSteer(yawRate: number, speed: number, z: number): [number, 
   return [a, folded];
 }
 
-function transporterRig(root: Object3D): ApplyFn {
+/** Collects a rig's GPU releases (instanced parts) for the view's cleanup. */
+export type Disposers = (() => void)[];
+
+function transporterRig(root: Object3D, disposers?: Disposers): ApplyFn {
   const c = ANIM.transporter;
   const deck = transNode(root, TRANSPORTER.nodes.Deck, 'y', TRANSPORTER.anim.Deck.rest);
   const bogies: { node: Object3D; wheel: Object3D | null; z: number }[] = [];
@@ -132,6 +135,7 @@ function transporterRig(root: Object3D): ApplyFn {
     if (node) bogies.push({ node, wheel, z: node.position.z });
   }
   const parts = new InstancedParts(root, TRANSPORTER.instanced, true);
+  disposers?.push(() => parts.dispose());
   return (a) => {
     deck?.(ch(a, c.deckM));
     const w = ch(a, c.yawRateRadPerS);
@@ -146,7 +150,7 @@ function transporterRig(root: Object3D): ApplyFn {
   };
 }
 
-function tankerRig(root: Object3D): ApplyFn {
+function tankerRig(root: Object3D, disposers?: Disposers): ApplyFn {
   const c = ANIM.tanker;
   const steer = rotNode(root, TANKER.nodes.Steer, 'y');
   const trailer = rotNode(root, TANKER.nodes.Trailer, 'y');
@@ -156,6 +160,7 @@ function tankerRig(root: Object3D): ApplyFn {
     ),
   );
   const parts = new InstancedParts(root, TANKER.instanced, false);
+  disposers?.push(() => parts.dispose());
   return (a) => {
     steer?.(ch(a, c.steerRad));
     trailer?.(ch(a, c.trailerRad));
@@ -208,8 +213,11 @@ function wxRig(root: Object3D): ApplyFn {
   };
 }
 
-/** Rig for one cloned LOD scene of `asset`, or null when the asset has no animated parts. */
-export function createRig(asset: AssetName, root: Object3D): ApplyFn | null {
+/**
+ * Rig for one cloned LOD scene of `asset`, or null when the asset has no animated parts. GPU resources the rig owns
+ * (InstancedParts) push their release into `disposers`; the view runs them on cleanup.
+ */
+export function createRig(asset: AssetName, root: Object3D, disposers?: Disposers): ApplyFn | null {
   switch (asset) {
     case 'tower':
       return towerRig(root);
@@ -220,9 +228,9 @@ export function createRig(asset: AssetName, root: Object3D): ApplyFn | null {
     case 'ship':
       return shipRig(root);
     case 'transporter':
-      return transporterRig(root);
+      return transporterRig(root, disposers);
     case 'tanker':
-      return tankerRig(root);
+      return tankerRig(root, disposers);
     case 'crane':
       return craneRig(root);
     case 'boat_range':

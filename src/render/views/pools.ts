@@ -80,12 +80,22 @@ class Pool {
     this.capacity = cap;
   }
 
+  private prune(handles: readonly EntityHandle[]): void {
+    const live = new Set(handles.map((h) => h.id));
+    for (const id of this.lod.keys()) if (!live.has(id)) this.lod.delete(id);
+  }
+
   update(handles: readonly EntityHandle[], camera: Camera, origin: Vector3, fovDeg: number): void {
     this.ensure(handles.length);
     for (const lv of this.levels) lv.count = 0;
+    let tracked = 0;
     for (const h of handles) {
       const o = h.object;
-      if (!o.visible) continue;
+      if (!o.visible) {
+        if (this.lod.has(h.id)) tracked++;
+        continue;
+      }
+      tracked++;
       rel.copy(o.position).sub(origin);
       const frac = projectedFraction(this.size, rel.distanceTo(camera.position), fovDeg);
       const level = pickLod(frac, this.lod.get(h.id) ?? 0, this.levels.length);
@@ -101,6 +111,9 @@ class Pool {
       }
       lv.count++;
     }
+    // A handle left (despawn, other site): drop its LOD hysteresis entry (8.1 F6). Exact without a per-frame set:
+    // every live handle with an entry was counted above, so any surplus key belongs to a handle that is gone.
+    if (this.lod.size > tracked) this.prune(handles);
     for (const lv of this.levels) {
       for (const im of lv.meshes) {
         im.count = lv.count;
@@ -128,6 +141,11 @@ export class InstancePools {
 
   register(name: AssetName, gltfs: readonly GLTF[], cast: boolean): void {
     if (!this.pools.has(name)) this.pools.set(name, new Pool(name, gltfs, this.group, cast));
+  }
+
+  /** LOD entries a pool keeps (tests / leak checks: equals its live, posed handles). */
+  trackedLods(name: AssetName): number {
+    return this.pools.get(name)?.lod.size ?? 0;
   }
 
   /** `byAsset`: live pooled handles grouped by asset. */

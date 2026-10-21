@@ -16,9 +16,18 @@ import { lodSize } from './lod';
 import { isPooled } from './pools';
 import type { InstancePools } from './pools';
 import { createRig } from './rigs';
+import type { Disposers } from './rigs';
 
-/** One root per entity holding every LOD clone (clone(true) shares geometry + token materials). Hidden until posed. */
-function instantiate(gltfs: readonly GLTF[], asset: AssetName, name: string): { root: Group; lod: LodRuntime } {
+/**
+ * One root per entity holding every LOD clone (clone(true) shares geometry + token materials). Hidden until posed.
+ * `dispose` frees what the view owns on the GPU (instanced-part buffers); shared GLB geometry / materials stay.
+ */
+export function instantiate(
+  gltfs: readonly GLTF[],
+  asset: AssetName,
+  name: string,
+): { root: Group; lod: LodRuntime; dispose: () => void } {
+  const disposers: Disposers = [];
   const root = new Group();
   root.name = name;
   root.visible = false;
@@ -27,9 +36,12 @@ function instantiate(gltfs: readonly GLTF[], asset: AssetName, name: string): { 
     o.name = `${name}_LOD${i}`;
     o.visible = i === 0;
     root.add(o);
-    return { root: o, apply: createRig(asset, o) };
+    return { root: o, apply: createRig(asset, o, disposers) };
   });
-  return { root, lod: { levels, active: 0, size: lodSize(ASSETS[asset].bounds) } };
+  const dispose = (): void => {
+    for (const d of disposers) d();
+  };
+  return { root, lod: { levels, active: 0, size: lodSize(ASSETS[asset].bounds) }, dispose };
 }
 
 interface ViewProps {
@@ -51,7 +63,10 @@ function EntityView({ slot, asset, registry }: ViewProps) {
       anim: createAnimBuffer(),
       lod: view.lod,
     });
-    return () => registry.remove(slot.id, view.root);
+    return () => {
+      registry.remove(slot.id, view.root);
+      view.dispose();
+    };
   }, [view, info, registry, slot, asset]);
   return <primitive object={view.root} />;
 }
