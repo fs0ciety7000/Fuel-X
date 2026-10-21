@@ -315,7 +315,7 @@ Crosshair `+` marks (ink-4) sit on the outer corners of every card and at the fo
 - Top bar: search collapses to a `⌕ /` button opening a popover; telemetry latency moves into the user chip popover; role text hidden (initials + name only).
 - Flight card: sparklines hidden, values only (2×2 tiles stay).
 - Inspector: metric grid stays 2 columns but shows 6 metrics max (priority order defined by entity class), chart hidden behind a `▸ CHART` disclosure.
-- Tabbed panel: tabs may abbreviate (`VEH TNK TSK RNG EVT`), ~6 rows visible, rows 28 px.
+- Tabbed panel: tabs may abbreviate (`VEH TNK TSK RNG EVT`), ~6 rows visible, rows 28 px. **Built in 8.2**: `TabDef.short`; under the `hud` compact query the full label is clipped (still the tab's accessible name) and the code prints, so all five tabs and their badges fit 336 px (they overflowed and clipped `EVENTS` before).
 - Timeline: phase labels abbreviate (`ROLL STK PROP TERM LIFT BBK CATCH SAFE`); T-clock clamps to its min (2 rem).
 - Altitude scale: 5 ticks; compass tape: ±45° window.
 - Inspector + poll + tabs never overlap: when the poll is active and height < 900, the inspector collapses to its header (name + chip).
@@ -354,7 +354,7 @@ Crosshair `+` marks (ink-4) sit on the outer corners of every card and at the fo
 
 **Compact and minimum viewport** use container queries on the HUD host (`container: hud / size`): `@container hud (width < 1600px) or (height < 900px)` for compact, and `(width < 1280px) or (height < 720px)` for the `[ VIEWPORT 1280×720 MIN ]` plate. Component CSS can use the same `hud` container query for its own compact rules. Deviations from §3.1: the right column ends on row 7, keeping the bottom gutter, and inspector + tabs are one flex column, so they never overlap. The wide ≥ 2560 root multiplier and pausing the sim under the minimum plate are not built yet.
 
-**Top bar (6.3):** collapsed debrief → `[■ DEBRIEF READY B]` cell after the spacer (from `debriefUi`; the overlay renders nothing while collapsed) · `FX` mark · `CALDER / VARNE COAST / [LC-1 BRACKWATER ▾]` · sim UTC · `SIM n×` readout (warn frame when paused or lagging) · RANGE badge (→ `view.tab('range')`, tooltip = worst reason, hatched `RANGE —` without a launch) · alert counter (→ `view.tab('events')`, assertive announcement only for a new danger alert) · `LAUNCH DIRECTOR`. Org/region are UI constants (not projected). Locked sites stay navigable listbox options (`aria-disabled`, hatch, status + `LOCKED IN THIS BUILD`, ink-3 so the reason stays AA). The search (§6.3) and the 1/s danger invert of the alert counter are not built: the invert would break the frozen-frame e2e equality.
+**Top bar (6.3):** collapsed debrief → `[■ DEBRIEF READY B]` cell after the spacer (from `debriefUi`; the overlay renders nothing while collapsed) · `FX` mark · `CALDER / VARNE COAST / [LC-1 BRACKWATER ▾]` · sim UTC · `SIM n×` readout (warn frame when paused or lagging) · RANGE badge (→ `view.tab('range')`, tooltip = worst reason, hatched `RANGE —` without a launch) · alert counter (→ `view.tab('events')`, assertive announcement only for a new danger alert) · `LAUNCH DIRECTOR`. Org/region are UI constants (not projected). Locked sites stay navigable listbox options (`aria-disabled`, hatch, status + `LOCKED IN THIS BUILD`, ink-3 so the reason stays AA). The search (§6.3) is built as the MVP stub in 8.2 (field after the breadcrumb, see §6.3 as built); the 1/s danger invert of the alert counter is not built: the invert would break the frozen-frame e2e equality. A `SAVE · LOAD` button (8.2) sits before the role label and opens the §6.38 sheet (`persistence.openMenu()`), the visible twin of `Ctrl/⌘+S` until the §6.6 user-chip popover exists.
 
 **Rate control (6.3)** lives in the countdown band header, as §6.25 places it. The top bar mirrors only the readout. In compact mode the SKIP button keeps its glyph and key and drops the milestone text. At run end (`timeScale.runEnded`, falling back to `debrief !== null`) every segment and SKIP are `aria-disabled` with `RUN ENDED`. A one-shot drop (`timeScale.drop`) prints its own chip next to the cap chip and never hatches segments.
 
@@ -437,6 +437,7 @@ ORG / REGION / [LC-1 ▾]             dropdown (popover):
 - Data: index of entities, tanks, tasks, sites (`id, code, class, status`). Prefix + fuzzy on code/name, max 8 results.
 - States: default (paper-2 field, 1 px ink-5 border), focus (ink border + focus ring), no results (`NO MATCH`), hint `<kbd>/</kbd>` right-aligned.
 - Behavior: `/` or `Ctrl/⌘+K` focuses; Enter selects + follows; Esc clears then blurs. Query text is not uppercased in the input (typing readability), results are.
+- **As built (8.2) — MVP stub** (`src/ui/hud/search/*`): no results popover. `<form role="search" aria-label="Search">` with one `<input type="search" aria-label="Filter the open tab" aria-keyshortcuts="/">` (placeholder `FILTER TAB`, `⌕` glyph, `/` key hint), width `--fx-size-search` (280 px) / `--fx-size-search-compact` (160 px, compact — the field stays a field instead of the §3.3 popover button). The query lives in a UI-local store (`searchUi`) and narrows **every tab's rows** (`filterLists`: case-insensitive substring on call-sign / name / sub-line / status; stations on code / label / driver; events on entity code / message); tab badges keep counting the site's alerts. The tab header prints `n OF m ITEMS`; no hit → `NO MATCH · <QUERY>`. Keys: `/` and `Ctrl/⌘+K` focus (+ select the text) from anywhere outside a field; in the field `Esc` clears, a second `Esc` leaves it; outside the field the global `Esc` chain also clears a live query before it deselects (§8). Enter-to-follow from results is post-MVP with the popover.
 
 ### 6.4 Status badge (RANGE GO / NO-GO)
 ```
@@ -679,6 +680,7 @@ skipping   [ II | 1× | 10× | 100× |◐ SKIPPING… ]  SIM SKIP → T-01:20:00
 
 ### 6.27 Dialog (confirm scrub/abort/divert)
 `<dialog>` modal, 480 px, 2 px ink frame, danger header band for irreversible actions; consequence list (`PENALTY 2.4 M`, `TURNAROUND +3 D`); buttons `CANCEL` (default focus) and `SCRUB` (danger style). Esc cancels.
+**As built (8.2):** the shared `Dialog` centres every modal itself (`position: fixed`, 50 % / 50 %, `translate(-50%, -50%)`, `max-height: 100%` with internal scroll) — the global reset strips the UA's auto margins, so modals used to open top-left; callers (persistence §6.38) no longer centre locally. Inline (`/design`) dialogs are unaffected.
 
 ### 6.28 Decision strip (D1, D2, D3, D3b)
 
@@ -793,7 +795,7 @@ Every number on screen goes through one primitive: `<data value="{SI}">{text}</d
 
 ### 6.38 Resume offer and SAVE · LOAD sheet (as built, 8.3)
 
-Both are §6.27 dialogs (native modal `<dialog>`, `--fx-size-dialog`, 2 px ink frame), centred like the debrief sheet, from `src/ui/hud/persistence/*`, mounted in the `overlay` slot. Texts come from `persistenceStore` (app-written, ARCHITECTURE §10); no client maths.
+Both are §6.27 dialogs (native modal `<dialog>`, `--fx-size-dialog`, 2 px ink frame), centred by the shared component (8.2), from `src/ui/hud/persistence/*`, mounted in the `overlay` slot. Texts come from `persistenceStore` (app-written, ARCHITECTURE §10); no client maths.
 ```
 +[ RESUME RUN ]──────────────────────────────+      +[ SAVE · LOAD ]──────────────────────────────────+
 | AN UNFINISHED RUN WAS AUTOSAVED IN THIS    |      | AUTOSAVE  T-04:44:59 · 2026-10-21 14:22 UTC ·   |
@@ -807,7 +809,7 @@ Both are §6.27 dialogs (native modal `<dialog>`, `--fx-size-dialog`, 2 px ink f
 +--------------------------------------------+
 ```
 - **Resume offer** — shown at boot when the latest autosave is an unfinished player run (rules in ARCHITECTURE §10); the run behind it is paused. `CONTINUE` (primary, default focus) loads it — the run resumes **paused** on the saved tick, so the player re-orients before pressing `Space`; `NEW RUN` (secondary) plays the fresh world the page booted (the autosave is kept). It must be answered: `Esc` does nothing (no third, ambiguous outcome). Facts as a `<dl>` table (label column `--fx-size-label-column`, `type-label` ink-3 / `type-strong` values). A failed CONTINUE prints its reason under the table and keeps both buttons.
-- **SAVE · LOAD sheet** — `Ctrl/⌘+S` (pre-empts the browser's "save page"; ignored while the offer is open), or any control calling `persistence.openMenu()` (intended home: the user-chip popover §6.6, not wired yet). Rows: last autosave (or `OFF · DEMO RUN (AUTOPILOT)` / `OFF · STORAGE UNAVAILABLE`) and the file format. Buttons: `CLOSE` (default focus, `Esc`), `IMPORT SAVE` (opens the native file picker, `.gz`/`.json`), `EXPORT SAVE` (primary, downloads `fuelx-save-seed<S>-t<tick>.fuelx.json.gz`). Both import / export show `◐` busy while running.
+- **SAVE · LOAD sheet** — `Ctrl/⌘+S` (pre-empts the browser's "save page"; ignored while the offer is open), or any control calling `persistence.openMenu()` (intended home: the user-chip popover §6.6, not built; since 8.2 the top bar's `SAVE · LOAD` button is the visible entry point). Rows: last autosave (or `OFF · DEMO RUN (AUTOPILOT)` / `OFF · STORAGE UNAVAILABLE`) and the file format. Buttons: `CLOSE` (default focus, `Esc`), `IMPORT SAVE` (opens the native file picker, `.gz`/`.json`), `EXPORT SAVE` (primary, downloads `fuelx-save-seed<S>-t<tick>.fuelx.json.gz`). Both import / export show `◐` busy while running.
 - **Status line** — one line under the table: ok = 2 px ink left rule, `role="status"`; error = `--fx-space-2` accent left edge + ▲ glyph + `accent-text` small label text, `role="alert"` (never orange on a large word). Error texts name the cause and the way out: `CORRUPT SAVE · THE .GZ FILE IS DAMAGED OR TRUNCATED`, `CORRUPT SAVE · NOT READABLE JSON`, `CORRUPT SAVE · WORLD DATA FAILED VALIDATION`, `SAVE FROM A NEWER VERSION · SCHEMA n, THIS BUILD READS UP TO m · RELOAD TO UPDATE`, `SAVE TOO OLD · NO MIGRATION PATH TO THIS VERSION`, `NOT A FUEL-X SAVE · …`, `THIS IS A SESSION LOG (EXPORT LOG), NOT A SAVE · LOGS CANNOT BE LOADED YET`. A failed import never touches the running world. Success: `LOADED · SEED 42 · T-04:00:00 · STANDBY[ · MIGRATED FROM SCHEMA n]` (the loaded run is paused).
 - Screens: `docs/screens/persistence-resume.png`, `docs/screens/persistence-save-sheet.png`.
 
@@ -863,30 +865,39 @@ Syntax decoration (structure, not ornament): `[ TITLE ]` card heads, `>>>` for "
 - Zoom: HUD supports 125 % root scale at 1920×1080 without overlap (it becomes compact mode).
 - Skip link `Skip to panels` as first focusable. Focus order: top bar → flight card → poll → inspector → tabs → timeline → map controls → world labels.
 
-**Keyboard map** (shown in `?` sheet; no single-letter key fires while typing in an input):
+**As built (8.2 audit, `docs/QA.md` "Phase 8 accessibility & keyboard audit (8.2)")**
+- **Focus order** = DOM order: skip link → (sr-only `<h1>` FUEL-X · LAUNCH CONTROL) → top bar → toasts → flight card → poll → inspector → tabs → decision strip → countdown → map controls → world labels (`FOCUS_ORDER` in `frame/slots.ts`; grid placement is by `grid-area`, so the order never moves anything). `SKIP TO PANELS` lands on `#hud-panels` (inspector + tabs).
+- **Names**: button names come from their visible text (WCAG 2.5.3): key hints `<kbd>` are `aria-hidden` and exposed as `aria-keyshortcuts` (`⏎` → `Enter`, `Esc` → `Escape`, `⇧H` → `Shift+H`); disabled reasons are descriptions only (`aria-describedby` → hidden span), never part of the name. Verbs that are not printed come from sr-only text (`Skip to T−01:20:00 LOAD POLL`, `Site LC-1 BRACKWATER`). World label tags take the projector's `ariaLabel` (`SP-42, TRANSPORTER, AMBIENT · WIND HOLD · GUST 15.0 M/S, WARNING`, + `, following`) so status and severity are never colour-only. An empty list renders a named `group` with its empty text, not an empty `listbox`.
+- **Contrast**: a disabled panel's *title* stays ink-3 (5.91:1) — a heading is not an inactive control; the hatch body carries the disabled state. `prefers-contrast: more` is built as a token remap in `base.css` (`ink-3` → `ink-2`, `ink-5` → `ink`); the hatch pattern (baked SVG) does not follow.
+- **Long statuses** (1280×720): the full-width status chip wraps between words, the inspector grid is one `minmax(0, 1fr)` track (a long chip used to widen and clip the card), and warn/danger list rows wrap their sub-line instead of ellipsizing the value away (`… WIND HOLD · GUST 15.0 M/S`).
+- **Esc chain**: popover / tooltip / site list consume `Esc` (prevent default); a modal `<dialog>` owns it while open; then one step per press: clear the search query → drop the selection (`view.select(null)`, the follow is untouched; announced politely).
+- **Repeatable audit**: `tests/e2e/a11y-design.e2e.ts` (axe-core WCAG 2.0/2.1 A+AA + best practice at both sizes, focus rings, keymap table, more-contrast) and `tests/e2e/a11y-play.scene.e2e.ts` (axe at both sizes, skip link, Tab order + rings, live regions, every key below, reduced motion, wind-hold overflow). `/design` disables only `landmark-unique` (the gallery repeats specimens of the same landmark by design).
+- **Not built (post-MVP)**: the `?` shortcut sheet (the `/design` `[ KEYBOARD MAP ]` table, generated from `HUD_KEYS`, is the reference meanwhile) and `A` / `Shift+A` (jump to / ack alert; alerts are acked from their toast `ACK` or the Events tab).
+
+**Keyboard map** (shown in `?` sheet — not built, see above; source of truth `HUD_KEYS` in `src/ui/hud/frame/keys.ts`, printed on `/design`; no single-letter key fires while typing in an input):
 
 | Key | Action |
 |---|---|
-| `/`, `Ctrl/⌘+K` | Focus search |
-| `Esc` | Close popover/dialog → clear search → deselect |
+| `/`, `Ctrl/⌘+K` | Focus search (MVP stub: filters the open tab, §6.3) · in it `Esc` clears, again leaves |
+| `Esc` | Close popover/dialog → clear search → deselect (one step per press) |
 | `Tab` / `Shift+Tab` | Move between regions/controls |
 | `↑ ↓` / `Home End` | Move in lists, dropdowns |
 | `← →` | Switch tab (in tablist); time scale (in radiogroup) |
 | `Alt+1…5` | Vehicles / Tanks / Tasks / Range / Events |
 | `Enter` | Follow the focused row/tag (select + camera frames and tracks it); `Space` / click = select only (GDD AC 25) |
 | `F` | Follow / unfollow selected |
-| `C` / `H` / `Z` | Recenter on followed / home view / frame selection |
+| `C` / `H` / `Z` | Recenter on followed (re-fits the distance) / home view (plain `H`, bound in 8.2) / frame selection (follows it) |
 | `Shift+H` | **Hold the count** (while counting; the timeline header's only count button, hint `⇧H`). Deliberately not plain `H` (home view): holding is high-stakes and must never fire from a camera habit (6.5) |
 | `+` / `−` | Zoom · `Q` / `E` rotate |
 | `Space` | Pause / resume |
 | `,` / `.` | Time scale down / up |
-| `A` | Jump to oldest unacknowledged alert · `Shift+A` ack focused alert |
+| `A` | Jump to oldest unacknowledged alert · `Shift+A` ack focused alert — **not built (post-MVP)** |
 | `G` | Focus the decision strip (when open) · inside it: the option keys the projector prints on each button (`⏎` GO, `R` recycle, `D` divert, `C` continue / catch, `H` hold-to-fix, `Esc` D1 no order / collapse). Strip keys are scoped: they act only with focus inside the strip and stop propagation, so `H`/`C`/`D` there never reach the camera |
 | `O` | Expand the D1 propellant strip |
 | `N` | Skip to next milestone (when allowed); again while skipping = cancel (`session.skipToNextMilestone()` / `cancelSkip()`) |
 | `B` | Reopen the debrief |
 | `Ctrl/⌘+S` | SAVE · LOAD sheet: export / import a save file (§6.38) |
-| `?` | Shortcut sheet |
+| `?` | Shortcut sheet — **not built (post-MVP)**; `/design` prints the map |
 
 (Camera WASD/drag bindings belong to ARCHITECTURE/render; they must not collide with the above.)
 
@@ -905,7 +916,7 @@ A static route (or Storybook per ADR), no sim running, fixtures only, screenshot
 7. **Glyph set**: all glyphs at 12 and 16 px, on paper, paper-2, tint, accent.
 8. **Components** (6.2, `src/ui/design/ComponentGallery.tsx`, e2e `tests/e2e/design.e2e.ts` incl. an AA contrast sweep over every rendered text): each §6 component in all states (default/hover/focus/selected/warn/danger/disabled/empty/stale) — top bar, site switcher open, search with results, badges, alert counter, user chip, flight card, metric tile, segmented & linear progress, inspector (booster, vessel, transporter), status chips, tabbed panel per tab, list rows, countdown at 4 states (pre, hold, T+, scrub), map controls, label tags over a neutral clay image, altitude scale, compass tape, toasts + log, poll panel (polling / all GO / hold / no-go), time-scale, stamp, dialog.
 9. **Full HUD frame** with fixture data over a static background render, at both viewport sizes, grid areas outlined with crosshairs (toggle).
-10. **Keyboard map** table generated from the same keymap source as the app.
+10. **Keyboard map** table generated from the same keymap source as the app. *(Built in 8.2: section `gallery-keys`, from `HUD_KEYS`.)*
 
 ---
 

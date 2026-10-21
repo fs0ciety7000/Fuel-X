@@ -250,6 +250,90 @@ Reference scenes (`tests/e2e/scenes.perf.ts`, counts on a frozen frame, budget �
    (`im.dispose()` in the view's cleanup, `lod.delete(id)` when a handle leaves).
 7. **L1 (5.9) unchanged** — point cloud at 297.7 k of 300 k (99 %).
 
+## Phase 8 accessibility & keyboard audit (8.2)
+
+2026-10-21, **ui-design-system**, production build (`npm run build && npm run preview`), Chromium 1194 / SwiftShader,
+`/play.html?debug=1&lowfx=1` seed 42 and `/design.html`, at **1920×1080** and **1280×720**. Reference: DESIGN_SYSTEM §8
+(keyboard map, focus order, live regions, contrast, reduced motion, landmarks / names).
+
+**Method.** axe-core 4.14 through `@axe-core/playwright` (added as an exact-pinned dev dependency: ~90 WCAG rules —
+names, roles, required ARIA parents/children, label-in-name, landmarks, contrast — that a hand-rolled check would not
+match; dev-only, nothing in the bundle), tags `wcag2a wcag2aa wcag21a wcag21aa best-practice`; a Tab walk from the top
+of the page recording the HUD region and the computed focus ring of every stop; each key of the §8 map pressed in the
+game and its effect read back through `window.__fuelx` (view / time / log) or the DOM; `reducedMotion: 'reduce'` and
+`contrast: 'more'` emulation; the SP-42 wind hold (seed 42, autopilot, `T−02:19:27`, status
+`AMBIENT · WIND HOLD · GUST 15.0 M/S`) followed at 1280×720 with overflow checks on its tag, row and inspector.
+
+**Repeatable as:** `tests/e2e/a11y-design.e2e.ts` (e2e project) and `tests/e2e/a11y-play.scene.e2e.ts` (scene project),
+plus `src/ui/hud/a11y.test.ts` (focus order, search filter, Esc chain, map keys, names). Screens:
+`docs/screens/phase8-a11y-keys-d1-focused@1920.png`, `docs/screens/phase8-a11y-wind-hold-SP42@1280.png`.
+
+| Area | Before (audit) | After |
+|---|---|---|
+| axe `/play` 1920 / 1280 | 2 / 1 violations (label-in-name ×2, no `h1`) | **0 / 0** (also on the debrief modal) |
+| axe `/design` 1920 / 1280 | 5 rule families, 50 nodes | **0 / 0** (`landmark-unique` off: the gallery repeats specimens by design) |
+| Tab order | skip link → top → flight → poll → **ctrl → time → tabs** → labels | skip link → top → toasts → flight → poll → inspector → tabs → strip → time → ctrl → labels (§8) |
+| Focus ring | — | 2 px ink square ring on every stop (both pages; search field via its form) |
+| Skip link | first stop, lands on `#hud-panels` | unchanged, now e2e-checked |
+| Live regions | polite + assertive present | unchanged; polite written on rate keys (checked) |
+| Reduced motion | global 0 ms rule | verified: no element of the HUD root with a non-zero transition / animation |
+| `prefers-contrast: more` | **not built** | token remap (ink-3 → ink-2, ink-5 → ink) |
+| Keyboard map | `/` `Esc` `H` dead; `?` `A` not built | all of `Space , . N Shift+H H F G O B Alt+1…5 + − Q E Z C Esc / Enter` act (e2e); `?` `A` documented post-MVP |
+
+**Keys verified in game** (`a11y-play.scene.e2e.ts`): `Space` pause/resume (+ polite `RATE …`) · `.` / `,` rate up /
+down · `N` starts the skip, `N` again cancels · `Alt+1…5` the five tabs · `/` focuses search, typing filters
+(`SP-4` → 2 rows, `2 OF n ITEMS`; `NO MATCH`), `Esc` clears, `Esc` leaves · row `Space` selects without moving the camera,
+`F` on the row follows, global `F` unfollows, `Z` frames (follows) the selection, `H` home (follow dropped, selection
+kept), `Esc` deselects · `+ − Q E` each send one camera nudge; `C` re-frames the followed entity after a zoom nudge
+(rendered frame changes) · `Enter` on a world label tag follows it · `O` collapses / expands D1, `G` focuses the strip
+(and expands D1) · `Shift+H` sends HOLD (`HoldStarted` logged; the demo autopilot may release it) · on the debrief modal
+`Esc` = VIEW SITE (the global chain does not run under a dialog), `B` reopens.
+
+**Findings** (most severe first):
+
+1. **FIXED — Medium — Tab order did not follow §8.** The right column (inspector + tabs) was appended after the
+   countdown and map controls in the DOM. `FOCUS_ORDER` (`src/ui/hud/frame/slots.ts`) now drives the frame's DOM order.
+2. **FIXED — Medium — world label tags hid status and severity from screen readers** (`SP-42, transporter`): the
+   projected `ariaLabel` (`…, AMBIENT · WIND HOLD · GUST 15.0 M/S, WARNING`) was ignored (`WorldLabels.tagDescription`).
+3. **FIXED — Medium — dead keys:** plain `H` (home view) was unbound (reserved since 6.6), `Esc` never deselected or
+   cleared anything, `/` had no search to focus. `H` in `MapControls` (Shift+H stays the hold), `Esc` chain in
+   `frame/keys.ts` (`escapeStep`), tooltip `Esc` now consumes the key so one press = one step.
+4. **FIXED — Medium — 1280×720 overflow with the long ambient status:** the full-width status chip widened the inspector
+   grid and clipped the whole card body on the right (chip text cut at `GUST 15.0 M/S`, metric column cut); the list
+   row ellipsized `… WIND HO…` so the gust value was lost; the tab strip overflowed and clipped `EVENTS` + badge.
+   Chip wraps, inspector track `minmax(0, 1fr)`, warn/danger row sub-lines wrap, tabs print `VEH TNK TSK RNG EVT`
+   in compact (§3.3). The label tag itself only prints the call-sign (no overflow).
+5. **FIXED — Medium (coordinator, from 8.3) — modal dialogs opened top-left:** the global reset strips the UA's auto
+   margins; the shared `Dialog` now centres itself (SCRUB / DIVERT confirms, persistence sheets); persistence's local
+   `.modal` centring removed. Debrief centring checked in the reduced-motion test.
+6. **FIXED — Low — label-in-name (WCAG 2.5.3):** site switcher (`aria-label` "Site LC-1 BRACKWATER, switch site" vs
+   visible "LC-1BRACKWATER") and SKIP (`aria-label` vs visible milestone). Names now come from the visible text plus an
+   sr-only verb; `<kbd>` hints are `aria-hidden` + `aria-keyshortcuts` (names read `HOLD`, not `HOLD⇧H`); disabled
+   reasons are descriptions only. Existing name-based selectors (`/^Skip to …$/`, `B-09,` prefixes) still match.
+7. **FIXED — Low — no `h1` on `/play`:** sr-only `FUEL-X · LAUNCH CONTROL`.
+8. **FIXED — Low — invalid ARIA:** empty lists rendered an empty `listbox` (now a named `group`); the `/design` states
+   matrix had column headers without a `row`; a disabled panel title was ink-4 on paper (3.06:1) → ink-3 (5.91:1).
+9. **FIXED — Low — `prefers-contrast: more` (§8) was not implemented.** Token remap in `src/ui/global/base.css`; the
+   baked hatch SVG does not follow (acceptable: decorative).
+10. **FIXED — Low — top-bar search stub never built** (was defect 6 of the 7.4 report). Built as specified (§6.3 as
+    built): filters every tab's rows by call-sign / text, `/` focuses, `Esc` clears.
+11. **FIXED — Low (coordinator, from 8.3) — SAVE · LOAD sheet had no visible entry point.** `SAVE · LOAD` button in the
+    top bar → `persistence.openMenu()` (the §6.6 user-chip popover is not built).
+12. **OPEN — Low — rate keys read the 10 Hz projection:** two `Space` / `,` / `.` presses inside ~100 ms toggle from the
+    same stale `timeScale` (Space-Space resumes twice). A human double-tap rarely beats 100 ms; fix = keep the last
+    requested rate UI-side until the projection echoes it. Owner: ui-design-system (post-MVP).
+13. **OPEN — Low (visual) — compact truncations that keep their accessible names:** flight card vehicles sub-line
+    (`B-09 / S-21 · …`), poll header (`[ GO / NO-GO PO…`), and non-current timeline phase codes at both sizes
+    (`TERMIN…`, `TE…`): the 5 % segment floor is narrower than the short codes. Readable in full via names / tooltips;
+    a shorter code set or a two-row label would fix it.
+14. **OPEN (post-MVP, documented) —** `?` shortcut sheet and `A` / `Shift+A` alert keys are not built (DESIGN_SYSTEM §8
+    marks them; `/design` prints the generated keyboard map meanwhile).
+
+**Results:** `npm run typecheck` green · `npm run lint` green on every file of this task (the only Prettier warnings
+are `src/sim/*` files another agent had open) · `npx vitest run src/ui` 8 files / 128 tests · e2e (production build,
+under the shared browser lock): `a11y-design` 5/5, `a11y-play.scene` 3/3, plus the specs touched by the changes —
+`design`, `hud-panels`, `persistence`, `smoke`, `hud-world`, `autopilot-run.scene`, `hud-run.scene` — 28/28 green.
+
 ## MVP acceptance report (7.4)
 
 2026-10-21, branch `ccr-f2aa8ac4-ssubfl` (after `696f296`). Every row was checked against a test that ran green on this
@@ -314,7 +398,7 @@ the behaviour is missing (defect below); IN PROGRESS = owned by an open task.
 3. **FIXED (`ui: top-bar badges name their button`) — Low — top-bar badges have no content-derived accessible name.** `src/ui/components/Badge.tsx:38–53` puts the text in an `<output>`; Chromium does not name the `<button>` from it, so the RANGE badge is announced by its tooltip (`PROPELLANT · LOX 0.52 H RESERVE`) and the alert counter has no name at all. Fix: `aria-label` = `${label} ${value}${note}` on the button, tooltip as `aria-description`. Owner: *ui-design-system*.
 4. **FIXED (`sim: DIRECTOR decision-log tag for scripted director commands (AC 33)`, 7.5b).** Decided in 7.5 (GDD §13.2.1, AC 33): new `DIRECTOR` tag. Was: **OPEN (game-designer, 7.5) — Low — director decisions logged as PLAYER.** `src/sim/systems/economy.ts:155` tags every accepted command PLAYER and the host feeds autopilot commands as ordinary inputs, so an `?autopilot=1` debrief shows the director's calls as the player's. AC 33 only knows PLAYER / AUTO / FORCED; *game-designer* to decide (a `DIRECTOR` tag, or AUTO).
 5. **FIXED (`docs: GDD auto-catch threshold is 0.70`) — Low (doc) — GDD AC 19 says `autoCatchThreshold` = 0.65**; `src/data/catch.ts` has 0.70 since balancing pass 1 (BALANCING §13.5). Update the AC text. Owner: *game-designer*.
-6. **Low — top-bar search stub not built** (GDD §10 verdict FLAG; DESIGN_SYSTEM §6.3 calls it an "MVP stub: filters the tabbed panel", and the DESIGN_SYSTEM top-bar (6.3) as-built note records it as not built). Owner: *ui-design-system*, or drop it from the MVP list.
+6. **FIXED in 8.2 (see "Phase 8 accessibility & keyboard audit") — Low — top-bar search stub not built** (GDD §10 verdict FLAG; DESIGN_SYSTEM §6.3 calls it an "MVP stub: filters the tabbed panel", and the DESIGN_SYSTEM top-bar (6.3) as-built note records it as not built). Owner: *ui-design-system*, or drop it from the MVP list.
 
 **Test notes**: `__fuelx.step` advances the host directly, so the time rules (`TimeControl.afterTick`: drops, skip arrival) only see ticks run by the loop. The autopilot spec therefore checks drops and skips with the loop running and uses `step` only while paused. A SKIP to a poll stops on the T-clock mark, one tick before `PollOpened`, so from paused the D2 drop fires on the next loop tick, not during the skip.
 

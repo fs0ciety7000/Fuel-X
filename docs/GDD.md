@@ -291,7 +291,7 @@ The MVP has no "game over". It ends every run with a **debrief**: outcome, money
 | Widget (PROMPT.md) | Decision it serves | Verdict |
 |---|---|---|
 | Top bar: breadcrumb `Org / Region / Site ▾` | site switching (expansion) | **MVP: display only** (one site; other sites greyed, `UNDER CONSTRUCTION` etc.) |
-| Top bar: global search | find an entity fast at scale | **FLAG**: low value with ~25 entities. MVP: stub that filters the tabbed panel; full search post-MVP |
+| Top bar: global search | find an entity fast at scale | **FLAG**: low value with ~25 entities. MVP: stub that filters the tabbed panel (**built in 8.2**, DESIGN_SYSTEM §6.3: `/` focuses, Esc clears); full search with results popover post-MVP |
 | Top bar: UTC clock | window timing | keep (shows sim UTC, plus the time-rate control next to it) |
 | Top bar: `Telemetry 38 ms` | none | **FLAG: ambience only**. Keep as cheap flavour, or repurpose as sim-rate readout (`SIM 10×`). Recommend repurpose |
 | Top bar: `Range GO` badge | Go/No-Go | keep: aggregate of the 5 stations, click → Range tab |
@@ -482,7 +482,7 @@ Post-MVP: CONTINUE → turnaround (refurb level choice, §4.9), rebook flow, cam
 - Crew assignment and overtime (crew is only a shift clock).
 - Ship recovery, ship anomalies, ship-catch; the ship is followed to SECO then leaves.
 - Booster selection among a fleet, refurbishment-level choice.
-- Full-text global search (stub only).
+- Full-text global search (stub only: the top-bar field filters the open tab, built in 8.2).
 - Anomalies beyond A1–A4, catastrophic failure *scheduling* (base-rate only).
 - Audio (post-MVP `audio-designer` if justified), localisation beyond i18n-ready strings.
 - Day/night cycle and weather visuals beyond haze (weather is numeric in MVP).
