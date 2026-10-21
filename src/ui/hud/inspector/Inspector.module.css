@@ -134,3 +134,74 @@
   background-image: var(--fx-pattern-hatch);
   color: var(--fx-color-ink-4);
 }
+
+/* --- compact (§3.3) ------------------------------------------------------------------------------------------
+   Same rules twice: forced by `data-compact` (/design) and by the `hud` container query (game). The grid keeps
+   2 columns and the 6 metrics picked by `compactMetricKeys` (priority.ts); the chart waits behind `▸ CHART`. */
+.disclosure {
+  display: none;
+  padding: var(--fx-space-2) var(--fx-space-3);
+  background: var(--fx-color-paper);
+}
+
+.toggle {
+  min-height: var(--fx-size-hit-min);
+  padding: var(--fx-space-0) var(--fx-space-2);
+  background: var(--fx-color-paper);
+  border: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+  color: var(--fx-color-ink);
+  font: inherit;
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-strong-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.toggle:hover {
+  background: var(--fx-color-paper-2);
+}
+
+.toggle:focus-visible {
+  outline: var(--fx-focus-ring);
+  outline-offset: var(--fx-focus-offset);
+}
+
+.inspector[data-compact] .cell[data-compact-drop],
+.inspector[data-compact] .chart:not([data-open]) {
+  display: none;
+}
+
+.inspector[data-compact] .metrics[data-trimmed] .cell {
+  grid-column: auto;
+}
+
+.inspector[data-compact] .disclosure {
+  display: block;
+}
+
+@container hud (width < 1600px) or (height < 900px) {
+  .cell[data-compact-drop],
+  .chart:not([data-open]) {
+    display: none;
+  }
+
+  .metrics[data-trimmed] .cell {
+    grid-column: auto;
+  }
+
+  .disclosure {
+    display: block;
+  }
+}
+
+/* Poll open on a short viewport (§3.3): the card shrinks to its header (name + chip) so poll and tabs keep room. */
+.inspector[data-collapsed] :is(.sub, .metrics, .section, .disclosure, .chart, .actions) {
+  display: none;
+}
+
+@container hud (height < 900px) {
+  .inspector[data-poll] :is(.sub, .metrics, .section, .disclosure, .chart, .actions) {
+    display: none;
+  }
+}

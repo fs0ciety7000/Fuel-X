@@ -95,6 +95,35 @@ export function PanelsGallery() {
         </div>
       </Section>
 
+      <Section
+        id="inspector-compact"
+        title="INSPECTOR · COMPACT"
+        refs="§3.3 · 6 metrics by class priority (alerts always kept) · ▸ CHART disclosure · poll + height < 900 → header"
+      >
+        <div className={styles.inspectorsCompact}>
+          <Specimen caption="BOOSTER · 12 → 6 · CHART CLOSED">
+            <div className={styles.compactBox}>
+              <Inspector vm={px.inspectorBooster} compact />
+            </div>
+          </Specimen>
+          <Specimen caption="SHIP · 7 → 6">
+            <div className={styles.compactBox}>
+              <Inspector vm={px.inspectorShip} compact />
+            </div>
+          </Specimen>
+          <Specimen caption="TANKER · 5 (UNCHANGED)">
+            <div className={styles.compactBox}>
+              <Inspector vm={px.inspectorTanker} compact />
+            </div>
+          </Specimen>
+          <Specimen caption="POLL OPEN · HEADER ONLY">
+            <div className={styles.compactBox}>
+              <Inspector vm={px.inspectorBooster} compact headerOnly />
+            </div>
+          </Specimen>
+        </div>
+      </Section>
+
       <Section id="tabbed" title="TABBED PANEL" refs="§6.14 · ALT 1…5 · badges ▲ danger / △ warn">
         <div className={styles.tabsRow}>
           <Specimen caption="INTERACTIVE">

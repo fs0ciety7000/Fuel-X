@@ -15,6 +15,7 @@ import {
 import type { ActionVM, InspectorVM, MetricVM } from '../../types';
 import { isPlainKey } from '../tabs/keys';
 import styles from './Inspector.module.css';
+import { compactMetricKeys } from './priority';
 
 // §6.11 inspector card for any selected entity (booster, ship, vessel, transporter, tanker, …): the metric set is
 // data-driven (projected per class), so this component has no per-class branches. Serves D3 (landing prop, engines,
@@ -28,8 +29,15 @@ export interface InspectorProps {
   onFrame?: () => void;
   /** Enabled entity action (after its confirm dialog when it has one). */
   onAction?: (a: ActionVM) => void;
-  /** Hide the chart (compact mode, §3.3). */
+  /**
+   * Force the compact rules (§3.3: 6 metrics by class priority, chart behind `▸ CHART`) outside the HUD, e.g. on
+   * `/design`. In the game the `hud` container query applies the same rules, so the container never passes it.
+   */
   compact?: boolean;
+  /** A go/no-go poll is open: below 900 px of HUD height the card collapses to its header (§3.3). */
+  pollActive?: boolean;
+  /** Force the collapsed header (name + chip) outside the HUD, e.g. on `/design`. */
+  headerOnly?: boolean;
 }
 
 /** Alert = the status chip or any metric is in danger (§6.11 "header gets danger band"). */
@@ -37,9 +45,9 @@ export function inspectorAlert(vm: InspectorVM): boolean {
   return vm.status.state === 'danger' || vm.metrics.some((m) => m.state === 'danger');
 }
 
-function MetricCell({ m }: { m: MetricVM }) {
+function MetricCell({ m, drop }: { m: MetricVM; drop: boolean }) {
   return (
-    <div className={styles.cell} data-state={m.state}>
+    <div className={styles.cell} data-state={m.state} data-compact-drop={drop || undefined}>
       <dt className={styles.label}>
         {m.state === 'warn' || m.state === 'danger' ? <Glyph id={m.state} /> : null}
         {m.label}
@@ -51,9 +59,21 @@ function MetricCell({ m }: { m: MetricVM }) {
   );
 }
 
-export function Inspector({ vm, onFollow, onFrame, onAction, compact = false }: InspectorProps) {
+export function Inspector({
+  vm,
+  onFollow,
+  onFrame,
+  onAction,
+  compact = false,
+  pollActive = false,
+  headerOnly = false,
+}: InspectorProps) {
   const headId = useId();
+  const chartId = useId();
   const [confirm, setConfirm] = useState<ActionVM | null>(null);
+  const [chartOpen, setChartOpen] = useState(false);
+  const keep = compactMetricKeys(vm);
+  const trimmed = keep.size < vm.metrics.length;
   const alert = !vm.lost && inspectorAlert(vm);
   const state = vm.lost ? 'disabled' : alert ? 'danger' : 'neutral';
   const run = (a: ActionVM): void => {
@@ -67,6 +87,9 @@ export function Inspector({ vm, onFollow, onFrame, onAction, compact = false }: 
       aria-labelledby={headId}
       data-state={state}
       data-kind={vm.kind}
+      data-compact={compact || undefined}
+      data-poll={pollActive || undefined}
+      data-collapsed={headerOnly || undefined}
       data-testid="inspector"
     >
       <header className={styles.head}>
@@ -92,9 +115,9 @@ export function Inspector({ vm, onFollow, onFrame, onAction, compact = false }: 
         />
       </header>
       {vm.metrics.length ? (
-        <dl className={styles.metrics} aria-label={`${vm.callSign} metrics`}>
+        <dl className={styles.metrics} aria-label={`${vm.callSign} metrics`} data-trimmed={trimmed || undefined}>
           {vm.metrics.map((m) => (
-            <MetricCell key={m.key} m={m} />
+            <MetricCell key={m.key} m={m} drop={!keep.has(m.key)} />
           ))}
         </dl>
       ) : null}
@@ -103,8 +126,21 @@ export function Inspector({ vm, onFollow, onFrame, onAction, compact = false }: 
           <LinearProgress p={vm.progress} />
         </div>
       ) : null}
-      {vm.chart && !compact ? (
-        <figure className={styles.chart}>
+      {vm.chart ? (
+        <div className={styles.disclosure}>
+          <button
+            type="button"
+            className={styles.toggle}
+            aria-expanded={chartOpen}
+            aria-controls={chartId}
+            onClick={() => setChartOpen((o) => !o)}
+          >
+            {chartOpen ? '▾' : '▸'} CHART
+          </button>
+        </div>
+      ) : null}
+      {vm.chart ? (
+        <figure id={chartId} className={styles.chart} data-open={chartOpen || undefined}>
           <figcaption className={styles.label}>{vm.chart.label}</figcaption>
           <Sparkline series={vm.chart.series} label={`${vm.chart.label}, last ${vm.chart.series.length} samples`} />
         </figure>
@@ -171,6 +207,15 @@ export function sendAction(a: ActionVM): void {
 /** Store-connected inspector for the HUD `right` slot. Hidden without a selection; `F` toggles follow. */
 export function InspectorContainer({ compact = false }: { compact?: boolean }) {
   const vm = useStore(projectionStore, (p) => p.inspector);
+  // Same condition that opens the poll panel (§6.24): a POLL decision or a hold, while the countdown has actions.
+  const pollActive = useStore(
+    projectionStore,
+    (p) =>
+      p.countdown !== null &&
+      (p.countdown.actions?.length ?? 0) > 0 &&
+      p.range.stations.length > 0 &&
+      (p.decision?.kind === 'POLL' || p.clock.holding),
+  );
   const id = vm?.id ?? null;
   const following = vm?.following ?? false;
   const lost = vm?.lost ?? false;
@@ -189,6 +234,7 @@ export function InspectorContainer({ compact = false }: { compact?: boolean }) {
     <Inspector
       vm={vm}
       compact={compact}
+      pollActive={pollActive}
       onFollow={(next) => view.follow(next)}
       onFrame={() => view.camera({ kind: 'frame' })}
       onAction={sendAction}

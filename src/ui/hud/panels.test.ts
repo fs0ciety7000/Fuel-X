@@ -31,6 +31,7 @@ import {
 } from './events';
 import { FlightCard } from './flight';
 import { Inspector, inspectorAlert } from './inspector';
+import { COMPACT_METRICS, COMPACT_PRIORITY, compactMetricKeys } from './inspector/priority';
 import { TAB_ORDER, TabbedPanel, isTyping, tabCount, tabDefs, tabForKey } from './tabs';
 
 const html = (el: ReturnType<typeof h>): string => renderToStaticMarkup(el);
@@ -206,6 +207,91 @@ describe('inspector', () => {
     const out = html(h(Inspector, { vm: px.inspectorBooster }));
     expect(out).toContain('DIVERT…');
     expect(out).toContain('IN FLIGHT');
+  });
+});
+
+describe('inspector compact (§3.3)', () => {
+  const dropped = (out: string): string[] =>
+    [
+      ...out.matchAll(
+        /<div class="[^"]*" data-state="[^"]*" data-compact-drop="true"><dt[^>]*>(?:<svg.*?<\/svg>)?([^<]+)</g,
+      ),
+    ].map((x) => x[1] ?? '');
+
+  it('keeps 6 booster metrics: alerts first, then the D3 priority, in projection order', () => {
+    expect(px.inspectorBooster.metrics).toHaveLength(12);
+    const keep = compactMetricKeys(px.inspectorBooster);
+    expect(keep.size).toBe(COMPACT_METRICS);
+    expect(px.inspectorBooster.metrics.filter((x) => keep.has(x.key)).map((x) => x.key)).toEqual([
+      'altitude',
+      'velocity',
+      'engines',
+      'landingProp',
+      'towerWind',
+      'catchP',
+    ]);
+  });
+
+  it('never drops a warn/danger metric, even one at the bottom of the priority list', () => {
+    const vm = {
+      kind: 'booster',
+      metrics: px.inspectorBooster.metrics.map((x) =>
+        x.key === 'wear' ? { ...x, state: 'danger' as const } : { ...x, state: 'neutral' as const },
+      ),
+    };
+    const keep = compactMetricKeys(vm);
+    expect(keep.has('wear')).toBe(true);
+    expect(keep.has('velocity')).toBe(false);
+  });
+
+  it('leaves sets of 6 or fewer untouched and falls back to projection order for unknown classes', () => {
+    expect([...compactMetricKeys(px.inspectorTanker)]).toEqual(px.inspectorTanker.metrics.map((x) => x.key));
+    const odd = {
+      kind: 'building',
+      metrics: Array.from({ length: 8 }, (_, i) => ({
+        ...fx.metrics.engines,
+        state: 'neutral' as const,
+        key: `k${i}`,
+      })),
+    };
+    expect([...compactMetricKeys(odd)]).toEqual(['k0', 'k1', 'k2', 'k3', 'k4', 'k5']);
+  });
+
+  it('priority lists have no duplicate keys; the ship drops its mission clock first', () => {
+    for (const [kind, keys] of Object.entries(COMPACT_PRIORITY)) expect(new Set(keys).size, kind).toBe(keys.length);
+    const ship = compactMetricKeys(px.inspectorShip);
+    expect(ship.has('clock')).toBe(false);
+    expect(ship.size).toBe(6);
+  });
+
+  it('marks dropped cells and the trimmed grid; renders every cell so standard width shows them all', () => {
+    const out = html(h(Inspector, { vm: px.inspectorBooster }));
+    expect(out.match(/<dt/g)).toHaveLength(12);
+    expect(out).toContain('data-trimmed="true"');
+    expect(dropped(out)).toEqual(['MISSION CLOCK', 'PROPELLANT', 'HEADING', 'DOWNRANGE', 'CATCH ARMS', 'WEAR']);
+    const tanker = html(h(Inspector, { vm: px.inspectorTanker }));
+    expect(tanker).not.toContain('data-compact-drop');
+    expect(tanker).not.toContain('data-trimmed');
+  });
+
+  it('puts the chart behind a ▸ CHART disclosure button wired with aria-expanded / aria-controls', () => {
+    const out = html(h(Inspector, { vm: px.inspectorBooster, compact: true }));
+    expect(out).toContain('data-compact="true"');
+    const btn = out.match(
+      /<button type="button" class="[^"]*" aria-expanded="false" aria-controls="([^"]+)">▸ CHART<\/button>/,
+    );
+    expect(btn).not.toBeNull();
+    expect(out).toContain(`<figure id="${btn?.[1] ?? ''}"`);
+    expect(out).not.toMatch(/<figure[^>]*data-open/);
+    expect(html(h(Inspector, { vm: px.inspectorVessel, compact: true }))).not.toContain('CHART');
+  });
+
+  it('flags the poll-open collapse and the forced header-only state', () => {
+    expect(html(h(Inspector, { vm: px.inspectorShip, pollActive: true }))).toContain('data-poll="true"');
+    const head = html(h(Inspector, { vm: px.inspectorShip, headerOnly: true }));
+    expect(head).toContain('data-collapsed="true"');
+    expect(head).toContain('S-21');
+    expect(html(h(Inspector, { vm: px.inspectorShip }))).not.toMatch(/data-(poll|collapsed)=/);
   });
 });
 

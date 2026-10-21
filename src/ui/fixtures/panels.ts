@@ -76,11 +76,26 @@ export const flightCardFlown: FlightCardVM = {
 
 // --- Inspector --------------------------------------------------------------------------------------
 
+/** The projector's full booster set (12 metrics, `project-entities.ts` keys): compact keeps 6 (§3.3). */
 export const inspectorBooster: InspectorVM = {
   ...base.inspector,
   kind: 'booster',
   className: 'BULWARK',
   selected: true,
+  metrics: [
+    m('clock', 'MISSION CLOCK', 'T+00:01:45', 105),
+    m('altitude', 'ALTITUDE', '38.6', 38600, 'KM'),
+    m('velocity', 'VELOCITY', '5 410', 1503, 'KM/H'),
+    m('prop', 'PROPELLANT', '11.8', 0.118, '%'),
+    { ...base.metrics.engines, key: 'engines' },
+    m('heading', 'HEADING', '088', 1.54, '°'),
+    m('downrange', 'DOWNRANGE', '41.2', 41200, 'KM'),
+    m('arms', 'CATCH ARMS', 'OPEN', null),
+    m('landingProp', 'LANDING PROP', '212', 212000, 'T'),
+    m('towerWind', 'TOWER WIND', '9.4', 9.4, 'M/S'),
+    m('catchP', 'CATCH P', '0.61', 0.61, undefined, 'warn'),
+    m('wear', 'WEAR', '18', 0.18, '%'),
+  ],
   actions: [
     {
       id: 'DIVERT',
@@ -123,6 +138,7 @@ export const inspectorShip: InspectorVM = {
     m('prop', 'PROPELLANT', '41.2', 0.412, '%'),
     m('engines', 'ENGINES LIT', '6 OF 6', 6),
     m('heading', 'HEADING', '092', 1.6, '°'),
+    m('downrange', 'DOWNRANGE', '118', 118000, 'KM'),
   ],
   progress: { label: 'FLIGHT TO SECO', value: val('38.4', 0.384, '%', { width: 5 }), fraction: 0.384, tone: 'ink' },
   chart: { label: 'ALTITUDE · KM', series: ramp(40, 0, 71.8), unit: 'KM' },
