@@ -28,6 +28,12 @@ export function startRoute(e: Mobile, pathId: Lc1PathId, speedMPerS: number): vo
   place(e, e.route);
 }
 
+/** Puts `e` on `pathId` as if it had already covered `movedTicks` of it (a mid-path start, e.g. a turn-back). */
+export function startRouteAt(e: Mobile, pathId: Lc1PathId, speedMPerS: number, movedTicks: number): void {
+  e.route = { pathId, movedTicks: Math.max(0, Math.min(movedTicks, routeTicks(pathId, speedMPerS))), speedMPerS };
+  place(e, e.route);
+}
+
 /** Moves one tick; true once the end of the path is reached (stays there). */
 export function advanceRoute(e: Mobile): boolean {
   const r = e.route;

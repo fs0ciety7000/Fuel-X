@@ -20,7 +20,7 @@ import { seedAllStreams } from './rng';
 import type { RngState, RngStream } from './rng';
 
 /** Bumped on any World shape change; migrations live in src/sim/save (3.10). */
-export const WORLD_SCHEMA = 5;
+export const WORLD_SCHEMA = 6;
 
 /** Mean ground wind direction (meteorological, from), rad. */
 export const WIND_FROM_MEAN_RAD = (wx.groundWind.fromDeg * Math.PI) / 180;

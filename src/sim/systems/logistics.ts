@@ -46,6 +46,22 @@ export function roadShouldBeClosed(world: World): boolean {
   return false;
 }
 
+/**
+ * Lower bound on the ticks until the road closes (0 when it should be closed now): the T-clock gains at most one tick
+ * per tick, so the closure cannot come before T-00:40:00 − T on any open LC-1 countdown. `Infinity` when no countdown
+ * is heading for it (none, or none pre-liftoff — e.g. scrubbed or in Debrief).
+ */
+export function ticksToRoadClosure(world: World): number {
+  if (roadShouldBeClosed(world)) return 0;
+  let best = Infinity;
+  for (const id of countdownIds(world)) {
+    const cd = world.countdowns[id];
+    if (!cd || cd.siteId !== lc1Layout.siteId || !isPreLiftoff(cd.phase.state)) continue;
+    best = Math.min(best, ROAD_CLOSURE_TICKS - cd.tClockTicks);
+  }
+  return best;
+}
+
 function updateRoad(world: World): void {
   const closed = roadShouldBeClosed(world);
   if (closed === world.logistics.roadClosed) return;

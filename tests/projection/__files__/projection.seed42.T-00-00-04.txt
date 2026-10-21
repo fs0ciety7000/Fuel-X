@@ -1173,8 +1173,8 @@
     "kind": "transporter",
     "glyph": "idle",
     "name": "SP-42",
-    "sub": "TRANSPORTER · IDLE",
-    "status": "IDLE",
+    "sub": "TRANSPORTER · AMBIENT · IN YARD",
+    "status": "AMBIENT · IN YARD",
     "keyValue": {
      "text": "0",
      "unit": "KM/H",
@@ -3896,8 +3896,8 @@
    "kind": "transporter",
    "glyph": "idle",
    "state": "neutral",
-   "statusLabel": "IDLE",
-   "ariaLabel": "SP-42, TRANSPORTER, IDLE",
+   "statusLabel": "AMBIENT · IN YARD",
+   "ariaLabel": "SP-42, TRANSPORTER, AMBIENT · IN YARD",
    "selected": false,
    "following": false,
    "priority": 1

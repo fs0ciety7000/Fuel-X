@@ -150,6 +150,8 @@ export type CraneState = 'IDLE' | 'LIFTING';
 export type BoatState =
   'DOCKED' | 'PATROL' | 'INTERCEPT' | 'ESCORT' | 'RETURNING' | 'ON_STATION' | 'IN_AREA' | 'INTERCEPTED' | 'LEAVING';
 export type BoatRole = 'picket' | 'recovery' | 'intruder';
+/** `prep`: rollout / stack transporter (SP-41). `ambient`: background duty loop, no tasks, no economy (SP-42, 7.3). */
+export type TransporterRole = 'prep' | 'ambient';
 export type VanState = 'PARKED' | 'TO_PAD' | 'AT_PAD' | 'TO_SAFE';
 
 /** Straight-line move at constant speed; arrival exactly `totalTicks` after the start. */
@@ -291,6 +293,7 @@ export interface PadFields {
   boosterId: Id | null;
 }
 export interface TransporterFields {
+  role: TransporterRole;
   fsm: FsmState<TransporterState>;
   cargo: Id | null;
   route: RouteState | null;

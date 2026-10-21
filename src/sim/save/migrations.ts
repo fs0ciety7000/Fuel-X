@@ -8,6 +8,8 @@
 //                (fixture `schema-3.json`, saved in flight at T+40 s).
 //   4 → 5 (6.8): A3 leak decision deadline `anomalies[cd].leak.deadlineTick` (fixture `schema-4.json`: seed 42,
 //                standard autopilot without a leak answer, saved at tick 533 000 with the A3 leak open, unanswered).
+//   5 → 6 (7.3): transporter `role` ('prep' | 'ambient', SP-42's duty loop) (fixture `schema-5.json`: seed 42, standard
+//                autopilot, saved at tick 540 000 under the A3 LEAK_FIX hold, SP-42 IDLE in its bay).
 import { anomalies as an, flightProfile as fp, lc1Layout, siteGeometry as geo, tower as td } from '@data/index';
 import { seedStream } from '../core/rng';
 import { secondsToTicks } from '../core/time';
@@ -135,11 +137,25 @@ function addLeakDeadline(world: RawWorld): RawWorld {
   return world;
 }
 
+/**
+ * Schema 5 → 6: every transporter gets its `role` from the layout (`lc1Layout.ambientDuty` call-signs → 'ambient',
+ * others 'prep'). A schema-5 SP-42 was always IDLE in its bay with no route, so it simply starts its duty loop on the
+ * next tick (or stays parked if the road is closed).
+ */
+function addTransporterRole(world: RawWorld): RawWorld {
+  for (const e of Object.values(obj(obj(world.entities).byId)).map(obj)) {
+    if (e.kind !== 'transporter') continue;
+    e.role = lc1Layout.ambientDuty[String(e.callSign)] ? 'ambient' : 'prep';
+  }
+  return world;
+}
+
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   1: addTowerMechanisms,
   2: addMountHeightsAndAttitude,
   3: addWindDirectionAndThrottle,
   4: addLeakDeadline,
+  5: addTransporterRole,
 };
 
 /**

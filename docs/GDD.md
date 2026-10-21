@@ -195,7 +195,7 @@ See §6.
 | **OLM-1** launch mount | holds the stack, quick-disconnects. Part of LC-1. | inspect | load |
 | **Tank farm** (`LOX-1..3`, `CH4-1..2`, `LN2-1`) | inventory, boil-off. LN2 = purge/chill, ambient in MVP (static level). | inspect, order delivery | propellant margin |
 | **RIME / FEN tankers** (`LX-`, `MX-`) | `OFFMAP → INBOUND → GATE_WAIT → OFFLOADING → OUTBOUND`. | follow, see ETA | propellant margin |
-| **MULE transporter** (`SP-`) | carries a stage yard ↔ pad at walking pace. | follow | rollout |
+| **MULE transporter** (`SP-`) | carries a stage yard ↔ pad at walking pace. MVP: SP-41 does the rollout; SP-42 is **ambient** — it shuttles yard ↔ tank-farm apron (no cargo, no cost, no player control) until road closure, parks in its yard bay through terminal count / flight / safing, and resumes afterwards. | follow | rollout; SP-42: background traffic (AC 26) |
 | **DERRICK crane** (`CR-`) | yard lifts (stage onto the transporter). Busy/idle. | inspect | rollout prerequisite |
 | **Crew vans** (`CV-`) | drive crews to/from the pad. Must be out of the hazard radius for terminal count. | follow | PAD/CREW station |
 | **PICKET boats** (`PK-`) | patrol the maritime hazard area. Dispatched (automatically) to intercept an intruder. | follow, inspect | RANGE station |
@@ -459,7 +459,7 @@ Post-MVP: CONTINUE → turnaround (refurb level choice, §4.9), rebook flow, cam
 23. Time rates PAUSE/1×/10×/100×/skip work. The effective rate is **capped** at 1× from T-00:03:00 until catch/divert + 30 s (and at the phase caps of §6). The requested rate is **dropped** once to 1× when a blocking decision (D2, D3, D3b) opens, a station turns NO-GO, or the last non-GO station turns GO during a hold; after a drop the player can raise the rate again up to the cap. D1 never changes the rate. The game never auto-increases the requested rate (test: scripted input sequence, assert requested/effective rate per tick).
 24. All HUD panels are live off the sim projection: top bar (clock, Range badge, alerts, rate), flight card, inspector (for any selected entity), tabbed panel (all 5 tabs populated), countdown timeline (phases, playhead, hold, window markers), labels, altitude scale during flight, map controls.
 25. Clicking a list row or a label selects the entity, turns its label orange and makes the camera follow it. During flight the camera auto-follows the booster unless the player has selected something else.
-26. Background logistics are visible during the whole run: at least one tanker or transporter is moving at all times outside T-00:40:00 → safing end, and PICKET boats patrol during the count.
+26. Background logistics are visible during the whole run: at least one tanker or transporter is moving at all times outside T-00:40:00 → safing end, and PICKET boats patrol during the count. *(Sim note 7.3: carried by the ambient SP-42 duty loop. Exception: a transporter wind hold (AC 6) stops every SP-, so with no tanker on the road the site may be still while the gust is above the limit. Test: `tests/sim/ac26-background.test.ts`, every tick, standard autopilot and no input.)*
 27. Each widget in §10 marked keep/add is present and none of the cut ones are. Every decision in §13.2 is reachable from the HUD without the console.
 
 **Decision rules (§13.2.1–13.2.3)**

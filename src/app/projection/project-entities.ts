@@ -14,7 +14,7 @@ import type {
   ValueVM,
 } from '@bridge/projection-types';
 import { DIVERT_PROFILE, DT_S, pathLengthM } from '@sim/index';
-import { classNames, flightProfile as fp, mvpFlight, propellant as pd } from '@data/index';
+import { classNames, flightProfile as fp, lc1Layout, mvpFlight, propellant as pd } from '@data/index';
 import type { Entity, EntityOf, Id, Kind, RouteState } from '@sim/types';
 import type { Ctx } from './context';
 import { entitiesOf, entity, tClockAt } from './context';
@@ -22,7 +22,7 @@ import { action } from './project-decision';
 import type { StatusVM } from './labels';
 import type { StationVM } from '@bridge/projection-types';
 import { degrees, dv, km, kmh, metres, missing, mps, num, ofTotal, pct, prob, tClock, tonnes, words } from './format';
-import { FLUID_LABEL, PHASE_LABEL, entityStatus, kindLabel } from './labels';
+import { FLUID_LABEL, PHASE_LABEL, entityStatus, isAmbient, kindLabel } from './labels';
 
 type Booster = EntityOf<'booster'>;
 type Ship = EntityOf<'ship'>;
@@ -212,13 +212,19 @@ function inspectorBody(c: Ctx, e: Entity, decisionActions: ActionVM[]): Inspecto
     }
     case 'transporter': {
       const cargo = entity(c, e.cargo);
-      base.sub = `${kindLabel(e)} · ${classNames.transporter}`;
+      const ambient = isAmbient(e);
+      base.sub = `${kindLabel(e)} · ${classNames.transporter}${ambient ? ' · AMBIENT' : ''}`;
       base.metrics = [metric('speed', 'SPEED', kmh(speed)), metric('cargo', 'CARGO', text(cargo?.callSign ?? 'EMPTY'))];
-      if (e.route && (e.fsm.state === 'MOVING' || e.fsm.state === 'RETURNING' || e.fsm.state === 'WIND_HOLD'))
-        base.progress = progress(
-          e.fsm.state === 'RETURNING' ? 'RETURN TO YARD' : 'ROLLOUT TO OLM-1',
-          routeFraction(e.route),
-        );
+      if (e.route && (e.fsm.state === 'MOVING' || e.fsm.state === 'RETURNING' || e.fsm.state === 'WIND_HOLD')) {
+        const label = ambient
+          ? e.route.pathId === lc1Layout.ambientDuty[e.callSign]?.out
+            ? 'TO TANK FARM'
+            : 'RETURN TO YARD'
+          : e.fsm.state === 'RETURNING'
+            ? 'RETURN TO YARD'
+            : 'ROLLOUT TO OLM-1';
+        base.progress = progress(label, routeFraction(e.route));
+      }
       return base;
     }
     case 'crane': {

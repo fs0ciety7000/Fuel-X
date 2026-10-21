@@ -21,6 +21,7 @@ import fixture from '../fixtures/saves/schema-1.json?raw';
 import fixture2 from '../fixtures/saves/schema-2.json?raw';
 import fixture3 from '../fixtures/saves/schema-3.json?raw';
 import fixture4 from '../fixtures/saves/schema-4.json?raw';
+import fixture5 from '../fixtures/saves/schema-5.json?raw';
 
 const META = { game: '0.1.0', createdAt: '2026-10-18T12:00:00.000Z' };
 
@@ -199,5 +200,33 @@ describe('fixture tests/fixtures/saves/schema-4.json (frozen, A3 leak open and u
     );
     expect(events).toEqual(['541231 DEGRADED AUTO']);
     expect(w.decisions.cd01?.at(-1)).toMatchObject({ kind: 'LeakResponse', detail: 'DEGRADED', by: 'AUTO' });
+  });
+});
+
+describe('fixture tests/fixtures/saves/schema-5.json (frozen, A3 LEAK_FIX hold, SP-42 idle)', () => {
+  it('5 → 6 adds the transporter role (SP-41 prep, SP-42 ambient); SP-42 then starts its duty loop', () => {
+    type RawEnt = { kind: string; callSign: string; role?: string; fsm: { state: string } };
+    const old = JSON.parse(fixture5) as { world: { entities: { byId: Record<string, RawEnt> } } };
+    const oldSp = Object.values(old.world.entities.byId).filter((e) => e.kind === 'transporter');
+    expect(oldSp.map((e) => [e.callSign, e.role, e.fsm.state])).toEqual([
+      ['SP-41', undefined, 'IDLE'],
+      ['SP-42', undefined, 'IDLE'],
+    ]);
+    const loaded = loadSave(fixture5);
+    expect(loaded.fromSchema).toBe(5);
+    expect(loaded.world.schema).toBe(WORLD_SCHEMA);
+    const w = loaded.world;
+    expect(w.tick).toBe(540_000);
+    const sps = Object.values(w.entities.byId).filter((e) => e.kind === 'transporter');
+    expect(sps.map((e) => [e.callSign, e.role])).toEqual([
+      ['SP-41', 'prep'],
+      ['SP-42', 'ambient'],
+    ]);
+    const cd = w.countdowns.cd01;
+    if (!cd) throw new Error('no countdown');
+    drive({ world: w, countdown: cd, ids: {} }, { maxTicks: 100 });
+    const sp42 = sps[1];
+    expect(sp42?.kind === 'transporter' && sp42.fsm.state).toBe('MOVING');
+    expect(w.tick).toBe(540_100);
   });
 });

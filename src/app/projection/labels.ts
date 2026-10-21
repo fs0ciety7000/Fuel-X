@@ -271,10 +271,25 @@ export function entityStateCode(e: Entity): string {
   }
 }
 
+/** Ambient transporter duty (SP-42, 7.3): its states read as the yard ⇄ tank-farm loop, prefixed `AMBIENT · `. */
+const AMBIENT_TRANSPORTER_WORDS: Record<string, string> = {
+  IDLE: 'IN YARD',
+  MOVING: 'TO FARM',
+  AT_PAD: 'AT FARM',
+  RETURNING: 'TO YARD',
+  WIND_HOLD: 'WIND HOLD',
+};
+
+/** Background vehicle (no tasks, not the player's): SP-42's duty loop. */
+export const isAmbient = (e: Entity): boolean => e.kind === 'transporter' && e.role === 'ambient';
+
 export function entityStatus(e: Entity): StatusVM {
   const code = entityStateCode(e);
   const style = STATE_STYLE[e.kind]?.[code] ?? (code === 'OCCUPIED' ? (['stacked', 'ok'] as S) : IDLE);
-  return { code, label: STATE_WORDS[code] ?? words(code), glyph: style[0], severity: style[1] };
+  const label = isAmbient(e)
+    ? `AMBIENT · ${AMBIENT_TRANSPORTER_WORDS[code] ?? words(code)}`
+    : (STATE_WORDS[code] ?? words(code));
+  return { code, label, glyph: style[0], severity: style[1] };
 }
 
 export function kindLabel(e: Entity): string {

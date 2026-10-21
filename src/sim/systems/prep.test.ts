@@ -100,7 +100,11 @@ describe('prep FSM tables', () => {
       ['MOVING', 'arrived', 'AT_PAD'],
       ['AT_PAD', 'unloaded', 'RETURNING'],
       ['RETURNING', 'home', 'IDLE'],
+      ['IDLE', 'depart', 'MOVING'],
+      ['MOVING', 'turnBack', 'RETURNING'],
       ['IDLE', 'arrived', null],
+      ['RETURNING', 'turnBack', null],
+      ['AT_PAD', 'depart', null],
       ['AT_PAD', 'windHigh', null],
     ]);
   });

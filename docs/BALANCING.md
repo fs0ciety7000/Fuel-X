@@ -72,6 +72,8 @@
 | hazard.padRadius (road keep-out) | m | 3 000 | 1 500–5 000 | game-scale, shorter than reality, so it fits the map |
 | transporter.speedLoaded (MULE `SP`) | m/s | 1.0 (3.6 km/h) | 0.5–1.5 | SPMT walking pace |
 | transporter.speedEmpty | m/s | 2.0 | 1.5–3 | |
+| ambientTransporter.dwellYard (SP-42) | s | 240 | 0–600 | ambient duty yard bay ⇄ tank-farm apron (1 220 m, `speedEmpty` both ways); a dwell is only taken while another tanker / transporter moves (AC 26) |
+| ambientTransporter.dwellFarm (SP-42) | s | 300 | 0–600 | |
 | route.yardToPad | m | 1 800 | 1 000–3 000 | small on-site yard (BY-1 is 6 000 m, post-MVP) |
 | crane.loadTask (CR-77 lifts a stage onto SP) | s | 1 800 | 900–3 600 | |
 | tower.stackBooster | s | 5 400 | 3 600–10 800 | arms lift + mate |
@@ -292,6 +294,7 @@ Numbers the sim needed that this document did not specify. Each lives in `src/da
 | `vehicles.healthLossPerWear` | 0.5 | VEHICLE health = 1 − 0.5·wear (B-09 = 0.89, GO) |
 | `logistics.windLimit.resumeMarginMPerS` | 0.5 | a wind-paused stack / transporter resumes 0.5 m/s under the limit |
 | `anomalies.director.windowCloseLeadS` | 1 800 | director fallback also 30 min before the window closes (count frozen at a poll) |
+| `logistics.ambientTransporter.dwellYardS / dwellFarmS` (7.3) | 240 / 300 | SP-42 ambient duty dwells (game feel; cut short when nothing else moves, so AC 26 holds) |
 
 **Review status (balancing pass 1, §13)**: all additions above are **accepted as is**, except
 `weather.groundWind.towerFactor` (kept at 1.3, now paired with a tower-wind `sigmaWindRefMPerS`) and

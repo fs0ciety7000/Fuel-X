@@ -13,6 +13,7 @@ import {
   commandStartRollout,
   countdownSystem,
 } from './systems/countdown';
+import { ambientSystem } from './systems/ambient';
 import { anomaliesSystem, commandLeakResponse } from './systems/anomalies';
 import { economySystem, pendingDecision, recordCommand } from './systems/economy';
 import { environmentSystem } from './systems/environment';
@@ -78,6 +79,7 @@ function bookkeepingSystem(world: World): void {
  *  4 countdown     — T-clock, polls, holds, phase transitions (reads `countdown.inputs`)
  *  5 prep          — CR-77 / SP-41 / TOWER-1 rollout + stacking, wind pauses (writes rollout/stackComplete)
  *  6 logistics     — road closure, tanker orders/routes/gate/offload (fills the farm)
+ *  6b ambient      — SP-42 ambient duty yard ⇄ tank farm, parked through the road closure (7.3, AC 26)
  *  7 propellant    — farm boil-off, vehicle load + topping, scrub detank (writes loadComplete/detankComplete)
  *  8 flight        — scripted ascent/boostback/landing, S-21 to SECO, catch model, decision, outcome
  *                    (writes stageSeparated / recoveryMode / recoveryComplete)
@@ -93,6 +95,7 @@ export const SYSTEMS: readonly SimSystem[] = [
   { name: 'countdown', run: countdownSystem },
   { name: 'prep', run: prepSystem },
   { name: 'logistics', run: logisticsSystem },
+  { name: 'ambient', run: ambientSystem },
   { name: 'propellant', run: propellantSystem },
   { name: 'flight', run: flightSystem },
   { name: 'tower', run: towerSystem },

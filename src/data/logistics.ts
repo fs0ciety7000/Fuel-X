@@ -24,6 +24,17 @@ export const logistics = {
     speedLoadedMPerS: 1.0,
     speedEmptyMPerS: 2.0,
   },
+  /**
+   * Sim addition 7.3 (AC 26): ambient MULE duty (SP-42) — yard bay ⇄ tank-farm apron at `transporter.speedEmptyMPerS`,
+   * from scenario start until road closure, parked through the closure, resumes after Safing. Game-feel values: a dwell is
+   * only taken while another tanker / transporter is moving, so the site never goes still (cut short otherwise).
+   */
+  ambientTransporter: {
+    /** Dwell at the yard bay between trips, s. */
+    dwellYardS: 240,
+    /** Dwell at the tank-farm apron, s. */
+    dwellFarmS: 300,
+  },
   /** Yard → OLM-1 route length, m. The LC-1 layout path `sp.yardToOlm1` must match it (tested). */
   routeYardToPadM: 1_800,
   /** CR-77 lifts a stage onto the transporter, s. */

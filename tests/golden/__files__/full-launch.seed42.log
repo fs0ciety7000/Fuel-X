@@ -8,6 +8,7 @@
      0 T-06:00:00 StationChanged station=PROPELLANT status=MARGINAL driver=FARM_RESERVE_LOX
      0 T-06:00:00 EntityStateChanged id=CR-77 kind=crane from=IDLE to=LIFTING
      0 T-06:00:00 EntityStateChanged id=SP-41 kind=transporter from=IDLE to=LOADING
+     0 T-06:00:00 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
      0 T-06:00:00 LedgerPosted item=HAULAGE_FEE amountCr=-6000 reputationDelta=0 moneyCr=29994000 reputation=50
      0 T-06:00:00 LedgerPosted item=HAULAGE_FEE amountCr=-6000 reputationDelta=0 moneyCr=29988000 reputation=50
      0 T-06:00:00 LedgerPosted item=HAULAGE_FEE amountCr=-6000 reputationDelta=0 moneyCr=29982000 reputation=50
@@ -15,19 +16,29 @@
      1 T-06:00:00 TLM Rollout/Counting wind=8.66/10.83/11.26 upper=23.55 stations=GGMGG farm=4028000/1110000 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
   9001 T-05:55:00 TLM Rollout/Counting wind=9.16/11.45/11.91 upper=25.91 stations=GGMGG farm=4027971/1109996 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
  18001 T-05:50:00 TLM Rollout/Counting wind=7.05/8.81/9.16 upper=23.46 stations=GGMGG farm=4027942/1109992 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 18300 T-05:49:50 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+ 18300 T-05:49:50 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
  27001 T-05:45:00 TLM Rollout/Counting wind=6.66/8.32/8.65 upper=21.70 stations=GGMGG farm=4027913/1109988 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
  36001 T-05:40:00 TLM Rollout/Counting wind=7.39/9.24/9.61 upper=27.43 stations=GGMGG farm=4027884/1109983 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 36600 T-05:39:40 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+ 36600 T-05:39:40 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
  45001 T-05:35:00 TLM Rollout/Counting wind=7.95/9.93/10.33 upper=29.74 stations=GGMGG farm=4027855/1109979 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
  54000 T-05:30:00 EntityStateChanged id=CR-77 kind=crane from=LIFTING to=IDLE
  54000 T-05:30:00 EntityStateChanged id=B-09 kind=booster from=IN_YARD to=ON_TRANSPORTER
  54000 T-05:30:00 EntityStateChanged id=SP-41 kind=transporter from=LOADING to=MOVING
  54001 T-05:30:00 TLM Rollout/Counting wind=7.86/9.82/10.21 upper=29.68 stations=GGMGG farm=4027827/1109975 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 54900 T-05:29:30 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
  63001 T-05:25:00 TLM Rollout/Counting wind=8.26/10.32/10.73 upper=23.63 stations=GGMGG farm=4027798/1109971 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 63900 T-05:24:30 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
  72001 T-05:20:00 TLM Rollout/Counting wind=9.88/12.35/12.84 upper=31.35 stations=GGMGG farm=4027769/1109967 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
  81001 T-05:15:00 TLM Rollout/Counting wind=6.90/8.62/8.96 upper=25.23 stations=GGMGG farm=4027740/1109963 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 82200 T-05:14:20 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+ 89400 T-05:10:20 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
  90001 T-05:10:00 TLM Rollout/Counting wind=7.69/9.61/10.00 upper=31.35 stations=GGMGG farm=4027711/1109958 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
  99001 T-05:05:00 TLM Rollout/Counting wind=8.44/10.55/10.97 upper=26.60 stations=GGMGG farm=4027682/1109954 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+107700 T-05:00:10 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
 108000 T-05:00:00 EntityStateChanged id=SP-41 kind=transporter from=MOVING to=AT_PAD
+108000 T-05:00:00 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 108001 T-05:00:00 TLM Rollout/Counting wind=7.96/9.94/10.34 upper=24.53 stations=GGMGG farm=4027653/1109950 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 108001 T-05:00:00 PhaseChanged from=Rollout to=Stack trigger=auto
 108001 T-05:00:00 EntityStateChanged id=TOWER-1 kind=tower from=IDLE to=STACKING
@@ -36,27 +47,41 @@
 108001 T-05:00:00 EntityStateChanged id=SP-41 kind=transporter from=AT_PAD to=RETURNING
 117001 T-04:55:00 TLM Stack/Counting wind=6.77/8.47/8.81 upper=22.53 stations=GGMGG farm=4027624/1109946 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 126001 T-04:50:00 TLM Stack/Counting wind=7.23/9.04/9.40 upper=22.85 stations=GGMGG farm=4027595/1109942 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+126300 T-04:49:50 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+133500 T-04:45:50 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 135001 T-04:45:00 TLM Stack/Counting wind=6.74/8.43/8.77 upper=23.20 stations=GGMGG farm=4027566/1109938 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 135001 T-04:45:00 EntityStateChanged id=SP-41 kind=transporter from=RETURNING to=IDLE
 135001 T-04:45:00 EntityStateChanged id=CR-77 kind=crane from=IDLE to=LIFTING
 135001 T-04:45:00 EntityStateChanged id=SP-41 kind=transporter from=IDLE to=LOADING
 144001 T-04:40:00 TLM Stack/Counting wind=7.33/9.16/9.52 upper=23.16 stations=GGMGG farm=4027537/1109933 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+151800 T-04:35:40 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+151800 T-04:35:40 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 153001 T-04:35:00 TLM Stack/Counting wind=8.28/10.35/10.76 upper=30.25 stations=GGMGG farm=4027509/1109929 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 162001 T-04:30:00 TLM Stack/Counting wind=8.55/10.69/11.12 upper=28.17 stations=GGMGG farm=4027480/1109925 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+170100 T-04:25:30 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+170100 T-04:25:30 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 171001 T-04:25:00 TLM Stack/Counting wind=6.69/8.36/8.69 upper=29.79 stations=GGMGG farm=4027451/1109921 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 180001 T-04:20:00 TLM Stack/Counting wind=6.78/8.48/8.82 upper=29.10 stations=GGMGG farm=4027422/1109917 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+188400 T-04:15:20 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+188400 T-04:15:20 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 189001 T-04:15:00 TLM Stack/Counting wind=5.99/7.49/7.79 upper=28.47 stations=GGMGG farm=4027393/1109913 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 189001 T-04:15:00 EntityStateChanged id=CR-77 kind=crane from=LIFTING to=IDLE
 189001 T-04:15:00 EntityStateChanged id=S-21 kind=ship from=IN_YARD to=ON_TRANSPORTER
 189001 T-04:15:00 EntityStateChanged id=SP-41 kind=transporter from=LOADING to=MOVING
 198001 T-04:10:00 TLM Stack/Counting wind=5.91/7.39/7.69 upper=28.40 stations=GGMGG farm=4027364/1109909 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+206700 T-04:05:10 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
 207001 T-04:05:00 TLM Stack/Counting wind=7.83/9.78/10.17 upper=34.91 stations=GGMGG farm=4027335/1109904 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+213900 T-04:01:10 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 216001 T-04:00:00 TLM Stack/Counting wind=6.38/7.98/8.30 upper=39.81 stations=GGMGG farm=4027306/1109900 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
 225001 T-03:55:00 TLM Stack/Counting wind=6.94/8.68/9.02 upper=46.02 stations=GGMGG farm=4027277/1109896 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+232200 T-03:51:00 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
 234001 T-03:50:00 TLM Stack/Counting wind=7.17/8.96/9.32 upper=39.00 stations=GGMGG farm=4027248/1109892 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+241200 T-03:46:00 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 243001 T-03:45:00 TLM Stack/Counting wind=7.25/9.06/9.42 upper=39.53 stations=GGMGG farm=4027219/1109888 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
 243001 T-03:45:00 EntityStateChanged id=SP-41 kind=transporter from=MOVING to=AT_PAD
 252001 T-03:40:00 TLM Stack/Counting wind=7.99/9.99/10.39 upper=45.10 stations=GGMGG farm=4027191/1109884 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+259500 T-03:35:50 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+259500 T-03:35:50 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 261001 T-03:35:00 TLM Stack/Counting wind=8.72/10.90/11.34 upper=49.86 stations=GGMGG farm=4027162/1109879 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
 261780 T-03:34:34 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
 262941 T-03:33:56 StationChanged station=WEATHER status=GO driver=NOMINAL
@@ -72,25 +97,37 @@
 270001 T-03:30:00 EntityStateChanged id=S-21 kind=ship from=ON_TRANSPORTER to=STACKING
 270001 T-03:30:00 EntityStateChanged id=SP-41 kind=transporter from=AT_PAD to=RETURNING
 271471 T-03:29:11 CarriageArrived id=TOWER-1 atM=135
+277800 T-03:25:40 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
 279001 T-03:25:00 TLM Stack/Counting wind=7.89/9.86/10.25 upper=43.21 stations=GGMGG farm=4027104/1109871 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+286800 T-03:20:40 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 288001 T-03:20:00 TLM Stack/Counting wind=10.05/12.56/13.06 upper=45.48 stations=GGMGG farm=4027075/1109867 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 289407 T-03:19:14 EntityStateChanged id=TOWER-1 kind=tower from=STACKING to=WIND_HOLD
 292077 T-03:17:45 EntityStateChanged id=TOWER-1 kind=tower from=WIND_HOLD to=STACKING
 297001 T-03:15:00 TLM Stack/Counting wind=9.66/12.08/12.56 upper=47.08 stations=GGMGG farm=4027046/1109863 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 297001 T-03:15:00 EntityStateChanged id=SP-41 kind=transporter from=RETURNING to=IDLE
+305100 T-03:10:30 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+305100 T-03:10:30 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 306001 T-03:10:00 TLM Stack/Counting wind=8.73/10.91/11.35 upper=48.98 stations=GGMGG farm=4027017/1109859 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 310146 T-03:07:42 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
 315001 T-03:05:00 TLM Stack/Counting wind=7.01/8.76/9.11 upper=52.28 stations=MGMGG farm=4026988/1109854 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 319359 T-03:02:35 StationChanged station=WEATHER status=GO driver=NOMINAL
+323400 T-03:00:20 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+323400 T-03:00:20 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 324001 T-03:00:00 TLM Stack/Counting wind=5.06/6.33/6.58 upper=47.89 stations=GGMGG farm=4026959/1109850 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 331800 T-02:55:40 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
 332508 T-02:55:17 StationChanged station=WEATHER status=GO driver=NOMINAL
 333001 T-02:55:00 TLM Stack/Counting wind=2.94/3.67/3.82 upper=47.12 stations=GGMGG farm=4026930/1109846 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+341700 T-02:50:10 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+341700 T-02:50:10 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 342001 T-02:50:00 TLM Stack/Counting wind=6.70/8.37/8.71 upper=45.23 stations=GGMGG farm=4026902/1109842 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 351001 T-02:45:00 TLM Stack/Counting wind=7.00/8.75/9.10 upper=43.21 stations=GGMGG farm=4026873/1109838 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+360000 T-02:40:00 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+360000 T-02:40:00 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 360001 T-02:40:00 TLM Stack/Counting wind=6.54/8.18/8.51 upper=47.08 stations=GGMGG farm=4026844/1109834 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 369001 T-02:35:00 TLM Stack/Counting wind=8.43/10.54/10.96 upper=48.64 stations=GGMGG farm=4026815/1109830 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 378001 T-02:30:00 TLM Stack/Counting wind=8.08/10.09/10.50 upper=47.75 stations=GGMGG farm=4026786/1109825 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+378300 T-02:29:50 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+378300 T-02:29:50 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 378795 T-02:29:34 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
 380025 T-02:28:53 StationChanged station=WEATHER status=GO driver=NOMINAL
 380671 T-02:28:31 EntityStateChanged id=TOWER-1 kind=tower from=STACKING to=IDLE
@@ -101,6 +138,11 @@
 387001 T-02:25:00 TLM Stack/Counting wind=9.78/12.22/12.71 upper=44.17 stations=GGMGG farm=4026757/1109821 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 390870 T-02:22:51 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
 396001 T-02:20:00 TLM Stack/Counting wind=11.72/14.65/15.23 upper=43.79 stations=MGMGG farm=4026728/1109817 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+396600 T-02:19:40 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+396600 T-02:19:40 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+396988 T-02:19:28 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=WIND_HOLD
+397545 T-02:19:09 EntityStateChanged id=SP-42 kind=transporter from=WIND_HOLD to=RETURNING
+399572 T-02:18:01 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=WIND_HOLD
 402423 T-02:16:26 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
 403539 T-02:15:49 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
 404019 T-02:15:33 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
@@ -108,6 +150,7 @@
 404817 T-02:15:07 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
 405001 T-02:15:00 TLM Stack/Counting wind=13.21/16.52/17.18 upper=43.05 stations=NGMGG farm=4026699/1109813 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 405633 T-02:14:39 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
+407452 T-02:13:39 EntityStateChanged id=SP-42 kind=transporter from=WIND_HOLD to=RETURNING
 412608 T-02:10:47 StationChanged station=WEATHER status=GO driver=NOMINAL
 414001 T-02:10:00 TLM Stack/Counting wind=10.52/13.15/13.67 upper=42.96 stations=GGMGG farm=4026670/1109809 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 421518 T-02:05:50 EntityStateChanged id=LX-01 kind=tanker from=OFFMAP to=INBOUND
@@ -115,14 +158,20 @@
 421518 T-02:05:50 EntityStateChanged id=LX-03 kind=tanker from=OFFMAP to=INBOUND
 421518 T-02:05:50 EntityStateChanged id=MX-01 kind=tanker from=OFFMAP to=INBOUND
 423001 T-02:05:00 TLM Stack/Counting wind=7.44/9.30/9.67 upper=43.01 stations=GGMGG farm=4026641/1109805 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+423339 T-02:04:49 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+430539 T-02:00:49 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 432001 T-02:00:00 TLM Stack/Counting wind=8.40/10.50/10.92 upper=48.17 stations=GGMGG farm=4026612/1109800 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 441001 T-01:55:00 TLM Stack/Counting wind=8.87/11.08/11.53 upper=46.88 stations=GGMGG farm=4026584/1109796 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 442121 T-01:54:23 EntityStateChanged id=MX-01 kind=tanker from=INBOUND to=OFFLOADING
 442410 T-01:54:13 EntityStateChanged id=LX-01 kind=tanker from=INBOUND to=OFFLOADING
 442410 T-01:54:13 EntityStateChanged id=LX-02 kind=tanker from=INBOUND to=OFFLOADING
 442410 T-01:54:13 EntityStateChanged id=LX-03 kind=tanker from=INBOUND to=OFFLOADING
+448839 T-01:50:39 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+448839 T-01:50:39 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 450001 T-01:50:00 TLM Stack/Counting wind=8.61/10.76/11.20 upper=42.40 stations=GGMGG farm=4037940/1113732 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 459001 T-01:45:00 TLM Stack/Counting wind=9.13/11.42/11.87 upper=44.68 stations=GGMGG farm=4051411/1118227 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+467139 T-01:40:29 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+467139 T-01:40:29 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 468001 T-01:40:00 TLM Stack/Counting wind=6.28/7.86/8.17 upper=39.88 stations=GGMGG farm=4064882/1122723 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 474121 T-01:36:36 EntityStateChanged id=MX-01 kind=tanker from=OFFLOADING to=OUTBOUND
 474121 T-01:36:36 DeliveryCompleted orderId=DO-004 tankerId=MX-01 fluid=CH4 deliveredKg=16000 costCr=8000 aborted=false
@@ -137,6 +186,7 @@
 482410 T-01:32:00 LedgerPosted item=PROPELLANT_PURCHASE amountCr=-3000 reputationDelta=0 moneyCr=29965000 reputation=50
 482410 T-01:32:00 LedgerPosted item=PROPELLANT_PURCHASE amountCr=-3000 reputationDelta=0 moneyCr=29962000 reputation=50
 482410 T-01:32:00 LedgerPosted item=PROPELLANT_PURCHASE amountCr=-3000 reputationDelta=0 moneyCr=29959000 reputation=50
+485439 T-01:30:19 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
 485571 T-01:30:15 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
 486000 T-01:30:00 EntityStateChanged id=CV-01 kind=van from=AT_PAD to=TO_SAFE
 486001 T-01:30:00 TLM Stack/Counting wind=11.50/14.38/14.96 upper=33.15 stations=MGMGG farm=4086438/1125775 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29959000 rep=50
@@ -147,6 +197,7 @@
 488655 T-01:28:32 StationChanged station=WEATHER status=GO driver=NOMINAL
 489270 T-01:28:11 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
 491493 T-01:26:57 StationChanged station=WEATHER status=GO driver=NOMINAL
+494439 T-01:25:19 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 494724 T-01:25:10 EntityStateChanged id=MX-01 kind=tanker from=OUTBOUND to=OFFMAP
 495001 T-01:25:00 TLM Stack/Counting wind=10.06/12.57/13.07 upper=29.52 stations=GGMGG farm=4086409/1125771 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29959000 rep=50
 495873 T-01:24:31 EntityStateChanged id=CV-01 kind=van from=TO_SAFE to=PARKED
@@ -162,11 +213,15 @@
 504001 T-01:20:00 PollPassed poll=load auto=false marginal=[PROPELLANT]
 504001 T-01:20:00 PhaseChanged from=Stack to=PropellantLoad trigger=LoadPollPassed
 504001 T-01:20:00 HoldReleased tClockTicks=-144000 reason=POLL by=GO
+512739 T-01:15:09 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+512739 T-01:15:09 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 513000 T-01:15:00 EntityStateChanged id=B-09 kind=booster from=STACKED to=LOADING
 513000 T-01:15:00 EntityStateChanged id=S-21 kind=ship from=STACKED to=LOADING
 513001 T-01:15:00 TLM PropellantLoad/Counting wind=6.88/8.60/8.94 upper=40.38 stations=GGMGG farm=4086302/1125749 B-09 LOADING 33/9 S-21 LOADING 15/4 cr=29959000 rep=50
 522001 T-01:10:00 TLM PropellantLoad/Counting wind=6.59/8.24/8.57 upper=35.66 stations=GGMGG farm=3651274/1004245 B-09 LOADING 299584/83925 S-21 LOADING 134813/37467 cr=29959000 rep=50
 531001 T-01:05:00 TLM PropellantLoad/Counting wind=5.45/6.81/7.08 upper=37.25 stations=GGMGG farm=3216249/882742 B-09 LOADING 598237/167672 S-21 LOADING 269207/74854 cr=29959000 rep=50
+531039 T-01:04:59 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+531039 T-01:04:59 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 532231 T-01:04:19 AnomalyFired anomaly=A3 entityId=OLM-1 source=DIRECTOR
 532231 T-01:04:19 DecisionRequired decision=LEAK poll=null deadlineTick=541231
 532232 T-01:04:19 HoldStarted tClockTicks=-115769 reason=LEAK_FIX poll=null
@@ -174,24 +229,32 @@
 532233 T-01:04:19 StationChanged station=VEHICLE status=MARGINAL driver=GSE_LEAK
 540001 T-01:04:19 TLM PropellantLoad/Holding wind=7.63/9.53/9.91 upper=40.12 stations=GGMMG farm=3156728/866120 B-09 LOADING 637364/178803 S-21 LOADING 286814/79823 cr=29959000 rep=50
 549001 T-01:04:19 TLM PropellantLoad/Holding wind=8.23/10.28/10.69 upper=44.97 stations=GGMMG farm=3156705/866117 B-09 LOADING 635454/178444 S-21 LOADING 285954/79663 cr=29959000 rep=50
+549339 T-01:04:19 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+549339 T-01:04:19 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 558001 T-01:04:19 TLM PropellantLoad/Holding wind=7.99/9.99/10.39 upper=45.68 stations=GGMMG farm=3156682/866113 B-09 LOADING 633551/178086 S-21 LOADING 285098/79503 cr=29959000 rep=50
 566385 T-01:04:19 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
 567001 T-01:04:19 TLM PropellantLoad/Holding wind=5.47/6.84/7.11 upper=50.88 stations=MGMMG farm=3156659/866110 B-09 LOADING 631653/177728 S-21 LOADING 284244/79343 cr=29959000 rep=50
+567639 T-01:04:19 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+567639 T-01:04:19 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 568232 T-01:04:19 LeakCleared by=FIXED
 568233 T-01:04:19 StationChanged station=VEHICLE status=GO driver=NOMINAL
 568233 T-01:04:19 HoldReleased tClockTicks=-115769 reason=LEAK_FIX by=AUTO
 576001 T-01:00:01 TLM PropellantLoad/Counting wind=4.66/5.83/6.06 upper=52.93 stations=MGMGG farm=2781184/761239 B-09 LOADING 888359/249810 S-21 LOADING 399762/111522 cr=29959000 rep=50
 585001 T-00:55:01 TLM PropellantLoad/Counting wind=5.61/7.01/7.29 upper=52.29 stations=MGMGG farm=2346165/639736 B-09 LOADING 1185249/333224 S-21 LOADING 533362/148761 cr=29959000 rep=50
+585939 T-00:54:29 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+585939 T-00:54:29 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 588243 T-00:53:12 StationChanged station=WEATHER status=GO driver=NOMINAL
 592254 T-00:50:59 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
 594001 T-00:50:01 TLM PropellantLoad/Counting wind=5.33/6.67/6.93 upper=52.00 stations=MGMGG farm=1911149/518234 B-09 LOADING 1481249/416470 S-21 LOADING 666562/185924 cr=29959000 rep=50
 598452 T-00:47:32 StationChanged station=WEATHER status=GO driver=NOMINAL
+598970 T-00:47:15 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=RETURNING
 601896 T-00:45:37 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
 603001 T-00:45:01 TLM PropellantLoad/Counting wind=4.29/5.36/5.58 upper=52.03 stations=MGMGG farm=1476137/396732 B-09 LOADING 1776362/499550 S-21 LOADING 799363/223013 cr=29959000 rep=50
 606303 T-00:43:10 StationChanged station=WEATHER status=GO driver=NOMINAL
 612001 T-00:40:01 TLM PropellantLoad/Counting wind=1.63/2.03/2.11 upper=45.26 stations=GGMGG farm=1041127/275231 B-09 LOADING 2070592/582462 S-21 LOADING 931766/260028 cr=29959000 rep=50
 612001 T-00:40:00 Milestone name=ROAD_CLOSURE
 612001 T-00:40:00 RoadClosureChanged siteId=LC-1 closed=true
+612001 T-00:40:00 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
 621001 T-00:35:01 TLM PropellantLoad/Counting wind=1.88/2.35/2.44 upper=43.07 stations=GGMGG farm=606120/153730 B-09 LOADING 2363940/665209 S-21 LOADING 1063773/296968 cr=29959000 rep=50
 628536 T-00:30:49 EntityStateChanged id=S-21 kind=ship from=LOADING to=LOADED
 630001 T-00:30:01 TLM PropellantLoad/Counting wind=4.35/5.44/5.66 upper=39.29 stations=GGMGG farm=192505/47854 B-09 LOADING 2656409/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
@@ -354,6 +417,7 @@
 750454 T+00:36:55 PhaseChanged from=Safing to=Debrief trigger=auto
 750454 T+00:36:55 ClockChanged from=Counting to=Stopped trigger=Stop
 750454 T+00:36:55 RoadClosureChanged siteId=LC-1 closed=false
+750454 T+00:36:55 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 750454 T+00:36:55 LedgerPosted item=OPS_COST amountCr=-289527.392 reputationDelta=0 moneyCr=70169472.608 reputation=58
 750454 T+00:36:55 DebriefReady outcome=CAUGHT moneyDeltaCr=40169472.608
 # DEBRIEF outcome=CAUGHT contract=FULFILLED moneyDeltaCr=40169473 reputationDelta=8 holdS=1200.1 turnaroundS=259200

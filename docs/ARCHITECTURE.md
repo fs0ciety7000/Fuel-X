@@ -145,6 +145,7 @@ tick N+1:  1 applyCommands   (validated; rejected → CommandRejected event; acc
            4 countdown FSM   (T-clock, polls, holds, recycle/scrub, window)
            5 prep            (crane, transporter, tower stacking, wind pauses)
            6 logistics       (road closure, tanker orders/routes/gate/offload)
+          6b ambient         (SP-42 ambient duty yard ⇄ tank farm, parked through the road closure — 7.3)
            7 propellant      (transfers farm↔vehicle, boil-off, topping, detank) — mass-conserving
            8 flight          (scripted profile, catch model, decision, outcome)
           8b tower           (carriage / catch arms / ship QD arm toward targets, carriage ⇄ QD interlock — 5.0)
@@ -339,7 +340,7 @@ stateDiagram-v2
 | Booster `B-` | IN_YARD → ON_TRANSPORTER → STACKING → STACKED → LOADING → LOADED → ASCENT → BOOSTBACK → DESCENT → CAUGHT_SAFING (→ REFURB → IN_YARD, post-MVP) | DIVERTED → LOST, LOST; LOADING/LOADED → DETANKING → STACKED (scrub) |
 | Ship `S-` | IN_YARD → ON_TRANSPORTER → STACKING → STACKED → LOADING → LOADED → ASCENT (attached) → SEPARATED → SECO → OFF_SCENE (despawn) | DETANKING, LOST |
 | Tower `TOWER-` | IDLE → STACKING → IDLE → CATCH_READY → CATCHING → IDLE | STACKING ⇄ WIND_HOLD; DAMAGED; arms OPEN ⇄ CLOSED (`ArmsChanged`; the angles move in the sim, §7.9); QD arm STOWED → ENGAGING → ENGAGED → RETRACTING → STOWED (`QdArmChanged`) |
-| Transporter `SP-` | IDLE → LOADING → MOVING → AT_PAD → RETURNING → IDLE (MVP: SP-41 parks at the yard pickup) | WIND_HOLD (from MOVING / RETURNING) |
+| Transporter `SP-` | `role: 'prep'` (SP-41): IDLE → LOADING → MOVING → AT_PAD → RETURNING → IDLE (parks at the yard pickup). `role: 'ambient'` (SP-42, 7.3): IDLE → `depart` → MOVING → AT_PAD (= tank-farm apron) → RETURNING → IDLE | WIND_HOLD (from MOVING / RETURNING); ambient `turnBack` MOVING → RETURNING before road closure |
 | Crane `CR-` | IDLE → LIFTING → IDLE (one timed task, `craneLoadTaskS`) | — (no crane wind limit in BALANCING) |
 | Tanker `LX-`/`MX-` | OFFMAP → INBOUND → GATE_WAIT → OFFLOADING → OUTBOUND → OFFMAP | GATE_WAIT held while pad hazard closed (≥ T-00:40:00) |
 | Picket `PK-` | PATROL → INTERCEPT → ESCORT → RETURNING → PATROL (DOCKED → PATROL unused in MVP) | — |
@@ -423,6 +424,14 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   road gate; the truck leaves off-map `drive` ticks before. Fee in `DeliveryOrdered`, propellant price in
   `DeliveryCompleted` (for delivered kg). Offload at `offloadRateKgPerS` into the farm.
 - **Road closure**: closed while any LC-1 countdown is pre-liftoff with T ≥ T-00:40:00, or in Liftoff…Safing.
+- **Ambient duty** (7.3, AC 26, `src/sim/systems/ambient.ts`, slot 6b): transporters with `role: 'ambient'` (spawned
+  from `lc1Layout.ambientDuty`, SP-42) shuttle `sp42.yardToFarm` / `sp42.farmToYard` (1 220 m, exact reverses) at
+  `transporter.speedEmptyMPerS`, dwelling `ambientTransporter.dwellYardS` (IDLE in the bay) / `dwellFarmS` (AT_PAD at
+  the apron) — a dwell is only kept while another tanker (INBOUND / OUTBOUND) or transporter (MOVING / RETURNING) moves.
+  It plans against `ticksToRoadClosure` (lower bound from the T-clock): no departure inside it, the farm dwell ends in
+  time, an outbound leg turns back (`turnBack`, mid-path start on the reverse path) so the bay is reached on the
+  closure tick; parked through the closure, resumes when the road reopens. Wind as SP-41. No cargo, no events beyond
+  `EntityStateChanged`, no economy effect; the HUD log skips its state changes, labels read `AMBIENT · …`.
   Inbound trucks reaching the gate wait in `GATE_WAIT`; a truck offloading when the road closes stops and leaves
   (`aborted: true`). Scrub/Debrief reopen the road.
 - **Load**: in `PropellantLoad`/`TerminalCount` once T ≥ T-01:15:00, each of the 4 lines (booster/ship × LOX/CH4)
@@ -586,7 +595,7 @@ interface FuelxDebug {
 
 ## 10. Save / load
 
-- `save = { format: 'fuelx-save', schema: 4, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream`.
+- `save = { format: 'fuelx-save', schema: 6, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream`.
 - Storage: IndexedDB (thin in-house wrapper, store `saves`, keys `auto-<n>`, `slot-<n>`), plus export/import as `.fuelx.json.gz` file. Autosave on `Milestone` (debrief = natural save point, GDD §3) and on `visibilitychange → hidden`.
 - **Versioning**: `schema` is an integer bumped on any `World` shape change; `src/sim/save/migrations.ts` holds `migrations[n]: (w_n) => w_{n+1}`, applied in order on load. Each migration ships with a fixture save under `tests/fixtures/saves/schema-<n>.json` and a test (load old fixture → migrate → validate → run 100 ticks without error). Saves newer than the app are rejected with a clear message.
 - Equivalence test: run K ticks → save → load → M ticks ≡ K+M ticks (canonical-JSON hash).
@@ -596,7 +605,8 @@ interface FuelxDebug {
   game, createdAt, fromSchema }`; errors are codes `SAVE_NOT_JSON`, `SAVE_BAD_FORMAT`, `SAVE_FROM_NEWER_GAME`,
   `SAVE_MIGRATION_MISSING`, `WORLD_INVALID`. `src/sim/save/migrations.ts` — `MIGRATIONS` (1 → 2: tower mechanisms, 5.0; 2 → 3: asset-origin stage heights,
   `flight.tiltRad`, ship `sepAltitudeM/sepDownrangeM`, 5.0b; fixture `schema-2.json`; 3 → 4: rng stream `wind`,
-  `weather.windFromRad/windDirDevRad`, `engines.throttle`, 5.10; fixture `schema-3.json`, in flight at T+40 s) +
+  `weather.windFromRad/windDirDevRad`, `engines.throttle`, 5.10; fixture `schema-3.json`, in flight at T+40 s; 4 → 5: A3
+  `leak.deadlineTick`, 6.8, fixture `schema-4.json`; 5 → 6: transporter `role`, 7.3, fixture `schema-5.json`) +
   `migrateWorld(raw, from, to, table)`. Fixture `tests/fixtures/saves/schema-1.json` (seed 42 at sim tick 540 000, under
   the A3 LEAK_FIX hold), written once by `scripts/sim/make-save-fixture.ts`. Compression / IndexedDB stay in
   `src/app/persistence` (8.3).
