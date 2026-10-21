@@ -510,7 +510,7 @@ interface DecisionBase {
   /** `D1 PROPELLANT MARGIN`, `D2 GO / NO-GO · T−00:10:00 TERMINAL POLL`, … */
   title: string;
   question: string;
-  /** `AUTO AT DEADLINE: DIVERT (P < 0.70)`; '' when no auto action. */
+  /** `AUTO AT DEADLINE: DIVERT (P < 0.65)`; '' when no auto action. */
   autoNote: string;
   deadline: DeadlineVM;
   options: DecisionOptionVM[];
