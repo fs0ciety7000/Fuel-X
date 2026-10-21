@@ -143,7 +143,7 @@ export class InlineSimHost implements SimHost {
     return { steps, stopped, ms };
   }
 
-  jump(target: JumpTarget, maxTicks: number = MAX_JUMP_TICKS): Promise<{ ticks: number }> {
+  jump(target: JumpTarget, maxTicks: number = MAX_JUMP_TICKS, onTick?: () => void): Promise<{ ticks: number }> {
     const w = this.world;
     const cd = (): Countdown | null => (this.cdId ? (w.countdowns[this.cdId] ?? null) : null);
     let ticks = 0;
@@ -156,6 +156,7 @@ export class InlineSimHost implements SimHost {
       this.tick();
       w.outbox.length = 0;
       ticks++;
+      onTick?.();
     }
     this.lastJump = { ticks, ms: this.now() - t0 };
     this.events = [];

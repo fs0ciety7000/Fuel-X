@@ -101,6 +101,12 @@ export class Projector {
     this.deps.store.setState(this.deps.store.getInitialState(), true);
   }
 
+  /** Sparkline sample only (cheap: returns unless a sim second was crossed) — per tick during a jump. */
+  sample(): void {
+    const { world, countdown } = this.deps.inspect();
+    this.sampler.sample(world, countdown);
+  }
+
   /** Once per rendered frame, after events were dispatched. Returns true when it projected. */
   frame(nowMs: number): boolean {
     const { world, countdown } = this.deps.inspect();

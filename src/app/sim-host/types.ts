@@ -68,8 +68,11 @@ export interface SimHost {
   /** Queues a command for the next tick (stamped by the host). */
   send(cmd: Command): void;
   advance(req: AdvanceRequest): AdvanceReport;
-  /** Steps headless (no snapshot writes until the end, outbox cleared every tick) until `target` is reached. */
-  jump(target: JumpTarget, maxTicks?: number): Promise<{ ticks: number }>;
+  /**
+   * Steps headless (no snapshot writes until the end, outbox cleared every tick) until `target` is reached.
+   * `onTick` runs after every tick (the projector samples sparklines so a jump keeps its history).
+   */
+  jump(target: JumpTarget, maxTicks?: number, onTick?: () => void): Promise<{ ticks: number }>;
   /** Events since the last drain (the outbox is emptied every frame). */
   drainEvents(): SimEvent[];
   save(meta: { game: string; createdAt: string }): Promise<string>;

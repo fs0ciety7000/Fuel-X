@@ -128,7 +128,7 @@ export function createDebugApi(game: Game): FuelxDebug {
     },
 
     jumpTo: async (target) => {
-      await host.jump(parseJumpTarget(target));
+      await host.jump(parseJumpTarget(target), undefined, () => game.projector.sample());
       time.cancelSkip();
       game.afterTeleport();
       await frames(1);
