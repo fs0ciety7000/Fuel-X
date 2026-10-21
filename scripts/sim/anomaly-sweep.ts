@@ -2,8 +2,8 @@
 // processes. Policies: `none` = no input at all (the count freezes at the load poll and the window closes),
 // `hands-off` = the standard autopilot's prep + orders + GO, but no anomaly / catch decisions.
 // Reports the share of runs with ≥ 1 anomaly and the anomaly distribution vs the director weights (AC 3a/b), and
-// under `hands-off` the recovery split: diverted share in [15 %, 25 %] of flights, none at p ≥ autoCatchThreshold
-// (AC 3c, BALANCING §13.4).
+// under `hands-off` the recovery split (AC 3c, re-targeted in BALANCING §15 P3): diverted share in [10 %, 25 %] of
+// flights, none at p ≥ autoCatchThreshold, none without an engine-out, failed catches ≤ 8 % of flights.
 // Usage: npx tsx scripts/sim/anomaly-sweep.ts [runs=200]
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -99,21 +99,29 @@ if (workerIdx >= 0) {
     }
     console.log(`  outcomes: ${JSON.stringify(outcomes)}`);
     if (withOne < runs) failed = true;
-    const flights = reports.flatMap((r) => (r.recovery ? [{ ...r.recovery, p: r.committedP ?? r.recovery.p }] : []));
+    const flights = reports.flatMap((r) =>
+      r.recovery
+        ? [{ ...r.recovery, p: r.committedP ?? r.recovery.p, engineOut: r.fired.some((f) => f.startsWith('A4:')) }]
+        : [],
+    );
     const diverted = flights.filter((f) => f.mode === 'DIVERT');
     const failedCatch = flights.filter((f) => f.result === 'CATCH_FAILED').length;
     const highPDivert = diverted.filter((f) => f.p >= cm.autoCatchThreshold).length;
+    const noEngineOut = diverted.filter((f) => !f.engineOut).length;
     const pct = (n: number): string => ((100 * n) / Math.max(1, flights.length)).toFixed(1);
     const by: Record<string, number> = {};
     for (const f of diverted) by[f.decidedBy] = (by[f.decidedBy] ?? 0) + 1;
     console.log(
       `  flights ${flights.length}: diverted ${diverted.length} (${pct(diverted.length)} %, ${JSON.stringify(by)}), ` +
-        `failed catches ${failedCatch} (${pct(failedCatch)} %), diverted at p ≥ ${cm.autoCatchThreshold}: ${highPDivert}`,
+        `failed catches ${failedCatch} (${pct(failedCatch)} %), diverted at p ≥ ${cm.autoCatchThreshold}: ${highPDivert}, ` +
+        `diverted without an engine-out: ${noEngineOut}`,
     );
     if (policy === 'hands-off') {
-      // AC 3c: diverted share 15–25 % of flights; none diverted at p ≥ autoCatchThreshold.
+      // AC 3c: diverted 10–25 % of flights, none at p ≥ autoCatchThreshold, none without an engine-out; failed ≤ 8 %.
       const share = diverted.length / Math.max(1, flights.length);
-      if (flights.length === 0 || share < 0.15 || share > 0.25 || highPDivert > 0) failed = true;
+      const failedShare = failedCatch / Math.max(1, flights.length);
+      if (flights.length === 0 || share < 0.1 || share > 0.25 || highPDivert > 0 || noEngineOut > 0) failed = true;
+      if (failedShare > 0.08) failed = true;
     }
   }
   console.log(`\nsweep ${((performance.now() - t0) / 1000).toFixed(1)} s — ${failed ? 'FAIL' : 'ok'}`);

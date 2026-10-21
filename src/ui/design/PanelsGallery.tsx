@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import * as fx from '../fixtures';
 import * as px from '../fixtures/panels';
-import { Debrief, DebriefReadyBadge } from '../hud/debrief';
+import { DebriefReadyBadge } from '../hud/debrief';
+import { Debrief } from '../hud/debrief/Debrief';
 import { EventLog, ToastView, type ToastItem } from '../hud/events';
 import { FlightCard } from '../hud/flight';
 import { Inspector } from '../hud/inspector';
@@ -92,6 +93,35 @@ export function PanelsGallery() {
               <Inspector vm={vm} />
             </Specimen>
           ))}
+        </div>
+      </Section>
+
+      <Section
+        id="inspector-compact"
+        title="INSPECTOR · COMPACT"
+        refs="§3.3 · 6 metrics by class priority (alerts always kept) · ▸ CHART disclosure · poll + height < 900 → header"
+      >
+        <div className={styles.inspectorsCompact}>
+          <Specimen caption="BOOSTER · 12 → 6 · CHART CLOSED">
+            <div className={styles.compactBox}>
+              <Inspector vm={px.inspectorBooster} compact />
+            </div>
+          </Specimen>
+          <Specimen caption="SHIP · 7 → 6">
+            <div className={styles.compactBox}>
+              <Inspector vm={px.inspectorShip} compact />
+            </div>
+          </Specimen>
+          <Specimen caption="TANKER · 5 (UNCHANGED)">
+            <div className={styles.compactBox}>
+              <Inspector vm={px.inspectorTanker} compact />
+            </div>
+          </Specimen>
+          <Specimen caption="POLL OPEN · HEADER ONLY">
+            <div className={styles.compactBox}>
+              <Inspector vm={px.inspectorBooster} compact headerOnly />
+            </div>
+          </Specimen>
         </div>
       </Section>
 

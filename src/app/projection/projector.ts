@@ -50,6 +50,7 @@ function timeFingerprint(t: TimeInputs): string {
     t.skipping?.name ?? '',
     t.skipBlocker ?? '',
     t.drop ? `${t.drop.code}@${t.drop.tick}` : '',
+    t.queued ?? 0,
   ].join('|');
 }
 
@@ -99,6 +100,12 @@ export class Projector {
     this.lastTick = -1;
     this.dirty = true;
     this.deps.store.setState(this.deps.store.getInitialState(), true);
+  }
+
+  /** Sparkline sample only (cheap: returns unless a sim second was crossed) — per tick during a jump. */
+  sample(): void {
+    const { world, countdown } = this.deps.inspect();
+    this.sampler.sample(world, countdown);
   }
 
   /** Once per rendered frame, after events were dispatched. Returns true when it projected. */

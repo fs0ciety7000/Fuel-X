@@ -93,7 +93,6 @@ export function SiteSwitcher({ sites, onSelect, open: forced, activeIndex }: Sit
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={`${id}-list`}
-        aria-label={`Site ${current?.code ?? ''} ${current?.name ?? ''}, switch site`}
         data-testid="site-switcher"
         onClick={() => (open ? close(false) : openList())}
         onKeyDown={(e) => {
@@ -103,8 +102,10 @@ export function SiteSwitcher({ sites, onSelect, open: forced, activeIndex }: Sit
           }
         }}
       >
+        {/* Name = `Site LC-1 BRACKWATER` from the visible text (WCAG 2.5.3); the popup role says "switch". */}
+        <span className={styles.sr}>Site </span>
         <span className={styles.crumbCode}>{current?.code ?? '—'}</span>
-        {current?.name ? <span className={styles.crumbName}>{current.name}</span> : null}
+        {current?.name ? <span className={styles.crumbName}> {current.name}</span> : null}
         <Glyph id="caret" />
       </button>
       {open ? (

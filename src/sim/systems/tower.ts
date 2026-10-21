@@ -8,7 +8,7 @@
 //   - the QD arm does not leave STOWED while the carriage is inside the band.
 // QD runs before the carriage in a tick, so the invariant "QD not stowed ⇒ carriage outside the band" holds at
 // every tick boundary.
-import { tower as td } from '@data/index';
+import { tower as towerData } from '@data/index';
 import { entitiesOfKind, getEntity } from '../core/entities';
 import { emit } from '../core/events';
 import { DT_S } from '../core/time';
@@ -16,6 +16,10 @@ import { countdownIds } from '../core/world';
 import type { World } from '../core/world';
 import { clampCarriageM, inQdKeepOut } from '../math/tower';
 import type { EntityOf, QdArmState, ShipState, TowerInterlock } from '../types';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same objects; data is never reassigned.
+const td = towerData;
 
 type Tower = EntityOf<'tower'>;
 

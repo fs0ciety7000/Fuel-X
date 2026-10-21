@@ -1,5 +1,6 @@
 // Rate control logic (DESIGN_SYSTEM §6.25): pure functions over TimeScaleVM, unit-tested. The projector owns every
 // rule (caps, drops, run end); this file only maps the VM to segments and keyboard steps. No threshold maths.
+import type { RateStateVM } from '@bridge/index';
 import type { Rate, TimeScaleVM } from '../../types';
 
 export const RATES: readonly Rate[] = [0, 1, 10, 100];
@@ -42,6 +43,15 @@ export function rateSegments(ts: TimeScaleVM, ended: boolean): RateSegment[] {
     disabledReason: ended ? RUN_ENDED : ts.skip.active ? SKIPPING : null,
     capReason: !ended && !ts.skip.active && r !== 0 && r > ts.maxAllowed ? cap : null,
   }));
+}
+
+/**
+ * Time scale the rate keys act on (8.2): the projection with its rate fields replaced by the app's synchronous
+ * `session.rateState()` (null while unbound → the projection as is). A request applies at once in the app but shows in
+ * the projection only up to 100 ms later, so a second `Space` / `,` / `.` must not start from the stale copy.
+ */
+export function liveTimeScale(ts: TimeScaleVM, live: RateStateVM | null): TimeScaleVM {
+  return live ? { ...ts, ...live } : ts;
 }
 
 /** Rate `Space` toggles to: pause when running, else the last running request. */

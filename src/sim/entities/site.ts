@@ -118,6 +118,7 @@ function specFor(world: World, p: Placement): AnyEntitySpec {
       return {
         ...b,
         kind: 'transporter',
+        role: lc1Layout.ambientDuty[p.callSign] ? 'ambient' : 'prep',
         fsm: fsm('IDLE'),
         cargo: null,
         route: null,

@@ -60,6 +60,15 @@ export class InstancedParts {
     return this.parts.length;
   }
 
+  /**
+   * Frees the instance-matrix GPU buffers (8.1 F6), called from the entity view's cleanup. Geometry and materials
+   * are the GLB's, shared by every clone: never disposed here. The meshes stay in the clone, so a view React re-mounts
+   * (StrictMode) keeps drawing: three re-uploads a disposed instance buffer on its next draw.
+   */
+  dispose(): void {
+    for (const part of this.parts) for (const { im } of part.meshes) im.dispose();
+  }
+
   /** Copies the (just animated) node transforms into the instance matrices. */
   update(): void {
     for (const part of this.parts) {

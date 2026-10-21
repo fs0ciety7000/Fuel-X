@@ -102,6 +102,15 @@ export function runUntil(world: World, done: () => boolean, maxTicks = 2_000_000
 export const rejected = (events: readonly SimEvent[]): string[] =>
   events.flatMap((e) => (e.t === 'CommandRejected' ? [e.reason] : []));
 
+/** `events` without the ambient transporters' state changes (SP-42 duty loop, 7.3) — for exact per-tick event lists. */
+export function withoutAmbient(world: World, events: readonly SimEvent[]): SimEvent[] {
+  return events.filter((e) => {
+    if (e.t !== 'EntityStateChanged') return true;
+    const ent = world.entities.byId[e.id];
+    return !(ent?.kind === 'transporter' && ent.role === 'ambient');
+  });
+}
+
 export function stateChanges(events: readonly SimEvent[], entityId: Id): string[] {
   return events.flatMap((e) => (e.t === 'EntityStateChanged' && e.id === entityId ? [e.to] : []));
 }

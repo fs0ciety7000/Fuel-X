@@ -175,6 +175,17 @@
   z-index: var(--fx-z-dialog);
 }
 
+/* Modal (8.2): centred over the viewport. The global reset strips the UA's auto margins (and auto margins are not
+   allowed here), so the native modal used to open top-left; centring lives in the component, not in each caller. */
+.dialog:not(.inline) {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  max-height: 100%;
+  overflow-y: auto;
+  transform: translate(-50%, -50%);
+}
+
 .dialog::backdrop {
   background: transparent;
 }

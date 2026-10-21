@@ -1,6 +1,11 @@
 // Tower geometry (5.0): carriage height = f(pin height). The catch points on the closed arms sit at carriage height,
 // so the carriage goes to wherever the stage's pins are (ASSETS_GUIDE sockets; `_stack.png` checks the same sums).
-import { tower as td, vehicles } from '@data/index';
+import { tower as towerData, vehicles as vehiclesData } from '@data/index';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same objects; data is never reassigned.
+const td = towerData;
+const vehicles = vehiclesData;
 
 const { pins, carriage, qdArm } = td;
 

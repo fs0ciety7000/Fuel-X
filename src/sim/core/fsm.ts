@@ -31,6 +31,9 @@ export interface FsmDefinition<S extends string, T extends string, C extends Fsm
 export interface Fsm<S extends string, T extends string, C extends FsmContext> extends FsmDefinition<S, T, C> {
   /** First transition from `state` on `on` whose guard passes, or null. */
   find(state: S, on: T, ctx: C): FsmTransition<S, T, C> | null;
+  /** True when the table lists any transition from `state` on `on` (guards ignored). Cheap: lets hot callers skip
+   * building a context for a trigger that cannot fire. */
+  canFire(state: S, on: T): boolean;
   /** Fires the first matching transition: sets state + enteredTick, emits, runs the effect. */
   fire(machine: FsmState<S>, on: T, ctx: C): FsmTransition<S, T, C> | null;
   /** Static table query, guards ignored. */
@@ -52,12 +55,27 @@ export function defineFsm<S extends string, T extends string, C extends FsmConte
       if (!known.has(s)) throw new Error(`defineFsm(${def.name}): unknown state '${s}'`);
     }
   }
-  const matches = (tr: FsmTransition<S, T, C>, state: S, on: T): boolean =>
-    tr.on === on && fromList(tr.from).includes(state);
+  // Index (trigger → from-state → transitions in table order), built once: `find` scans only the candidates, in the
+  // same order as a scan of the whole table, without allocating.
+  const NONE: readonly FsmTransition<S, T, C>[] = [];
+  const index = new Map<T, Map<S, FsmTransition<S, T, C>[]>>();
+  for (const tr of def.transitions) {
+    let byState = index.get(tr.on);
+    if (!byState) index.set(tr.on, (byState = new Map()));
+    for (const s of fromList(tr.from)) {
+      const list = byState.get(s);
+      if (list) {
+        if (!list.includes(tr)) list.push(tr);
+      } else byState.set(s, [tr]);
+    }
+  }
+  const candidates = (state: S, on: T): readonly FsmTransition<S, T, C>[] => index.get(on)?.get(state) ?? NONE;
 
   const find = (state: S, on: T, ctx: C): FsmTransition<S, T, C> | null => {
-    for (const tr of def.transitions) {
-      if (matches(tr, state, on) && (!tr.guard || tr.guard(ctx))) return tr;
+    const list = candidates(state, on);
+    for (let i = 0; i < list.length; i++) {
+      const tr = list[i] as FsmTransition<S, T, C>;
+      if (!tr.guard || tr.guard(ctx)) return tr;
     }
     return null;
   };
@@ -65,6 +83,9 @@ export function defineFsm<S extends string, T extends string, C extends FsmConte
   return {
     ...def,
     find,
+    canFire(state, on) {
+      return candidates(state, on).length > 0;
+    },
     fire(machine, on, ctx) {
       const tr = find(machine.state, on, ctx);
       if (!tr) return null;

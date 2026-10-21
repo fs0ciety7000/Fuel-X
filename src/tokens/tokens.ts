@@ -119,6 +119,9 @@ export const tokens = {
     hudTabs: '600px',
     hudTabsCompact: '260px',
     hudSites: '440px',
+    // Top-bar search stub (DESIGN_SYSTEM §6.3, task 8.2): field width, standard / compact.
+    search: '280px',
+    searchCompact: '160px',
     // Showcase site: reading measure and the sticky stage height on phones.
     measure: '62ch',
     stagePhone: '46svh',

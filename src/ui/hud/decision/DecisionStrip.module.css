@@ -2,6 +2,10 @@
 .strip {
   position: relative;
   display: grid;
+  /* head · scrolling evidence · options: the options stay on screen when the row is short (1280×720). */
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-height: 100%;
+  min-height: 0;
   gap: var(--fx-rule-hair);
   background: var(--fx-color-ink-5);
   border: var(--fx-rule-frame);
@@ -107,6 +111,14 @@
 }
 
 /* --- body: question · evidence · deadline ------------------------------------------------------------- */
+.scroll {
+  display: grid;
+  align-content: start;
+  gap: var(--fx-rule-hair);
+  min-height: 0;
+  overflow: auto;
+}
+
 .body {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 0.9fr);
@@ -211,6 +223,7 @@
 
 .cqRow {
   display: flex;
+  flex-wrap: wrap; /* a narrow option (compact) drops the value under its label instead of clipping it */
   justify-content: space-between;
   gap: var(--fx-space-3);
   font-size: var(--fx-type-body);
@@ -224,6 +237,7 @@
 }
 
 .cqRow dd {
+  flex-grow: 1; /* right-aligned on its own line when the row wraps */
   text-align: right;
 }
 

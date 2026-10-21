@@ -6,12 +6,17 @@
 // (GATE_WAIT) while the road into the pad hazard radius is closed (T-00:40:00 → end of Safing), else
 // drives on to its offload bay. A truck already past the gate when the road closes does not offload:
 // it leaves with what is left (no tanker works inside the hazard radius during closure).
-import { callSignPrefix, economy, lc1Layout, logistics as ld } from '@data/index';
+import {
+  callSignPrefix as callSignPrefixData,
+  economy as economyData,
+  lc1Layout as lc1LayoutData,
+  logistics as logisticsData,
+} from '@data/index';
 import type { Lc1PathId, Propellant } from '@data/index';
 import type { CommandOf } from '../core/commands';
 import { despawnEntity, entitiesOfKind, spawnEntity } from '../core/entities';
 import { emit } from '../core/events';
-import { DT_S, secondsToTicks } from '../core/time';
+import { DT_S as dtS, secondsToTicks } from '../core/time';
 import { countdownIds } from '../core/world';
 import type { World } from '../core/world';
 import { fire, tankerFsm } from '../entities/machines';
@@ -21,6 +26,14 @@ import type { EntityOf, Id, Phase } from '../types';
 import { isPreLiftoff } from './countdown';
 import { advanceRoute, routeTicks, startRoute } from './motion';
 import { addToFarm } from './propellant';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same values; data / DT_S are never reassigned.
+const callSignPrefix = callSignPrefixData;
+const economy = economyData;
+const lc1Layout = lc1LayoutData;
+const ld = logisticsData;
+const DT_S = dtS;
 
 type Tanker = EntityOf<'tanker'>;
 
@@ -44,6 +57,22 @@ export function roadShouldBeClosed(world: World): boolean {
     if (isPreLiftoff(cd.phase.state) && cd.tClockTicks >= ROAD_CLOSURE_TICKS) return true;
   }
   return false;
+}
+
+/**
+ * Lower bound on the ticks until the road closes (0 when it should be closed now): the T-clock gains at most one tick
+ * per tick, so the closure cannot come before T-00:40:00 − T on any open LC-1 countdown. `Infinity` when no countdown
+ * is heading for it (none, or none pre-liftoff — e.g. scrubbed or in Debrief).
+ */
+export function ticksToRoadClosure(world: World): number {
+  if (roadShouldBeClosed(world)) return 0;
+  let best = Infinity;
+  for (const id of countdownIds(world)) {
+    const cd = world.countdowns[id];
+    if (!cd || cd.siteId !== lc1Layout.siteId || !isPreLiftoff(cd.phase.state)) continue;
+    best = Math.min(best, ROAD_CLOSURE_TICKS - cd.tClockTicks);
+  }
+  return best;
 }
 
 function updateRoad(world: World): void {

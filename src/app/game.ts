@@ -1,6 +1,6 @@
 // Composition root object (ARCHITECTURE §2): wires SimHost ↔ GameLoop ↔ render scene ↔ bus. Created once in
 // main.tsx outside React so StrictMode double-mounts never build a second world.
-import { commands, projectionStore, session, view, viewStore } from '@bridge/index';
+import { commands, persistence, projectionStore, session, view, viewStore } from '@bridge/index';
 import type { ViewState } from '@bridge/index';
 import { createFrameInput, createRenderControls, DEFAULT_SITE, SLOT_STRIDE, SlotFlag } from '@render/index';
 import type { FrameInput, RenderControls, SceneApi } from '@render/index';
@@ -8,11 +8,14 @@ import type { Countdown, World } from '@sim/types';
 import { EventBus } from './bus';
 import { GameLoop } from './loop';
 import { formatTClock } from './jump';
+import { LazyPersistence } from './persistence/lazy';
+import { rateFields } from './projection/project';
 import { Projector } from './projection/projector';
 import type { TimeInputs } from './projection/context';
 import { SessionController } from './session/controller';
 import type { RunOptions, SessionEnv } from './session/controller';
 import { InlineSimHost } from './sim-host/inline';
+import { runEnded } from './time/rules';
 import type { SkipBlockCode } from './time/rules';
 import { TimeControl } from './time/time-control';
 
@@ -27,6 +30,8 @@ export class Game {
   readonly projector: Projector;
   /** Runs: URL seed, REPLAY SAME SEED, NEW SEED, EXPORT LOG (GDD §13.2.3). */
   readonly session: SessionController;
+  /** Autosave ring, resume offer, export / import (8.3, ARCHITECTURE §10); a lazy chunk loaded by `boot` (8.1 F2). */
+  readonly persistence: LazyPersistence;
   scene: SceneApi | null = null;
   private readout: HTMLElement | null = null;
   private readoutAt = 0;
@@ -58,6 +63,9 @@ export class Game {
       hidden: (id) => this.isHidden(id),
     });
     this.bus.onBatch((batch) => this.projector.onEvents(batch));
+    this.bus.onBatch((batch) => {
+      if (batch.some((e) => e.t === 'PhaseChanged' && e.to === 'Liftoff')) this.followLaunch();
+    });
     this.loop.onAfterFrame(() => this.projector.frame(performance.now()));
     commands.bind((cmd) => this.host.send(cmd));
     this.session = new SessionController(this.host, env, () => this.afterNewRun());
@@ -69,7 +77,21 @@ export class Game {
       exportLog: () => void this.session.exportLog(),
       viewSite: () => this.cancelSkip(),
     });
+    // Rate keys read the authoritative time state (8.2): `view.timeScale` applies synchronously (applyView below).
+    session.bindRateState(() => rateFields(this.time, runEnded(this.host.inspect().countdown)));
     viewStore.subscribe((s, prev) => this.applyView(s, prev));
+    const setPaused = (on: boolean): void => {
+      this.time.paused = on;
+      this.projector.markDirty();
+    };
+    this.persistence = new LazyPersistence(
+      () =>
+        import('./persistence/runtime').then((m) =>
+          m.createBrowserPersistence({ host: this.host, bus: this.bus, setPaused, afterLoad: () => this.afterLoad() }),
+        ),
+      setPaused,
+    );
+    persistence.bind(this.persistence.handlers);
   }
 
   timeInputs(world: Readonly<World>, cd: Readonly<Countdown> | null): TimeInputs {
@@ -84,6 +106,7 @@ export class Game {
       skipping: t.skip?.target ?? null,
       skipBlocker: t.skipBlocker(world, cd),
       drop: t.lastDrop ? { code: t.lastDrop.code, tick: t.lastDrop.tick } : null,
+      queued: this.host.pendingCommands(),
     };
   }
 
@@ -98,6 +121,16 @@ export class Game {
   cancelSkip(): void {
     this.time.cancelSkip();
     this.projector.markDirty();
+  }
+
+  /** AC 25: at liftoff the camera follows the booster unless the player is following something else (a plain
+   * selection does not block it, GDD §14.1 call 1). */
+  private followLaunch(): void {
+    const { countdown } = this.host.inspect();
+    if (!countdown) return;
+    const s = viewStore.getState();
+    if (s.followId !== null) return;
+    view.follow(countdown.boosterId, { select: s.selectedId === null });
   }
 
   /** viewStore intents → render controls / time control (the only writer of those from the UI side). */
@@ -122,6 +155,16 @@ export class Game {
   }
 
   private afterNewRun(): void {
+    this.persistence.onNewRun();
+    this.time.resetRun();
+    this.projector.reset();
+    view.reset();
+    view.camera({ kind: 'home' });
+    this.afterTeleport();
+  }
+
+  /** After a load (save import, CONTINUE, debug `load`): same resets as a new run, the URL is the caller's. */
+  afterLoad(): void {
     this.time.resetRun();
     this.projector.reset();
     view.reset();

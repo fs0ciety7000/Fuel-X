@@ -77,3 +77,35 @@
   height: var(--fx-space-3);
   background: var(--fx-color-ink);
 }
+
+/* §9.10 keyboard map table: 1 px rules, key column in a framed <kbd>. */
+.keys {
+  border-collapse: collapse;
+  border: var(--fx-rule-frame);
+  font-size: var(--fx-type-body);
+  letter-spacing: var(--fx-type-body-tracking);
+}
+
+.keys th,
+.keys td {
+  padding: var(--fx-space-2) var(--fx-space-3);
+  border: var(--fx-rule-hair) solid var(--fx-color-ink-5);
+  background: var(--fx-color-paper);
+  text-align: left;
+  vertical-align: baseline;
+}
+
+.keys thead th {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+}
+
+.keys kbd {
+  font: inherit;
+  font-weight: var(--fx-type-strong-weight);
+  padding: var(--fx-space-0) var(--fx-space-1);
+  border: var(--fx-rule-hair) solid currentColor;
+  white-space: nowrap;
+}

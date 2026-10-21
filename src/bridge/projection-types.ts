@@ -14,7 +14,14 @@
 //   they are optional only so hand-written fixtures stay small.
 import type { Command, HoldReason, PollId, RecoveryMode, StationDriver } from '@sim/types';
 
+/**
+ * Decision-log `by` tag, printed as is (GDD §13.2.1, AC 33): PLAYER (a human, ink) · AUTO (the sim's default,
+ * ink-3) · FORCED (no choice, accent-text) · DIRECTOR (the scripted `?autopilot=1` director, ink-3).
+ */
+export type DecisionByTag = 'PLAYER' | 'AUTO' | 'FORCED' | 'DIRECTOR';
+
 /** DESIGN_SYSTEM §2.3 semantic states. Computed by the projector. */
+
 export type Severity = 'neutral' | 'info' | 'ok' | 'active' | 'warn' | 'danger' | 'disabled';
 
 /** DESIGN_SYSTEM §7 glyph ids (SVG symbol `g-<id>` in the sprite). */
@@ -160,7 +167,7 @@ export interface TimeScaleVM {
   lockCode?: TimeLockCode | null;
   /** Chip text: `1× LOCKED · TERMINAL COUNT`, `MAX 10× · PROPELLANT LOAD`, '' when uncapped. */
   lockLabel?: string;
-  /** Top-bar readout: `SIM 10×`, `SIM PAUSED`, `SIM 7.4× OF 100×`. */
+  /** Top-bar readout: `SIM 10×`, `SIM PAUSED`, `SIM PAUSED · 1 QUEUED` (commands wait for the next tick), `SIM 7.4× OF 100×`. */
   readout?: string;
   /** Skip to next milestone (7.2). */
   skip: SkipVM;
@@ -510,7 +517,7 @@ interface DecisionBase {
   /** `D1 PROPELLANT MARGIN`, `D2 GO / NO-GO · T−00:10:00 TERMINAL POLL`, … */
   title: string;
   question: string;
-  /** `AUTO AT DEADLINE: DIVERT (P < 0.70)`; '' when no auto action. */
+  /** `AUTO AT DEADLINE: DIVERT (P < 0.65)`; '' when no auto action. */
   autoNote: string;
   deadline: DeadlineVM;
   options: DecisionOptionVM[];
@@ -574,7 +581,7 @@ export interface CatchDecisionVM extends DecisionBase {
   ev?: { catch: ValueVM; divert: ValueVM; favours: RecoveryMode };
   autoChoice?: RecoveryMode;
   forcedDivert?: string | null;
-  committed?: { mode: RecoveryMode; by: 'PLAYER' | 'AUTO' | 'FORCED' } | null;
+  committed?: { mode: RecoveryMode; by: DecisionByTag } | null;
 }
 
 export interface LeakDecisionVM extends DecisionBase {
@@ -608,7 +615,7 @@ export interface DebriefVM {
   turnaround: ValueVM;
   ledger: { label: string; amount: ValueVM; reputation: ValueVM | null }[];
   /** `id` is a unique row key; `code` is the decision id `D1` / `D2` / `D3` / `D3B` ('' for other commands). */
-  decisions: { time: string; id: string; code?: string; detail: string; by: 'PLAYER' | 'AUTO' | 'FORCED' }[];
+  decisions: { time: string; id: string; code?: string; detail: string; by: DecisionByTag }[];
   anomalies: { id: string; label: string; time: string }[];
   /** Exit actions REPLAY / NEW_SEED / EXPORT_LOG / VIEW_SITE (`id` = `session` = the SessionActionId). */
   actions: ActionVM[];

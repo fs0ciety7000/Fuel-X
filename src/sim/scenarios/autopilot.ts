@@ -6,13 +6,17 @@
 //   holding, releasable    → Go (polls, NO-GO holds once clear; never a LEAK_FIX hold)          (D2)
 //   A3 leak, no response   → LeakResponse                                                       (D3b)
 //   catch decision open    → after boostback end: CATCH if p beats the expected-cost break-even  (D3)
-import { economy as ec } from '@data/index';
+import { economy as economyData } from '@data/index';
 import type { Propellant } from '@data/index';
 import type { Command } from '../core/commands';
 import { getEntity } from '../core/entities';
 import type { World } from '../core/world';
 import { releaseBlocker } from '../systems/countdown';
 import type { Id, LeakChoice } from '../types';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same objects; data is never reassigned.
+const ec = economyData;
 
 export interface AutopilotOptions {
   /** Deliveries ordered with StartRollout. */

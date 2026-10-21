@@ -10,7 +10,7 @@
 // Heights (5.0b, siteGeometry = ASSETS_GUIDE sockets): `pos` is the asset origin in world metres. On SP-41 a stage
 // sits on `SOCKET_Cargo` (+4.6 m); during the tower task the arms lift it linearly with task progress from the deck to
 // the mount (booster origin 20 m) or the booster top (ship origin 20 + 71 = 91 m).
-import { lc1Layout, logistics as ld, siteGeometry as geo } from '@data/index';
+import { lc1Layout as lc1LayoutData, logistics as logisticsData, siteGeometry as siteGeometryData } from '@data/index';
 import type { CommandOf } from '../core/commands';
 import { getEntity } from '../core/entities';
 import { secondsToTicks } from '../core/time';
@@ -22,6 +22,12 @@ import type { Countdown, EntityOf, Id, Phase, TaskProgress } from '../types';
 import { CARRIAGE_STACK_BOOSTER_M, CARRIAGE_STACK_SHIP_M } from '../math/tower';
 import { advanceRoute, startRoute } from './motion';
 import { setCarriageTarget } from './tower';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same objects; data is never reassigned.
+const lc1Layout = lc1LayoutData;
+const ld = logisticsData;
+const geo = siteGeometryData;
 
 type Stage = EntityOf<'booster'> | EntityOf<'ship'>;
 type Tower = EntityOf<'tower'>;
@@ -53,6 +59,8 @@ interface Assets {
   pad: EntityOf<'pad'> | null;
 }
 
+let ASSETS: Assets | null = null;
+
 function assets(world: World, cd: Countdown): Assets | null {
   const prep = world.prep[cd.id];
   if (!prep) return null;
@@ -64,7 +72,17 @@ function assets(world: World, cd: Countdown): Assets | null {
   const pad = getEntity(world, cd.padId);
   if (b?.kind !== 'booster' || s?.kind !== 'ship' || t?.kind !== 'tower' || sp?.kind !== 'transporter') return null;
   if (c?.kind !== 'crane') return null;
-  return { cd, prep, booster: b, ship: s, tower: t, sp, crane: c, pad: pad?.kind === 'pad' ? pad : null };
+  // One reused record (runs every prep tick; the update functions only read it during this call).
+  const a = (ASSETS ??= { cd, prep, booster: b, ship: s, tower: t, sp, crane: c, pad: null });
+  a.cd = cd;
+  a.prep = prep;
+  a.booster = b;
+  a.ship = s;
+  a.tower = t;
+  a.sp = sp;
+  a.crane = c;
+  a.pad = pad?.kind === 'pad' ? pad : null;
+  return a;
 }
 
 function fireStage(world: World, stage: Stage, on: 'craneLoaded' | 'stackStart' | 'stacked'): void {
@@ -117,17 +135,27 @@ function updateCrane(world: World, a: Assets): void {
   carry(sp, stage);
 }
 
-/** Stage on SP-41: origin on `SOCKET_Cargo`, transporter heading. */
+/** Stage on SP-41: origin on `SOCKET_Cargo`, transporter heading (written in place: runs every tick in transit). */
 function carry(sp: Transporter, stage: Stage | null): void {
   if (!stage) return;
-  stage.pos = { x: sp.pos.x, y: sp.pos.y + geo.transporter.cargoM, z: sp.pos.z };
-  stage.rot = { ...sp.rot };
+  const p = stage.pos;
+  p.x = sp.pos.x;
+  p.y = sp.pos.y + geo.transporter.cargoM;
+  p.z = sp.pos.z;
+  const q = stage.rot;
+  q.x = sp.rot.x;
+  q.y = sp.rot.y;
+  q.z = sp.rot.z;
+  q.w = sp.rot.w;
 }
 
 /** Stage in the tower arms: lifted from the deck to its stacked height with task progress. */
 function lift(stage: Stage, task: TaskProgress): void {
   const k = task.durationTicks > 0 ? task.elapsedTicks / task.durationTicks : 1;
-  stage.pos = { x: PAD.x, y: CARGO_Y + (STACKED_Y[stage.kind] - CARGO_Y) * k, z: PAD.z };
+  const p = stage.pos;
+  p.x = PAD.x;
+  p.y = CARGO_Y + (STACKED_Y[stage.kind] - CARGO_Y) * k;
+  p.z = PAD.z;
 }
 
 function updateTransporter(world: World, a: Assets): void {

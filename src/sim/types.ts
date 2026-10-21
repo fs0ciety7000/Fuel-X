@@ -44,7 +44,7 @@ export type {
   Debrief,
 } from './core/world';
 export type { LeakRespondedBy, SimEvent, SimEventInput, SimEventType } from './core/events';
-export type { Command, CommandType, CommandOf, StampedCommand } from './core/commands';
+export type { Command, CommandSource, CommandType, CommandOf, StampedCommand } from './core/commands';
 export type { RngState, RngStream } from './core/rng';
 
 /** Stable entity id, e.g. 'e000123'; never the call-sign. */
@@ -150,6 +150,8 @@ export type CraneState = 'IDLE' | 'LIFTING';
 export type BoatState =
   'DOCKED' | 'PATROL' | 'INTERCEPT' | 'ESCORT' | 'RETURNING' | 'ON_STATION' | 'IN_AREA' | 'INTERCEPTED' | 'LEAVING';
 export type BoatRole = 'picket' | 'recovery' | 'intruder';
+/** `prep`: rollout / stack transporter (SP-41). `ambient`: background duty loop, no tasks, no economy (SP-42, 7.3). */
+export type TransporterRole = 'prep' | 'ambient';
 export type VanState = 'PARKED' | 'TO_PAD' | 'AT_PAD' | 'TO_SAFE';
 
 /** Straight-line move at constant speed; arrival exactly `totalTicks` after the start. */
@@ -225,7 +227,7 @@ export interface ShipFlight extends FlightTelemetry {
   done: boolean;
 }
 
-export type RecoveryDecidedBy = 'PLAYER' | 'AUTO' | 'FORCED';
+export type RecoveryDecidedBy = 'PLAYER' | 'AUTO' | 'FORCED' | 'DIRECTOR';
 export type ForcedDivertReason = 'LOW_PROPELLANT' | 'TOWER_WIND';
 export type RecoveryResult = 'CAUGHT' | 'CATCH_FAILED' | 'DIVERTED';
 
@@ -291,6 +293,7 @@ export interface PadFields {
   boosterId: Id | null;
 }
 export interface TransporterFields {
+  role: TransporterRole;
   fsm: FsmState<TransporterState>;
   cargo: Id | null;
   route: RouteState | null;
@@ -471,6 +474,7 @@ export interface Countdown {
   /** Launch window in absolute sim ticks (keeps closing during holds). */
   windowOpenTick: Tick;
   windowCloseTick: Tick;
+  /** Master switch for auto-GO at an all-green poll (tests turn it off); per-poll flags: `countdown.autoGoAtPoll`. */
   autoGoWhenAllGreen: boolean;
   liftoffTick: Tick | null;
   scrubReason: ScrubReason | null;

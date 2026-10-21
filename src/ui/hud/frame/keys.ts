@@ -1,13 +1,17 @@
 // Global HUD keys (DESIGN_SYSTEM §8 keyboard map). One window listener; reads the projection at key time (no
-// subscription). Single-letter keys never fire while typing, and Space never steals a focused control's activation.
+// subscription); rate keys take their rate fields from the app's synchronous `session.rateState()` (8.2). Single-letter keys never fire while typing, and Space never steals a focused control's activation.
 import { useEffect } from 'react';
-import { projectionStore, view } from '@bridge/index';
+import { projectionStore, session, view, viewStore } from '@bridge/index';
 import { announce } from './live';
-import { rateAnnouncement, runEnded, steppedRate, toggledRate } from '../topbar/rate';
+import { liveTimeScale, rateAnnouncement, runEnded, steppedRate, toggledRate } from '../topbar/rate';
 import { runSkip } from '../topbar/RateControl';
+import { clearSearch, searchUi } from '../search/search';
 
 /** Keymap source for the `?` sheet and `/design` (§9.10). Entries owned by other tasks are listed by them. */
 export const HUD_KEYS: readonly { keys: string; action: string; owner: string }[] = [
+  { keys: '/', action: 'Focus the search (filters the open tab) · Esc in it clears, again leaves', owner: '8.2' },
+  { keys: 'Esc', action: 'Close popover / dialog → clear search → deselect (one step per press)', owner: '8.2' },
+  { keys: 'Enter', action: 'Follow the focused row / label tag (Space / click = select only)', owner: '6.4 / 6.6' },
   { keys: 'Space', action: 'Pause / resume', owner: '6.3' },
   { keys: ', / .', action: 'Time rate down / up (capped steps announce their reason)', owner: '6.3' },
   { keys: 'N', action: 'Skip to next milestone (when allowed) · again = cancel the skip', owner: '6.3 / 7.2' },
@@ -16,12 +20,13 @@ export const HUD_KEYS: readonly { keys: string; action: string; owner: string }[
   { keys: 'O', action: 'Expand the D1 propellant strip', owner: '6.5' },
   { keys: 'F', action: 'Follow / unfollow the selected entity', owner: '6.4 inspector' },
   { keys: 'B', action: 'Reopen the collapsed debrief', owner: '6.7 debrief' },
+  { keys: 'Ctrl/⌘+S', action: 'SAVE · LOAD sheet (also the top-bar SAVE · LOAD button)', owner: '8.3 persistence' },
   { keys: 'Alt+1…5', action: 'Vehicles / Tanks / Tasks / Range / Events tab', owner: '6.4 tabs' },
   { keys: '+ / −', action: 'Zoom in / out (hold to repeat)', owner: '6.6 map controls' },
   { keys: 'Q / E', action: 'Rotate view left / right', owner: '6.6 map controls' },
   { keys: 'Z', action: 'Frame the selection', owner: '6.6 map controls' },
   { keys: 'C', action: 'Recenter on the followed entity', owner: '6.6 map controls' },
-  { keys: 'H', action: 'Home view (reserved; not Shift+H, which holds the count)', owner: '6.6 map controls' },
+  { keys: 'H', action: 'Home view (plain H; Shift+H holds the count)', owner: '6.6 map controls / 8.2' },
 ];
 
 /** Every single key a HUD_KEYS entry binds (`', / .'` → `,` `.`; `Alt+1…5` → `Alt+1` … `Alt+5`). */
@@ -47,6 +52,25 @@ export function ownedByTarget(target: EventTarget | null, key: string): boolean 
   return false;
 }
 
+/**
+ * `Esc` outside any field (§8): popovers / tooltips / dialogs consume it first (they prevent the default, a modal
+ * `<dialog>` owns it while open); then one step per press — clear the search query, else drop the selection.
+ */
+export function escapeStep(): boolean {
+  if (typeof document !== 'undefined' && document.querySelector('dialog[open]')) return false;
+  if (searchUi.getState().query) {
+    clearSearch();
+    announce('SEARCH CLEARED');
+    return true;
+  }
+  if (viewStore.getState().selectedId) {
+    view.select(null);
+    announce('SELECTION CLEARED');
+    return true;
+  }
+  return false;
+}
+
 export interface HudKeyHandlers {
   /** Extra single-key handlers registered by HUD parts (e.g. `G`, `H`); return true when handled. */
   extra?: (e: KeyboardEvent) => boolean;
@@ -62,9 +86,10 @@ export function handleHudKey(e: KeyboardEvent, extra?: (e: KeyboardEvent) => boo
       announce('RATE DISABLED, RUN ENDED');
       return true;
     }
-    const r = toggledRate(p.timeScale);
+    const ts = liveTimeScale(p.timeScale, session.rateState());
+    const r = toggledRate(ts);
     view.timeScale(r);
-    announce(r === 0 ? 'PAUSED' : rateAnnouncement(r, p.timeScale));
+    announce(r === 0 ? 'PAUSED' : rateAnnouncement(r, ts));
     return true;
   }
   if (e.key === ',' || e.key === '.') {
@@ -72,10 +97,11 @@ export function handleHudKey(e: KeyboardEvent, extra?: (e: KeyboardEvent) => boo
       announce('RATE DISABLED, RUN ENDED');
       return true;
     }
-    const { rate, blocked } = steppedRate(p.timeScale, e.key === '.' ? 1 : -1);
+    const ts = liveTimeScale(p.timeScale, session.rateState());
+    const { rate, blocked } = steppedRate(ts, e.key === '.' ? 1 : -1);
     if (rate !== null) {
       view.timeScale(rate);
-      announce(rateAnnouncement(rate, p.timeScale));
+      announce(rateAnnouncement(rate, ts));
     } else if (blocked) announce(`RATE LOCKED, ${blocked}`);
     return true;
   }
@@ -83,6 +109,7 @@ export function handleHudKey(e: KeyboardEvent, extra?: (e: KeyboardEvent) => boo
     runSkip(p.timeScale, ended);
     return true;
   }
+  if (e.key === 'Escape') return escapeStep();
   return extra ? extra(e) : false;
 }
 

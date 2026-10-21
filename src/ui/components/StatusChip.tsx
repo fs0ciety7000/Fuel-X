@@ -27,7 +27,7 @@ export function StatusChip({ glyph, label, state, meta, full = false, live = fal
     >
       {state === 'danger' ? <HazardBand /> : null}
       <Glyph id={glyph} />
-      <span>{label}</span>
+      <span className={styles.text}>{label}</span>
       {meta ? <span className={styles.meta}>{meta}</span> : null}
     </span>
   );

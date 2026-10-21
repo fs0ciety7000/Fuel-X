@@ -67,6 +67,16 @@ describe('balancing data', () => {
     expect(mvpContract.windowOpenTS + mvpContract.windowDurationS).toBeGreaterThan(0);
     const ms = countdown.milestones.map((m) => m.tS);
     expect([...ms].sort((a, b) => a - b)).toEqual(ms);
+    expect(ms[0]).toBeGreaterThan(countdown.scenarioStartTS);
+  });
+
+  it('D1 milestones follow the logistics / forecast data (BALANCING §15 P2)', () => {
+    const at = (name: string): number | undefined => countdown.milestones.find((m) => m.name === name)?.tS;
+    expect(countdown.orderLastCallLeadS).toBeGreaterThanOrEqual(120);
+    expect(countdown.orderLastCallLeadS).toBeLessThanOrEqual(600);
+    expect(at('STANDARD_ORDER_LAST_CALL')).toBe(-17_100);
+    expect(at('FORECAST_SEES_WINDOW')).toBe(-11_700);
+    expect(at('RUSH_ORDER_LAST_CALL')).toBe(-8_100);
   });
 
   it('flight keyframes are time-ordered and director weights sum to 1', () => {

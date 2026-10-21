@@ -83,6 +83,13 @@
   color: var(--fx-color-accent-text);
 }
 
+/* 8.2: warn / danger rows carry their cause and value on the sub-line (`WIND HOLD · GUST 15.0 M/S`): it wraps
+   (row grows) instead of ellipsizing the number away. Nominal rows keep the one-line ellipsis. */
+.row:is([data-state='warn'], [data-state='danger']) .sub {
+  white-space: normal;
+  overflow: visible;
+}
+
 .row[data-state='disabled'] {
   background-image: var(--fx-pattern-hatch);
   color: var(--fx-color-ink-4);

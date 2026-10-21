@@ -1,16 +1,22 @@
 // Propellant (ARCHITECTURE §4 slot 7, GDD §4.3–4.4, AC 9, 12, 15): farm boil-off, vehicle load and
 // topping, scrub detank. Every transfer moves the same number of kg out of one store and into another;
 // the only sinks are boil-off and the detank loss, both booked in `world.logistics.ledger`.
-import { countdown as cdData, propellant as pd } from '@data/index';
+import { countdown as countdownData, propellant as propellantData } from '@data/index';
 import type { Propellant } from '@data/index';
 import { emit } from '../core/events';
 import { getEntity } from '../core/entities';
-import { DT_S, secondsToTicks } from '../core/time';
+import { DT_S as dtS, secondsToTicks } from '../core/time';
 import { countdownIds } from '../core/world';
 import type { World } from '../core/world';
 import { boosterFsm, fire, shipFsm } from '../entities/machines';
 import type { Countdown, EntityOf, Fluid, PropTanks } from '../types';
 import { isPreLiftoff } from './countdown';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same values; data / DT_S are never reassigned.
+const cdData = countdownData;
+const pd = propellantData;
+const DT_S = dtS;
 
 export const PROPELLANTS: readonly Propellant[] = ['LOX', 'CH4'];
 const LOAD_START_TICKS = secondsToTicks(cdData.loadStartTS);
@@ -172,7 +178,9 @@ function load(world: World, cd: Countdown, stages: readonly Stage[]): void {
       if (stageFull(stage.prop)) fireStage(world, stage, 'loadFull');
     }
   }
-  cd.inputs.loadComplete = stages.every((s) => stageFull(s.prop));
+  let full = true;
+  for (const s of stages) if (!stageFull(s.prop)) full = false;
+  cd.inputs.loadComplete = full;
 }
 
 function detank(world: World, cd: Countdown, stages: readonly Stage[]): void {
@@ -180,7 +188,7 @@ function detank(world: World, cd: Countdown, stages: readonly Stage[]): void {
     fireStage(world, stage, 'scrub');
     drainStage(world, stage);
   }
-  if (!stages.every((s) => stageEmpty(s.prop))) return;
+  for (const s of stages) if (!stageEmpty(s.prop)) return;
   for (const stage of stages) fireStage(world, stage, 'detanked');
   cd.inputs.detankComplete = true;
   const l = world.logistics.ledger;
@@ -192,10 +200,16 @@ function detank(world: World, cd: Countdown, stages: readonly Stage[]): void {
   });
 }
 
-function stagesOf(world: World, cd: Countdown): Stage[] | null {
+/** Reused [booster, ship] pair (runs every tick; callers only iterate it before the next call). */
+const PAIR: Stage[] = [];
+
+function stagesOf(world: World, cd: Countdown): readonly Stage[] | null {
   const b = getEntity(world, cd.boosterId);
   const s = getEntity(world, cd.shipId);
-  return b?.kind === 'booster' && s?.kind === 'ship' ? [b, s] : null;
+  if (b?.kind !== 'booster' || s?.kind !== 'ship') return null;
+  PAIR[0] = b;
+  PAIR[1] = s;
+  return PAIR;
 }
 
 function updateCountdown(world: World, cd: Countdown): void {
@@ -220,6 +234,8 @@ export function propellantSystem(world: World): void {
 
 /** Farm draw needed per second to top both stages of a countdown (PROPELLANT station input, 3.7), kg/s. */
 export function toppingDemandKgPerS(world: World, cd: Countdown, fluid: Propellant): number {
-  const stages = stagesOf(world, cd) ?? [];
-  return stages.reduce((s, st) => s + st.prop[MASS_KEY[fluid]] * pd.vehicleBoilOffFractionPerS[fluid], 0);
+  const stages = stagesOf(world, cd);
+  let sum = 0;
+  if (stages) for (const st of stages) sum = sum + st.prop[MASS_KEY[fluid]] * pd.vehicleBoilOffFractionPerS[fluid];
+  return sum;
 }

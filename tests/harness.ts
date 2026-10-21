@@ -1,5 +1,5 @@
 // Shared headless runner for golden / equivalence / property tests and the anomaly sweep script.
-import { STANDARD_AUTOPILOT, autopilotCommands, createMvpScenario, step } from '../src/sim/index';
+import { STANDARD_AUTOPILOT, asDirector, autopilotCommands, createMvpScenario, step } from '../src/sim/index';
 import type { AutopilotOptions, Command, MvpScenario, SimEvent, StampedCommand, World } from '../src/sim/index';
 
 export interface RunOptions {
@@ -29,7 +29,9 @@ export function drive(sc: MvpScenario, opts: Omit<RunOptions, 'seed'> = {}): Run
   const max = opts.maxTicks ?? MAX_RUN_TICKS;
   let n = 0;
   while (n < max && cd.phase.state !== 'Debrief' && !(opts.until?.(world) ?? false)) {
-    const cmds = autopilotCommands(world, cd.id, opts.autopilot ?? STANDARD_AUTOPILOT);
+    // The autopilot is the demo director: its commands are tagged DIRECTOR exactly as the inline host does
+    // (AC 33), so the golden / equivalence runs and a `?autopilot=1` session log the same decision tags.
+    const cmds = asDirector(autopilotCommands(world, cd.id, opts.autopilot ?? STANDARD_AUTOPILOT));
     for (const cmd of cmds) commands.push({ tick: world.tick, seq: commands.length, cmd });
     const events = step(world, cmds);
     world.outbox.length = 0; // the host drains every frame

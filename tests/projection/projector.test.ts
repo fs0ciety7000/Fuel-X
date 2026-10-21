@@ -92,6 +92,10 @@ describe('Projector cadence', () => {
     for (let i = 0; i < 120; i++) if (t.frame(0)) runs++;
     expect(runs).toBe(0);
     expect(t.store.getState().timeScale.readout).toBe('SIM PAUSED');
+    // A command sent while paused waits for the next tick: the readout says so at once.
+    t.time.queued = 1;
+    expect(t.frame(0)).toBe(true);
+    expect(t.store.getState().timeScale.readout).toBe('SIM PAUSED · 1 QUEUED');
   });
 
   it('keeps identity of unchanged slices between runs', () => {
@@ -108,5 +112,21 @@ describe('Projector cadence', () => {
     expect(b.lists.tanks.filter((r, i) => r === a.lists.tanks[i]).length).toBeGreaterThan(0);
     expect(b.range.stations[1]).toBe(a.range.stations[1]); // RANGE
     expect(b.range.stations[3]).toBe(a.range.stations[3]); // VEHICLE
+  });
+
+  it('sampling per tick during a headless run keeps the altitude chart history (jumpTo, 6.4 open item)', () => {
+    const t = setup();
+    t.frame();
+    const b = t.sc.world.entities.byId[t.sc.countdown.boosterId];
+    if (b?.kind !== 'booster') throw new Error('no booster');
+    // Headless like SimHost.jump: no frames, `sample()` after every tick, until 30 km.
+    while ((b.flight?.altitudeM ?? 0) < 30_000) {
+      step(t.sc.world, autopilotCommands(t.sc.world, t.sc.countdown.id, STANDARD_AUTOPILOT));
+      t.sc.world.outbox.length = 0;
+      t.p.sample();
+    }
+    t.view.setState({ selectedId: b.id });
+    const series = t.p.flush().inspector?.chart?.series ?? [];
+    expect(new Set(series.filter((v) => v !== null)).size).toBeGreaterThan(30);
   });
 });

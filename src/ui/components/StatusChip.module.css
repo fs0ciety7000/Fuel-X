@@ -15,6 +15,19 @@
 
 .full {
   display: flex;
+  min-width: 0;
+  padding-block: var(--fx-space-1);
+}
+
+/* 8.2: in a full-width chip the label wraps between words (`AMBIENT · WIND HOLD · GUST 15.0 M/S`) beside its glyph,
+   the meta stays one word on the right; nothing is clipped. */
+.full .text {
+  min-width: 0;
+  white-space: normal;
+}
+
+.full .meta {
+  white-space: nowrap;
 }
 
 .meta {

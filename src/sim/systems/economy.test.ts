@@ -1,5 +1,6 @@
 import { economy as ec, mvpContract, propellant as pd, vehicles } from '@data/index';
 import { describe, expect, it } from 'vitest';
+import { asDirector } from '../core/commands';
 import type { Command } from '../core/commands';
 import type { SimEvent, SimEventInput } from '../core/events';
 import { emit } from '../core/events';
@@ -167,6 +168,20 @@ describe('scrubs', () => {
 });
 
 describe('ledger and decision log', () => {
+  it('tags each command with its source: DIRECTOR when the director sent it, PLAYER by default (AC 33)', () => {
+    const s = mvpSetup();
+    step(s.world, [
+      { t: 'StartRollout', boosterId: s.cd.boosterId, source: 'DIRECTOR' },
+      ...asDirector([{ t: 'OrderDelivery', fluid: 'LOX', rush: false }]),
+      { t: 'OrderDelivery', fluid: 'CH4', rush: false },
+    ]);
+    expect(s.world.decisions[s.cd.id]?.map((d) => `${d.kind} ${d.by}`)).toEqual([
+      'StartRollout DIRECTOR',
+      'OrderDelivery DIRECTOR',
+      'OrderDelivery PLAYER',
+    ]);
+  });
+
   it('records accepted player commands only, with tick, T-clock and detail', () => {
     const s = mvpSetup();
     const ev = step(s.world, [

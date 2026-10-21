@@ -19,9 +19,16 @@ export function tagState(l: Pick<LabelVM, 'selected' | 'state'>): TagState {
   return l.state === 'disabled' ? 'disabled' : 'default';
 }
 
-/** Accessible name `B-09, booster` (+ `, following`). The projection has no status words on labels yet. */
-export function tagDescription(l: Pick<LabelVM, 'callSign' | 'kind' | 'following'>): string {
-  return [l.callSign, l.kind?.toLowerCase(), l.following ? 'following' : null].filter(Boolean).join(', ');
+/**
+ * Accessible name of a tag (§6.20): the projector's `ariaLabel` (`SP-42, TRANSPORTER, AMBIENT · WIND HOLD · GUST
+ * 15.0 M/S, WARNING`) when present, so status and severity are not carried by colour alone (8.2); else
+ * `B-09, booster` (+ status). `, following` is appended from the view state.
+ */
+export function tagDescription(
+  l: Pick<LabelVM, 'callSign' | 'kind' | 'following'> & Partial<Pick<LabelVM, 'ariaLabel' | 'statusLabel'>>,
+): string {
+  const base = l.ariaLabel || [l.callSign, l.kind?.toLowerCase(), l.statusLabel].filter(Boolean).join(', ');
+  return l.following ? `${base}, following` : base;
 }
 
 const dataAttrs = (l: LabelVM): Record<string, string | number> => ({

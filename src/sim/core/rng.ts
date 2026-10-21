@@ -14,7 +14,11 @@ const WARMUP_DRAWS = 15;
 
 /** Advances `s` in place and returns the next unsigned 32-bit output. */
 export function sfc32Next(s: RngState): number {
-  const [a, b, c, d0] = s;
+  // Indexed reads, not tuple destructuring (that goes through the array iterator on the hot path).
+  const a = s[0];
+  const b = s[1];
+  const c = s[2];
+  const d0 = s[3];
   const d = (d0 + 1) | 0;
   const t = (((a + b) | 0) + d) | 0;
   s[3] = d >>> 0;

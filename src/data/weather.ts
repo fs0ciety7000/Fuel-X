@@ -26,7 +26,7 @@ export const weather = {
     tauS: 2_700,
     clampSd: 3,
   },
-  upperWind: { meanMPerS: 35, sdMPerS: 10, tauS: 3_600, altitudeM: 12_000 },
+  upperWind: { meanMPerS: 35, sdMPerS: 8, tauS: 3_600, altitudeM: 12_000 },
   launchLimit: { groundWindMPerS: 13, upperWindMPerS: 60 },
   front: {
     /** Probability that a front occurs in a run (unitless); drives A2. */
@@ -34,7 +34,12 @@ export const weather = {
     upperWindBoostMPerS: 18,
     rampS: 1_800,
     durationMinS: 2_400,
-    durationMaxS: 5_400,
+    /**
+     * Plateau length is uniform in [min, max], s. 3 600 (BALANCING §15 P1, was 5 400): with the base upper wind
+     * ≤ mean + 1 sd a front stays over the 60 m/s limit ≤ plateau + ≈ 5 min of each ramp ≈ 70 min, inside the
+     * 75-min window, so a pre-load front can be out-waited and a loaded one is decided by farm margin (D1).
+     */
+    durationMaxS: 3_600,
     /**
      * Sim addition 3.7 (review): a natural front starts ramping at a uniform T-offset in this range (scenario
      * start → window close). It only counts as anomaly A2 when it arrives during propellant load → T-0.

@@ -4,12 +4,17 @@
 // wind; a scripted front adds a trapezoid boost to the upper wind (A2). `config.weather = 'MANUAL'` leaves
 // the readings to the caller (tests force series). The wind direction (5.10) is an OU deviation around the mean
 // bearing on its own rng stream 'wind' (one normal draw per tick), so it never shifts the speed series.
-import { countdown as cdData, weather as wx } from '@data/index';
+import { countdown as countdownData, weather as weatherData } from '@data/index';
 import { rng } from '../core/rng';
 import { DT_S, secondsToTicks } from '../core/time';
 import { WIND_FROM_MEAN_RAD } from '../core/world';
 import type { WeatherState, World } from '../core/world';
 import type { Tick } from '../types';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same objects; data is never reassigned.
+const cdData = countdownData;
+const wx = weatherData;
 
 const G = wx.groundWind;
 const U = wx.upperWind;

@@ -18,6 +18,11 @@ export function seedFromSearch(search: string): number | null {
   return Number.isSafeInteger(n) && n <= MAX_SEED ? n : null;
 }
 
+/** `?autopilot=1` hands the count to the scripted director (demo / attract mode); the player decides otherwise. */
+export function autopilotFromSearch(search: string): boolean {
+  return new URLSearchParams(search).get('autopilot') === '1';
+}
+
 /** The same query string with `seed` set (other params, e.g. `debug=1`, are kept). */
 export function searchWithSeed(search: string, seed: number): string {
   const q = new URLSearchParams(search);

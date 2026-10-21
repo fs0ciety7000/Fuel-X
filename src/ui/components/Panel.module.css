@@ -70,6 +70,7 @@
   background-image: var(--fx-pattern-hatch);
 }
 
+/* 8.2: a heading is not an inactive control, so it keeps AA (ink-3, 5.91:1); the hatch body carries "disabled". */
 .panel[data-state='disabled'] .title {
-  color: var(--fx-color-ink-4);
+  color: var(--fx-color-ink-3);
 }

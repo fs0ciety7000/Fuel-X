@@ -6,6 +6,19 @@
   border: var(--fx-rule-frame);
 }
 
+/* HUD right column at compact (§3.3: 336 px). */
+.inspectorsCompact {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--fx-size-hud-right-compact), 1fr));
+  gap: var(--fx-rule-hair);
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+}
+
+.compactBox {
+  width: var(--fx-size-hud-right-compact);
+}
+
 .tabsRow {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--fx-size-toast), 1fr));

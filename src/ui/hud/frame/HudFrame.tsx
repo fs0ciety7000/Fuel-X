@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Glyph } from '../../components';
-import { HUD_SLOTS, SLOT_META, type HudSlotName } from './slots';
+import { FOCUS_ORDER, SLOT_META, type HudSlotName } from './slots';
 import styles from './HudFrame.module.css';
 
 export type HudSlots = Partial<Record<HudSlotName, ReactNode>>;
@@ -86,11 +86,22 @@ export function HudFrame({
     >
       {lead}
       <div className={styles.frame} data-outline={outline || undefined}>
-        {HUD_SLOTS.filter((n) => n !== 'inspect' && n !== 'tabs').map(slot)}
-        <div id={contained ? undefined : HUD_PANELS_ID} className={styles.right} data-region="right" tabIndex={-1}>
-          {slot('inspect')}
-          {slot('tabs')}
-        </div>
+        {FOCUS_ORDER.map((name) =>
+          name === 'tabs' ? null : name === 'inspect' ? (
+            <div
+              key="right"
+              id={contained ? undefined : HUD_PANELS_ID}
+              className={styles.right}
+              data-region="right"
+              tabIndex={-1}
+            >
+              {slot('inspect')}
+              {slot('tabs')}
+            </div>
+          ) : (
+            slot(name)
+          ),
+        )}
         <div className={styles.world} data-region="world" aria-hidden="true">
           {CORNERS.map((c) => (
             <span key={c} className={styles.cross} data-corner={c}>

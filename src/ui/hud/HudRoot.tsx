@@ -35,9 +35,13 @@ export function HudRoot({ debug, contained = false, outline = false }: HudRootPr
       debug={debug}
       lead={
         contained ? null : (
-          <a className={styles.skip} href={`#${HUD_PANELS_ID}`}>
-            SKIP TO PANELS
-          </a>
+          <>
+            <a className={styles.skip} href={`#${HUD_PANELS_ID}`}>
+              SKIP TO PANELS
+            </a>
+            {/* §8 landmarks: the page's one h1 (screen readers navigate by heading); the HUD has no visible title. */}
+            <h1 className={styles.sr}>FUEL-X · LAUNCH CONTROL</h1>
+          </>
         )
       }
     >

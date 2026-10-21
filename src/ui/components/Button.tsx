@@ -24,6 +24,19 @@ export interface ButtonProps {
   'aria-controls'?: string;
 }
 
+/**
+ * `aria-keyshortcuts` value for a printed key hint (`N`, `⏎`, `Esc`, `⇧H`); undefined when the hint is not a key.
+ * The `<kbd>` itself is hidden from the accessibility tree, so the hint never pollutes the button's name.
+ */
+export function keyShortcut(hint: string | undefined): string | undefined {
+  if (!hint) return undefined;
+  if (hint === '⏎') return 'Enter';
+  if (hint.toLowerCase() === 'esc') return 'Escape';
+  const shift = /^⇧(.)$/.exec(hint);
+  if (shift) return `Shift+${shift[1]}`;
+  return hint.length === 1 ? hint : undefined;
+}
+
 /** §6.33 button: primary (ink fill) · secondary (frame) · danger (accent fill + band on hover); `<kbd>` hint. */
 export function Button({
   children,
@@ -52,15 +65,20 @@ export function Button({
       aria-busy={busy || undefined}
       aria-describedby={disabledReason ? reasonId : undefined}
       aria-label={ariaLabel}
-      aria-keyshortcuts={kbd && kbd.length === 1 ? kbd : undefined}
+      aria-keyshortcuts={keyShortcut(kbd)}
       title={disabledReason ?? undefined}
       onClick={disabled ? undefined : onClick}
     >
       {busy ? <Glyph id="current" /> : glyph ? <Glyph id={glyph} /> : null}
       <span>{children}</span>
-      {kbd ? <kbd className={styles.kbd}>{kbd}</kbd> : null}
+      {kbd ? (
+        <kbd className={styles.kbd} aria-hidden="true">
+          {kbd}
+        </kbd>
+      ) : null}
       {disabledReason ? (
-        <span id={reasonId} className={styles.reason}>
+        // Description only (aria-describedby reads hidden nodes): kept out of the button's accessible name.
+        <span id={reasonId} className={styles.reason} aria-hidden="true">
           {disabledReason}
         </span>
       ) : null}

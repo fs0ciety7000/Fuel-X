@@ -1,10 +1,15 @@
 // Path following (ARCHITECTURE §4 slot 6): constant speed along a named site path, integer tick counter so
 // arrival is exact (= ceil(length / (speed·DT)) ticks) and independent of step batching.
 import type { Lc1PathId } from '@data/index';
-import { DT_S } from '../core/time';
-import { headingOf, headingToQuat, pathLengthM, pointAt } from '../math/path';
+import { DT_S as dtS } from '../core/time';
+import { headingOf, headingToQuat, pathLengthM, pointInto, setHeadingQuat } from '../math/path';
 import type { Leg, Quat, RouteState, Vec3 } from '../types';
 
+// Module-level alias: a local const, not the import binding (a getter per access under Vitest / tsx).
+const DT_S = dtS;
+
+// Movers write `pos` / `rot` in place every tick (same values as fresh objects, no garbage). Safe because every
+// entity owns its pose objects: `spawnEntity` copies them and the sim never shares one between entities.
 interface Mobile {
   pos: Vec3;
   rot: Quat;
@@ -17,14 +22,19 @@ export function routeTicks(pathId: Lc1PathId, speedMPerS: number): number {
 }
 
 function place(e: Mobile, route: RouteState): void {
-  const p = pointAt(route.pathId, Math.min(route.movedTicks * route.speedMPerS * DT_S, pathLengthM(route.pathId)));
-  e.pos = p.pos;
-  e.rot = headingToQuat(p.headingRad);
+  const s = Math.min(route.movedTicks * route.speedMPerS * DT_S, pathLengthM(route.pathId));
+  setHeadingQuat(e.rot, pointInto(route.pathId, s, e.pos));
 }
 
 /** Puts `e` at the start of `pathId`. */
 export function startRoute(e: Mobile, pathId: Lc1PathId, speedMPerS: number): void {
   e.route = { pathId, movedTicks: 0, speedMPerS };
+  place(e, e.route);
+}
+
+/** Puts `e` on `pathId` as if it had already covered `movedTicks` of it (a mid-path start, e.g. a turn-back). */
+export function startRouteAt(e: Mobile, pathId: Lc1PathId, speedMPerS: number, movedTicks: number): void {
+  e.route = { pathId, movedTicks: Math.max(0, Math.min(movedTicks, routeTicks(pathId, speedMPerS))), speedMPerS };
   place(e, e.route);
 }
 
@@ -61,7 +71,10 @@ export function advanceLeg(e: LegMobile): boolean {
   if (!l) return true;
   if (l.movedTicks < l.totalTicks) l.movedTicks++;
   const f = l.totalTicks > 0 ? l.movedTicks / l.totalTicks : 1;
-  e.pos = { x: l.from.x + (l.to.x - l.from.x) * f, y: l.from.y, z: l.from.z + (l.to.z - l.from.z) * f };
+  const pos = e.pos;
+  pos.x = l.from.x + (l.to.x - l.from.x) * f;
+  pos.y = l.from.y;
+  pos.z = l.from.z + (l.to.z - l.from.z) * f;
   return l.movedTicks >= l.totalTicks;
 }
 
@@ -71,7 +84,5 @@ export function advancePatrol(e: Mobile): void {
   if (!r) return;
   const lap = routeTicks(r.pathId, r.speedMPerS);
   r.movedTicks = r.movedTicks + 1 >= lap ? 0 : r.movedTicks + 1;
-  const p = pointAt(r.pathId, r.movedTicks * r.speedMPerS * DT_S);
-  e.pos = p.pos;
-  e.rot = headingToQuat(p.headingRad);
+  setHeadingQuat(e.rot, pointInto(r.pathId, r.movedTicks * r.speedMPerS * DT_S, e.pos));
 }

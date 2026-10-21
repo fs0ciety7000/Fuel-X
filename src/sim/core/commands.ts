@@ -3,7 +3,15 @@
 // seed reproduces a game.
 import type { Id, LeakChoice, Propellant, RecoveryMode, Tick } from '../types';
 
-export type Command =
+/**
+ * Who sent a command (GDD §13.2.1, AC 33): `PLAYER` = a human from the HUD (the default when absent),
+ * `DIRECTOR` = the scripted demo director (`?autopilot=1`) or another scripted driver. Set by `src/app` where the
+ * director feeds the host; it travels with the command (command log, export, replay) and the sim only copies it
+ * into the decision log.
+ */
+export type CommandSource = 'PLAYER' | 'DIRECTOR';
+
+export type Command = (
   | { t: 'StartRollout'; boosterId: Id }
   | { t: 'Stack'; padId: Id }
   | { t: 'OrderDelivery'; fluid: Propellant; rush: boolean }
@@ -12,10 +20,21 @@ export type Command =
   | { t: 'Recycle'; countdownId: Id }
   | { t: 'Scrub'; countdownId: Id }
   | { t: 'CatchDecision'; boosterId: Id; choice: RecoveryMode }
-  | { t: 'LeakResponse'; choice: LeakChoice };
+  | { t: 'LeakResponse'; choice: LeakChoice }
+) & { source?: CommandSource };
 
 export type CommandType = Command['t'];
 export type CommandOf<T extends CommandType> = Extract<Command, { t: T }>;
+
+/** The command's source; commands without one (HUD, older logs and saves) are the player's. */
+export function commandSource(cmd: Command): CommandSource {
+  return cmd.source ?? 'PLAYER';
+}
+
+/** Marks commands as sent by the scripted director (copies; the input array is not mutated). */
+export function asDirector(cmds: readonly Command[]): Command[] {
+  return cmds.map((c) => ({ ...c, source: 'DIRECTOR' }));
+}
 
 export interface StampedCommand {
   /** Tick at whose start the command is applied. */

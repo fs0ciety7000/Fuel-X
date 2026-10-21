@@ -51,6 +51,8 @@ export function fire<S extends string, T extends string>(
   e: StatefulEntity<S>,
   on: T,
 ): boolean {
+  // Most calls are polls that cannot fire from the current state: skip the context allocation for those.
+  if (!fsm.canFire(e.fsm.state, on)) return false;
   return fsm.fire(e.fsm, on, { world, e }) !== null;
 }
 
@@ -195,8 +197,18 @@ export const TRANSPORTER_STATES: readonly TransporterState[] = [
   'AT_PAD',
   'RETURNING',
 ];
+/** `depart` / `turnBack`: ambient duty only (SP-42, 7.3) — leave the yard empty, turn back mid-leg before road closure. */
 export type TransporterTrigger =
-  'loadStart' | 'loaded' | 'windHigh' | 'windOkLoaded' | 'windOkEmpty' | 'arrived' | 'unloaded' | 'home';
+  | 'loadStart'
+  | 'loaded'
+  | 'windHigh'
+  | 'windOkLoaded'
+  | 'windOkEmpty'
+  | 'arrived'
+  | 'unloaded'
+  | 'home'
+  | 'depart'
+  | 'turnBack';
 
 export const transporterFsm = entityFsm<TransporterState, TransporterTrigger>('transporter', TRANSPORTER_STATES, [
   { from: 'IDLE', to: 'LOADING', on: 'loadStart' },
@@ -207,6 +219,8 @@ export const transporterFsm = entityFsm<TransporterState, TransporterTrigger>('t
   { from: 'MOVING', to: 'AT_PAD', on: 'arrived' },
   { from: 'AT_PAD', to: 'RETURNING', on: 'unloaded' },
   { from: 'RETURNING', to: 'IDLE', on: 'home' },
+  { from: 'IDLE', to: 'MOVING', on: 'depart' },
+  { from: 'MOVING', to: 'RETURNING', on: 'turnBack' },
 ]);
 
 export const CRANE_STATES: readonly CraneState[] = ['IDLE', 'LIFTING'];

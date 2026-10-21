@@ -252,7 +252,8 @@
   letter-spacing: var(--fx-type-label-tracking);
 }
 
-.by[data-by='AUTO'] {
+.by[data-by='AUTO'],
+.by[data-by='DIRECTOR'] {
   color: var(--fx-color-ink-3);
 }
 
@@ -280,46 +281,4 @@
   padding: var(--fx-space-3) var(--fx-space-4);
   background: var(--fx-color-paper);
   border-top: var(--fx-rule-heavy);
-}
-
-/* Collapsed sheet (VIEW SITE): badge at the top of the overlay region. */
-.readyWrap {
-  position: absolute;
-  inset: 0 0 auto;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.ready {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--fx-space-3);
-  min-height: var(--fx-size-control);
-  padding: var(--fx-space-0) var(--fx-space-4);
-  background: var(--fx-color-paper);
-  border: var(--fx-rule-heavy);
-  color: var(--fx-color-ink);
-  font: inherit;
-  font-size: var(--fx-type-strong);
-  font-weight: var(--fx-type-strong-weight);
-  letter-spacing: var(--fx-type-strong-tracking);
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.ready:hover {
-  background: var(--fx-color-paper-2);
-}
-
-.ready:focus-visible {
-  outline: var(--fx-focus-ring);
-  outline-offset: var(--fx-focus-offset);
-}
-
-.kbd {
-  padding: var(--fx-space-0) var(--fx-space-1);
-  border: var(--fx-rule-hair) solid currentcolor;
-  font: inherit;
-  font-size: var(--fx-type-label);
 }

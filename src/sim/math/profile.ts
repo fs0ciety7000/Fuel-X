@@ -1,9 +1,13 @@
 // Nominal flight profile (BALANCING §6): piecewise-linear interpolation of the booster keyframes, except the first
 // segment (LIFTOFF → MAX_Q), which is the eased liftoff (`flightProfile.liftoff`, 5.10): acceleration from rest on the
 // mount, a(t) = a0 + j·t, meeting the MAX_Q keyframe exactly. Keyframe times and values are unchanged.
-import { flightProfile as fp } from '@data/index';
+import { flightProfile as flightProfileData } from '@data/index';
 import type { BoosterKeyframe } from '@data/index';
 import type { FlightEventName } from '../types';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same objects; data is never reassigned.
+const fp = flightProfileData;
 
 export interface Keyframe {
   readonly event: FlightEventName;

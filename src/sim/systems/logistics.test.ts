@@ -4,7 +4,7 @@ import type { SimEvent } from '../core/events';
 import { hashWorld, serializeWorld, deserializeWorld } from '../core/serialize';
 import { secondsToTicks as T } from '../core/time';
 import { tankerFsm, TANKER_STATES } from '../entities/machines';
-import { entity, id, mvpSetup, rejected, run, runUntil, stateChanges } from '../fixtures.test-utils';
+import { entity, id, mvpSetup, rejected, run, runUntil, stateChanges, withoutAmbient } from '../fixtures.test-utils';
 import { pathLengthM } from '../math/path';
 import { advance, step } from '../step';
 import type { EntityOf, TankerState } from '../types';
@@ -46,7 +46,7 @@ describe('OrderDelivery (AC 7)', () => {
     const lx = entity(world, id(ids, 'LX-01'), 'tanker');
     const farm0 = farmMassKg(world, 'LOX');
     const boil0 = world.logistics.ledger.LOX.farmBoilOffKg;
-    const ordered = step(world, [{ t: 'OrderDelivery', fluid: 'LOX', rush: false }]);
+    const ordered = withoutAmbient(world, step(world, [{ t: 'OrderDelivery', fluid: 'LOX', rush: false }]));
     expect(ordered).toEqual([
       {
         t: 'DeliveryOrdered',
@@ -103,7 +103,7 @@ describe('OrderDelivery (AC 7)', () => {
 
   it('rush: charters an extra truck with the next serial, arrives after the rush lead time, despawns', () => {
     const { world } = mvpSetup();
-    const events = step(world, [{ t: 'OrderDelivery', fluid: 'CH4', rush: true }]);
+    const events = withoutAmbient(world, step(world, [{ t: 'OrderDelivery', fluid: 'CH4', rush: true }]));
     expect(events.map((e) => e.t)).toEqual(['Spawned', 'DeliveryOrdered', 'LedgerPosted']);
     expect(events[2]).toMatchObject({ item: 'HAULAGE_FEE', amountCr: -ld.delivery.rush.feeCrPerTruck });
     expect(events[0]).toMatchObject({ kind: 'tanker', callSign: 'MX-03' });

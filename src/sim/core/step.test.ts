@@ -23,6 +23,7 @@ describe('step pipeline', () => {
       'countdown',
       'prep',
       'logistics',
+      'ambient',
       'propellant',
       'flight',
       'tower',

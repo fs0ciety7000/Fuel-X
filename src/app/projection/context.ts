@@ -26,6 +26,8 @@ export interface TimeInputs {
   skipBlocker?: SkipBlockCode | null;
   /** Last drop to 1× (GDD §6). */
   drop?: { code: DropCode; tick: number } | null;
+  /** Player commands waiting for the next tick (sent while paused). */
+  queued?: number;
 }
 
 export interface SparkSource {

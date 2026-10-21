@@ -254,6 +254,30 @@ describe('polls', () => {
     expect(cd.tClockTicks).toBe(0);
   });
 
+  it('all green: load and terminal polls auto-GO, the final poll always asks (autoGoAtPoll, GDD §13.2.1)', () => {
+    expect(cdData.autoGoAtPoll).toEqual({ load: true, terminal: true, final: false });
+    const { world, cd } = setup({
+      startTS: -4_801,
+      phase: 'Stack',
+      inputs: { stackComplete: true, loadComplete: true },
+    });
+    const held: PollId[] = [];
+    const passed: { poll: PollId; auto: boolean }[] = [];
+    for (let i = 0; i < 200_000 && cd.phase.state !== 'Liftoff'; i++) {
+      const go = cd.hold?.reason === 'POLL';
+      if (go) held.push(cd.hold?.poll ?? 'load');
+      const evs = step(world, go ? [cmd('Go', cd)] : []);
+      expect(rejected(evs)).toEqual([]);
+      for (const e of evs) if (e.t === 'PollPassed') passed.push({ poll: e.poll, auto: e.auto });
+    }
+    expect(held).toEqual(['final']);
+    expect(passed).toEqual([
+      { poll: 'load', auto: true },
+      { poll: 'terminal', auto: true },
+      { poll: 'final', auto: false },
+    ]);
+  });
+
   it('GO when nothing is held is refused', () => {
     const { world, cd } = setup();
     expect(rejected(step(world, [cmd('Go', cd)]))).toEqual(['NOT_HOLDING']);
@@ -364,8 +388,10 @@ describe('RECYCLE', () => {
     expect(events[1]).toMatchObject({ fromTClockTicks: T(-30), toTClockTicks: T(-600) });
     expect(cd.pollsPassed).toEqual(['load', 'terminal']);
     expect(cd.tClockTicks).toBe(T(-600) + 1);
-    const toFinal = runUntil(world, () => cd.pollsPassed.includes('final'));
+    const toFinal = runUntil(world, () => cd.hold?.poll === 'final');
     expect(types(toFinal)).toContain('PollOpened');
+    expect(rejected(step(world, [cmd('Go', cd)]))).toEqual([]);
+    expect(cd.pollsPassed).toContain('final');
   });
 
   it('from a hold releases it (by RECYCLE)', () => {
@@ -456,6 +482,9 @@ describe('launch window', () => {
 // --- Full nominal count -------------------------------------------------------------------------
 
 /** Scripted inputs standing in for 3.4–3.6 until those systems exist. */
+/** T-clock ticks a prompt GO at the final poll costs (hold opens on one tick, the GO releases it on the next). */
+const FINAL_POLL_GO_TICKS = 1;
+
 function nominalRun(seed = 7, extra: (world: World, cd: Countdown) => void = () => {}): Setup & { log: SimEvent[] } {
   const world = createWorld({ seed });
   const cd = createCountdown(world, {
@@ -478,6 +507,9 @@ function nominalRun(seed = 7, extra: (world: World, cd: Countdown) => void = () 
     if (tS >= 380) cd.inputs.recoveryMode = 'CATCH';
     if (tS >= 415) cd.inputs.recoveryComplete = true;
     extra(world, cd);
+    // The final poll always asks (autoGoAtPoll.final = false): the director answers GO on the next tick.
+    if (cd.hold?.reason === 'POLL' && cd.clock.state === 'Holding')
+      enqueueCommand(q, world.tick, { t: 'Go', countdownId: cd.id });
     advance(world, 1, q);
     log.push(...world.outbox.splice(0));
   }
@@ -500,9 +532,9 @@ describe('nominal count, T-06:00:00 → debrief', () => {
       'Safing',
       'Debrief',
     ]);
-    // No holds: T-0 is reached 6 h of ticks after the start.
-    expect(cd.liftoffTick).toBe(T(21_600) - 1);
-    expect(types(log)).not.toContain('HoldStarted');
+    // Only the final poll holds (it always asks): one tick for the GO, so T-0 is 6 h + 1 tick after the start.
+    expect(cd.liftoffTick).toBe(T(21_600) - 1 + FINAL_POLL_GO_TICKS);
+    expect(log.flatMap((e) => (e.t === 'HoldStarted' ? [e.poll] : []))).toEqual(['final']);
     expect(cd.pollsPassed).toEqual(['load', 'terminal', 'final']);
     expect(cd.clock.state).toBe('Stopped');
   });
@@ -532,7 +564,7 @@ describe('nominal count, T-06:00:00 → debrief', () => {
         step(w, [{ t: 'Go', countdownId: c.id }]);
       }
     });
-    expect(held.cd.liftoffTick).toBe(T(21_600) - 1 + T(600));
+    expect(held.cd.liftoffTick).toBe(T(21_600) - 1 + FINAL_POLL_GO_TICKS + T(600));
   });
 });
 

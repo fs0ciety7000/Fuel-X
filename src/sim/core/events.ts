@@ -28,8 +28,11 @@ import type {
 import type { CommandType } from './commands';
 import type { AnomalySource, ContractStatus, DebriefOutcome, DecisionBy, LedgerItem, World } from './world';
 
-/** Who committed the D3b answer (6.8): the player's `LeakResponse`, or the sim's DEGRADED default at the deadline. */
-export type LeakRespondedBy = Extract<DecisionBy, 'PLAYER' | 'AUTO'>;
+/**
+ * Who committed the D3b answer (6.8): a `LeakResponse` (its source, PLAYER or DIRECTOR), or the sim's DEGRADED
+ * default at the deadline (AUTO).
+ */
+export type LeakRespondedBy = Extract<DecisionBy, 'PLAYER' | 'AUTO' | 'DIRECTOR'>;
 
 export type SimEvent =
   | { t: 'PhaseChanged'; tick: Tick; countdownId: Id; from: Phase; to: Phase; trigger: string }

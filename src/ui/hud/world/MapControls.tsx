@@ -11,7 +11,7 @@ import styles from './MapControls.module.css';
 // Map controls (DESIGN_SYSTEM §6.19, task 6.6, AC 25): a vertical toolbar of 32 px squares. Zoom / rotate are
 // relative camera nudges (window event of `./dom-contract`, consumed by the render CameraRig, which damps them — no
 // inertia here) with hold-to-repeat at a fixed step rate; frame / home / recenter are `view.*` intents. Keys:
-// + / − zoom, Q / E rotate, Z frame selection, C recenter (H is taken by the timeline's hold, see the 6.6 report).
+// + / − zoom, Q / E rotate, Z frame selection, C recenter, plain H home view (8.2; Shift+H is the timeline's hold).
 
 /** One zoom step: distance × 0.8 in, ÷ 0.8 out. One rotate step: 15° of compass yaw. */
 export const ZOOM_STEP = 0.8;
@@ -40,8 +40,12 @@ export const NUDGES = {
 } as const satisfies Record<string, CameraNudge>;
 
 /** Map-control keys → action (null = not ours). */
-export function mapKey(key: string): keyof typeof NUDGES | 'frame' | 'recenter' | null {
+export function mapKey(key: string, shift = false): keyof typeof NUDGES | 'frame' | 'recenter' | 'home' | null {
   switch (key) {
+    case 'h':
+    case 'H':
+      // Shift+H holds the count (CountdownTimeline); only the plain key goes home (§8).
+      return shift ? null : 'home';
     case '+':
     case '=':
       return 'zoomIn';
@@ -143,10 +147,11 @@ export function MapControls() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => {
       if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
-      const a = mapKey(e.key);
+      const a = mapKey(e.key, e.shiftKey);
       if (!a) return;
       e.preventDefault();
-      if (a === 'frame') frameSelection();
+      if (a === 'home') view.follow(null);
+      else if (a === 'frame') frameSelection();
       else if (a === 'recenter') recenter();
       else nudgeCamera(NUDGES[a]);
     };

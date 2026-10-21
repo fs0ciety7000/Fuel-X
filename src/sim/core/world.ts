@@ -20,7 +20,7 @@ import { seedAllStreams } from './rng';
 import type { RngState, RngStream } from './rng';
 
 /** Bumped on any World shape change; migrations live in src/sim/save (3.10). */
-export const WORLD_SCHEMA = 5;
+export const WORLD_SCHEMA = 6;
 
 /** Mean ground wind direction (meteorological, from), rad. */
 export const WIND_FROM_MEAN_RAD = (wx.groundWind.fromDeg * Math.PI) / 180;
@@ -105,7 +105,11 @@ export interface ContractState {
   closedTick: Tick | null;
 }
 
-export type DecisionBy = 'PLAYER' | 'AUTO' | 'FORCED';
+/**
+ * Decision-log tag (GDD §13.2.1): `PLAYER` / `DIRECTOR` = the command's source, `AUTO` = the sim's documented
+ * default when nobody answered, `FORCED` = no choice existed.
+ */
+export type DecisionBy = 'PLAYER' | 'AUTO' | 'FORCED' | 'DIRECTOR';
 
 /** One entry of the timestamped decision log (AC 22). `detail` is a compact machine string for the UI. */
 export interface DecisionEntry {
@@ -396,17 +400,39 @@ export function createWorld({ seed, config }: CreateWorldOptions): World {
   };
 }
 
-// Sorted-id cache per countdowns record (hot path: every system iterates it each tick). Countdowns are only
-// ever added, so the key count detects staleness; a loaded world has a new record and a new entry.
-const ID_CACHE = new WeakMap<object, Id[]>();
+// Sorted-id cache per countdowns record (hot path: every system iterates it each tick). Countdowns are only ever
+// added (by `createCountdown`, which calls `invalidateCountdownIds`); the key count is re-verified once per tick as
+// a backstop for direct writes. A loaded world has a new record and a new entry.
+interface IdCache {
+  ids: Id[];
+  /** `world.tick` of the last key-count check. */
+  checkedTick: number;
+}
+const ID_CACHE = new WeakMap<object, IdCache>();
+
+/** Own enumerable key count without allocating a key array. */
+function ownKeyCount(rec: object): number {
+  let n = 0;
+  for (const k in rec) if (Object.hasOwn(rec, k)) n++;
+  return n;
+}
+
+/** Drops the cached id list of `world.countdowns` (call after adding a countdown). */
+export function invalidateCountdownIds(world: World): void {
+  ID_CACHE.delete(world.countdowns);
+}
 
 /** Countdown ids in a stable order (sorted, so identical before and after a save round-trip). Do not mutate. */
 export function countdownIds(world: World): readonly Id[] {
   const rec = world.countdowns;
-  let ids = ID_CACHE.get(rec);
-  if (!ids || ids.length !== Object.keys(rec).length) {
-    ids = Object.keys(rec).sort();
-    ID_CACHE.set(rec, ids);
+  let c = ID_CACHE.get(rec);
+  if (c && c.checkedTick !== world.tick) {
+    if (c.ids.length !== ownKeyCount(rec)) c = undefined;
+    else c.checkedTick = world.tick;
   }
-  return ids;
+  if (!c) {
+    c = { ids: Object.keys(rec).sort(), checkedTick: world.tick };
+    ID_CACHE.set(rec, c);
+  }
+  return c.ids;
 }

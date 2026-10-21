@@ -7,7 +7,14 @@ import { InlineSimHost } from '../sim-host/inline';
 import { TimeControl } from '../time/time-control';
 import { SessionController } from './controller';
 import type { SessionEnv } from './controller';
-import { dataRevision, drawSeed, searchWithSeed, seedFromSearch, sessionFileName } from './session';
+import {
+  autopilotFromSearch,
+  dataRevision,
+  drawSeed,
+  searchWithSeed,
+  seedFromSearch,
+  sessionFileName,
+} from './session';
 
 const zero = (): number => 0;
 
@@ -29,6 +36,8 @@ function rig(entropy: number[] = [7, 1234]) {
 
 describe('session helpers', () => {
   it('parses and writes ?seed=, keeping other params', () => {
+    expect(autopilotFromSearch('?seed=42')).toBe(false);
+    expect(autopilotFromSearch('?seed=42&autopilot=1')).toBe(true);
     expect(seedFromSearch('?seed=42')).toBe(42);
     expect(seedFromSearch('?debug=1&seed=0')).toBe(0);
     expect(seedFromSearch('?seed=4294967295')).toBe(4_294_967_295);
@@ -119,6 +128,9 @@ describe('SessionController', () => {
     expect(ui.debrief?.meta).toBe(`REV ${dataRevision()} · SEED 42`);
     expect(ui.debrief?.decisions.every((d) => ['D1', 'D2', 'D3', 'D3B', ''].includes(d.code ?? 'x'))).toBe(true);
     expect(ui.debrief?.decisions.some((d) => d.code === 'D3')).toBe(true);
+    // Readable verbs, not sim command kinds (6.7 open item).
+    expect(ui.debrief?.decisions.map((d) => d.detail.split(' · ')[0])).not.toContain('STARTROLLOUT');
+    expect(ui.debrief?.decisions.find((d) => d.code === 'D3')?.detail).toMatch(/^CATCH CALL · (CATCH|DIVERT) P /);
     expect(ui.timeScale).toMatchObject({
       runEnded: true,
       paused: true,

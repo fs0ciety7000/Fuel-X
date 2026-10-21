@@ -145,6 +145,7 @@ tick N+1:  1 applyCommands   (validated; rejected → CommandRejected event; acc
            4 countdown FSM   (T-clock, polls, holds, recycle/scrub, window)
            5 prep            (crane, transporter, tower stacking, wind pauses)
            6 logistics       (road closure, tanker orders/routes/gate/offload)
+          6b ambient         (SP-42 ambient duty yard ⇄ tank farm, parked through the road closure — 7.3)
            7 propellant      (transfers farm↔vehicle, boil-off, topping, detank) — mass-conserving
            8 flight          (scripted profile, catch model, decision, outcome)
           8b tower           (carriage / catch arms / ship QD arm toward targets, carriage ⇄ QD interlock — 5.0)
@@ -325,7 +326,7 @@ stateDiagram-v2
 - **phase**: `Standby` (initial, before `StartRollout`) → `Rollout` → `Stack` → `PropellantLoad` → `TerminalCount` → `Liftoff` → `Boostback` → `TowerCatch | Divert` → `Safing` → `Debrief`, plus `Scrubbed` → `Debrief`.
 - **clock**: `Counting ⇄ Holding → Stopped`; the T-clock advances only while `Counting`. `countdown.hold = { reason: MANUAL | POLL | NO_GO | LOAD_INCOMPLETE, poll }`.
 - `Holding` is therefore not a phase: the phase *is* the `resumePhase`, and its physical work (stacking, loading, topping) continues under a hold — which is what makes the T-00:03:00 load auto-hold resolvable.
-- **Polls** are holds with reason `POLL` opened when the T-clock reaches the poll mark; `Go` (or auto-GO when all 5 stations are GO and `autoGoWhenAllGreen`) passes them. Load poll needs `Stack` + stack complete; final poll needs T-0 inside the window. GO with MARGINAL stations records them in `countdown.goWithMarginal` (3.7 risk multiplier).
+- **Polls** are holds with reason `POLL` opened when the T-clock reaches the poll mark; `Go` (or auto-GO when all 5 stations are GO and the data flag `countdown.autoGoAtPoll[poll]` allows it: load and terminal yes, final never; the countdown's `autoGoWhenAllGreen` is a per-attempt master switch, tests turn it off) passes them. Load poll needs `Stack` + stack complete; final poll needs T-0 inside the window. GO with MARGINAL stations records them in `countdown.goWithMarginal` (3.7 risk multiplier).
 - **Auto-holds**: NO-GO station during `PropellantLoad`/`TerminalCount` (released only by player `Go`); load incomplete at T-00:03:00 (auto-released when complete + all GO).
 - **Recycle** (from `TerminalCount`, past T-00:10:00, window open): T-clock → T-00:10:00, final poll re-run, any hold released (`by: 'RECYCLE'`).
 - **Window close** before liftoff (held or not, any pre-liftoff phase) → `Scrubbed` + `WindowMissed { penaltyCr }`; economy applies it (3.8).
@@ -339,7 +340,7 @@ stateDiagram-v2
 | Booster `B-` | IN_YARD → ON_TRANSPORTER → STACKING → STACKED → LOADING → LOADED → ASCENT → BOOSTBACK → DESCENT → CAUGHT_SAFING (→ REFURB → IN_YARD, post-MVP) | DIVERTED → LOST, LOST; LOADING/LOADED → DETANKING → STACKED (scrub) |
 | Ship `S-` | IN_YARD → ON_TRANSPORTER → STACKING → STACKED → LOADING → LOADED → ASCENT (attached) → SEPARATED → SECO → OFF_SCENE (despawn) | DETANKING, LOST |
 | Tower `TOWER-` | IDLE → STACKING → IDLE → CATCH_READY → CATCHING → IDLE | STACKING ⇄ WIND_HOLD; DAMAGED; arms OPEN ⇄ CLOSED (`ArmsChanged`; the angles move in the sim, §7.9); QD arm STOWED → ENGAGING → ENGAGED → RETRACTING → STOWED (`QdArmChanged`) |
-| Transporter `SP-` | IDLE → LOADING → MOVING → AT_PAD → RETURNING → IDLE (MVP: SP-41 parks at the yard pickup) | WIND_HOLD (from MOVING / RETURNING) |
+| Transporter `SP-` | `role: 'prep'` (SP-41): IDLE → LOADING → MOVING → AT_PAD → RETURNING → IDLE (parks at the yard pickup). `role: 'ambient'` (SP-42, 7.3): IDLE → `depart` → MOVING → AT_PAD (= tank-farm apron) → RETURNING → IDLE | WIND_HOLD (from MOVING / RETURNING); ambient `turnBack` MOVING → RETURNING before road closure |
 | Crane `CR-` | IDLE → LIFTING → IDLE (one timed task, `craneLoadTaskS`) | — (no crane wind limit in BALANCING) |
 | Tanker `LX-`/`MX-` | OFFMAP → INBOUND → GATE_WAIT → OFFLOADING → OUTBOUND → OFFMAP | GATE_WAIT held while pad hazard closed (≥ T-00:40:00) |
 | Picket `PK-` | PATROL → INTERCEPT → ESCORT → RETURNING → PATROL (DOCKED → PATROL unused in MVP) | — |
@@ -423,6 +424,14 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   road gate; the truck leaves off-map `drive` ticks before. Fee in `DeliveryOrdered`, propellant price in
   `DeliveryCompleted` (for delivered kg). Offload at `offloadRateKgPerS` into the farm.
 - **Road closure**: closed while any LC-1 countdown is pre-liftoff with T ≥ T-00:40:00, or in Liftoff…Safing.
+- **Ambient duty** (7.3, AC 26, `src/sim/systems/ambient.ts`, slot 6b): transporters with `role: 'ambient'` (spawned
+  from `lc1Layout.ambientDuty`, SP-42) shuttle `sp42.yardToFarm` / `sp42.farmToYard` (1 220 m, exact reverses) at
+  `transporter.speedEmptyMPerS`, dwelling `ambientTransporter.dwellYardS` (IDLE in the bay) / `dwellFarmS` (AT_PAD at
+  the apron) — a dwell is only kept while another tanker (INBOUND / OUTBOUND) or transporter (MOVING / RETURNING) moves.
+  It plans against `ticksToRoadClosure` (lower bound from the T-clock): no departure inside it, the farm dwell ends in
+  time, an outbound leg turns back (`turnBack`, mid-path start on the reverse path) so the bay is reached on the
+  closure tick; parked through the closure, resumes when the road reopens. Wind as SP-41. No cargo, no events beyond
+  `EntityStateChanged`, no economy effect; the HUD log skips its state changes, labels read `AMBIENT · …`.
   Inbound trucks reaching the gate wait in `GATE_WAIT`; a truck offloading when the road closes stops and leaves
   (`aborted: true`). Scrub/Debrief reopen the road.
 - **Load**: in `PropellantLoad`/`TerminalCount` once T ≥ T-01:15:00, each of the 4 lines (booster/ship × LOX/CH4)
@@ -540,10 +549,12 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   | `session.skipToNextMilestone()` | `SKIP` | starts a skip if `timeScale.skip.enabled` | `timeScale.skip.active`, readout `SIM SKIP → …` |
   | `session.cancelSkip()` | `CANCEL_SKIP` | stops at the current tick, requested rate unchanged | `skip.active = false` |
   | `session.replaySameSeed()` | `REPLAY` | fresh `mvp` world, same seed + autopilot setting, empty command log, money/rep from the scenario; time rules, projector, view, camera reset | new run (`debrief: null`) |
+  | *(boot)* | — | `src/main.tsx`: seed from `?seed=` or `drawSeed`; **autopilot off** unless `?autopilot=1` (7.1: the player runs the count; `__fuelx.seed()` still defaults to the autopilot for tests) | first run |
   | `session.newSeed()` | `NEW_SEED` | same with `drawSeed(crypto)` ≠ current seed; URL → `/play?seed=N` (`history.replaceState`, other params kept) | `debrief.seed` of the next run |
   | `session.exportLog()` | `EXPORT_LOG` | downloads `fuelx-mvp-seed<N>-t<tick>.json` = `SessionFile {format: 'fuelx-session', version 1, game, schema, createdAt, scenario, seed, dataRevision, autopilot, fromTick, tick, commandLog, events, eventsTruncated, debrief[]}` (`src/app/session/session.ts`; loading it back is post-MVP) | — |
   | `session.viewSite()` | `VIEW_SITE` | cancels a skip; the sheet collapse / `B` reopen is UI state (`src/ui/hud/debrief/debrief-ui.ts`); the run stays paused (`RUN ENDED`) | — |
   | `session.run(id)` | any | dispatch by id (`ActionVM.session`) | |
+  | `session.rateState()` | — | **synchronous read** (8.2): `{paused, requested, resumeRate}` of `TimeControl`, mapped by the projector's own `rateFields`; null while unbound (`bindRateState`, composition root). Rate keys `Space` / `,` / `.` toggle / step from it, not from the ≤ 10 Hz projection (`view.timeScale` applies synchronously in `Game.applyView`) | — |
 
   `DebriefVM.actions` = the four exits (`id` = `session` = `REPLAY | NEW_SEED | EXPORT_LOG | VIEW_SITE`, `command: null`, VIEW SITE `key: 'Esc'`); `DebriefVM.seed`, `revision` (8 hex of the canonical hash of `src/data`), `meta` (`REV 3F2A91C0 · SEED 42`); `decisions[].code` = `D1 | D2 | D3 | D3B | ''` (row `id` stays the unique key). Startup: `main.tsx` reads `?seed=` (`seedFromSearch`, 0 … 2^32 − 1) or draws one and writes it into the URL (`game.newRun(seed)`). The host keeps the run's full event log (`SimHost.sessionLog()`, cap 500 000 events; a full MVP run is far below). Debug: `__fuelx.exportSession()`, `__fuelx.skip()`, `__fuelx.time()`; `__fuelx.seed()` = `game.newRun(seed, {url: false})`. Tests: `src/app/session/session.test.ts` (AC 32: replay = identical first 10 min of events and commands, new seed + URL, export content, debrief actions + `RUN ENDED`).
 - **Measured**: projector 0.44 ms mean / 0.69 ms p95 (T-00:00:04) and 0.45 / 0.74 ms (T+00:01:45) in Node (`tests/projection/perf.test.ts`); in the browser under SwiftShader ≈ 1.1–1.3 ms mean. React commits with the placeholder subscriber: 8/s at 100×, 1/s at 1× (`tests/e2e/projection-scene.e2e.ts`, budget ≤ 12/s); published projection age 90–210 ms while running (AC 17 ≤ 250 ms).
@@ -577,15 +588,17 @@ interface FuelxDebug {
              shadowDrawCalls: number; triangles: number;
              points: number; geometries: number; textures: number; programs: number;
              particles: number; fxPoints: number;            // 5.6: live FX sprites, FX point vertices in `points`
-             simUsPerTick: { mean: number; p95: number }; simMsPerFrame: number; entities: number;
+             simUsPerTick: { mean: number; p95: number };  // last 120 advances: mean = Σ ms / Σ steps, p95 per call (8.1 F5)
+             simMsPerFrame: number; entities: number;
              tick: number; timeScale: number; effectiveTimeScale: number; reactCommitsPerS: number };
   save(): string; load(json: string): Promise<void>;
+  autosaves(): Promise<AutosaveMeta[]>; autosaveJson(): Promise<string | null>; // 8.3: ring, latest first
 }
 ```
 
 ## 10. Save / load
 
-- `save = { format: 'fuelx-save', schema: 4, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream`.
+- `save = { format: 'fuelx-save', schema: 6, game: '<app version>', createdAt: '<ISO, metadata only>', world: World, commandLog?: StampedCommand[] }`, canonical JSON (sorted keys at write), gzip via native `CompressionStream` for exported files (IndexedDB keeps the plain JSON, see 8.3 below).
 - Storage: IndexedDB (thin in-house wrapper, store `saves`, keys `auto-<n>`, `slot-<n>`), plus export/import as `.fuelx.json.gz` file. Autosave on `Milestone` (debrief = natural save point, GDD §3) and on `visibilitychange → hidden`.
 - **Versioning**: `schema` is an integer bumped on any `World` shape change; `src/sim/save/migrations.ts` holds `migrations[n]: (w_n) => w_{n+1}`, applied in order on load. Each migration ships with a fixture save under `tests/fixtures/saves/schema-<n>.json` and a test (load old fixture → migrate → validate → run 100 ticks without error). Saves newer than the app are rejected with a clear message.
 - Equivalence test: run K ticks → save → load → M ticks ≡ K+M ticks (canonical-JSON hash).
@@ -595,10 +608,53 @@ interface FuelxDebug {
   game, createdAt, fromSchema }`; errors are codes `SAVE_NOT_JSON`, `SAVE_BAD_FORMAT`, `SAVE_FROM_NEWER_GAME`,
   `SAVE_MIGRATION_MISSING`, `WORLD_INVALID`. `src/sim/save/migrations.ts` — `MIGRATIONS` (1 → 2: tower mechanisms, 5.0; 2 → 3: asset-origin stage heights,
   `flight.tiltRad`, ship `sepAltitudeM/sepDownrangeM`, 5.0b; fixture `schema-2.json`; 3 → 4: rng stream `wind`,
-  `weather.windFromRad/windDirDevRad`, `engines.throttle`, 5.10; fixture `schema-3.json`, in flight at T+40 s) +
+  `weather.windFromRad/windDirDevRad`, `engines.throttle`, 5.10; fixture `schema-3.json`, in flight at T+40 s; 4 → 5: A3
+  `leak.deadlineTick`, 6.8, fixture `schema-4.json`; 5 → 6: transporter `role`, 7.3, fixture `schema-5.json`) +
   `migrateWorld(raw, from, to, table)`. Fixture `tests/fixtures/saves/schema-1.json` (seed 42 at sim tick 540 000, under
   the A3 LEAK_FIX hold), written once by `scripts/sim/make-save-fixture.ts`. Compression / IndexedDB stay in
   `src/app/persistence` (8.3).
+- **Implementation (8.3)** — `src/app/persistence/` (no new dependency):
+  - `store.ts`: `SaveStore` interface (`list/get/put/delete`) with `IdbSaveStore` (thin wrapper: database `fuelx` v1,
+    store `saves`, keyPath `key`, one connection per page, writes resolve on transaction commit, 3 s open timeout) and
+    `MemorySaveStore` (unit tests; fallback). Records = `{ key, seq, reason, detail?, savedAt, seed, tick, tClockTicks,
+    phase, finished, autopilot, game, schema, json }`. **IndexedDB holds the canonical JSON uncompressed** (~15–60 KB,
+    structured clone): the `hidden` autosave must open its transaction in the same task as the event, before a closing
+    tab is gone, and an async CompressionStream would delay it. gzip is for files only.
+  - Ring: `auto-<seq % N>`, `N = AUTOSAVE_RING = 5` (`config.ts`, app config — not a game tunable); `seq` continues from
+    the stored records, latest = highest `seq`. `slot-<n>` keys are reserved for manual slots (API only, no UI in MVP).
+  - Triggers (`controller.ts`, bus `onBatch`): `Milestone` (detail = milestone name), `PhaseChanged → Debrief` (record
+    `finished: true`), `visibilitychange → hidden`, and after an import. Skipped for autopilot runs (`?autopilot=1` or
+    debug `seed(…, { autopilot: true })` — demo runs never evict the player's run), while the boot offer is open, and
+    when the same run already has a record at the same tick. A headless `jumpTo` dispatches no events, so it never
+    autosaves. The save is serialised synchronously at the trigger (frame end), then written in order.
+  - Boot (`main.tsx` → `persistence.boot`): the page's fresh run starts **held paused**; the latest autosave is offered
+    (RESUME RUN: CONTINUE vs NEW RUN) iff it is unfinished, not autopilot, and the URL has no `?seed=` **or the same
+    seed** (every run mirrors its seed into the URL, so a plain reload must still offer it; a link to another seed starts
+    that run). `?autopilot=1` never offers. Any new run started meanwhile (`__fuelx.seed`) supersedes the offer.
+    CONTINUE = `SimHost.load(record.json)` + `Game.afterLoad()`; the run resumes **paused** on the saved tick (identical
+    world, unit + e2e). NEW RUN releases the fresh tick-0 world; the autosave stays in the ring.
+  - Files (`codec.ts`): export = `host.save` → gzip via `CompressionStream` → `fuelx-save-seed<S>-t<tick>.fuelx.json.gz`
+    (plain `.fuelx.json` without it). Import accepts both (gzip sniffed by magic `1F 8B`), validates + migrates with
+    `loadSave` **before** touching the running world, recognises an EXPORT LOG session file (a different format,
+    GDD §13.2.3) and maps every failure to a specific message (`CORRUPT SAVE · …`, `SAVE FROM A NEWER VERSION · SCHEMA n,
+    THIS BUILD READS UP TO 6 · RELOAD TO UPDATE`, `SAVE TOO OLD …`, `NOT A FUEL-X SAVE …`, `THIS IS A SESSION LOG …`).
+    An imported run resumes paused and is autosaved. Autopilot is not part of the save: a loaded run keeps the page's
+    setting (off unless `?autopilot=1`).
+  - UI: bridge port `persistence` + `persistenceStore` (`src/bridge/persistence.ts`; app writes, `menuOpen` is a UI
+    intent) → `src/ui/hud/persistence/` (DESIGN_SYSTEM §6.38), mounted in the overlay slot.
+  - **Lazy chunks (8.1 F2)**: `Game.persistence` is a `LazyPersistence` facade (`lazy.ts`, imports only types); the
+    controller + codec + IndexedDB store + browser effects are one dynamic chunk (`runtime.ts`, ≈ 4.0 KB gz) that
+    `boot()` fetches while the fresh run is held paused (boot's own run starts meanwhile; a foreign run started before
+    the chunk arrives releases the page without an offer; port calls made in the window wait for the chunk; a failed
+    fetch releases the run without persistence and is retried by the next call). Nothing is lost: autosaves are
+    skipped during the boot lookup anyway and a paused run cannot reach a milestone. UI: `PersistenceContainer.tsx`
+    (eager: `Ctrl/⌘+S` + a latch) loads `Persistence.tsx` (dialogs, ≈ 1.2 KB gz) the first time an offer or the sheet
+    is wanted and keeps it mounted. Same pattern for the debrief: `DebriefContainer.tsx` + `ReadyBadge.tsx` eager,
+    the sheet `Debrief.tsx` (≈ 2.0 KB gz) lazy, prefetched once `clock.phase` is SAFING / SCRUBBED / DEBRIEF. Rule:
+    `src/ui/hud/{debrief,persistence}/index.ts` and `src/app/persistence/lazy.ts` must never re-export / import the
+    lazy modules at runtime (tests and `/design` import them by path). Debug hooks:
+    `__fuelx.autosaves()`, `__fuelx.autosaveJson()`. Tests: `src/app/persistence/persistence.test.ts`,
+    `tests/e2e/persistence.e2e.ts`.
 
 ## 11. Token pipeline
 
@@ -648,10 +704,10 @@ build/       git-ignored intermediates (models-raw/)
 | `test` | `vitest run` (unit + FSM + golden + equivalence + property; `--project sim` subset possible) |
 | `typecheck` | `tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit` |
 | `lint` | `eslint . && stylelint "src/**/*.css" && prettier --check . && tsx scripts/tokens/build.ts --check` |
-| `e2e` | `playwright test` (projects `e2e` light specs in parallel, `scene` game-scene specs one at a time (`workers: 1`, 5.9), `visual`; `perf` project only via `npm run perf -- --browser`, which sets `FUELX_PERF=1`) |
+| `e2e` | `playwright test` (projects `e2e` light specs in parallel, `scene` game-scene specs one at a time (`workers: 1`, 5.9), `visual`; `perf` project only via `npm run perf -- --browser`, which sets `FUELX_PERF=1`: `tests/e2e/scenes.perf.ts` reference scenes + `tests/e2e/leaks.perf.ts` full-run leak counts, 8.1) |
 | `asset` | `tsx scripts/assets/build.ts` → `npm run asset -- tower` (Blender → optimize → validate → codegen → preview) |
 | `assets` | `tsx scripts/assets/build.ts --all` (`-- --verify` rebuilds twice, asserts byte-identical GLBs) |
-| `perf` | `tsx scripts/perf/sim-bench.ts && tsx scripts/perf/budgets.ts` (sim timing harness + bundle gzip / GLB size vs `budget.json`; `-- --browser` adds the Playwright reference scenes `tests/e2e/scenes.perf.ts`, counts vs `budget.json` `scene`, 5.9) |
+| `perf` | `tsx scripts/perf/sim-bench.ts && tsx scripts/perf/budgets.ts` (sim timing harness + bundle gzip / GLB size vs `budget.json`; `-- --browser` adds the Playwright `perf` project: reference scenes `tests/e2e/scenes.perf.ts`, counts vs `budget.json` `scene`, 5.9, and `tests/e2e/leaks.perf.ts`, GL objects / geometries / DOM / heap over 4 full runs, 8.1) |
 | `tokens` | `tsx scripts/tokens/build.ts` (helper, also run by dev/build/lint) |
 
 ASSETS_GUIDE §8 names `scripts/asset.mjs`; the implementation path is `scripts/assets/build.ts` (TS, same behaviour).
@@ -695,7 +751,7 @@ Total GLB payload for the MVP site ≤ 4 MB (estimate 2.5 MB). Textures: none by
 
 | Metric | Budget |
 |---|---|
-| Initial JS (gzip) | ≤ 450 KB (three ≈ 170, react-dom ≈ 60, R3F+drei subset ≈ 50, postprocessing ≈ 25, app ≤ 145) — as built 5.9: `postprocessing` is ≈ 63 KB gz (SMAA lookup images inlined) and loads as a lazy chunk with `post/pipeline` (`RenderPass` mounts it; `isReady()` waits for it), initial play.html graph 386 KB |
+| Initial JS (gzip) | ≤ 450 KB (three ≈ 170, react-dom ≈ 60, R3F+drei subset ≈ 50, postprocessing ≈ 25, app ≤ 145) — as built 5.9: `postprocessing` is ≈ 63 KB gz (SMAA lookup images inlined) and loads as a lazy chunk with `post/pipeline` (`RenderPass` mounts it; `isReady()` waits for it), initial play.html graph 386 KB; 8.1 F2: persistence + debrief sheet lazy (§10), 449.0 → 444.3 KB |
 | CSS (gzip) | ≤ 25 KB |
 | Fonts | ≤ 150 KB WOFF2 total (subset, ≤ 4 files) |
 | `/design` entry | separate chunk, not loaded by the game |

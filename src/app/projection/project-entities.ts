@@ -14,15 +14,26 @@ import type {
   ValueVM,
 } from '@bridge/projection-types';
 import { DIVERT_PROFILE, DT_S, pathLengthM } from '@sim/index';
-import { classNames, flightProfile as fp, mvpFlight, propellant as pd } from '@data/index';
+import { classNames, flightProfile as fp, lc1Layout, logistics as ld, mvpFlight, propellant as pd } from '@data/index';
 import type { Entity, EntityOf, Id, Kind, RouteState } from '@sim/types';
 import type { Ctx } from './context';
 import { entitiesOf, entity, tClockAt } from './context';
 import { action } from './project-decision';
 import type { StatusVM } from './labels';
+
+/**
+ * Entity status with the cause of a transporter wind hold (GDD AC 26, AC 6): a held SP-41 / SP-42 reads
+ * `WIND HOLD · GUST 16.2 M/S` (label tag, list row, inspector), so the stillness on the roads has a visible cause.
+ */
+function statusOf(c: Ctx, e: Entity): StatusVM {
+  const st = entityStatus(e);
+  if (e.kind !== 'transporter' || e.fsm.state !== 'WIND_HOLD') return st;
+  const g = mps(c.world.weather.groundGustMPerS);
+  return { ...st, label: `${st.label} · GUST ${g.text} ${g.unit ?? ''}`.trimEnd() };
+}
 import type { StationVM } from '@bridge/projection-types';
 import { degrees, dv, km, kmh, metres, missing, mps, num, ofTotal, pct, prob, tClock, tonnes, words } from './format';
-import { FLUID_LABEL, PHASE_LABEL, entityStatus, kindLabel } from './labels';
+import { FLUID_LABEL, PHASE_LABEL, entityStatus, isAmbient, kindLabel } from './labels';
 
 type Booster = EntityOf<'booster'>;
 type Ship = EntityOf<'ship'>;
@@ -212,13 +223,25 @@ function inspectorBody(c: Ctx, e: Entity, decisionActions: ActionVM[]): Inspecto
     }
     case 'transporter': {
       const cargo = entity(c, e.cargo);
-      base.sub = `${kindLabel(e)} · ${classNames.transporter}`;
+      const ambient = isAmbient(e);
+      base.sub = `${kindLabel(e)} · ${classNames.transporter}${ambient ? ' · AMBIENT' : ''}`;
       base.metrics = [metric('speed', 'SPEED', kmh(speed)), metric('cargo', 'CARGO', text(cargo?.callSign ?? 'EMPTY'))];
-      if (e.route && (e.fsm.state === 'MOVING' || e.fsm.state === 'RETURNING' || e.fsm.state === 'WIND_HOLD'))
-        base.progress = progress(
-          e.fsm.state === 'RETURNING' ? 'RETURN TO YARD' : 'ROLLOUT TO OLM-1',
-          routeFraction(e.route),
+      if (e.fsm.state === 'WIND_HOLD') {
+        base.metrics.push(
+          metric('gust', 'GUST', mps(c.world.weather.groundGustMPerS)),
+          metric('gustLimit', 'GUST LIMIT', mps(ld.windLimit.transporterMPerS)),
         );
+      }
+      if (e.route && (e.fsm.state === 'MOVING' || e.fsm.state === 'RETURNING' || e.fsm.state === 'WIND_HOLD')) {
+        const label = ambient
+          ? e.route.pathId === lc1Layout.ambientDuty[e.callSign]?.out
+            ? 'TO TANK FARM'
+            : 'RETURN TO YARD'
+          : e.fsm.state === 'RETURNING'
+            ? 'RETURN TO YARD'
+            : 'ROLLOUT TO OLM-1';
+        base.progress = progress(label, routeFraction(e.route));
+      }
       return base;
     }
     case 'crane': {
@@ -271,7 +294,7 @@ export function inspectorVM(c: Ctx, decisionActions: ActionVM[]): InspectorVM | 
   if (!e) return null;
   const body = inspectorBody(c, e, decisionActions);
   const cls = e.kind === 'booster' ? classNames.booster : e.kind === 'ship' ? classNames.ship : '';
-  const st = entityStatus(e);
+  const st = statusOf(c, e);
   const following = c.view.followId === e.id;
   return {
     id: e.id,
@@ -326,7 +349,7 @@ const hiddenState = (e: Entity): boolean =>
 
 function listRow(c: Ctx, e: Entity): ListRowVM {
   const k = rowKey(c, e);
-  const st = entityStatus(e);
+  const st = statusOf(c, e);
   return {
     id: e.id,
     kind: e.kind,
@@ -549,7 +572,7 @@ export function labelsVM(c: Ctx, alertEntityIds: ReadonlySet<Id>): LabelVM[] {
     const e = c.world.entities.byId[id];
     if (!e || hiddenState(e) || (e.kind === 'booster' && e.fsm.state === 'LOST')) continue;
     if (c.env.hidden?.(id)) continue;
-    const st = entityStatus(e);
+    const st = statusOf(c, e);
     const selected = c.view.selectedId === id;
     const followed = c.view.followId === id;
     const alert = alertEntityIds.has(id) || st.severity === 'danger' || st.severity === 'warn';

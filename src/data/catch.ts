@@ -16,10 +16,11 @@ export const catchModel = {
   /** Forced divert above this tower wind, m/s. */
   towerWindLimitCatchMPerS: 20,
   /**
-   * Policy without player input: catch if p ≥ this (unitless); never takes a contested call. Designer value 0.65
-   * (top of CONTESTED); applied 0.70 so the hands-off sweep lands in the 15–25 % divert band (BALANCING §13.5).
+   * Policy without player input: catch if p ≥ this (unitless), the LEAN band floor — AUTO catches CLEAR and LEAN,
+   * diverts CONTESTED and AGAINST (BALANCING §15 P3, GDD AC 19). Hands-off sweep: diverted 10–25 %, failed ≤ 8 % of
+   * flights (AC 3c, re-targeted in §15; was 0.70 for the old 15 % floor, §13.5).
    */
-  autoCatchThreshold: 0.7,
+  autoCatchThreshold: 0.65,
   /** Display / assert only (profile is scripted), m/s. */
   maxVerticalSpeedMPerS: 2,
   /** Decision-strip bands, UI only (not read by the sim): CLEAR ≥ clear · LEAN ≥ lean · CONTESTED ≥ contested · AGAINST. */

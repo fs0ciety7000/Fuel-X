@@ -269,6 +269,13 @@ describe('A3 GSE leak (D3b)', () => {
     expect(s.world.decisions[s.cd.id]?.filter((d) => d.kind === 'LeakResponse').map((d) => d.by)).toEqual(['PLAYER']);
   });
 
+  it('a DIRECTOR answer is committed and logged as DIRECTOR (AC 33)', () => {
+    const s = leaking();
+    const at = step(s.world, [{ t: 'LeakResponse', choice: 'DEGRADED', source: 'DIRECTOR' }]);
+    expect(at.filter((e) => e.t === 'LeakResponded')).toMatchObject([{ choice: 'DEGRADED', by: 'DIRECTOR' }]);
+    expect(s.world.decisions[s.cd.id]?.filter((d) => d.kind === 'LeakResponse').map((d) => d.by)).toEqual(['DIRECTOR']);
+  });
+
   it('deadline is capped at window close', () => {
     const onset = leaking().world.tick - 1; // same setup, deterministic onset tick
     const s = withPlan(

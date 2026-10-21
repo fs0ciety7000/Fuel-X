@@ -5,15 +5,21 @@
 //   clock: Counting ⇄ Holding → Stopped — the T-clock only advances while Counting.
 // The phase keeps running underneath a hold (stacking, loading and topping continue), which is what
 // ARCHITECTURE calls `Holding` with a `resumePhase`. Polls are holds with reason POLL that need a GO
-// (or pass automatically when every station is GO and `autoGoWhenAllGreen` is on).
-import { STATION_IDS, contracts, countdown as cdData, time as timeData } from '@data/index';
+// (or pass automatically when every station is GO, the countdown's `autoGoWhenAllGreen` switch is on and the
+// data flag `autoGoAtPoll[poll]` allows it — never at the final poll, GDD §13.2.1).
+import {
+  STATION_IDS as stationIdsData,
+  contracts as contractsData,
+  countdown as countdownData,
+  time as timeImport,
+} from '@data/index';
 import type { PollId, TimeScale } from '@data/index';
 import { emit } from '../core/events';
 import { ensureAttempt } from './economy';
 import { defineFsm } from '../core/fsm';
 import type { FsmContext } from '../core/fsm';
 import { secondsToTicks } from '../core/time';
-import { countdownIds } from '../core/world';
+import { countdownIds, invalidateCountdownIds } from '../core/world';
 import type { World } from '../core/world';
 import type { CommandOf } from '../core/commands';
 import type {
@@ -28,6 +34,13 @@ import type {
   SiteId,
   Station,
 } from '../types';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same objects; data is never reassigned.
+const STATION_IDS = stationIdsData;
+const contracts = contractsData;
+const cdData = countdownData;
+const timeData = timeImport;
 
 export const STATIONS: readonly Station[] = STATION_IDS;
 export const PHASES: readonly Phase[] = [
@@ -79,13 +92,21 @@ function ctx(world: World, cd: Countdown, hold: CountdownHold = MANUAL_HOLD): Cd
 }
 
 export const isPreLiftoff = (phase: Phase): boolean => PRE_LIFTOFF_PHASES.includes(phase);
-const allGo = (cd: Countdown): boolean => STATIONS.every((s) => cd.inputs.stations[s] === 'GO');
-const anyNoGo = (cd: Countdown): boolean => STATIONS.some((s) => cd.inputs.stations[s] === 'NO_GO');
+// Loops, not every/some with a closure over `cd`: these run every tick.
+function allGo(cd: Countdown): boolean {
+  for (const s of STATIONS) if (cd.inputs.stations[s] !== 'GO') return false;
+  return true;
+}
+function anyNoGo(cd: Countdown): boolean {
+  for (const s of STATIONS) if (cd.inputs.stations[s] === 'NO_GO') return true;
+  return false;
+}
 const marginalStations = (cd: Countdown): Station[] => STATIONS.filter((s) => cd.inputs.stations[s] === 'MARGINAL');
 
 /** Poll located exactly at a T-clock value, if any. */
 function pollAt(tClockTicks: number): PollId | null {
-  return POLL_ORDER.find((p) => POLL_TICKS[p] === tClockTicks) ?? null;
+  for (const p of POLL_ORDER) if (POLL_TICKS[p] === tClockTicks) return p;
+  return null;
 }
 
 /** Why a poll cannot be passed right now (station status aside), or null. */
@@ -291,12 +312,13 @@ export function createCountdown(world: World, opts: CreateCountdownOptions): Cou
     goWithMarginal: [],
     windowOpenTick,
     windowCloseTick: windowOpenTick + secondsToTicks(contract.windowDurationS),
-    autoGoWhenAllGreen: opts.autoGoWhenAllGreen ?? cdData.autoGoWhenAllGreen,
+    autoGoWhenAllGreen: opts.autoGoWhenAllGreen ?? true,
     liftoffTick: null,
     scrubReason: null,
     inputs: defaultCountdownInputs(),
   };
   world.countdowns[id] = cd;
+  invalidateCountdownIds(world);
   world.contracts[contract.id] ??= { id: contract.id, status: 'ACTIVE', countdownId: id, closedTick: null };
   ensureAttempt(world, cd);
   return cd;
@@ -365,10 +387,15 @@ function autoHold(world: World, cd: Countdown, hold: CountdownHold): void {
   clockFsm.fire(cd.clock, 'AutoHold', ctx(world, cd, hold));
 }
 
+/** The poll passes by itself when all five stations are GO (per-poll data flag × the countdown's switch). */
+function autoGoAt(cd: Countdown, poll: PollId): boolean {
+  return cd.autoGoWhenAllGreen && cdData.autoGoAtPoll[poll];
+}
+
 function tryAutoRelease(world: World, cd: Countdown): void {
   const hold = cd.hold;
   if (!hold || !cd.autoGoWhenAllGreen || !allGo(cd)) return;
-  if (hold.reason === 'POLL' && hold.poll && pollBlocker(world, cd, hold.poll) === null) {
+  if (hold.reason === 'POLL' && hold.poll && autoGoAt(cd, hold.poll) && pollBlocker(world, cd, hold.poll) === null) {
     passPoll(world, cd, hold.poll, true);
     clockFsm.fire(cd.clock, 'AutoRelease', ctx(world, cd));
   } else if (hold.reason === 'LOAD_INCOMPLETE' && cd.inputs.loadComplete) {
@@ -396,7 +423,7 @@ function advancePreLiftoff(world: World, cd: Countdown): void {
   const poll = pollAt(cd.tClockTicks);
   if (poll && !cd.pollsPassed.includes(poll)) {
     emit(world, { t: 'PollOpened', countdownId: cd.id, poll });
-    if (cd.autoGoWhenAllGreen && allGo(cd) && pollBlocker(world, cd, poll) === null) {
+    if (autoGoAt(cd, poll) && allGo(cd) && pollBlocker(world, cd, poll) === null) {
       passPoll(world, cd, poll, true);
     } else {
       autoHold(world, cd, { reason: 'POLL', poll });
@@ -426,7 +453,7 @@ function updateCountdown(world: World, cd: Countdown): void {
     phaseFsm.fire(cd.phase, 'WindowClosed', ctx(world, cd));
     return;
   }
-  phaseFsm.fire(cd.phase, 'auto', ctx(world, cd));
+  if (phaseFsm.canFire(cd.phase.state, 'auto')) phaseFsm.fire(cd.phase, 'auto', ctx(world, cd));
   if (cd.clock.state === 'Holding') {
     tryReleaseLeakFix(world, cd);
     if (cd.clock.state === 'Holding') tryAutoRelease(world, cd);

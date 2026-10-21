@@ -7,7 +7,7 @@ export type { Rng } from './core/rng';
 export { defineFsm } from './core/fsm';
 export type { Fsm, FsmContext, FsmDefinition, FsmTransition } from './core/fsm';
 export { emit, drainEvents, eventsThisTick } from './core/events';
-export { createCommandQueue, enqueueCommand, takeCommands } from './core/commands';
+export { asDirector, commandSource, createCommandQueue, enqueueCommand, takeCommands } from './core/commands';
 export type { CommandQueue } from './core/commands';
 export { canonicalStringify, serializeWorld, deserializeWorld, hashWorld } from './core/serialize';
 export { hashHex } from './core/hash';

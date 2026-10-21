@@ -39,7 +39,8 @@ describe('label declutter', () => {
     const under = slot('A', 4, 100, 400);
     const gone = { ...slot('B', 5, 800, 400), visible: false };
     const list = [under, gone];
-    for (let i = 0; i < MAX_LABELS + 10; i++) list.push(slot(`N${i}`, 1, 400 + (i % 10) * 100, 200 + Math.floor(i / 10) * 50));
+    for (let i = 0; i < MAX_LABELS + 10; i++)
+      list.push(slot(`N${i}`, 1, 400 + (i % 10) * 100, 200 + Math.floor(i / 10) * 50));
     list.sort(compareLabels);
     const n = declutter(list, [card], 16, []);
     expect(under.mode).toBe('hidden');

@@ -37,7 +37,11 @@ export function Tooltip({ text, children, open: forced }: TooltipProps) {
       onFocus={() => setOpen(true)}
       onBlur={() => setOpen(false)}
       onKeyDown={(e) => {
-        if (e.key === 'Escape') setOpen(false);
+        // Esc closes an open tooltip and stops there (§8: popover → search → deselect, one step per press).
+        if (e.key === 'Escape' && open) {
+          e.preventDefault();
+          setOpen(false);
+        }
       }}
     >
       {children(id)}

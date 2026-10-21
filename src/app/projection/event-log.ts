@@ -1,11 +1,21 @@
 // Events tab / toasts source (DESIGN_SYSTEM §6.23): drained SimEvents → formatted log rows, newest first, capped.
 // Fed from the bus once per frame; names are resolved at log time (despawned entities keep their call-sign).
-// Low-signal bookkeeping events (ledger postings, tower mechanism steps, clock FSM echoes) are not logged.
+// Low-signal bookkeeping events (ledger postings, tower mechanism steps, clock FSM echoes) and the ambient SP-42 duty
+// loop's state changes are not logged.
 import type { EventVM, GlyphId, Severity } from '@bridge/projection-types';
 import type { SimEvent, SimEventType, World } from '@sim/types';
 import { DT_S } from '@sim/index';
 import { credits, fixed, tClock, tonnes, utc, words } from './format';
-import { ANOMALY_LABEL, DRIVER_LABEL, GO_LABEL, PHASE_LABEL, POLL_LABEL, STATION_LABEL, reasonLabel } from './labels';
+import {
+  ANOMALY_LABEL,
+  DRIVER_LABEL,
+  GO_LABEL,
+  PHASE_LABEL,
+  POLL_LABEL,
+  STATION_LABEL,
+  isAmbient,
+  reasonLabel,
+} from './labels';
 import type { StationDriver } from '@sim/types';
 
 export const EVENT_LOG_MAX = 200;
@@ -186,6 +196,8 @@ export class EventLog {
       const d = describeEvent(e);
       if (!d) continue;
       const ent = d.entityId ? world.entities.byId[d.entityId] : undefined;
+      // Background duty (SP-42 yard ⇄ tank farm, 7.3) is visible in the world and the lists, not in the log.
+      if (e.t === 'EntityStateChanged' && ent && isAmbient(ent)) continue;
       const callSign =
         e.t === 'Spawned' || e.t === 'Despawned' ? e.callSign : ent ? ent.callSign : d.entityId ? '' : 'LC-1';
       (added ??= []).push({

@@ -41,6 +41,8 @@ export function Badge({
       data-state={state}
       data-demo={demo}
       aria-disabled={disabled || undefined}
+      // The text sits in an <output>, which does not name the button: spell it out (RANGE MARGINAL, 2 ALERTS · 1 NEW).
+      aria-label={[label, value, note].filter(Boolean).join(' ')}
       title={tooltip}
       onClick={disabled ? undefined : onClick}
     >

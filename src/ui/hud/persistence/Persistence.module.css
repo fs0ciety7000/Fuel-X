@@ -1,0 +1,59 @@
+/* 8.3 resume offer + SAVE · LOAD sheet: §6.27 dialog frame, a fact table like the debrief, one status line. */
+.lede {
+  margin: 0;
+  font-size: var(--fx-type-body);
+  letter-spacing: var(--fx-type-body-tracking);
+}
+
+.facts {
+  display: grid;
+  gap: var(--fx-rule-hair);
+  margin: 0;
+  background: var(--fx-color-ink-5);
+  border: var(--fx-rule-frame);
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: var(--fx-size-label-column) 1fr;
+  gap: var(--fx-space-3);
+  padding: var(--fx-space-2) var(--fx-space-3);
+  background: var(--fx-color-paper);
+  font-size: var(--fx-type-body);
+  letter-spacing: var(--fx-type-body-tracking);
+}
+
+.fact dt {
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+  color: var(--fx-color-ink-3);
+}
+
+.fact dd {
+  margin: 0;
+  font-weight: var(--fx-type-strong-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ok = ink rule; danger = accent plate edge + small accent text (never orange on a big word). */
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--fx-space-2);
+  margin: 0;
+  padding: var(--fx-space-2) var(--fx-space-3);
+  border-left: var(--fx-rule-heavy);
+  font-size: var(--fx-type-label);
+  font-weight: var(--fx-type-label-weight);
+  letter-spacing: var(--fx-type-label-tracking);
+}
+
+.status[data-state='danger'] {
+  border-left: var(--fx-space-2) solid var(--fx-color-accent);
+  color: var(--fx-color-accent-text);
+}
+
+.file {
+  display: none;
+}

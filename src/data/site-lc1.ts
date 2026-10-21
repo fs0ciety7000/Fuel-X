@@ -80,6 +80,10 @@ const points = {
   catchPoint: v(0, CATCH_ORIGIN_M, 0),
   /** SP-41 pickup bay in the yard (CR-77 loads stages here). */
   yardPickup: v(-1_340, 0, 460),
+  /** SP-42 (ambient MULE) bay in the yard: start, dwell and park point. */
+  sp42Bay: v(-1_300, 0, 420),
+  /** Tank-farm apron west of LN2-1: the far end of the SP-42 ambient duty. */
+  farmApron: v(-520, 0, 220),
   /** Road gate on the hazard radius: tankers wait here (GATE_WAIT) during road closure. */
   tankerGate: v(-3_100, 0, 60),
   /** Where off-map tankers appear/disappear (supplier is abstracted). */
@@ -113,7 +117,7 @@ const placements: readonly Placement[] = [
   { callSign: 'B-09', kind: 'booster', asset: 'booster', pos: v(-1_380, 0, 470), headingRad: S },
   { callSign: 'S-21', kind: 'ship', asset: 'ship', pos: v(-1_380, 0, 520), headingRad: S },
   { callSign: 'SP-41', kind: 'transporter', asset: 'transporter', pos: points.yardPickup, headingRad: N },
-  { callSign: 'SP-42', kind: 'transporter', asset: 'transporter', pos: v(-1_300, 0, 420), headingRad: N },
+  { callSign: 'SP-42', kind: 'transporter', asset: 'transporter', pos: points.sp42Bay, headingRad: N },
   { callSign: 'CR-77', kind: 'crane', asset: 'crane', pos: v(-1_320, 0, 500), headingRad: W },
   // Tankers (start off-map)
   { callSign: 'LX-01', kind: 'tanker', asset: 'tanker', pos: points.offMapEntry, headingRad: E },
@@ -143,6 +147,18 @@ const paths = {
   },
   'sp.olm1ToYard': {
     points: [points.olm1, v(0, 0, 60), v(-1_340, 0, 60), points.yardPickup],
+    closed: false,
+  },
+  /**
+   * SP-42 ambient duty (7.3): yard bay → tank-farm apron on its own lane (40 m off the SP-41 and tanker roads); the
+   * return is the exact reverse (a mid-leg turn-back maps position d to length − d), 1 220 m each way.
+   */
+  'sp42.yardToFarm': {
+    points: [points.sp42Bay, v(-1_300, 0, 100), v(-520, 0, 100), points.farmApron],
+    closed: false,
+  },
+  'sp42.farmToYard': {
+    points: [points.farmApron, v(-520, 0, 100), v(-1_300, 0, 100), points.sp42Bay],
     closed: false,
   },
   /** Inbound tankers end at the gate; GATE_WAIT happens at the last vertex. */
@@ -191,6 +207,10 @@ export const lc1Layout = {
   paths,
   /** PICKET patrol loop per boat (call-sign → closed path); the placement sits on the loop's first vertex. */
   patrols: { 'PK-03': 'pk03.patrol', 'PK-04': 'pk04.patrol' } as Readonly<Record<string, Lc1PathId>>,
+  /** Ambient transporter duty per call-sign (7.3, AC 26): out / back paths; spawned with role 'ambient'. */
+  ambientDuty: { 'SP-42': { out: 'sp42.yardToFarm', back: 'sp42.farmToYard' } } as Readonly<
+    Record<string, { readonly out: Lc1PathId; readonly back: Lc1PathId }>
+  >,
   /** Maritime hazard area (AREA BRAVO) polygon on the sea surface, m. */
   maritimeHazardArea: [v(500, 0, -6_000), v(10_000, 0, -6_000), v(10_000, 0, 6_000), v(500, 0, 6_000)],
 };

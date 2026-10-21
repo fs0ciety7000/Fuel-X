@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { tokens } from '@tokens/tokens';
 import { GlyphSprite } from '../components';
+import { HUD_KEYS } from '../hud/frame/keys';
 import { ComponentGallery } from './ComponentGallery';
 import { HudGallery } from './HudGallery';
 import { PanelsGallery } from './PanelsGallery';
@@ -107,6 +108,33 @@ export function DesignGallery() {
       <ComponentGallery />
       <HudGallery />
       <PanelsGallery />
+
+      {/* §9.10 keyboard map, generated from the same keymap source as the game (frame/keys.ts HUD_KEYS). */}
+      <section className={styles.section} data-testid="gallery-keys" aria-labelledby="gallery-keys-title">
+        <h2 id="gallery-keys-title" className={styles.sectionTitle}>
+          [ KEYBOARD MAP ]
+        </h2>
+        <table className={styles.keys}>
+          <thead>
+            <tr>
+              <th scope="col">KEY</th>
+              <th scope="col">ACTION</th>
+              <th scope="col">OWNER</th>
+            </tr>
+          </thead>
+          <tbody>
+            {HUD_KEYS.map((k) => (
+              <tr key={k.keys}>
+                <th scope="row">
+                  <kbd>{k.keys}</kbd>
+                </th>
+                <td>{k.action.toUpperCase()}</td>
+                <td className={styles.label}>{k.owner.toUpperCase()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
     </main>
   );
 }

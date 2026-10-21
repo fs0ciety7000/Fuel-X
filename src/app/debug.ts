@@ -9,6 +9,7 @@ import type { RendererStats } from '@render/index';
 import { lowFxRequested } from './debug/enabled';
 import { reactCommitsPerS } from './debug/react-commits';
 import type { Game } from './game';
+import type { AutosaveMeta } from './persistence';
 import { parseJumpTarget } from './jump';
 import type { SessionFile } from './session/session';
 import type { SkipBlockCode } from './time/rules';
@@ -75,6 +76,10 @@ export interface FuelxDebug {
   stats(): FuelxStats;
   save(): string;
   load(json: string): Promise<void>;
+  /** Autosave ring (8.3), latest first, without the save bodies (waits for pending writes). */
+  autosaves(): Promise<AutosaveMeta[]>;
+  /** Body of the latest autosave (null when the ring is empty). */
+  autosaveJson(): Promise<string | null>;
 }
 
 declare global {
@@ -128,7 +133,7 @@ export function createDebugApi(game: Game): FuelxDebug {
     },
 
     jumpTo: async (target) => {
-      await host.jump(parseJumpTarget(target));
+      await host.jump(parseJumpTarget(target), undefined, () => game.projector.sample());
       time.cancelSkip();
       game.afterTeleport();
       await frames(1);
@@ -247,13 +252,12 @@ export function createDebugApi(game: Game): FuelxDebug {
 
     load: async (json) => {
       await host.load(json);
-      time.resetRun();
-      game.projector.reset();
-      view.reset();
-      view.camera({ kind: 'home' });
-      game.afterTeleport();
+      game.afterLoad();
       await frames(1);
     },
+
+    autosaves: () => game.persistence.autosaves(),
+    autosaveJson: () => game.persistence.latestAutosaveJson(),
   };
   return api;
 }

@@ -8,61 +8,83 @@
      0 T-06:00:00 StationChanged station=PROPELLANT status=MARGINAL driver=FARM_RESERVE_LOX
      0 T-06:00:00 EntityStateChanged id=CR-77 kind=crane from=IDLE to=LIFTING
      0 T-06:00:00 EntityStateChanged id=SP-41 kind=transporter from=IDLE to=LOADING
+     0 T-06:00:00 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
      0 T-06:00:00 LedgerPosted item=HAULAGE_FEE amountCr=-6000 reputationDelta=0 moneyCr=29994000 reputation=50
      0 T-06:00:00 LedgerPosted item=HAULAGE_FEE amountCr=-6000 reputationDelta=0 moneyCr=29988000 reputation=50
      0 T-06:00:00 LedgerPosted item=HAULAGE_FEE amountCr=-6000 reputationDelta=0 moneyCr=29982000 reputation=50
      0 T-06:00:00 LedgerPosted item=HAULAGE_FEE amountCr=-6000 reputationDelta=0 moneyCr=29976000 reputation=50
-     1 T-06:00:00 TLM Rollout/Counting wind=8.66/10.83/11.26 upper=23.55 stations=GGMGG farm=4028000/1110000 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
-  9001 T-05:55:00 TLM Rollout/Counting wind=9.16/11.45/11.91 upper=25.91 stations=GGMGG farm=4027971/1109996 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
- 18001 T-05:50:00 TLM Rollout/Counting wind=7.05/8.81/9.16 upper=23.46 stations=GGMGG farm=4027942/1109992 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
- 27001 T-05:45:00 TLM Rollout/Counting wind=6.66/8.32/8.65 upper=21.70 stations=GGMGG farm=4027913/1109988 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
- 36001 T-05:40:00 TLM Rollout/Counting wind=7.39/9.24/9.61 upper=27.43 stations=GGMGG farm=4027884/1109983 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
- 45001 T-05:35:00 TLM Rollout/Counting wind=7.95/9.93/10.33 upper=29.74 stations=GGMGG farm=4027855/1109979 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+     1 T-06:00:00 TLM Rollout/Counting wind=8.66/10.83/11.26 upper=25.84 stations=GGMGG farm=4028000/1110000 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+  9001 T-05:55:00 TLM Rollout/Counting wind=9.16/11.45/11.91 upper=27.72 stations=GGMGG farm=4027971/1109996 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 18001 T-05:50:00 TLM Rollout/Counting wind=7.05/8.81/9.16 upper=25.77 stations=GGMGG farm=4027942/1109992 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 18300 T-05:49:50 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+ 18300 T-05:49:50 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+ 27001 T-05:45:00 TLM Rollout/Counting wind=6.66/8.32/8.65 upper=24.36 stations=GGMGG farm=4027913/1109988 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 36001 T-05:40:00 TLM Rollout/Counting wind=7.39/9.24/9.61 upper=28.94 stations=GGMGG farm=4027884/1109983 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 36600 T-05:39:40 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+ 36600 T-05:39:40 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+ 45001 T-05:35:00 TLM Rollout/Counting wind=7.95/9.93/10.33 upper=30.80 stations=GGMGG farm=4027855/1109979 B-09 IN_YARD 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
  54000 T-05:30:00 EntityStateChanged id=CR-77 kind=crane from=LIFTING to=IDLE
  54000 T-05:30:00 EntityStateChanged id=B-09 kind=booster from=IN_YARD to=ON_TRANSPORTER
  54000 T-05:30:00 EntityStateChanged id=SP-41 kind=transporter from=LOADING to=MOVING
- 54001 T-05:30:00 TLM Rollout/Counting wind=7.86/9.82/10.21 upper=29.68 stations=GGMGG farm=4027827/1109975 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
- 63001 T-05:25:00 TLM Rollout/Counting wind=8.26/10.32/10.73 upper=23.63 stations=GGMGG farm=4027798/1109971 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
- 72001 T-05:20:00 TLM Rollout/Counting wind=9.88/12.35/12.84 upper=31.35 stations=GGMGG farm=4027769/1109967 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
- 81001 T-05:15:00 TLM Rollout/Counting wind=6.90/8.62/8.96 upper=25.23 stations=GGMGG farm=4027740/1109963 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
- 90001 T-05:10:00 TLM Rollout/Counting wind=7.69/9.61/10.00 upper=31.35 stations=GGMGG farm=4027711/1109958 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
- 99001 T-05:05:00 TLM Rollout/Counting wind=8.44/10.55/10.97 upper=26.60 stations=GGMGG farm=4027682/1109954 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 54001 T-05:30:00 TLM Rollout/Counting wind=7.86/9.82/10.21 upper=30.74 stations=GGMGG farm=4027827/1109975 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 54900 T-05:29:30 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+ 63001 T-05:25:00 TLM Rollout/Counting wind=8.26/10.32/10.73 upper=25.90 stations=GGMGG farm=4027798/1109971 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 63900 T-05:24:30 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+ 72001 T-05:20:00 TLM Rollout/Counting wind=9.88/12.35/12.84 upper=32.08 stations=GGMGG farm=4027769/1109967 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 81001 T-05:15:00 TLM Rollout/Counting wind=6.90/8.62/8.96 upper=27.19 stations=GGMGG farm=4027740/1109963 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 82200 T-05:14:20 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+ 89400 T-05:10:20 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+ 90001 T-05:10:00 TLM Rollout/Counting wind=7.69/9.61/10.00 upper=32.08 stations=GGMGG farm=4027711/1109958 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+ 99001 T-05:05:00 TLM Rollout/Counting wind=8.44/10.55/10.97 upper=28.28 stations=GGMGG farm=4027682/1109954 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+107700 T-05:00:10 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
 108000 T-05:00:00 EntityStateChanged id=SP-41 kind=transporter from=MOVING to=AT_PAD
-108001 T-05:00:00 TLM Rollout/Counting wind=7.96/9.94/10.34 upper=24.53 stations=GGMGG farm=4027653/1109950 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+108000 T-05:00:00 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+108001 T-05:00:00 TLM Rollout/Counting wind=7.96/9.94/10.34 upper=26.62 stations=GGMGG farm=4027653/1109950 B-09 ON_TRANSPORTER 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 108001 T-05:00:00 PhaseChanged from=Rollout to=Stack trigger=auto
 108001 T-05:00:00 EntityStateChanged id=TOWER-1 kind=tower from=IDLE to=STACKING
 108001 T-05:00:00 ArmsChanged id=TOWER-1 from=OPEN to=CLOSED
 108001 T-05:00:00 EntityStateChanged id=B-09 kind=booster from=ON_TRANSPORTER to=STACKING
 108001 T-05:00:00 EntityStateChanged id=SP-41 kind=transporter from=AT_PAD to=RETURNING
-117001 T-04:55:00 TLM Stack/Counting wind=6.77/8.47/8.81 upper=22.53 stations=GGMGG farm=4027624/1109946 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
-126001 T-04:50:00 TLM Stack/Counting wind=7.23/9.04/9.40 upper=22.85 stations=GGMGG farm=4027595/1109942 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
-135001 T-04:45:00 TLM Stack/Counting wind=6.74/8.43/8.77 upper=23.20 stations=GGMGG farm=4027566/1109938 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+117001 T-04:55:00 TLM Stack/Counting wind=6.77/8.47/8.81 upper=25.02 stations=GGMGG farm=4027624/1109946 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+126001 T-04:50:00 TLM Stack/Counting wind=7.23/9.04/9.40 upper=25.28 stations=GGMGG farm=4027595/1109942 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+126300 T-04:49:50 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+133500 T-04:45:50 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+134999 T-04:45:00 Milestone name=STANDARD_ORDER_LAST_CALL
+135001 T-04:45:00 TLM Stack/Counting wind=6.74/8.43/8.77 upper=25.56 stations=GGMGG farm=4027566/1109938 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 135001 T-04:45:00 EntityStateChanged id=SP-41 kind=transporter from=RETURNING to=IDLE
 135001 T-04:45:00 EntityStateChanged id=CR-77 kind=crane from=IDLE to=LIFTING
 135001 T-04:45:00 EntityStateChanged id=SP-41 kind=transporter from=IDLE to=LOADING
-144001 T-04:40:00 TLM Stack/Counting wind=7.33/9.16/9.52 upper=23.16 stations=GGMGG farm=4027537/1109933 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
-153001 T-04:35:00 TLM Stack/Counting wind=8.28/10.35/10.76 upper=30.25 stations=GGMGG farm=4027509/1109929 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
-162001 T-04:30:00 TLM Stack/Counting wind=8.55/10.69/11.12 upper=28.17 stations=GGMGG farm=4027480/1109925 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
-171001 T-04:25:00 TLM Stack/Counting wind=6.69/8.36/8.69 upper=29.79 stations=GGMGG farm=4027451/1109921 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
-180001 T-04:20:00 TLM Stack/Counting wind=6.78/8.48/8.82 upper=29.10 stations=GGMGG farm=4027422/1109917 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
-189001 T-04:15:00 TLM Stack/Counting wind=5.99/7.49/7.79 upper=28.47 stations=GGMGG farm=4027393/1109913 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+144001 T-04:40:00 TLM Stack/Counting wind=7.33/9.16/9.52 upper=25.53 stations=GGMGG farm=4027537/1109933 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+151800 T-04:35:40 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+151800 T-04:35:40 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+153001 T-04:35:00 TLM Stack/Counting wind=8.28/10.35/10.76 upper=31.20 stations=GGMGG farm=4027509/1109929 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+162001 T-04:30:00 TLM Stack/Counting wind=8.55/10.69/11.12 upper=29.53 stations=GGMGG farm=4027480/1109925 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+170100 T-04:25:30 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+170100 T-04:25:30 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+171001 T-04:25:00 TLM Stack/Counting wind=6.69/8.36/8.69 upper=30.84 stations=GGMGG farm=4027451/1109921 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+180001 T-04:20:00 TLM Stack/Counting wind=6.78/8.48/8.82 upper=30.28 stations=GGMGG farm=4027422/1109917 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
+188400 T-04:15:20 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+188400 T-04:15:20 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+189001 T-04:15:00 TLM Stack/Counting wind=5.99/7.49/7.79 upper=29.77 stations=GGMGG farm=4027393/1109913 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 189001 T-04:15:00 EntityStateChanged id=CR-77 kind=crane from=LIFTING to=IDLE
 189001 T-04:15:00 EntityStateChanged id=S-21 kind=ship from=IN_YARD to=ON_TRANSPORTER
 189001 T-04:15:00 EntityStateChanged id=SP-41 kind=transporter from=LOADING to=MOVING
-198001 T-04:10:00 TLM Stack/Counting wind=5.91/7.39/7.69 upper=28.40 stations=GGMGG farm=4027364/1109909 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
-207001 T-04:05:00 TLM Stack/Counting wind=7.83/9.78/10.17 upper=34.91 stations=GGMGG farm=4027335/1109904 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
-216001 T-04:00:00 TLM Stack/Counting wind=6.38/7.98/8.30 upper=39.81 stations=GGMGG farm=4027306/1109900 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
-225001 T-03:55:00 TLM Stack/Counting wind=6.94/8.68/9.02 upper=46.02 stations=GGMGG farm=4027277/1109896 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
-234001 T-03:50:00 TLM Stack/Counting wind=7.17/8.96/9.32 upper=39.00 stations=GGMGG farm=4027248/1109892 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
-243001 T-03:45:00 TLM Stack/Counting wind=7.25/9.06/9.42 upper=39.53 stations=GGMGG farm=4027219/1109888 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+198001 T-04:10:00 TLM Stack/Counting wind=5.91/7.39/7.69 upper=29.72 stations=GGMGG farm=4027364/1109909 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+206700 T-04:05:10 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+207001 T-04:05:00 TLM Stack/Counting wind=7.83/9.78/10.17 upper=34.93 stations=GGMGG farm=4027335/1109904 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+213900 T-04:01:10 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+216001 T-04:00:00 TLM Stack/Counting wind=6.38/7.98/8.30 upper=38.85 stations=GGMGG farm=4027306/1109900 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+225001 T-03:55:00 TLM Stack/Counting wind=6.94/8.68/9.02 upper=43.81 stations=GGMGG farm=4027277/1109896 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+232200 T-03:51:00 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+234001 T-03:50:00 TLM Stack/Counting wind=7.17/8.96/9.32 upper=38.20 stations=GGMGG farm=4027248/1109892 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+241200 T-03:46:00 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+243001 T-03:45:00 TLM Stack/Counting wind=7.25/9.06/9.42 upper=38.62 stations=GGMGG farm=4027219/1109888 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
 243001 T-03:45:00 EntityStateChanged id=SP-41 kind=transporter from=MOVING to=AT_PAD
-252001 T-03:40:00 TLM Stack/Counting wind=7.99/9.99/10.39 upper=45.10 stations=GGMGG farm=4027191/1109884 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
-261001 T-03:35:00 TLM Stack/Counting wind=8.72/10.90/11.34 upper=49.86 stations=GGMGG farm=4027162/1109879 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
-261780 T-03:34:34 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-262941 T-03:33:56 StationChanged station=WEATHER status=GO driver=NOMINAL
-267078 T-03:31:38 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-267981 T-03:31:08 StationChanged station=WEATHER status=GO driver=NOMINAL
-270001 T-03:30:00 TLM Stack/Counting wind=8.01/10.01/10.41 upper=47.06 stations=GGMGG farm=4027133/1109875 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+252001 T-03:40:00 TLM Stack/Counting wind=7.99/9.99/10.39 upper=43.08 stations=GGMGG farm=4027191/1109884 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+259500 T-03:35:50 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+259500 T-03:35:50 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+261001 T-03:35:00 TLM Stack/Counting wind=8.72/10.90/11.34 upper=46.88 stations=GGMGG farm=4027162/1109879 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
+270001 T-03:30:00 TLM Stack/Counting wind=8.01/10.01/10.41 upper=44.65 stations=GGMGG farm=4027133/1109875 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
 270001 T-03:30:00 EntityStateChanged id=TOWER-1 kind=tower from=STACKING to=IDLE
 270001 T-03:30:00 ArmsChanged id=TOWER-1 from=CLOSED to=OPEN
 270001 T-03:30:00 EntityStateChanged id=B-09 kind=booster from=STACKING to=STACKED
@@ -72,62 +94,78 @@
 270001 T-03:30:00 EntityStateChanged id=S-21 kind=ship from=ON_TRANSPORTER to=STACKING
 270001 T-03:30:00 EntityStateChanged id=SP-41 kind=transporter from=AT_PAD to=RETURNING
 271471 T-03:29:11 CarriageArrived id=TOWER-1 atM=135
-279001 T-03:25:00 TLM Stack/Counting wind=7.89/9.86/10.25 upper=43.21 stations=GGMGG farm=4027104/1109871 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-288001 T-03:20:00 TLM Stack/Counting wind=10.05/12.56/13.06 upper=45.48 stations=GGMGG farm=4027075/1109867 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+277800 T-03:25:40 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+279001 T-03:25:00 TLM Stack/Counting wind=7.89/9.86/10.25 upper=41.57 stations=GGMGG farm=4027104/1109871 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+286800 T-03:20:40 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+288001 T-03:20:00 TLM Stack/Counting wind=10.05/12.56/13.06 upper=43.38 stations=GGMGG farm=4027075/1109867 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 289407 T-03:19:14 EntityStateChanged id=TOWER-1 kind=tower from=STACKING to=WIND_HOLD
 292077 T-03:17:45 EntityStateChanged id=TOWER-1 kind=tower from=WIND_HOLD to=STACKING
-297001 T-03:15:00 TLM Stack/Counting wind=9.66/12.08/12.56 upper=47.08 stations=GGMGG farm=4027046/1109863 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+296999 T-03:15:00 Milestone name=FORECAST_SEES_WINDOW
+297001 T-03:15:00 TLM Stack/Counting wind=9.66/12.08/12.56 upper=44.66 stations=GGMGG farm=4027046/1109863 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 297001 T-03:15:00 EntityStateChanged id=SP-41 kind=transporter from=RETURNING to=IDLE
-306001 T-03:10:00 TLM Stack/Counting wind=8.73/10.91/11.35 upper=48.98 stations=GGMGG farm=4027017/1109859 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-310146 T-03:07:42 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-315001 T-03:05:00 TLM Stack/Counting wind=7.01/8.76/9.11 upper=52.28 stations=MGMGG farm=4026988/1109854 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-319359 T-03:02:35 StationChanged station=WEATHER status=GO driver=NOMINAL
-324001 T-03:00:00 TLM Stack/Counting wind=5.06/6.33/6.58 upper=47.89 stations=GGMGG farm=4026959/1109850 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-331800 T-02:55:40 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-332508 T-02:55:17 StationChanged station=WEATHER status=GO driver=NOMINAL
-333001 T-02:55:00 TLM Stack/Counting wind=2.94/3.67/3.82 upper=47.12 stations=GGMGG farm=4026930/1109846 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-342001 T-02:50:00 TLM Stack/Counting wind=6.70/8.37/8.71 upper=45.23 stations=GGMGG farm=4026902/1109842 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-351001 T-02:45:00 TLM Stack/Counting wind=7.00/8.75/9.10 upper=43.21 stations=GGMGG farm=4026873/1109838 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-360001 T-02:40:00 TLM Stack/Counting wind=6.54/8.18/8.51 upper=47.08 stations=GGMGG farm=4026844/1109834 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-369001 T-02:35:00 TLM Stack/Counting wind=8.43/10.54/10.96 upper=48.64 stations=GGMGG farm=4026815/1109830 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-378001 T-02:30:00 TLM Stack/Counting wind=8.08/10.09/10.50 upper=47.75 stations=GGMGG farm=4026786/1109825 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-378795 T-02:29:34 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-380025 T-02:28:53 StationChanged station=WEATHER status=GO driver=NOMINAL
+305100 T-03:10:30 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+305100 T-03:10:30 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+306001 T-03:10:00 TLM Stack/Counting wind=8.73/10.91/11.35 upper=46.18 stations=GGMGG farm=4027017/1109859 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+315001 T-03:05:00 TLM Stack/Counting wind=7.01/8.76/9.11 upper=48.82 stations=GGMGG farm=4026988/1109854 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+323400 T-03:00:20 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+323400 T-03:00:20 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+324001 T-03:00:00 TLM Stack/Counting wind=5.06/6.33/6.58 upper=45.32 stations=GGMGG farm=4026959/1109850 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+333001 T-02:55:00 TLM Stack/Counting wind=2.94/3.67/3.82 upper=44.70 stations=GGMGG farm=4026930/1109846 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+341700 T-02:50:10 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+341700 T-02:50:10 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+342001 T-02:50:00 TLM Stack/Counting wind=6.70/8.37/8.71 upper=43.19 stations=GGMGG farm=4026902/1109842 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+351001 T-02:45:00 TLM Stack/Counting wind=7.00/8.75/9.10 upper=41.57 stations=GGMGG farm=4026873/1109838 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+360000 T-02:40:00 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+360000 T-02:40:00 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+360001 T-02:40:00 TLM Stack/Counting wind=6.54/8.18/8.51 upper=44.66 stations=GGMGG farm=4026844/1109834 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+369001 T-02:35:00 TLM Stack/Counting wind=8.43/10.54/10.96 upper=45.91 stations=GGMGG farm=4026815/1109830 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+378001 T-02:30:00 TLM Stack/Counting wind=8.08/10.09/10.50 upper=45.20 stations=GGMGG farm=4026786/1109825 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
+378300 T-02:29:50 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+378300 T-02:29:50 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 380671 T-02:28:31 EntityStateChanged id=TOWER-1 kind=tower from=STACKING to=IDLE
 380671 T-02:28:31 ArmsChanged id=TOWER-1 from=CLOSED to=OPEN
 380671 T-02:28:31 EntityStateChanged id=S-21 kind=ship from=STACKING to=STACKED
 380671 T-02:28:31 QdArmChanged id=TOWER-1 from=STOWED to=ENGAGING
 380971 T-02:28:21 QdArmChanged id=TOWER-1 from=ENGAGING to=ENGAGED
-387001 T-02:25:00 TLM Stack/Counting wind=9.78/12.22/12.71 upper=44.17 stations=GGMGG farm=4026757/1109821 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+387001 T-02:25:00 TLM Stack/Counting wind=9.78/12.22/12.71 upper=42.34 stations=GGMGG farm=4026757/1109821 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 390870 T-02:22:51 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
-396001 T-02:20:00 TLM Stack/Counting wind=11.72/14.65/15.23 upper=43.79 stations=MGMGG farm=4026728/1109817 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+396001 T-02:20:00 TLM Stack/Counting wind=11.72/14.65/15.23 upper=42.03 stations=MGMGG farm=4026728/1109817 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+396600 T-02:19:40 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+396600 T-02:19:40 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+396988 T-02:19:28 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=WIND_HOLD
+397545 T-02:19:09 EntityStateChanged id=SP-42 kind=transporter from=WIND_HOLD to=RETURNING
+399572 T-02:18:01 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=WIND_HOLD
 402423 T-02:16:26 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
-403539 T-02:15:49 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
-404019 T-02:15:33 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
-404337 T-02:15:23 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
-404817 T-02:15:07 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
-405001 T-02:15:00 TLM Stack/Counting wind=13.21/16.52/17.18 upper=43.05 stations=NGMGG farm=4026699/1109813 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
-405633 T-02:14:39 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
-412608 T-02:10:47 StationChanged station=WEATHER status=GO driver=NOMINAL
-414001 T-02:10:00 TLM Stack/Counting wind=10.52/13.15/13.67 upper=42.96 stations=GGMGG farm=4026670/1109809 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+404999 T-02:15:00 Milestone name=RUSH_ORDER_LAST_CALL
+405001 T-02:15:00 TLM Stack/Counting wind=13.21/16.52/17.18 upper=41.44 stations=NGMGG farm=4026699/1109813 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+406236 T-02:14:19 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
+407452 T-02:13:39 EntityStateChanged id=SP-42 kind=transporter from=WIND_HOLD to=RETURNING
+412674 T-02:10:45 StationChanged station=WEATHER status=GO driver=NOMINAL
+414001 T-02:10:00 TLM Stack/Counting wind=10.52/13.15/13.67 upper=41.36 stations=GGMGG farm=4026670/1109809 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 421518 T-02:05:50 EntityStateChanged id=LX-01 kind=tanker from=OFFMAP to=INBOUND
 421518 T-02:05:50 EntityStateChanged id=LX-02 kind=tanker from=OFFMAP to=INBOUND
 421518 T-02:05:50 EntityStateChanged id=LX-03 kind=tanker from=OFFMAP to=INBOUND
 421518 T-02:05:50 EntityStateChanged id=MX-01 kind=tanker from=OFFMAP to=INBOUND
-423001 T-02:05:00 TLM Stack/Counting wind=7.44/9.30/9.67 upper=43.01 stations=GGMGG farm=4026641/1109805 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
-432001 T-02:00:00 TLM Stack/Counting wind=8.40/10.50/10.92 upper=48.17 stations=GGMGG farm=4026612/1109800 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
-441001 T-01:55:00 TLM Stack/Counting wind=8.87/11.08/11.53 upper=46.88 stations=GGMGG farm=4026584/1109796 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+423001 T-02:05:00 TLM Stack/Counting wind=7.44/9.30/9.67 upper=41.41 stations=GGMGG farm=4026641/1109805 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+423339 T-02:04:49 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+430539 T-02:00:49 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+432001 T-02:00:00 TLM Stack/Counting wind=8.40/10.50/10.92 upper=45.54 stations=GGMGG farm=4026612/1109800 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+441001 T-01:55:00 TLM Stack/Counting wind=8.87/11.08/11.53 upper=44.51 stations=GGMGG farm=4026584/1109796 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 442121 T-01:54:23 EntityStateChanged id=MX-01 kind=tanker from=INBOUND to=OFFLOADING
 442410 T-01:54:13 EntityStateChanged id=LX-01 kind=tanker from=INBOUND to=OFFLOADING
 442410 T-01:54:13 EntityStateChanged id=LX-02 kind=tanker from=INBOUND to=OFFLOADING
 442410 T-01:54:13 EntityStateChanged id=LX-03 kind=tanker from=INBOUND to=OFFLOADING
-450001 T-01:50:00 TLM Stack/Counting wind=8.61/10.76/11.20 upper=42.40 stations=GGMGG farm=4037940/1113732 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
-459001 T-01:45:00 TLM Stack/Counting wind=9.13/11.42/11.87 upper=44.68 stations=GGMGG farm=4051411/1118227 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
-468001 T-01:40:00 TLM Stack/Counting wind=6.28/7.86/8.17 upper=39.88 stations=GGMGG farm=4064882/1122723 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+448839 T-01:50:39 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+448839 T-01:50:39 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
+450001 T-01:50:00 TLM Stack/Counting wind=8.61/10.76/11.20 upper=40.92 stations=GGMGG farm=4037940/1113732 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+459001 T-01:45:00 TLM Stack/Counting wind=9.13/11.42/11.87 upper=42.75 stations=GGMGG farm=4051411/1118227 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
+467139 T-01:40:29 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+467139 T-01:40:29 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+468001 T-01:40:00 TLM Stack/Counting wind=6.28/7.86/8.17 upper=38.90 stations=GGMGG farm=4064882/1122723 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 474121 T-01:36:36 EntityStateChanged id=MX-01 kind=tanker from=OFFLOADING to=OUTBOUND
 474121 T-01:36:36 DeliveryCompleted orderId=DO-004 tankerId=MX-01 fluid=CH4 deliveredKg=16000 costCr=8000 aborted=false
 474121 T-01:36:36 LedgerPosted item=PROPELLANT_PURCHASE amountCr=-8000 reputationDelta=0 moneyCr=29968000 reputation=50
-477001 T-01:35:00 TLM Stack/Counting wind=6.43/8.04/8.36 upper=35.12 stations=GGMGG farm=4078352/1125780 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29968000 rep=50
+477001 T-01:35:00 TLM Stack/Counting wind=6.43/8.04/8.36 upper=35.10 stations=GGMGG farm=4078352/1125780 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29968000 rep=50
 482410 T-01:32:00 EntityStateChanged id=LX-01 kind=tanker from=OFFLOADING to=OUTBOUND
 482410 T-01:32:00 DeliveryCompleted orderId=DO-001 tankerId=LX-01 fluid=LOX deliveredKg=20000 costCr=3000 aborted=false
 482410 T-01:32:00 EntityStateChanged id=LX-02 kind=tanker from=OFFLOADING to=OUTBOUND
@@ -137,18 +175,16 @@
 482410 T-01:32:00 LedgerPosted item=PROPELLANT_PURCHASE amountCr=-3000 reputationDelta=0 moneyCr=29965000 reputation=50
 482410 T-01:32:00 LedgerPosted item=PROPELLANT_PURCHASE amountCr=-3000 reputationDelta=0 moneyCr=29962000 reputation=50
 482410 T-01:32:00 LedgerPosted item=PROPELLANT_PURCHASE amountCr=-3000 reputationDelta=0 moneyCr=29959000 reputation=50
+485439 T-01:30:19 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
 485571 T-01:30:15 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
 486000 T-01:30:00 EntityStateChanged id=CV-01 kind=van from=AT_PAD to=TO_SAFE
-486001 T-01:30:00 TLM Stack/Counting wind=11.50/14.38/14.96 upper=33.15 stations=MGMGG farm=4086438/1125775 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29959000 rep=50
+486001 T-01:30:00 TLM Stack/Counting wind=11.50/14.38/14.96 upper=33.52 stations=MGMGG farm=4086438/1125775 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29959000 rep=50
 486900 T-01:29:30 EntityStateChanged id=CV-02 kind=van from=AT_PAD to=TO_SAFE
 487800 T-01:29:00 EntityStateChanged id=CV-03 kind=van from=AT_PAD to=TO_SAFE
-488040 T-01:28:52 StationChanged station=WEATHER status=GO driver=NOMINAL
-488256 T-01:28:45 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
-488655 T-01:28:32 StationChanged station=WEATHER status=GO driver=NOMINAL
-489270 T-01:28:11 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
-491493 T-01:26:57 StationChanged station=WEATHER status=GO driver=NOMINAL
+491571 T-01:26:55 StationChanged station=WEATHER status=GO driver=NOMINAL
+494439 T-01:25:19 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 494724 T-01:25:10 EntityStateChanged id=MX-01 kind=tanker from=OUTBOUND to=OFFMAP
-495001 T-01:25:00 TLM Stack/Counting wind=10.06/12.57/13.07 upper=29.52 stations=GGMGG farm=4086409/1125771 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29959000 rep=50
+495001 T-01:25:00 TLM Stack/Counting wind=10.06/12.57/13.07 upper=30.62 stations=GGMGG farm=4086409/1125771 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29959000 rep=50
 495873 T-01:24:31 EntityStateChanged id=CV-01 kind=van from=TO_SAFE to=PARKED
 496773 T-01:24:01 EntityStateChanged id=CV-02 kind=van from=TO_SAFE to=PARKED
 497673 T-01:23:31 EntityStateChanged id=CV-03 kind=van from=TO_SAFE to=PARKED
@@ -158,55 +194,63 @@
 504000 T-01:20:00 PollOpened poll=load
 504000 T-01:20:00 HoldStarted tClockTicks=-144000 reason=POLL poll=load
 504000 T-01:20:00 DecisionRequired decision=POLL poll=load deadlineTick=783000
-504001 T-01:20:00 TLM Stack/Holding wind=8.32/10.40/10.82 upper=32.27 stations=GGMGG farm=4086379/1125767 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29959000 rep=50
+504001 T-01:20:00 TLM Stack/Holding wind=8.32/10.40/10.82 upper=32.81 stations=GGMGG farm=4086379/1125767 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29959000 rep=50
 504001 T-01:20:00 PollPassed poll=load auto=false marginal=[PROPELLANT]
 504001 T-01:20:00 PhaseChanged from=Stack to=PropellantLoad trigger=LoadPollPassed
 504001 T-01:20:00 HoldReleased tClockTicks=-144000 reason=POLL by=GO
+512739 T-01:15:09 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+512739 T-01:15:09 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 513000 T-01:15:00 EntityStateChanged id=B-09 kind=booster from=STACKED to=LOADING
 513000 T-01:15:00 EntityStateChanged id=S-21 kind=ship from=STACKED to=LOADING
-513001 T-01:15:00 TLM PropellantLoad/Counting wind=6.88/8.60/8.94 upper=40.38 stations=GGMGG farm=4086302/1125749 B-09 LOADING 33/9 S-21 LOADING 15/4 cr=29959000 rep=50
-522001 T-01:10:00 TLM PropellantLoad/Counting wind=6.59/8.24/8.57 upper=35.66 stations=GGMGG farm=3651274/1004245 B-09 LOADING 299584/83925 S-21 LOADING 134813/37467 cr=29959000 rep=50
-531001 T-01:05:00 TLM PropellantLoad/Counting wind=5.45/6.81/7.08 upper=37.25 stations=GGMGG farm=3216249/882742 B-09 LOADING 598237/167672 S-21 LOADING 269207/74854 cr=29959000 rep=50
+513001 T-01:15:00 TLM PropellantLoad/Counting wind=6.88/8.60/8.94 upper=39.31 stations=GGMGG farm=4086302/1125749 B-09 LOADING 33/9 S-21 LOADING 15/4 cr=29959000 rep=50
+522001 T-01:10:00 TLM PropellantLoad/Counting wind=6.59/8.24/8.57 upper=35.53 stations=GGMGG farm=3651274/1004245 B-09 LOADING 299584/83925 S-21 LOADING 134813/37467 cr=29959000 rep=50
+531001 T-01:05:00 TLM PropellantLoad/Counting wind=5.45/6.81/7.08 upper=36.80 stations=GGMGG farm=3216249/882742 B-09 LOADING 598237/167672 S-21 LOADING 269207/74854 cr=29959000 rep=50
+531039 T-01:04:59 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+531039 T-01:04:59 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 532231 T-01:04:19 AnomalyFired anomaly=A3 entityId=OLM-1 source=DIRECTOR
 532231 T-01:04:19 DecisionRequired decision=LEAK poll=null deadlineTick=541231
 532232 T-01:04:19 HoldStarted tClockTicks=-115769 reason=LEAK_FIX poll=null
-532232 T-01:04:19 LeakResponded choice=HOLD_FIX by=PLAYER
+532232 T-01:04:19 LeakResponded choice=HOLD_FIX by=DIRECTOR
 532233 T-01:04:19 StationChanged station=VEHICLE status=MARGINAL driver=GSE_LEAK
-540001 T-01:04:19 TLM PropellantLoad/Holding wind=7.63/9.53/9.91 upper=40.12 stations=GGMMG farm=3156728/866120 B-09 LOADING 637364/178803 S-21 LOADING 286814/79823 cr=29959000 rep=50
-549001 T-01:04:19 TLM PropellantLoad/Holding wind=8.23/10.28/10.69 upper=44.97 stations=GGMMG farm=3156705/866117 B-09 LOADING 635454/178444 S-21 LOADING 285954/79663 cr=29959000 rep=50
-558001 T-01:04:19 TLM PropellantLoad/Holding wind=7.99/9.99/10.39 upper=45.68 stations=GGMMG farm=3156682/866113 B-09 LOADING 633551/178086 S-21 LOADING 285098/79503 cr=29959000 rep=50
-566385 T-01:04:19 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-567001 T-01:04:19 TLM PropellantLoad/Holding wind=5.47/6.84/7.11 upper=50.88 stations=MGMMG farm=3156659/866110 B-09 LOADING 631653/177728 S-21 LOADING 284244/79343 cr=29959000 rep=50
+540001 T-01:04:19 TLM PropellantLoad/Holding wind=7.63/9.53/9.91 upper=39.09 stations=GGMMG farm=3156728/866120 B-09 LOADING 637364/178803 S-21 LOADING 286814/79823 cr=29959000 rep=50
+549001 T-01:04:19 TLM PropellantLoad/Holding wind=8.23/10.28/10.69 upper=42.98 stations=GGMMG farm=3156705/866117 B-09 LOADING 635454/178444 S-21 LOADING 285954/79663 cr=29959000 rep=50
+549339 T-01:04:19 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+549339 T-01:04:19 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+558001 T-01:04:19 TLM PropellantLoad/Holding wind=7.99/9.99/10.39 upper=43.54 stations=GGMMG farm=3156682/866113 B-09 LOADING 633551/178086 S-21 LOADING 285098/79503 cr=29959000 rep=50
+567001 T-01:04:19 TLM PropellantLoad/Holding wind=5.47/6.84/7.11 upper=47.70 stations=GGMMG farm=3156659/866110 B-09 LOADING 631653/177728 S-21 LOADING 284244/79343 cr=29959000 rep=50
+567639 T-01:04:19 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
+567639 T-01:04:19 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 568232 T-01:04:19 LeakCleared by=FIXED
 568233 T-01:04:19 StationChanged station=VEHICLE status=GO driver=NOMINAL
 568233 T-01:04:19 HoldReleased tClockTicks=-115769 reason=LEAK_FIX by=AUTO
-576001 T-01:00:01 TLM PropellantLoad/Counting wind=4.66/5.83/6.06 upper=52.93 stations=MGMGG farm=2781184/761239 B-09 LOADING 888359/249810 S-21 LOADING 399762/111522 cr=29959000 rep=50
-585001 T-00:55:01 TLM PropellantLoad/Counting wind=5.61/7.01/7.29 upper=52.29 stations=MGMGG farm=2346165/639736 B-09 LOADING 1185249/333224 S-21 LOADING 533362/148761 cr=29959000 rep=50
-588243 T-00:53:12 StationChanged station=WEATHER status=GO driver=NOMINAL
-592254 T-00:50:59 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-594001 T-00:50:01 TLM PropellantLoad/Counting wind=5.33/6.67/6.93 upper=52.00 stations=MGMGG farm=1911149/518234 B-09 LOADING 1481249/416470 S-21 LOADING 666562/185924 cr=29959000 rep=50
-598452 T-00:47:32 StationChanged station=WEATHER status=GO driver=NOMINAL
-601896 T-00:45:37 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-603001 T-00:45:01 TLM PropellantLoad/Counting wind=4.29/5.36/5.58 upper=52.03 stations=MGMGG farm=1476137/396732 B-09 LOADING 1776362/499550 S-21 LOADING 799363/223013 cr=29959000 rep=50
-606303 T-00:43:10 StationChanged station=WEATHER status=GO driver=NOMINAL
-612001 T-00:40:01 TLM PropellantLoad/Counting wind=1.63/2.03/2.11 upper=45.26 stations=GGMGG farm=1041127/275231 B-09 LOADING 2070592/582462 S-21 LOADING 931766/260028 cr=29959000 rep=50
+570303 T-01:03:10 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
+576001 T-01:00:01 TLM PropellantLoad/Counting wind=4.66/5.83/6.06 upper=49.35 stations=MGMGG farm=2781184/761239 B-09 LOADING 888359/249810 S-21 LOADING 399762/111522 cr=29959000 rep=50
+585001 T-00:55:01 TLM PropellantLoad/Counting wind=5.61/7.01/7.29 upper=48.83 stations=MGMGG farm=2346165/639736 B-09 LOADING 1185249/333224 S-21 LOADING 533362/148761 cr=29959000 rep=50
+585939 T-00:54:29 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+585939 T-00:54:29 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+586671 T-00:54:05 StationChanged station=WEATHER status=GO driver=NOMINAL
+594001 T-00:50:01 TLM PropellantLoad/Counting wind=5.33/6.67/6.93 upper=48.60 stations=GGMGG farm=1911149/518234 B-09 LOADING 1481249/416470 S-21 LOADING 666562/185924 cr=29959000 rep=50
+598970 T-00:47:15 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=RETURNING
+603001 T-00:45:01 TLM PropellantLoad/Counting wind=4.29/5.36/5.58 upper=48.63 stations=GGMGG farm=1476137/396732 B-09 LOADING 1776362/499550 S-21 LOADING 799363/223013 cr=29959000 rep=50
+612001 T-00:40:01 TLM PropellantLoad/Counting wind=1.63/2.03/2.11 upper=43.21 stations=GGMGG farm=1041127/275231 B-09 LOADING 2070592/582462 S-21 LOADING 931766/260028 cr=29959000 rep=50
 612001 T-00:40:00 Milestone name=ROAD_CLOSURE
 612001 T-00:40:00 RoadClosureChanged siteId=LC-1 closed=true
-621001 T-00:35:01 TLM PropellantLoad/Counting wind=1.88/2.35/2.44 upper=43.07 stations=GGMGG farm=606120/153730 B-09 LOADING 2363940/665209 S-21 LOADING 1063773/296968 cr=29959000 rep=50
+612001 T-00:40:00 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
+621001 T-00:35:01 TLM PropellantLoad/Counting wind=1.88/2.35/2.44 upper=41.45 stations=GGMGG farm=606120/153730 B-09 LOADING 2363940/665209 S-21 LOADING 1063773/296968 cr=29959000 rep=50
 628536 T-00:30:49 EntityStateChanged id=S-21 kind=ship from=LOADING to=LOADED
-630001 T-00:30:01 TLM PropellantLoad/Counting wind=4.35/5.44/5.66 upper=39.29 stations=GGMGG farm=192505/47854 B-09 LOADING 2656409/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
+630001 T-00:30:01 TLM PropellantLoad/Counting wind=4.35/5.44/5.66 upper=38.44 stations=GGMGG farm=192505/47854 B-09 LOADING 2656409/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
 630111 T-00:29:57 EntityStateChanged id=B-09 kind=booster from=LOADING to=LOADED
-639001 T-00:25:01 TLM PropellantLoad/Counting wind=3.77/4.71/4.89 upper=42.84 stations=GGMGG farm=177410/45711 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
-648001 T-00:20:01 TLM PropellantLoad/Counting wind=4.14/5.17/5.38 upper=38.68 stations=GGMGG farm=165906/43568 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
-657001 T-00:15:01 TLM PropellantLoad/Counting wind=3.63/4.54/4.72 upper=38.56 stations=GGMGG farm=154402/41425 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
-666001 T-00:10:01 TLM PropellantLoad/Counting wind=5.47/6.84/7.11 upper=40.89 stations=GGMGG farm=142898/39282 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
+639001 T-00:25:01 TLM PropellantLoad/Counting wind=3.77/4.71/4.89 upper=41.27 stations=GGMGG farm=177410/45711 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
+648001 T-00:20:01 TLM PropellantLoad/Counting wind=4.14/5.17/5.38 upper=37.94 stations=GGMGG farm=165906/43568 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
+657001 T-00:15:01 TLM PropellantLoad/Counting wind=3.63/4.54/4.72 upper=37.84 stations=GGMGG farm=154402/41425 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
+666001 T-00:10:01 TLM PropellantLoad/Counting wind=5.47/6.84/7.11 upper=39.71 stations=GGMGG farm=142898/39282 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
 666002 T-00:10:00 PollOpened poll=terminal
 666002 T-00:10:00 HoldStarted tClockTicks=-18000 reason=POLL poll=terminal
 666002 T-00:10:00 DecisionRequired decision=POLL poll=terminal deadlineTick=783000
 666003 T-00:10:00 PollPassed poll=terminal auto=false marginal=[PROPELLANT]
 666003 T-00:10:00 PhaseChanged from=PropellantLoad to=TerminalCount trigger=TerminalPollPassed
 666003 T-00:10:00 HoldReleased tClockTicks=-18000 reason=POLL by=GO
-675001 T-00:05:01 TLM TerminalCount/Counting wind=6.01/7.51/7.82 upper=46.27 stations=GGMGG farm=131393/37139 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
+675001 T-00:05:01 TLM TerminalCount/Counting wind=6.01/7.51/7.82 upper=44.01 stations=GGMGG farm=131393/37139 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
 678602 T-00:03:00 Milestone name=TERMINAL_FORCE_1X
 682803 T-00:00:40 PollOpened poll=final
 682803 T-00:00:40 HoldStarted tClockTicks=-1200 reason=POLL poll=final
@@ -214,7 +258,7 @@
 682804 T-00:00:40 PollPassed poll=final auto=false marginal=[PROPELLANT]
 682804 T-00:00:40 HoldReleased tClockTicks=-1200 reason=POLL by=GO
 683913 T-00:00:03 Milestone name=ENGINE_IGNITION
-684001 T-00:00:01 TLM TerminalCount/Counting wind=5.70/7.13/7.42 upper=45.17 stations=GGMGG farm=119890/34996 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
+684001 T-00:00:01 TLM TerminalCount/Counting wind=5.70/7.13/7.42 upper=43.13 stations=GGMGG farm=119890/34996 B-09 LOADED 2660000/740000 S-21 LOADED 1174000/326000 cr=29959000 rep=50
 684003 T+00:00:00 Milestone name=LIFTOFF
 684003 T+00:00:00 PhaseChanged from=TerminalCount to=Liftoff trigger=T0
 684003 T+00:00:00 EntityStateChanged id=B-09 kind=booster from=LOADED to=ASCENT
@@ -222,113 +266,113 @@
 684003 T+00:00:00 FlightEvent id=B-09 kind=booster event=LIFTOFF altitudeM=20 speedMPerS=0
 684003 T+00:00:00 EntityStateChanged id=S-21 kind=ship from=LOADED to=ASCENT
 684003 T+00:00:00 QdArmChanged id=TOWER-1 from=ENGAGED to=RETRACTING
-684151 T+00:00:04 TLM Liftoff/Counting wind=5.71/7.14/7.43 upper=45.91 stations=GGMGG farm=119887/34996 B-09 alt=75.7 v=22.3 dr=0.0 tilt=0.0 prop=3297258 lit=33 p=0.997 S-21 alt=146.7 v=22.3 tilt=0.0 cr=29959000 rep=50
-684301 T+00:00:09 TLM Liftoff/Counting wind=5.61/7.02/7.30 upper=45.74 stations=GGMGG farm=119887/34996 B-09 alt=254.1 v=47.4 dr=5.0 tilt=1.9 prop=3192419 lit=33 p=0.997 S-21 alt=325.0 v=47.4 tilt=1.9 cr=29959000 rep=50
+684151 T+00:00:04 TLM Liftoff/Counting wind=5.71/7.14/7.43 upper=43.73 stations=GGMGG farm=119887/34996 B-09 alt=75.7 v=22.3 dr=0.0 tilt=0.0 prop=3297258 lit=33 p=0.997 S-21 alt=146.7 v=22.3 tilt=0.0 cr=29959000 rep=50
+684301 T+00:00:09 TLM Liftoff/Counting wind=5.61/7.02/7.30 upper=43.59 stations=GGMGG farm=119887/34996 B-09 alt=254.1 v=47.4 dr=5.0 tilt=1.9 prop=3192419 lit=33 p=0.997 S-21 alt=325.0 v=47.4 tilt=1.9 cr=29959000 rep=50
 684303 T+00:00:10 QdArmChanged id=TOWER-1 from=RETRACTING to=STOWED
-684451 T+00:00:14 TLM Liftoff/Counting wind=5.77/7.21/7.50 upper=46.37 stations=GGMGG farm=119887/34996 B-09 alt=565.8 v=76.2 dr=65.3 tilt=6.9 prop=3087581 lit=33 p=0.997 S-21 alt=636.2 v=76.2 tilt=6.9 cr=29959000 rep=50
-684601 T+00:00:19 TLM Liftoff/Counting wind=5.67/7.08/7.37 upper=47.01 stations=GGMGG farm=119887/34996 B-09 alt=1021.2 v=107.6 dr=194.3 tilt=11.9 prop=2982742 lit=33 p=0.997 S-21 alt=1090.6 v=107.6 tilt=11.9 cr=29959000 rep=50
-684751 T+00:00:24 TLM Liftoff/Counting wind=5.64/7.06/7.34 upper=47.70 stations=GGMGG farm=119887/34996 B-09 alt=1630.8 v=141.1 dr=391.8 tilt=16.9 prop=2877903 lit=33 p=0.997 S-21 alt=1698.7 v=141.1 tilt=16.9 cr=29959000 rep=50
-684901 T+00:00:29 TLM Liftoff/Counting wind=5.63/7.03/7.32 upper=47.20 stations=GGMGG farm=119887/34996 B-09 alt=2405.1 v=176.6 dr=657.9 tilt=19.2 prop=2773065 lit=33 p=0.997 S-21 alt=2472.2 v=176.6 tilt=19.2 cr=29959000 rep=50
-685051 T+00:00:34 TLM Liftoff/Counting wind=5.44/6.80/7.07 upper=46.97 stations=GGMGG farm=119887/34996 B-09 alt=3354.6 v=214.0 dr=992.6 tilt=19.5 prop=2668226 lit=33 p=0.997 S-21 alt=3421.6 v=214.0 tilt=19.5 cr=29959000 rep=50
-685201 T+00:00:39 TLM Liftoff/Counting wind=5.36/6.70/6.97 upper=46.62 stations=GGMGG farm=119887/34996 B-09 alt=4489.8 v=253.3 dr=1395.9 tilt=19.6 prop=2563387 lit=33 p=0.997 S-21 alt=4556.7 v=253.3 tilt=19.6 cr=29959000 rep=50
-685351 T+00:00:44 TLM Liftoff/Counting wind=5.25/6.56/6.83 upper=47.15 stations=GGMGG farm=119887/34996 B-09 alt=5821.2 v=294.5 dr=1867.8 tilt=19.5 prop=2458548 lit=33 p=0.997 S-21 alt=5888.1 v=294.5 tilt=19.5 cr=29959000 rep=50
-685501 T+00:00:49 TLM Liftoff/Counting wind=5.71/7.13/7.42 upper=48.19 stations=GGMGG farm=119887/34996 B-09 alt=7359.1 v=337.6 dr=2408.2 tilt=19.3 prop=2353710 lit=33 p=0.997 S-21 alt=7426.2 v=337.6 tilt=19.3 cr=29959000 rep=50
-685651 T+00:00:54 TLM Liftoff/Counting wind=5.49/6.86/7.13 upper=48.12 stations=GGMGG farm=119887/34996 B-09 alt=9114.2 v=382.7 dr=3017.3 tilt=19.0 prop=2248871 lit=33 p=0.997 S-21 alt=9181.3 v=382.7 tilt=19.0 cr=29959000 rep=50
-685801 T+00:00:59 TLM Liftoff/Counting wind=5.37/6.71/6.98 upper=48.24 stations=GGMGG farm=119887/34996 B-09 alt=11096.9 v=429.7 dr=3694.9 tilt=18.7 prop=2144032 lit=33 p=0.997 S-21 alt=11164.1 v=429.7 tilt=18.7 cr=29959000 rep=50
+684451 T+00:00:14 TLM Liftoff/Counting wind=5.77/7.21/7.50 upper=44.09 stations=GGMGG farm=119887/34996 B-09 alt=565.8 v=76.2 dr=65.3 tilt=6.9 prop=3087581 lit=33 p=0.997 S-21 alt=636.2 v=76.2 tilt=6.9 cr=29959000 rep=50
+684601 T+00:00:19 TLM Liftoff/Counting wind=5.67/7.08/7.37 upper=44.61 stations=GGMGG farm=119887/34996 B-09 alt=1021.2 v=107.6 dr=194.3 tilt=11.9 prop=2982742 lit=33 p=0.997 S-21 alt=1090.6 v=107.6 tilt=11.9 cr=29959000 rep=50
+684751 T+00:00:24 TLM Liftoff/Counting wind=5.64/7.06/7.34 upper=45.16 stations=GGMGG farm=119887/34996 B-09 alt=1630.8 v=141.1 dr=391.8 tilt=16.9 prop=2877903 lit=33 p=0.997 S-21 alt=1698.7 v=141.1 tilt=16.9 cr=29959000 rep=50
+684901 T+00:00:29 TLM Liftoff/Counting wind=5.63/7.03/7.32 upper=44.76 stations=GGMGG farm=119887/34996 B-09 alt=2405.1 v=176.6 dr=657.9 tilt=19.2 prop=2773065 lit=33 p=0.997 S-21 alt=2472.2 v=176.6 tilt=19.2 cr=29959000 rep=50
+685051 T+00:00:34 TLM Liftoff/Counting wind=5.44/6.80/7.07 upper=44.58 stations=GGMGG farm=119887/34996 B-09 alt=3354.6 v=214.0 dr=992.6 tilt=19.5 prop=2668226 lit=33 p=0.997 S-21 alt=3421.6 v=214.0 tilt=19.5 cr=29959000 rep=50
+685201 T+00:00:39 TLM Liftoff/Counting wind=5.36/6.70/6.97 upper=44.30 stations=GGMGG farm=119887/34996 B-09 alt=4489.8 v=253.3 dr=1395.9 tilt=19.6 prop=2563387 lit=33 p=0.997 S-21 alt=4556.7 v=253.3 tilt=19.6 cr=29959000 rep=50
+685351 T+00:00:44 TLM Liftoff/Counting wind=5.25/6.56/6.83 upper=44.72 stations=GGMGG farm=119887/34996 B-09 alt=5821.2 v=294.5 dr=1867.8 tilt=19.5 prop=2458548 lit=33 p=0.997 S-21 alt=5888.1 v=294.5 tilt=19.5 cr=29959000 rep=50
+685501 T+00:00:49 TLM Liftoff/Counting wind=5.71/7.13/7.42 upper=45.55 stations=GGMGG farm=119887/34996 B-09 alt=7359.1 v=337.6 dr=2408.2 tilt=19.3 prop=2353710 lit=33 p=0.997 S-21 alt=7426.2 v=337.6 tilt=19.3 cr=29959000 rep=50
+685651 T+00:00:54 TLM Liftoff/Counting wind=5.49/6.86/7.13 upper=45.49 stations=GGMGG farm=119887/34996 B-09 alt=9114.2 v=382.7 dr=3017.3 tilt=19.0 prop=2248871 lit=33 p=0.997 S-21 alt=9181.3 v=382.7 tilt=19.0 cr=29959000 rep=50
+685801 T+00:00:59 TLM Liftoff/Counting wind=5.37/6.71/6.98 upper=45.59 stations=GGMGG farm=119887/34996 B-09 alt=11096.9 v=429.7 dr=3694.9 tilt=18.7 prop=2144032 lit=33 p=0.997 S-21 alt=11164.1 v=429.7 tilt=18.7 cr=29959000 rep=50
 685863 T+00:01:02 FlightEvent id=B-09 kind=booster event=MAX_Q altitudeM=12000.000 speedMPerS=450.000
-685951 T+00:01:04 TLM Liftoff/Counting wind=5.64/7.05/7.33 upper=48.07 stations=GGMGG farm=119887/34996 B-09 alt=13746.2 v=484.3 dr=5746.2 tilt=21.5 prop=2042000 lit=33 p=0.997 S-21 alt=13812.3 v=484.3 tilt=21.5 cr=29959000 rep=50
-686101 T+00:01:09 TLM Liftoff/Counting wind=5.78/7.23/7.52 upper=47.34 stations=GGMGG farm=119886/34996 B-09 alt=16757.0 v=543.4 dr=8757.0 tilt=26.5 prop=1942000 lit=33 p=0.997 S-21 alt=16820.5 v=543.4 tilt=26.5 cr=29959000 rep=50
-686251 T+00:01:14 TLM Liftoff/Counting wind=5.52/6.90/7.17 upper=46.71 stations=GGMGG farm=119886/34996 B-09 alt=19767.7 v=602.6 dr=11767.7 tilt=31.5 prop=1842000 lit=33 p=0.997 S-21 alt=19828.3 v=602.6 tilt=31.5 cr=29959000 rep=50
-686401 T+00:01:19 TLM Liftoff/Counting wind=5.38/6.72/6.99 upper=46.80 stations=GGMGG farm=119886/34996 B-09 alt=22778.5 v=661.7 dr=14778.5 tilt=36.5 prop=1742000 lit=33 p=0.997 S-21 alt=22835.6 v=661.7 tilt=36.5 cr=29959000 rep=50
-686551 T+00:01:24 TLM Liftoff/Counting wind=4.97/6.22/6.47 upper=46.33 stations=GGMGG farm=119886/34996 B-09 alt=25789.2 v=720.9 dr=17789.2 tilt=41.5 prop=1642000 lit=33 p=0.997 S-21 alt=25842.4 v=720.9 tilt=41.5 cr=29959000 rep=50
-686701 T+00:01:29 TLM Liftoff/Counting wind=5.09/6.36/6.61 upper=46.40 stations=GGMGG farm=119886/34996 B-09 alt=28800.0 v=780.0 dr=20800.0 tilt=45.0 prop=1542000 lit=33 p=0.997 S-21 alt=28850.2 v=780.0 tilt=45.0 cr=29959000 rep=50
-686851 T+00:01:34 TLM Liftoff/Counting wind=5.30/6.63/6.90 upper=46.51 stations=GGMGG farm=119886/34996 B-09 alt=31810.8 v=839.1 dr=23810.8 tilt=45.0 prop=1442000 lit=33 p=0.997 S-21 alt=31861.0 v=839.1 tilt=45.0 cr=29959000 rep=50
-687001 T+00:01:39 TLM Liftoff/Counting wind=5.74/7.17/7.46 upper=46.40 stations=GGMGG farm=119886/34996 B-09 alt=34821.5 v=898.3 dr=26821.5 tilt=45.0 prop=1342000 lit=33 p=0.997 S-21 alt=34871.7 v=898.3 tilt=45.0 cr=29959000 rep=50
-687151 T+00:01:44 TLM Liftoff/Counting wind=5.72/7.14/7.43 upper=45.96 stations=GGMGG farm=119886/34996 B-09 alt=37832.3 v=957.4 dr=29832.3 tilt=45.0 prop=1242000 lit=33 p=0.997 S-21 alt=37882.5 v=957.4 tilt=45.0 cr=29959000 rep=50
-687301 T+00:01:49 TLM Liftoff/Counting wind=5.89/7.37/7.66 upper=47.23 stations=GGMGG farm=119886/34996 B-09 alt=40843.0 v=1016.6 dr=32843.0 tilt=45.0 prop=1142000 lit=33 p=0.997 S-21 alt=40893.2 v=1016.6 tilt=45.0 cr=29959000 rep=50
-687451 T+00:01:54 TLM Liftoff/Counting wind=5.89/7.36/7.65 upper=48.21 stations=GGMGG farm=119886/34996 B-09 alt=43853.8 v=1075.7 dr=35853.8 tilt=45.0 prop=1042000 lit=33 p=0.997 S-21 alt=43904.0 v=1075.7 tilt=45.0 cr=29959000 rep=50
-687601 T+00:01:59 TLM Liftoff/Counting wind=5.67/7.09/7.37 upper=47.99 stations=GGMGG farm=119886/34996 B-09 alt=46864.5 v=1134.8 dr=38864.5 tilt=45.0 prop=942000 lit=33 p=0.997 S-21 alt=46914.7 v=1134.8 tilt=45.0 cr=29959000 rep=50
-687751 T+00:02:04 TLM Liftoff/Counting wind=5.72/7.15/7.43 upper=47.71 stations=GGMGG farm=119886/34996 B-09 alt=49875.3 v=1194.0 dr=41875.3 tilt=45.0 prop=842000 lit=33 p=0.997 S-21 alt=49925.5 v=1194.0 tilt=45.0 cr=29959000 rep=50
-687901 T+00:02:09 TLM Liftoff/Counting wind=5.90/7.38/7.67 upper=47.88 stations=GGMGG farm=119886/34996 B-09 alt=52886.0 v=1253.1 dr=44886.0 tilt=45.0 prop=742000 lit=33 p=0.997 S-21 alt=52936.2 v=1253.1 tilt=45.0 cr=29959000 rep=50
-688051 T+00:02:14 TLM Liftoff/Counting wind=5.81/7.26/7.55 upper=48.02 stations=GGMGG farm=119886/34996 B-09 alt=55896.8 v=1312.3 dr=47896.8 tilt=45.0 prop=642000 lit=33 p=0.997 S-21 alt=55947.0 v=1312.3 tilt=45.0 cr=29959000 rep=50
-688201 T+00:02:19 TLM Liftoff/Counting wind=5.84/7.30/7.59 upper=48.04 stations=GGMGG farm=119886/34996 B-09 alt=58907.5 v=1371.4 dr=50907.5 tilt=45.0 prop=542000 lit=33 p=0.997 S-21 alt=58957.7 v=1371.4 tilt=45.0 cr=29959000 rep=50
-688351 T+00:02:24 TLM Liftoff/Counting wind=6.08/7.60/7.91 upper=47.90 stations=GGMGG farm=119886/34996 B-09 alt=61918.3 v=1430.5 dr=53918.3 tilt=45.0 prop=442000 lit=33 p=0.997 S-21 alt=61968.5 v=1430.5 tilt=45.0 cr=29959000 rep=50
-688501 T+00:02:29 TLM Liftoff/Counting wind=6.31/7.89/8.21 upper=47.76 stations=GGMGG farm=119886/34996 B-09 alt=64929.0 v=1489.7 dr=56929.0 tilt=45.0 prop=342000 lit=33 p=0.997 S-21 alt=64979.2 v=1489.7 tilt=45.0 cr=29959000 rep=50
-688651 T+00:02:34 TLM Liftoff/Counting wind=6.18/7.73/8.04 upper=47.11 stations=GGMGG farm=119886/34996 B-09 alt=67939.8 v=1548.8 dr=59939.8 tilt=45.0 prop=242000 lit=33 p=0.997 S-21 alt=67990.0 v=1548.8 tilt=45.0 cr=29959000 rep=50
+685951 T+00:01:04 TLM Liftoff/Counting wind=5.64/7.05/7.33 upper=45.46 stations=GGMGG farm=119887/34996 B-09 alt=13746.2 v=484.3 dr=5746.2 tilt=21.5 prop=2042000 lit=33 p=0.997 S-21 alt=13812.3 v=484.3 tilt=21.5 cr=29959000 rep=50
+686101 T+00:01:09 TLM Liftoff/Counting wind=5.78/7.23/7.52 upper=44.87 stations=GGMGG farm=119886/34996 B-09 alt=16757.0 v=543.4 dr=8757.0 tilt=26.5 prop=1942000 lit=33 p=0.997 S-21 alt=16820.5 v=543.4 tilt=26.5 cr=29959000 rep=50
+686251 T+00:01:14 TLM Liftoff/Counting wind=5.52/6.90/7.17 upper=44.37 stations=GGMGG farm=119886/34996 B-09 alt=19767.7 v=602.6 dr=11767.7 tilt=31.5 prop=1842000 lit=33 p=0.997 S-21 alt=19828.3 v=602.6 tilt=31.5 cr=29959000 rep=50
+686401 T+00:01:19 TLM Liftoff/Counting wind=5.38/6.72/6.99 upper=44.44 stations=GGMGG farm=119886/34996 B-09 alt=22778.5 v=661.7 dr=14778.5 tilt=36.5 prop=1742000 lit=33 p=0.997 S-21 alt=22835.6 v=661.7 tilt=36.5 cr=29959000 rep=50
+686551 T+00:01:24 TLM Liftoff/Counting wind=4.97/6.22/6.47 upper=44.07 stations=GGMGG farm=119886/34996 B-09 alt=25789.2 v=720.9 dr=17789.2 tilt=41.5 prop=1642000 lit=33 p=0.997 S-21 alt=25842.4 v=720.9 tilt=41.5 cr=29959000 rep=50
+686701 T+00:01:29 TLM Liftoff/Counting wind=5.09/6.36/6.61 upper=44.12 stations=GGMGG farm=119886/34996 B-09 alt=28800.0 v=780.0 dr=20800.0 tilt=45.0 prop=1542000 lit=33 p=0.997 S-21 alt=28850.2 v=780.0 tilt=45.0 cr=29959000 rep=50
+686851 T+00:01:34 TLM Liftoff/Counting wind=5.30/6.63/6.90 upper=44.21 stations=GGMGG farm=119886/34996 B-09 alt=31810.8 v=839.1 dr=23810.8 tilt=45.0 prop=1442000 lit=33 p=0.997 S-21 alt=31861.0 v=839.1 tilt=45.0 cr=29959000 rep=50
+687001 T+00:01:39 TLM Liftoff/Counting wind=5.74/7.17/7.46 upper=44.12 stations=GGMGG farm=119886/34996 B-09 alt=34821.5 v=898.3 dr=26821.5 tilt=45.0 prop=1342000 lit=33 p=0.997 S-21 alt=34871.7 v=898.3 tilt=45.0 cr=29959000 rep=50
+687151 T+00:01:44 TLM Liftoff/Counting wind=5.72/7.14/7.43 upper=43.76 stations=GGMGG farm=119886/34996 B-09 alt=37832.3 v=957.4 dr=29832.3 tilt=45.0 prop=1242000 lit=33 p=0.997 S-21 alt=37882.5 v=957.4 tilt=45.0 cr=29959000 rep=50
+687301 T+00:01:49 TLM Liftoff/Counting wind=5.89/7.37/7.66 upper=44.78 stations=GGMGG farm=119886/34996 B-09 alt=40843.0 v=1016.6 dr=32843.0 tilt=45.0 prop=1142000 lit=33 p=0.997 S-21 alt=40893.2 v=1016.6 tilt=45.0 cr=29959000 rep=50
+687451 T+00:01:54 TLM Liftoff/Counting wind=5.89/7.36/7.65 upper=45.57 stations=GGMGG farm=119886/34996 B-09 alt=43853.8 v=1075.7 dr=35853.8 tilt=45.0 prop=1042000 lit=33 p=0.997 S-21 alt=43904.0 v=1075.7 tilt=45.0 cr=29959000 rep=50
+687601 T+00:01:59 TLM Liftoff/Counting wind=5.67/7.09/7.37 upper=45.39 stations=GGMGG farm=119886/34996 B-09 alt=46864.5 v=1134.8 dr=38864.5 tilt=45.0 prop=942000 lit=33 p=0.997 S-21 alt=46914.7 v=1134.8 tilt=45.0 cr=29959000 rep=50
+687751 T+00:02:04 TLM Liftoff/Counting wind=5.72/7.15/7.43 upper=45.17 stations=GGMGG farm=119886/34996 B-09 alt=49875.3 v=1194.0 dr=41875.3 tilt=45.0 prop=842000 lit=33 p=0.997 S-21 alt=49925.5 v=1194.0 tilt=45.0 cr=29959000 rep=50
+687901 T+00:02:09 TLM Liftoff/Counting wind=5.90/7.38/7.67 upper=45.31 stations=GGMGG farm=119886/34996 B-09 alt=52886.0 v=1253.1 dr=44886.0 tilt=45.0 prop=742000 lit=33 p=0.997 S-21 alt=52936.2 v=1253.1 tilt=45.0 cr=29959000 rep=50
+688051 T+00:02:14 TLM Liftoff/Counting wind=5.81/7.26/7.55 upper=45.41 stations=GGMGG farm=119886/34996 B-09 alt=55896.8 v=1312.3 dr=47896.8 tilt=45.0 prop=642000 lit=33 p=0.997 S-21 alt=55947.0 v=1312.3 tilt=45.0 cr=29959000 rep=50
+688201 T+00:02:19 TLM Liftoff/Counting wind=5.84/7.30/7.59 upper=45.43 stations=GGMGG farm=119886/34996 B-09 alt=58907.5 v=1371.4 dr=50907.5 tilt=45.0 prop=542000 lit=33 p=0.997 S-21 alt=58957.7 v=1371.4 tilt=45.0 cr=29959000 rep=50
+688351 T+00:02:24 TLM Liftoff/Counting wind=6.08/7.60/7.91 upper=45.32 stations=GGMGG farm=119886/34996 B-09 alt=61918.3 v=1430.5 dr=53918.3 tilt=45.0 prop=442000 lit=33 p=0.997 S-21 alt=61968.5 v=1430.5 tilt=45.0 cr=29959000 rep=50
+688501 T+00:02:29 TLM Liftoff/Counting wind=6.31/7.89/8.21 upper=45.21 stations=GGMGG farm=119886/34996 B-09 alt=64929.0 v=1489.7 dr=56929.0 tilt=45.0 prop=342000 lit=33 p=0.997 S-21 alt=64979.2 v=1489.7 tilt=45.0 cr=29959000 rep=50
+688651 T+00:02:34 TLM Liftoff/Counting wind=6.18/7.73/8.04 upper=44.69 stations=GGMGG farm=119886/34996 B-09 alt=67939.8 v=1548.8 dr=59939.8 tilt=45.0 prop=242000 lit=33 p=0.997 S-21 alt=67990.0 v=1548.8 tilt=45.0 cr=29959000 rep=50
 688653 T+00:02:35 EnginesChanged id=B-09 lit=0 failed=0
 688653 T+00:02:35 FlightEvent id=B-09 kind=booster event=MECO altitudeM=68000.000 speedMPerS=1550.000
-688801 T+00:02:39 TLM Liftoff/Counting wind=6.22/7.78/8.09 upper=46.95 stations=GGMGG farm=119886/34996 B-09 alt=70940.0 v=1540.2 dr=65880.0 tilt=49.9 prop=235100 lit=0 p=0.997 S-21 alt=70985.7 v=1540.2 tilt=49.9 cr=29959000 rep=50
+688801 T+00:02:39 TLM Liftoff/Counting wind=6.22/7.78/8.09 upper=44.56 stations=GGMGG farm=119886/34996 B-09 alt=70940.0 v=1540.2 dr=65880.0 tilt=49.9 prop=235100 lit=0 p=0.997 S-21 alt=70985.7 v=1540.2 tilt=49.9 cr=29959000 rep=50
 688803 T+00:02:40 EntityStateChanged id=S-21 kind=ship from=ASCENT to=SEPARATED
 688803 T+00:02:40 EnginesChanged id=S-21 lit=6 failed=0
 688803 T+00:02:40 FlightEvent id=B-09 kind=booster event=HOT_STAGING altitudeM=71000.000 speedMPerS=1540.000
 688804 T+00:02:40 PhaseChanged from=Liftoff to=Boostback trigger=auto
-688951 T+00:02:44 TLM Boostback/Counting wind=6.35/7.94/8.26 upper=46.41 stations=GGMGG farm=119886/34996 B-09 alt=73940.0 v=1483.0 dr=69920.0 tilt=53.1 prop=230100 lit=0 p=0.997 S-21 alt=72135.4 v=1619.5 tilt=54.9 cr=29959000 rep=50
+688951 T+00:02:44 TLM Boostback/Counting wind=6.35/7.94/8.26 upper=44.13 stations=GGMGG farm=119886/34996 B-09 alt=73940.0 v=1483.0 dr=69920.0 tilt=53.1 prop=230100 lit=0 p=0.997 S-21 alt=72135.4 v=1619.5 tilt=54.9 cr=29959000 rep=50
 688953 T+00:02:45 EntityStateChanged id=B-09 kind=booster from=ASCENT to=BOOSTBACK
 688953 T+00:02:45 EnginesChanged id=B-09 lit=13 failed=0
 688953 T+00:02:45 DecisionRequired decision=CATCH poll=null deadlineTick=695403
 688953 T+00:02:45 FlightEvent id=B-09 kind=booster event=BOOSTBACK_START altitudeM=74000.000 speedMPerS=1481.818
-689101 T+00:02:49 TLM Boostback/Counting wind=6.29/7.86/8.17 upper=46.68 stations=GGMGG farm=119886/34996 B-09 alt=75078.0 v=1424.8 dr=70378.3 tilt=-20.9 prop=218240 lit=13 p=0.997 S-21 alt=73247.5 v=1700.6 tilt=59.9 cr=29959000 rep=50
-689251 T+00:02:54 TLM Boostback/Counting wind=6.46/8.08/8.40 upper=46.78 stations=GGMGG farm=119886/34996 B-09 alt=76178.0 v=1366.6 dr=70764.4 tilt=-75.0 prop=206240 lit=13 p=0.997 S-21 alt=74359.5 v=1781.8 tilt=64.9 cr=29959000 rep=50
-689401 T+00:02:59 TLM Boostback/Counting wind=6.75/8.43/8.77 upper=46.66 stations=GGMGG farm=119886/34996 B-09 alt=77278.0 v=1308.4 dr=71150.4 tilt=-75.0 prop=194240 lit=13 p=0.997 S-21 alt=75471.5 v=1862.9 tilt=69.9 cr=29959000 rep=50
-689551 T+00:03:04 TLM Boostback/Counting wind=6.84/8.55/8.89 upper=46.48 stations=GGMGG farm=119886/34996 B-09 alt=78378.0 v=1250.3 dr=71536.5 tilt=-75.0 prop=182240 lit=13 p=0.997 S-21 alt=76583.6 v=1944.0 tilt=74.9 cr=29959000 rep=50
-689701 T+00:03:09 TLM Boostback/Counting wind=6.97/8.71/9.06 upper=46.44 stations=GGMGG farm=119886/34996 B-09 alt=79478.0 v=1192.1 dr=71922.5 tilt=-75.0 prop=170240 lit=13 p=0.997 S-21 alt=77695.6 v=2025.1 tilt=79.9 cr=29959000 rep=50
-689851 T+00:03:14 TLM Boostback/Counting wind=6.93/8.66/9.01 upper=45.84 stations=GGMGG farm=119886/34996 B-09 alt=80578.0 v=1133.9 dr=72308.6 tilt=-75.0 prop=158240 lit=13 p=0.997 S-21 alt=78807.6 v=2106.3 tilt=84.9 cr=29959000 rep=50
-690001 T+00:03:19 TLM Boostback/Counting wind=6.70/8.37/8.71 upper=46.02 stations=GGMGG farm=119886/34996 B-09 alt=81678.0 v=1075.7 dr=72694.6 tilt=-75.0 prop=146240 lit=13 p=0.997 S-21 alt=79919.7 v=2187.4 tilt=86.3 cr=29959000 rep=50
-690151 T+00:03:24 TLM Boostback/Counting wind=6.79/8.49/8.83 upper=45.93 stations=GGMGG farm=119886/34996 B-09 alt=82778.0 v=1017.5 dr=73080.7 tilt=-75.0 prop=134240 lit=13 p=0.997 S-21 alt=81031.7 v=2268.5 tilt=86.3 cr=29959000 rep=50
-690301 T+00:03:29 TLM Boostback/Counting wind=6.53/8.16/8.48 upper=45.37 stations=GGMGG farm=119886/34996 B-09 alt=83878.0 v=959.3 dr=73466.7 tilt=-75.0 prop=122240 lit=13 p=0.997 S-21 alt=82143.7 v=2349.6 tilt=86.3 cr=29959000 rep=50
-690451 T+00:03:34 TLM Boostback/Counting wind=6.43/8.04/8.36 upper=45.63 stations=GGMGG farm=119886/34996 B-09 alt=84978.0 v=901.2 dr=73852.7 tilt=-75.0 prop=110240 lit=13 p=0.997 S-21 alt=83255.8 v=2430.8 tilt=86.3 cr=29959000 rep=50
+689101 T+00:02:49 TLM Boostback/Counting wind=6.29/7.86/8.17 upper=44.35 stations=GGMGG farm=119886/34996 B-09 alt=75078.0 v=1424.8 dr=70378.3 tilt=-20.9 prop=218240 lit=13 p=0.997 S-21 alt=73247.5 v=1700.6 tilt=59.9 cr=29959000 rep=50
+689251 T+00:02:54 TLM Boostback/Counting wind=6.46/8.08/8.40 upper=44.43 stations=GGMGG farm=119886/34996 B-09 alt=76178.0 v=1366.6 dr=70764.4 tilt=-75.0 prop=206240 lit=13 p=0.997 S-21 alt=74359.5 v=1781.8 tilt=64.9 cr=29959000 rep=50
+689401 T+00:02:59 TLM Boostback/Counting wind=6.75/8.43/8.77 upper=44.33 stations=GGMGG farm=119886/34996 B-09 alt=77278.0 v=1308.4 dr=71150.4 tilt=-75.0 prop=194240 lit=13 p=0.997 S-21 alt=75471.5 v=1862.9 tilt=69.9 cr=29959000 rep=50
+689551 T+00:03:04 TLM Boostback/Counting wind=6.84/8.55/8.89 upper=44.18 stations=GGMGG farm=119886/34996 B-09 alt=78378.0 v=1250.3 dr=71536.5 tilt=-75.0 prop=182240 lit=13 p=0.997 S-21 alt=76583.6 v=1944.0 tilt=74.9 cr=29959000 rep=50
+689701 T+00:03:09 TLM Boostback/Counting wind=6.97/8.71/9.06 upper=44.15 stations=GGMGG farm=119886/34996 B-09 alt=79478.0 v=1192.1 dr=71922.5 tilt=-75.0 prop=170240 lit=13 p=0.997 S-21 alt=77695.6 v=2025.1 tilt=79.9 cr=29959000 rep=50
+689851 T+00:03:14 TLM Boostback/Counting wind=6.93/8.66/9.01 upper=43.67 stations=GGMGG farm=119886/34996 B-09 alt=80578.0 v=1133.9 dr=72308.6 tilt=-75.0 prop=158240 lit=13 p=0.997 S-21 alt=78807.6 v=2106.3 tilt=84.9 cr=29959000 rep=50
+690001 T+00:03:19 TLM Boostback/Counting wind=6.70/8.37/8.71 upper=43.81 stations=GGMGG farm=119886/34996 B-09 alt=81678.0 v=1075.7 dr=72694.6 tilt=-75.0 prop=146240 lit=13 p=0.997 S-21 alt=79919.7 v=2187.4 tilt=86.3 cr=29959000 rep=50
+690151 T+00:03:24 TLM Boostback/Counting wind=6.79/8.49/8.83 upper=43.75 stations=GGMGG farm=119886/34996 B-09 alt=82778.0 v=1017.5 dr=73080.7 tilt=-75.0 prop=134240 lit=13 p=0.997 S-21 alt=81031.7 v=2268.5 tilt=86.3 cr=29959000 rep=50
+690301 T+00:03:29 TLM Boostback/Counting wind=6.53/8.16/8.48 upper=43.29 stations=GGMGG farm=119886/34996 B-09 alt=83878.0 v=959.3 dr=73466.7 tilt=-75.0 prop=122240 lit=13 p=0.997 S-21 alt=82143.7 v=2349.6 tilt=86.3 cr=29959000 rep=50
+690451 T+00:03:34 TLM Boostback/Counting wind=6.43/8.04/8.36 upper=43.50 stations=GGMGG farm=119886/34996 B-09 alt=84978.0 v=901.2 dr=73852.7 tilt=-75.0 prop=110240 lit=13 p=0.997 S-21 alt=83255.8 v=2430.8 tilt=86.3 cr=29959000 rep=50
 690453 T+00:03:35 EntityStateChanged id=B-09 kind=booster from=BOOSTBACK to=DESCENT
 690453 T+00:03:35 EnginesChanged id=B-09 lit=0 failed=0
 690453 T+00:03:35 FlightEvent id=B-09 kind=booster event=BOOSTBACK_END altitudeM=85000.000 speedMPerS=900.000
 690454 T+00:03:35 EntityStateChanged id=TOWER-1 kind=tower from=IDLE to=CATCH_READY
 690454 T+00:03:35 CarriageTargetSet id=TOWER-1 fromM=135 toM=126
-690454 T+00:03:35 RecoveryCommitted boosterId=B-09 mode=CATCH by=PLAYER p=0.997
+690454 T+00:03:35 RecoveryCommitted boosterId=B-09 mode=CATCH by=DIRECTOR p=0.997
 690454 T+00:03:35 PhaseChanged from=Boostback to=TowerCatch trigger=auto
-690601 T+00:03:39 TLM TowerCatch/Counting wind=6.37/7.96/8.28 upper=46.20 stations=GGMGG farm=119886/34996 B-09 alt=86400.0 v=858.0 dr=72134.9 tilt=-60.2 prop=109720 lit=0 p=0.997 S-21 alt=84367.8 v=2511.9 tilt=86.3 cr=29959000 rep=50
+690601 T+00:03:39 TLM TowerCatch/Counting wind=6.37/7.96/8.28 upper=43.96 stations=GGMGG farm=119886/34996 B-09 alt=86400.0 v=858.0 dr=72134.9 tilt=-60.2 prop=109720 lit=0 p=0.997 S-21 alt=84367.8 v=2511.9 tilt=86.3 cr=29959000 rep=50
 690724 T+00:03:44 CarriageArrived id=TOWER-1 atM=126
-690751 T+00:03:44 TLM TowerCatch/Counting wind=6.23/7.79/8.10 upper=46.73 stations=GGMGG farm=119885/34996 B-09 alt=87828.6 v=815.1 dr=70374.1 tilt=-45.2 prop=109434 lit=0 p=0.997 S-21 alt=85479.8 v=2593.0 tilt=86.3 cr=29959000 rep=50
-690901 T+00:03:49 TLM TowerCatch/Counting wind=6.10/7.63/7.93 upper=46.13 stations=GGMGG farm=119885/34996 B-09 alt=89257.1 v=772.3 dr=68613.3 tilt=-30.2 prop=109149 lit=0 p=0.997 S-21 alt=86591.9 v=2674.2 tilt=86.3 cr=29959000 rep=50
-691051 T+00:03:54 TLM TowerCatch/Counting wind=6.22/7.77/8.08 upper=46.50 stations=GGMGG farm=119885/34996 B-09 alt=90685.7 v=729.4 dr=66852.5 tilt=-15.2 prop=108863 lit=0 p=0.997 S-21 alt=87703.9 v=2755.3 tilt=86.3 cr=29959000 rep=50
-691201 T+00:03:59 TLM TowerCatch/Counting wind=5.82/7.27/7.56 upper=46.35 stations=GGMGG farm=119885/34996 B-09 alt=92114.3 v=686.6 dr=65091.7 tilt=-0.2 prop=108577 lit=0 p=0.997 S-21 alt=88815.9 v=2836.4 tilt=86.3 cr=29959000 rep=50
-691351 T+00:04:04 TLM TowerCatch/Counting wind=5.87/7.33/7.63 upper=47.44 stations=GGMGG farm=119885/34996 B-09 alt=93542.9 v=643.7 dr=63330.9 tilt=14.8 prop=108291 lit=0 p=0.997 S-21 alt=89928.0 v=2917.5 tilt=86.3 cr=29959000 rep=50
-691501 T+00:04:09 TLM TowerCatch/Counting wind=5.62/7.02/7.30 upper=47.34 stations=GGMGG farm=119885/34996 B-09 alt=94971.4 v=600.9 dr=61570.1 tilt=29.8 prop=108006 lit=0 p=0.997 S-21 alt=91040.0 v=2998.7 tilt=86.3 cr=29959000 rep=50
+690751 T+00:03:44 TLM TowerCatch/Counting wind=6.23/7.79/8.10 upper=44.38 stations=GGMGG farm=119885/34996 B-09 alt=87828.6 v=815.1 dr=70374.1 tilt=-45.2 prop=109434 lit=0 p=0.997 S-21 alt=85479.8 v=2593.0 tilt=86.3 cr=29959000 rep=50
+690901 T+00:03:49 TLM TowerCatch/Counting wind=6.10/7.63/7.93 upper=43.91 stations=GGMGG farm=119885/34996 B-09 alt=89257.1 v=772.3 dr=68613.3 tilt=-30.2 prop=109149 lit=0 p=0.997 S-21 alt=86591.9 v=2674.2 tilt=86.3 cr=29959000 rep=50
+691051 T+00:03:54 TLM TowerCatch/Counting wind=6.22/7.77/8.08 upper=44.20 stations=GGMGG farm=119885/34996 B-09 alt=90685.7 v=729.4 dr=66852.5 tilt=-15.2 prop=108863 lit=0 p=0.997 S-21 alt=87703.9 v=2755.3 tilt=86.3 cr=29959000 rep=50
+691201 T+00:03:59 TLM TowerCatch/Counting wind=5.82/7.27/7.56 upper=44.08 stations=GGMGG farm=119885/34996 B-09 alt=92114.3 v=686.6 dr=65091.7 tilt=-0.2 prop=108577 lit=0 p=0.997 S-21 alt=88815.9 v=2836.4 tilt=86.3 cr=29959000 rep=50
+691351 T+00:04:04 TLM TowerCatch/Counting wind=5.87/7.33/7.63 upper=44.95 stations=GGMGG farm=119885/34996 B-09 alt=93542.9 v=643.7 dr=63330.9 tilt=14.8 prop=108291 lit=0 p=0.997 S-21 alt=89928.0 v=2917.5 tilt=86.3 cr=29959000 rep=50
+691501 T+00:04:09 TLM TowerCatch/Counting wind=5.62/7.02/7.30 upper=44.88 stations=GGMGG farm=119885/34996 B-09 alt=94971.4 v=600.9 dr=61570.1 tilt=29.8 prop=108006 lit=0 p=0.997 S-21 alt=91040.0 v=2998.7 tilt=86.3 cr=29959000 rep=50
 691503 T+00:04:10 FlightEvent id=B-09 kind=booster event=APOGEE altitudeM=95000.000 speedMPerS=600.000
-691651 T+00:04:14 TLM TowerCatch/Counting wind=5.44/6.80/7.07 upper=46.46 stations=GGMGG farm=119885/34996 B-09 alt=91464.5 v=587.9 dr=59227.8 tilt=33.1 prop=107322 lit=0 p=0.997 S-21 alt=92152.0 v=3079.8 tilt=86.3 cr=29959000 rep=50
-691801 T+00:04:19 TLM TowerCatch/Counting wind=5.63/7.04/7.32 upper=46.44 stations=GGMGG farm=119885/34996 B-09 alt=87856.8 v=575.6 dr=56873.6 tilt=33.1 prop=106629 lit=0 p=0.997 S-21 alt=93264.1 v=3160.9 tilt=86.3 cr=29959000 rep=50
-691951 T+00:04:24 TLM TowerCatch/Counting wind=5.65/7.07/7.35 upper=46.21 stations=GGMGG farm=119885/34996 B-09 alt=84249.1 v=563.3 dr=54519.4 tilt=33.1 prop=105937 lit=0 p=0.997 S-21 alt=94376.1 v=3242.0 tilt=86.3 cr=29959000 rep=50
-692101 T+00:04:29 TLM TowerCatch/Counting wind=5.57/6.96/7.24 upper=46.00 stations=GGMGG farm=119885/34996 B-09 alt=80641.4 v=551.0 dr=52165.2 tilt=33.1 prop=105245 lit=0 p=0.997 S-21 alt=95488.1 v=3323.2 tilt=86.3 cr=29959000 rep=50
-692251 T+00:04:34 TLM TowerCatch/Counting wind=5.91/7.39/7.69 upper=46.41 stations=GGMGG farm=119885/34996 B-09 alt=77033.7 v=538.7 dr=49810.9 tilt=33.1 prop=104552 lit=0 p=0.997 S-21 alt=96600.2 v=3404.3 tilt=86.3 cr=29959000 rep=50
-692401 T+00:04:39 TLM TowerCatch/Counting wind=5.92/7.40/7.70 upper=46.48 stations=GGMGG farm=119885/34996 B-09 alt=73426.0 v=526.4 dr=47456.7 tilt=33.1 prop=103860 lit=0 p=0.997 S-21 alt=97712.2 v=3485.4 tilt=86.3 cr=29959000 rep=50
-692551 T+00:04:44 TLM TowerCatch/Counting wind=5.82/7.28/7.57 upper=46.53 stations=GGMGG farm=119885/34996 B-09 alt=69818.3 v=514.1 dr=45102.5 tilt=33.1 prop=103168 lit=0 p=0.997 S-21 alt=98824.2 v=3566.5 tilt=86.3 cr=29959000 rep=50
-692701 T+00:04:49 TLM TowerCatch/Counting wind=5.86/7.32/7.61 upper=46.96 stations=GGMGG farm=119885/34996 B-09 alt=66210.6 v=501.8 dr=42748.3 tilt=33.1 prop=102475 lit=0 p=0.997 S-21 alt=99936.3 v=3647.7 tilt=86.3 cr=29959000 rep=50
-692851 T+00:04:54 TLM TowerCatch/Counting wind=5.79/7.23/7.52 upper=47.26 stations=GGMGG farm=119885/34996 B-09 alt=62602.9 v=489.5 dr=40394.1 tilt=33.1 prop=101783 lit=0 p=0.997 S-21 alt=101048.3 v=3728.8 tilt=86.3 cr=29959000 rep=50
-693001 T+00:04:59 TLM TowerCatch/Counting wind=5.82/7.28/7.57 upper=46.85 stations=GGMGG farm=119885/34996 B-09 alt=58995.2 v=477.2 dr=38039.9 tilt=33.1 prop=101091 lit=0 p=0.997 S-21 alt=102160.3 v=3809.9 tilt=86.3 cr=29959000 rep=50
-693151 T+00:05:04 TLM TowerCatch/Counting wind=5.56/6.95/7.23 upper=46.27 stations=GGMGG farm=119885/34996 B-09 alt=55387.5 v=464.9 dr=35685.7 tilt=33.1 prop=100398 lit=0 p=0.997 S-21 alt=103272.4 v=3891.1 tilt=86.3 cr=29959000 rep=50
-693301 T+00:05:09 TLM TowerCatch/Counting wind=5.43/6.78/7.05 upper=46.85 stations=GGMGG farm=119885/34996 B-09 alt=51779.8 v=452.6 dr=33331.5 tilt=33.1 prop=99706 lit=0 p=0.997 S-21 alt=104384.4 v=3972.2 tilt=86.3 cr=29959000 rep=50
-693451 T+00:05:14 TLM TowerCatch/Counting wind=5.59/6.99/7.27 upper=47.46 stations=GGMGG farm=119885/34996 B-09 alt=48172.2 v=440.2 dr=30977.3 tilt=33.1 prop=99014 lit=0 p=0.997 S-21 alt=105496.4 v=4053.3 tilt=86.3 cr=29959000 rep=50
-693601 T+00:05:19 TLM TowerCatch/Counting wind=5.51/6.89/7.16 upper=47.40 stations=GGMGG farm=119885/34996 B-09 alt=44564.5 v=427.9 dr=28623.1 tilt=33.1 prop=98322 lit=0 p=0.997 S-21 alt=106608.5 v=4134.4 tilt=86.3 cr=29959000 rep=50
-693751 T+00:05:24 TLM TowerCatch/Counting wind=5.37/6.72/6.98 upper=47.86 stations=GGMGG farm=119885/34996 B-09 alt=40956.8 v=415.6 dr=26268.9 tilt=33.1 prop=97629 lit=0 p=0.997 S-21 alt=107720.5 v=4215.6 tilt=86.3 cr=29959000 rep=50
-693901 T+00:05:29 TLM TowerCatch/Counting wind=5.42/6.77/7.04 upper=48.19 stations=GGMGG farm=119885/34996 B-09 alt=37349.1 v=403.3 dr=23914.7 tilt=33.1 prop=96937 lit=0 p=0.997 S-21 alt=108832.5 v=4296.7 tilt=86.3 cr=29959000 rep=50
-694051 T+00:05:34 TLM TowerCatch/Counting wind=5.50/6.88/7.15 upper=48.32 stations=GGMGG farm=119885/34996 B-09 alt=33741.4 v=391.0 dr=21560.5 tilt=33.1 prop=96245 lit=0 p=0.997 S-21 alt=109944.6 v=4377.8 tilt=86.3 cr=29959000 rep=50
-694201 T+00:05:39 TLM TowerCatch/Counting wind=5.34/6.68/6.95 upper=47.83 stations=GGMGG farm=119885/34996 B-09 alt=30133.7 v=378.7 dr=19206.3 tilt=33.1 prop=95552 lit=0 p=0.997 S-21 alt=111056.6 v=4458.9 tilt=86.3 cr=29959000 rep=50
-694351 T+00:05:44 TLM TowerCatch/Counting wind=5.31/6.64/6.90 upper=47.50 stations=GGMGG farm=119885/34996 B-09 alt=26526.0 v=366.4 dr=16852.1 tilt=33.1 prop=94860 lit=0 p=0.997 S-21 alt=112168.6 v=4540.1 tilt=86.3 cr=29959000 rep=50
-694501 T+00:05:49 TLM TowerCatch/Counting wind=5.42/6.77/7.04 upper=46.99 stations=GGMGG farm=119885/34996 B-09 alt=22918.3 v=354.1 dr=14497.9 tilt=33.1 prop=94168 lit=0 p=0.997 S-21 alt=113280.7 v=4621.2 tilt=86.3 cr=29959000 rep=50
-694651 T+00:05:54 TLM TowerCatch/Counting wind=5.41/6.76/7.03 upper=47.25 stations=GGMGG farm=119885/34996 B-09 alt=19310.6 v=341.8 dr=12143.7 tilt=33.1 prop=93475 lit=0 p=0.997 S-21 alt=114392.7 v=4702.3 tilt=86.3 cr=29959000 rep=50
-694801 T+00:05:59 TLM TowerCatch/Counting wind=5.68/7.11/7.39 upper=46.85 stations=GGMGG farm=119885/34996 B-09 alt=15702.9 v=329.5 dr=9789.5 tilt=33.1 prop=92783 lit=0 p=0.997 S-21 alt=115504.7 v=4783.4 tilt=86.3 cr=29959000 rep=50
-694951 T+00:06:04 TLM TowerCatch/Counting wind=5.73/7.17/7.45 upper=46.96 stations=GGMGG farm=119885/34996 B-09 alt=12095.2 v=317.2 dr=7435.3 tilt=33.1 prop=92091 lit=0 p=0.997 S-21 alt=116616.8 v=4864.6 tilt=86.3 cr=29959000 rep=50
-695101 T+00:06:09 TLM TowerCatch/Counting wind=5.91/7.38/7.68 upper=46.58 stations=GGMGG farm=119885/34996 B-09 alt=8487.5 v=304.9 dr=5081.1 tilt=33.1 prop=91398 lit=0 p=0.997 S-21 alt=117728.8 v=4945.7 tilt=86.3 cr=29959000 rep=50
-695251 T+00:06:14 TLM TowerCatch/Counting wind=6.01/7.51/7.81 upper=46.95 stations=GGMGG farm=119885/34996 B-09 alt=4879.8 v=292.6 dr=2726.9 tilt=33.1 prop=90706 lit=0 p=0.997 S-21 alt=118840.8 v=5026.8 tilt=86.3 cr=29959000 rep=50
-695401 T+00:06:19 TLM TowerCatch/Counting wind=5.98/7.47/7.77 upper=46.82 stations=GGMGG farm=119884/34996 B-09 alt=1272.2 v=280.2 dr=372.7 tilt=33.1 prop=90014 lit=0 p=0.997 S-21 alt=119952.9 v=5108.0 tilt=86.3 cr=29959000 rep=50
+691651 T+00:04:14 TLM TowerCatch/Counting wind=5.44/6.80/7.07 upper=44.17 stations=GGMGG farm=119885/34996 B-09 alt=91464.5 v=587.9 dr=59227.8 tilt=33.1 prop=107322 lit=0 p=0.997 S-21 alt=92152.0 v=3079.8 tilt=86.3 cr=29959000 rep=50
+691801 T+00:04:19 TLM TowerCatch/Counting wind=5.63/7.04/7.32 upper=44.15 stations=GGMGG farm=119885/34996 B-09 alt=87856.8 v=575.6 dr=56873.6 tilt=33.1 prop=106629 lit=0 p=0.997 S-21 alt=93264.1 v=3160.9 tilt=86.3 cr=29959000 rep=50
+691951 T+00:04:24 TLM TowerCatch/Counting wind=5.65/7.07/7.35 upper=43.96 stations=GGMGG farm=119885/34996 B-09 alt=84249.1 v=563.3 dr=54519.4 tilt=33.1 prop=105937 lit=0 p=0.997 S-21 alt=94376.1 v=3242.0 tilt=86.3 cr=29959000 rep=50
+692101 T+00:04:29 TLM TowerCatch/Counting wind=5.57/6.96/7.24 upper=43.80 stations=GGMGG farm=119885/34996 B-09 alt=80641.4 v=551.0 dr=52165.2 tilt=33.1 prop=105245 lit=0 p=0.997 S-21 alt=95488.1 v=3323.2 tilt=86.3 cr=29959000 rep=50
+692251 T+00:04:34 TLM TowerCatch/Counting wind=5.91/7.39/7.69 upper=44.13 stations=GGMGG farm=119885/34996 B-09 alt=77033.7 v=538.7 dr=49810.9 tilt=33.1 prop=104552 lit=0 p=0.997 S-21 alt=96600.2 v=3404.3 tilt=86.3 cr=29959000 rep=50
+692401 T+00:04:39 TLM TowerCatch/Counting wind=5.92/7.40/7.70 upper=44.18 stations=GGMGG farm=119885/34996 B-09 alt=73426.0 v=526.4 dr=47456.7 tilt=33.1 prop=103860 lit=0 p=0.997 S-21 alt=97712.2 v=3485.4 tilt=86.3 cr=29959000 rep=50
+692551 T+00:04:44 TLM TowerCatch/Counting wind=5.82/7.28/7.57 upper=44.23 stations=GGMGG farm=119885/34996 B-09 alt=69818.3 v=514.1 dr=45102.5 tilt=33.1 prop=103168 lit=0 p=0.997 S-21 alt=98824.2 v=3566.5 tilt=86.3 cr=29959000 rep=50
+692701 T+00:04:49 TLM TowerCatch/Counting wind=5.86/7.32/7.61 upper=44.57 stations=GGMGG farm=119885/34996 B-09 alt=66210.6 v=501.8 dr=42748.3 tilt=33.1 prop=102475 lit=0 p=0.997 S-21 alt=99936.3 v=3647.7 tilt=86.3 cr=29959000 rep=50
+692851 T+00:04:54 TLM TowerCatch/Counting wind=5.79/7.23/7.52 upper=44.81 stations=GGMGG farm=119885/34996 B-09 alt=62602.9 v=489.5 dr=40394.1 tilt=33.1 prop=101783 lit=0 p=0.997 S-21 alt=101048.3 v=3728.8 tilt=86.3 cr=29959000 rep=50
+693001 T+00:04:59 TLM TowerCatch/Counting wind=5.82/7.28/7.57 upper=44.48 stations=GGMGG farm=119885/34996 B-09 alt=58995.2 v=477.2 dr=38039.9 tilt=33.1 prop=101091 lit=0 p=0.997 S-21 alt=102160.3 v=3809.9 tilt=86.3 cr=29959000 rep=50
+693151 T+00:05:04 TLM TowerCatch/Counting wind=5.56/6.95/7.23 upper=44.02 stations=GGMGG farm=119885/34996 B-09 alt=55387.5 v=464.9 dr=35685.7 tilt=33.1 prop=100398 lit=0 p=0.997 S-21 alt=103272.4 v=3891.1 tilt=86.3 cr=29959000 rep=50
+693301 T+00:05:09 TLM TowerCatch/Counting wind=5.43/6.78/7.05 upper=44.48 stations=GGMGG farm=119885/34996 B-09 alt=51779.8 v=452.6 dr=33331.5 tilt=33.1 prop=99706 lit=0 p=0.997 S-21 alt=104384.4 v=3972.2 tilt=86.3 cr=29959000 rep=50
+693451 T+00:05:14 TLM TowerCatch/Counting wind=5.59/6.99/7.27 upper=44.97 stations=GGMGG farm=119885/34996 B-09 alt=48172.2 v=440.2 dr=30977.3 tilt=33.1 prop=99014 lit=0 p=0.997 S-21 alt=105496.4 v=4053.3 tilt=86.3 cr=29959000 rep=50
+693601 T+00:05:19 TLM TowerCatch/Counting wind=5.51/6.89/7.16 upper=44.92 stations=GGMGG farm=119885/34996 B-09 alt=44564.5 v=427.9 dr=28623.1 tilt=33.1 prop=98322 lit=0 p=0.997 S-21 alt=106608.5 v=4134.4 tilt=86.3 cr=29959000 rep=50
+693751 T+00:05:24 TLM TowerCatch/Counting wind=5.37/6.72/6.98 upper=45.29 stations=GGMGG farm=119885/34996 B-09 alt=40956.8 v=415.6 dr=26268.9 tilt=33.1 prop=97629 lit=0 p=0.997 S-21 alt=107720.5 v=4215.6 tilt=86.3 cr=29959000 rep=50
+693901 T+00:05:29 TLM TowerCatch/Counting wind=5.42/6.77/7.04 upper=45.55 stations=GGMGG farm=119885/34996 B-09 alt=37349.1 v=403.3 dr=23914.7 tilt=33.1 prop=96937 lit=0 p=0.997 S-21 alt=108832.5 v=4296.7 tilt=86.3 cr=29959000 rep=50
+694051 T+00:05:34 TLM TowerCatch/Counting wind=5.50/6.88/7.15 upper=45.66 stations=GGMGG farm=119885/34996 B-09 alt=33741.4 v=391.0 dr=21560.5 tilt=33.1 prop=96245 lit=0 p=0.997 S-21 alt=109944.6 v=4377.8 tilt=86.3 cr=29959000 rep=50
+694201 T+00:05:39 TLM TowerCatch/Counting wind=5.34/6.68/6.95 upper=45.27 stations=GGMGG farm=119885/34996 B-09 alt=30133.7 v=378.7 dr=19206.3 tilt=33.1 prop=95552 lit=0 p=0.997 S-21 alt=111056.6 v=4458.9 tilt=86.3 cr=29959000 rep=50
+694351 T+00:05:44 TLM TowerCatch/Counting wind=5.31/6.64/6.90 upper=45.00 stations=GGMGG farm=119885/34996 B-09 alt=26526.0 v=366.4 dr=16852.1 tilt=33.1 prop=94860 lit=0 p=0.997 S-21 alt=112168.6 v=4540.1 tilt=86.3 cr=29959000 rep=50
+694501 T+00:05:49 TLM TowerCatch/Counting wind=5.42/6.77/7.04 upper=44.59 stations=GGMGG farm=119885/34996 B-09 alt=22918.3 v=354.1 dr=14497.9 tilt=33.1 prop=94168 lit=0 p=0.997 S-21 alt=113280.7 v=4621.2 tilt=86.3 cr=29959000 rep=50
+694651 T+00:05:54 TLM TowerCatch/Counting wind=5.41/6.76/7.03 upper=44.80 stations=GGMGG farm=119885/34996 B-09 alt=19310.6 v=341.8 dr=12143.7 tilt=33.1 prop=93475 lit=0 p=0.997 S-21 alt=114392.7 v=4702.3 tilt=86.3 cr=29959000 rep=50
+694801 T+00:05:59 TLM TowerCatch/Counting wind=5.68/7.11/7.39 upper=44.48 stations=GGMGG farm=119885/34996 B-09 alt=15702.9 v=329.5 dr=9789.5 tilt=33.1 prop=92783 lit=0 p=0.997 S-21 alt=115504.7 v=4783.4 tilt=86.3 cr=29959000 rep=50
+694951 T+00:06:04 TLM TowerCatch/Counting wind=5.73/7.17/7.45 upper=44.57 stations=GGMGG farm=119885/34996 B-09 alt=12095.2 v=317.2 dr=7435.3 tilt=33.1 prop=92091 lit=0 p=0.997 S-21 alt=116616.8 v=4864.6 tilt=86.3 cr=29959000 rep=50
+695101 T+00:06:09 TLM TowerCatch/Counting wind=5.91/7.38/7.68 upper=44.26 stations=GGMGG farm=119885/34996 B-09 alt=8487.5 v=304.9 dr=5081.1 tilt=33.1 prop=91398 lit=0 p=0.997 S-21 alt=117728.8 v=4945.7 tilt=86.3 cr=29959000 rep=50
+695251 T+00:06:14 TLM TowerCatch/Counting wind=6.01/7.51/7.81 upper=44.56 stations=GGMGG farm=119885/34996 B-09 alt=4879.8 v=292.6 dr=2726.9 tilt=33.1 prop=90706 lit=0 p=0.997 S-21 alt=118840.8 v=5026.8 tilt=86.3 cr=29959000 rep=50
+695401 T+00:06:19 TLM TowerCatch/Counting wind=5.98/7.47/7.77 upper=44.46 stations=GGMGG farm=119884/34996 B-09 alt=1272.2 v=280.2 dr=372.7 tilt=33.1 prop=90014 lit=0 p=0.997 S-21 alt=119952.9 v=5108.0 tilt=86.3 cr=29959000 rep=50
 695403 T+00:06:20 EnginesChanged id=B-09 lit=3 failed=0
 695403 T+00:06:20 EntityStateChanged id=TOWER-1 kind=tower from=CATCH_READY to=CATCHING
 695403 T+00:06:20 FlightEvent id=B-09 kind=booster event=LANDING_BURN altitudeM=1200.000 speedMPerS=280.000
-695551 T+00:06:24 TLM TowerCatch/Counting wind=5.75/7.18/7.47 upper=47.23 stations=GGMGG farm=119884/34996 B-09 alt=1040.4 v=240.9 dr=280.0 tilt=18.3 prop=85800 lit=3 p=0.997 S-21 alt=121064.9 v=5189.1 tilt=86.3 cr=29959000 rep=50
-695701 T+00:06:29 TLM TowerCatch/Counting wind=5.79/7.24/7.53 upper=47.19 stations=GGMGG farm=119884/34996 B-09 alt=877.5 v=201.1 dr=233.5 tilt=3.3 prop=81514 lit=3 p=0.997 S-21 alt=122176.9 v=5270.2 tilt=86.3 cr=29959000 rep=50
-695851 T+00:06:34 TLM TowerCatch/Counting wind=5.72/7.15/7.43 upper=46.91 stations=GGMGG farm=119884/34996 B-09 alt=714.7 v=161.2 dr=187.0 tilt=0.0 prop=77229 lit=3 p=0.997 S-21 alt=123289.0 v=5351.3 tilt=86.3 cr=29959000 rep=50
-696001 T+00:06:39 TLM TowerCatch/Counting wind=5.56/6.95/7.22 upper=47.41 stations=GGMGG farm=119884/34996 B-09 alt=551.8 v=121.4 dr=140.5 tilt=0.0 prop=72943 lit=3 p=0.997 S-21 alt=124401.0 v=5432.5 tilt=86.3 cr=29959000 rep=50
-696151 T+00:06:44 TLM TowerCatch/Counting wind=5.53/6.91/7.19 upper=47.05 stations=GGMGG farm=119884/34996 B-09 alt=389.0 v=81.5 dr=94.0 tilt=0.0 prop=68657 lit=3 p=0.997 S-21 alt=125513.0 v=5513.6 tilt=86.3 cr=29959000 rep=50
-696301 T+00:06:49 TLM TowerCatch/Counting wind=5.77/7.22/7.51 upper=47.59 stations=GGMGG farm=119884/34996 B-09 alt=226.1 v=41.7 dr=47.4 tilt=0.0 prop=64371 lit=3 p=0.997 S-21 alt=126625.1 v=5594.7 tilt=86.3 cr=29959000 rep=50
-696451 T+00:06:54 TLM TowerCatch/Counting wind=5.85/7.32/7.61 upper=47.71 stations=GGMGG farm=119884/34996 B-09 alt=63.3 v=1.8 dr=0.9 tilt=0.0 prop=60086 lit=3 p=0.997 S-21 alt=127737.1 v=5675.8 tilt=86.3 cr=29959000 rep=50
+695551 T+00:06:24 TLM TowerCatch/Counting wind=5.75/7.18/7.47 upper=44.79 stations=GGMGG farm=119884/34996 B-09 alt=1040.4 v=240.9 dr=280.0 tilt=18.3 prop=85800 lit=3 p=0.997 S-21 alt=121064.9 v=5189.1 tilt=86.3 cr=29959000 rep=50
+695701 T+00:06:29 TLM TowerCatch/Counting wind=5.79/7.24/7.53 upper=44.76 stations=GGMGG farm=119884/34996 B-09 alt=877.5 v=201.1 dr=233.5 tilt=3.3 prop=81514 lit=3 p=0.997 S-21 alt=122176.9 v=5270.2 tilt=86.3 cr=29959000 rep=50
+695851 T+00:06:34 TLM TowerCatch/Counting wind=5.72/7.15/7.43 upper=44.53 stations=GGMGG farm=119884/34996 B-09 alt=714.7 v=161.2 dr=187.0 tilt=0.0 prop=77229 lit=3 p=0.997 S-21 alt=123289.0 v=5351.3 tilt=86.3 cr=29959000 rep=50
+696001 T+00:06:39 TLM TowerCatch/Counting wind=5.56/6.95/7.22 upper=44.93 stations=GGMGG farm=119884/34996 B-09 alt=551.8 v=121.4 dr=140.5 tilt=0.0 prop=72943 lit=3 p=0.997 S-21 alt=124401.0 v=5432.5 tilt=86.3 cr=29959000 rep=50
+696151 T+00:06:44 TLM TowerCatch/Counting wind=5.53/6.91/7.19 upper=44.64 stations=GGMGG farm=119884/34996 B-09 alt=389.0 v=81.5 dr=94.0 tilt=0.0 prop=68657 lit=3 p=0.997 S-21 alt=125513.0 v=5513.6 tilt=86.3 cr=29959000 rep=50
+696301 T+00:06:49 TLM TowerCatch/Counting wind=5.77/7.22/7.51 upper=45.07 stations=GGMGG farm=119884/34996 B-09 alt=226.1 v=41.7 dr=47.4 tilt=0.0 prop=64371 lit=3 p=0.997 S-21 alt=126625.1 v=5594.7 tilt=86.3 cr=29959000 rep=50
+696451 T+00:06:54 TLM TowerCatch/Counting wind=5.85/7.32/7.61 upper=45.17 stations=GGMGG farm=119884/34996 B-09 alt=63.3 v=1.8 dr=0.9 tilt=0.0 prop=60086 lit=3 p=0.997 S-21 alt=127737.1 v=5675.8 tilt=86.3 cr=29959000 rep=50
 696453 T+00:06:55 EntityStateChanged id=B-09 kind=booster from=DESCENT to=CAUGHT_SAFING
 696453 T+00:06:55 ArmsChanged id=TOWER-1 from=OPEN to=CLOSED
 696453 T+00:06:55 EntityStateChanged id=TOWER-1 kind=tower from=CATCHING to=IDLE
@@ -345,15 +389,16 @@
 699453 T+00:08:35 LedgerPosted item=SHIP_EXPENDED amountCr=-20000000 reputationDelta=0 moneyCr=70459000 reputation=58
 699454 T+00:08:35 EntityStateChanged id=S-21 kind=ship from=SECO to=OFF_SCENE
 699454 T+00:08:35 Despawned id=S-21 kind=ship callSign=S-21
-702001 T+00:09:59 TLM Safing/Counting wind=6.17/7.72/8.03 upper=44.04 stations=GGMGG farm=119883/34995 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
-711001 T+00:14:59 TLM Safing/Counting wind=4.69/5.87/6.10 upper=45.87 stations=GGMGG farm=119881/34995 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
-720001 T+00:19:59 TLM Safing/Counting wind=6.63/8.28/8.61 upper=42.10 stations=GGMGG farm=119879/34995 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
-729001 T+00:24:59 TLM Safing/Counting wind=6.44/8.05/8.37 upper=41.90 stations=GGMGG farm=119877/34995 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
-738001 T+00:29:59 TLM Safing/Counting wind=8.53/10.66/11.09 upper=45.87 stations=GGMGG farm=119875/34994 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
-747001 T+00:34:59 TLM Safing/Counting wind=8.29/10.36/10.78 upper=39.93 stations=GGMGG farm=119873/34994 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
+702001 T+00:09:59 TLM Safing/Counting wind=6.17/7.72/8.03 upper=42.23 stations=GGMGG farm=119883/34995 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
+711001 T+00:14:59 TLM Safing/Counting wind=4.69/5.87/6.10 upper=43.70 stations=GGMGG farm=119881/34995 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
+720001 T+00:19:59 TLM Safing/Counting wind=6.63/8.28/8.61 upper=40.68 stations=GGMGG farm=119879/34995 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
+729001 T+00:24:59 TLM Safing/Counting wind=6.44/8.05/8.37 upper=40.52 stations=GGMGG farm=119877/34995 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
+738001 T+00:29:59 TLM Safing/Counting wind=8.53/10.66/11.09 upper=43.70 stations=GGMGG farm=119875/34994 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
+747001 T+00:34:59 TLM Safing/Counting wind=8.29/10.36/10.78 upper=38.94 stations=GGMGG farm=119873/34994 B-09 CAUGHT_SAFING 46941/13059 cr=70459000 rep=58
 750454 T+00:36:55 PhaseChanged from=Safing to=Debrief trigger=auto
 750454 T+00:36:55 ClockChanged from=Counting to=Stopped trigger=Stop
 750454 T+00:36:55 RoadClosureChanged siteId=LC-1 closed=false
+750454 T+00:36:55 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 750454 T+00:36:55 LedgerPosted item=OPS_COST amountCr=-289527.392 reputationDelta=0 moneyCr=70169472.608 reputation=58
 750454 T+00:36:55 DebriefReady outcome=CAUGHT moneyDeltaCr=40169472.608
 # DEBRIEF outcome=CAUGHT contract=FULFILLED moneyDeltaCr=40169473 reputationDelta=8 holdS=1200.1 turnaroundS=259200
@@ -365,14 +410,14 @@
 # DEBRIEF line SHIP_EXPENDED -20000000 rep=0
 # DEBRIEF line OPS_COST -289527 rep=0
 # DEBRIEF anomaly A3 DIRECTOR tick=532231
-# DEBRIEF decision T-06:00:00 PLAYER StartRollout
-# DEBRIEF decision T-06:00:00 PLAYER OrderDelivery LOX STANDARD
-# DEBRIEF decision T-06:00:00 PLAYER OrderDelivery LOX STANDARD
-# DEBRIEF decision T-06:00:00 PLAYER OrderDelivery LOX STANDARD
-# DEBRIEF decision T-06:00:00 PLAYER OrderDelivery CH4 STANDARD
-# DEBRIEF decision T-05:00:00 PLAYER Stack
-# DEBRIEF decision T-01:20:00 PLAYER Go POLL LOAD, MARGINAL PROPELLANT
-# DEBRIEF decision T-01:04:19 PLAYER LeakResponse HOLD_FIX
-# DEBRIEF decision T-00:10:00 PLAYER Go POLL TERMINAL, MARGINAL PROPELLANT
-# DEBRIEF decision T-00:00:40 PLAYER Go POLL FINAL, MARGINAL PROPELLANT
-# DEBRIEF decision T+00:03:35 PLAYER CatchDecision CATCH P 0.997
+# DEBRIEF decision T-06:00:00 DIRECTOR StartRollout
+# DEBRIEF decision T-06:00:00 DIRECTOR OrderDelivery LOX STANDARD
+# DEBRIEF decision T-06:00:00 DIRECTOR OrderDelivery LOX STANDARD
+# DEBRIEF decision T-06:00:00 DIRECTOR OrderDelivery LOX STANDARD
+# DEBRIEF decision T-06:00:00 DIRECTOR OrderDelivery CH4 STANDARD
+# DEBRIEF decision T-05:00:00 DIRECTOR Stack
+# DEBRIEF decision T-01:20:00 DIRECTOR Go POLL LOAD, MARGINAL PROPELLANT
+# DEBRIEF decision T-01:04:19 DIRECTOR LeakResponse HOLD_FIX
+# DEBRIEF decision T-00:10:00 DIRECTOR Go POLL TERMINAL, MARGINAL PROPELLANT
+# DEBRIEF decision T-00:00:40 DIRECTOR Go POLL FINAL, MARGINAL PROPELLANT
+# DEBRIEF decision T+00:03:35 DIRECTOR CatchDecision CATCH P 0.997
