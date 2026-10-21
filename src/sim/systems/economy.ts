@@ -9,7 +9,7 @@
 //   the rebook), then the debrief record + `DebriefReady`.
 // The decision log collects accepted player commands (recorded by applyCommands) and the automatic decisions
 // visible in events (auto poll GO, auto/forced recovery, auto holds, window-closed scrub, D3b AUTO DEGRADED).
-import { contracts as contractDefs, economy as ec, vehicles } from '@data/index';
+import { contracts as contractsData, economy as economyData, vehicles as vehiclesData } from '@data/index';
 import type { Propellant } from '@data/index';
 import { commandSource } from '../core/commands';
 import type { Command, CommandSource } from '../core/commands';
@@ -20,6 +20,12 @@ import { DT_S, secondsToTicks } from '../core/time';
 import { countdownIds } from '../core/world';
 import type { AttemptStart, Debrief, DebriefOutcome, DecisionBy, LedgerItem, World } from '../core/world';
 import type { Countdown, EntityOf, Id } from '../types';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same objects; data is never reassigned.
+const contractDefs = contractsData;
+const ec = economyData;
+const vehicles = vehiclesData;
 
 const PRICE = ec.priceCrPerKg;
 const REP = ec.reputationDelta;
@@ -391,6 +397,8 @@ export function economySystem(world: World): void {
     const cd = world.countdowns[id];
     if (cd) ensureAttempt(world, cd);
   }
+  const last = world.outbox[world.outbox.length - 1];
+  if (last?.tick !== world.tick) return; // nothing emitted this tick (most ticks): skip the scan
   const events = eventsThisTick(world);
   for (const e of events) handle(world, e);
 }

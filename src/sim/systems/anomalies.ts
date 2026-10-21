@@ -12,7 +12,12 @@
 // and its trigger point inside the anomaly's window, before the T-00:30:00 deadline (A4: during flight). It is
 // not cancelled by natural anomalies. Fallback: no anomaly at the deadline and the plan can no longer happen →
 // schedule an eligible one now (weights renormalised; A3 only while the load is unfinished).
-import { ANOMALY_IDS, anomalies as an, propellant as pd, vehicles } from '@data/index';
+import {
+  ANOMALY_IDS as anomalyIdsData,
+  anomalies as anomaliesData,
+  propellant as propellantData,
+  vehicles as vehiclesData,
+} from '@data/index';
 import type { AnomalyId } from '@data/index';
 import { commandSource } from '../core/commands';
 import type { CommandOf } from '../core/commands';
@@ -20,7 +25,7 @@ import { entitiesOfKind, getEntity } from '../core/entities';
 import { emit } from '../core/events';
 import { rng } from '../core/rng';
 import type { Rng } from '../core/rng';
-import { DT_S, secondsToTicks } from '../core/time';
+import { DT_S as dtS, secondsToTicks } from '../core/time';
 import { countdownIds } from '../core/world';
 import type { AnomalySource, AnomalyState, DirectorPlan, World } from '../core/world';
 import { T_BOOSTBACK_END, T_BOOSTBACK_START } from '../math/profile';
@@ -30,6 +35,14 @@ import { holdForLeakFix, isPreLiftoff } from './countdown';
 import { startFrontNow } from './environment';
 import { engineOut } from './flight';
 import { foulRange } from './range';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same values; data / DT_S are never reassigned.
+const ANOMALY_IDS = anomalyIdsData;
+const an = anomaliesData;
+const pd = propellantData;
+const vehicles = vehiclesData;
+const DT_S = dtS;
 
 const A1_START = secondsToTicks(an.A1.windowStartTS);
 const A1_END = secondsToTicks(an.A1.windowEndTS);

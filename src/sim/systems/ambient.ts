@@ -12,7 +12,7 @@
 // - Wind: like SP-41 — above `windLimit.transporterMPerS` a moving SP-42 goes WIND_HOLD (resume deadband
 //   `resumeMarginMPerS`), a dwelling one does not leave. A wind hold that makes it late just delays its parking.
 // - It never touches SP-41 / CR-77 / tower tasks, commands or the economy (no cargo, no fees).
-import { lc1Layout, logistics as ld } from '@data/index';
+import { lc1Layout as lc1LayoutData, logistics as logisticsData } from '@data/index';
 import type { Lc1PathId } from '@data/index';
 import { entitiesOfKind } from '../core/entities';
 import { secondsToTicks } from '../core/time';
@@ -21,6 +21,11 @@ import { fire, transporterFsm } from '../entities/machines';
 import type { EntityOf } from '../types';
 import { ticksToRoadClosure } from './logistics';
 import { advanceRoute, routeTicks, startRoute, startRouteAt } from './motion';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same objects; data is never reassigned.
+const lc1Layout = lc1LayoutData;
+const ld = logisticsData;
 
 type Transporter = EntityOf<'transporter'>;
 interface Duty {

@@ -13,13 +13,19 @@
 // its catch pins meet the carriage at 126 m. Attitude (`tiltRad` → `rot`): rate-limited toward a target per profile
 // phase — vertical rise, prograde (profile climb angle), boostback flip, engines-first entry, upright landing burn;
 // the ship flies prograde on its own after separation (flightProfile.attitude).
-import { catchModel as cm, flightProfile as fp, lc1Layout, siteGeometry as geo, vehicles } from '@data/index';
+import {
+  catchModel as catchModelData,
+  flightProfile as flightProfileData,
+  lc1Layout as lc1LayoutData,
+  siteGeometry as siteGeometryData,
+  vehicles as vehiclesData,
+} from '@data/index';
 import { commandSource } from '../core/commands';
 import type { CommandOf } from '../core/commands';
 import { despawnEntity, getEntity } from '../core/entities';
 import { emit } from '../core/events';
 import { rng } from '../core/rng';
-import { DT_S, secondsToTicks } from '../core/time';
+import { DT_S as dtS, secondsToTicks } from '../core/time';
 import { countdownIds } from '../core/world';
 import type { World } from '../core/world';
 import { boosterFsm, fire, setArms, shipFsm, towerFsm } from '../entities/machines';
@@ -58,6 +64,15 @@ import type {
   RecoveryState,
   ShipFlight,
 } from '../types';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same values; data / DT_S are never reassigned.
+const cm = catchModelData;
+const fp = flightProfileData;
+const lc1Layout = lc1LayoutData;
+const geo = siteGeometryData;
+const vehicles = vehiclesData;
+const DT_S = dtS;
 
 type Booster = EntityOf<'booster'>;
 type Ship = EntityOf<'ship'>;

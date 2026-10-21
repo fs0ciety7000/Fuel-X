@@ -400,17 +400,39 @@ export function createWorld({ seed, config }: CreateWorldOptions): World {
   };
 }
 
-// Sorted-id cache per countdowns record (hot path: every system iterates it each tick). Countdowns are only
-// ever added, so the key count detects staleness; a loaded world has a new record and a new entry.
-const ID_CACHE = new WeakMap<object, Id[]>();
+// Sorted-id cache per countdowns record (hot path: every system iterates it each tick). Countdowns are only ever
+// added (by `createCountdown`, which calls `invalidateCountdownIds`); the key count is re-verified once per tick as
+// a backstop for direct writes. A loaded world has a new record and a new entry.
+interface IdCache {
+  ids: Id[];
+  /** `world.tick` of the last key-count check. */
+  checkedTick: number;
+}
+const ID_CACHE = new WeakMap<object, IdCache>();
+
+/** Own enumerable key count without allocating a key array. */
+function ownKeyCount(rec: object): number {
+  let n = 0;
+  for (const k in rec) if (Object.hasOwn(rec, k)) n++;
+  return n;
+}
+
+/** Drops the cached id list of `world.countdowns` (call after adding a countdown). */
+export function invalidateCountdownIds(world: World): void {
+  ID_CACHE.delete(world.countdowns);
+}
 
 /** Countdown ids in a stable order (sorted, so identical before and after a save round-trip). Do not mutate. */
 export function countdownIds(world: World): readonly Id[] {
   const rec = world.countdowns;
-  let ids = ID_CACHE.get(rec);
-  if (!ids || ids.length !== Object.keys(rec).length) {
-    ids = Object.keys(rec).sort();
-    ID_CACHE.set(rec, ids);
+  let c = ID_CACHE.get(rec);
+  if (c && c.checkedTick !== world.tick) {
+    if (c.ids.length !== ownKeyCount(rec)) c = undefined;
+    else c.checkedTick = world.tick;
   }
-  return ids;
+  if (!c) {
+    c = { ids: Object.keys(rec).sort(), checkedTick: world.tick };
+    ID_CACHE.set(rec, c);
+  }
+  return c.ids;
 }

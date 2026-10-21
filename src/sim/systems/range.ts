@@ -12,21 +12,21 @@
 // Stations are written to `cd.inputs.stations` (read by the countdown later in the same tick) only when
 // `config.stations = 'LIVE'`; boats and vans always move.
 import {
-  STATION_IDS,
-  anomalies as an,
-  countdown as cdData,
-  intruderCallSign,
-  lc1Layout,
-  logistics as ld,
-  propellant as pd,
-  vehicles,
-  weather as wx,
+  STATION_IDS as stationIdsData,
+  anomalies as anomaliesData,
+  countdown as countdownData,
+  intruderCallSign as intruderCallSignData,
+  lc1Layout as lc1LayoutData,
+  logistics as logisticsData,
+  propellant as propellantData,
+  vehicles as vehiclesData,
+  weather as weatherData,
 } from '@data/index';
 import type { Propellant } from '@data/index';
 import { despawnEntity, entitiesOfKind, getEntity, spawnEntity } from '../core/entities';
 import { emit } from '../core/events';
 import type { Rng } from '../core/rng';
-import { DT_S, secondsToTicks } from '../core/time';
+import { DT_S as dtS, secondsToTicks } from '../core/time';
 import { countdownIds } from '../core/world';
 import type { World } from '../core/world';
 import { boatFsm, fire, vanFsm } from '../entities/machines';
@@ -36,6 +36,19 @@ import { isPreLiftoff } from './countdown';
 import { peakUpperForecast } from './environment';
 import { advanceLeg, advancePatrol, advanceRoute, startLeg, startRoute } from './motion';
 import { PROPELLANTS, farmUsableKg } from './propellant';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same values; data / DT_S are never reassigned.
+const STATION_IDS = stationIdsData;
+const an = anomaliesData;
+const cdData = countdownData;
+const intruderCallSign = intruderCallSignData;
+const lc1Layout = lc1LayoutData;
+const ld = logisticsData;
+const pd = propellantData;
+const vehicles = vehiclesData;
+const wx = weatherData;
+const DT_S = dtS;
 
 type Boat = EntityOf<'boat'>;
 type Van = EntityOf<'van'>;
@@ -60,8 +73,11 @@ const AREA = (() => {
 
 const dist2d = (a: Vec3, b: Vec3): number => Math.hypot(a.x - b.x, a.z - b.z);
 
-/** Boats in entity order (a copy: callers may spawn/despawn while iterating). */
-const boatsOf = (world: World): Boat[] => entitiesOfKind(world, 'boat').slice();
+/**
+ * Boats in entity order. Safe to iterate while spawning / despawning: the per-kind cache never mutates an array it
+ * handed out (a spawn or despawn builds new ones), so this is a snapshot without a copy.
+ */
+const boatsOf = (world: World): readonly Boat[] => entitiesOfKind(world, 'boat');
 
 // --- A1: intruder + picket intercept ------------------------------------------------------------------
 
@@ -157,6 +173,9 @@ function updateBoats(world: World, boats: readonly Boat[]): void {
 
 // --- Crew vans ----------------------------------------------------------------------------------------
 
+/** Scratch result of `vansAway` (read at once by `updateVans`, never stored). */
+const VANS_AWAY = { away: false, sinceTicks: 0 };
+
 /** Vans must be away from the pad (T ≥ van departure, flight, detank); `sinceTicks` = T-clock past the mark. */
 function vansAway(world: World): { away: boolean; sinceTicks: number } {
   let away = false;
@@ -175,12 +194,16 @@ function vansAway(world: World): { away: boolean; sinceTicks: number } {
       since = Number.MAX_SAFE_INTEGER;
     }
   }
-  return { away, sinceTicks: since };
+  VANS_AWAY.away = away;
+  VANS_AWAY.sinceTicks = since;
+  return VANS_AWAY;
 }
 
 function updateVans(world: World, vans: readonly Van[]): void {
   const { away, sinceTicks } = vansAway(world);
-  vans.forEach((v, index) => updateVan(world, v, away && sinceTicks >= index * VAN_STAGGER_TICKS, away));
+  for (let index = 0; index < vans.length; index++) {
+    updateVan(world, vans[index] as Van, away && sinceTicks >= index * VAN_STAGGER_TICKS, away);
+  }
 }
 
 function updateVan(world: World, v: Van, depart: boolean, away: boolean): void {
@@ -262,11 +285,10 @@ export interface PropellantReserve {
   holdS: number;
 }
 
-function stagesOf(world: World, cd: Countdown): (EntityOf<'booster'> | EntityOf<'ship'>)[] {
-  const b = getEntity(world, cd.boosterId);
-  const s = getEntity(world, cd.shipId);
-  return [b, s].filter((e): e is EntityOf<'booster'> | EntityOf<'ship'> => e?.kind === 'booster' || e?.kind === 'ship');
-}
+type Stage = EntityOf<'booster'> | EntityOf<'ship'>;
+
+const asStage = (e: ReturnType<typeof getEntity>): Stage | null =>
+  e?.kind === 'booster' || e?.kind === 'ship' ? e : null;
 
 /**
  * PROPELLANT station input: farm usable mass minus what the load still needs to finish (fill + boil-off of
@@ -281,7 +303,10 @@ export function propellantReserve(world: World, cd: Countdown, fluid: Propellant
   const tS = cd.tClockTicks * DT_S;
   let needKg = 0;
   let toppingKgPerS = 0;
-  for (const st of stagesOf(world, cd)) {
+  // Booster then ship (the order of the sums), skipping a missing one — no per-call array.
+  for (let i = 0; i < 2; i++) {
+    const st = asStage(getEntity(world, i === 0 ? cd.boosterId : cd.shipId));
+    if (!st) continue;
     const cap = st.prop[capKey];
     const m = st.prop[key];
     toppingKgPerS += cap * f;

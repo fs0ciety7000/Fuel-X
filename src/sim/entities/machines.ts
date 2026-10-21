@@ -51,6 +51,8 @@ export function fire<S extends string, T extends string>(
   e: StatefulEntity<S>,
   on: T,
 ): boolean {
+  // Most calls are polls that cannot fire from the current state: skip the context allocation for those.
+  if (!fsm.canFire(e.fsm.state, on)) return false;
   return fsm.fire(e.fsm, on, { world, e }) !== null;
 }
 

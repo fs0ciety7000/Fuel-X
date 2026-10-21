@@ -1,5 +1,9 @@
 // Catch model (BALANCING §7): lateral error e ~ N(0, σ); success if |e| ≤ tolerance → p = erf(tol / (σ·√2)).
-import { catchModel as cm } from '@data/index';
+import { catchModel as catchModelData } from '@data/index';
+
+// Module-level aliases: hot paths read a local const, not the import binding (a getter per access under
+// Vitest / tsx, which re-export `@data/index` through `export *`). Same objects; data is never reassigned.
+const cm = catchModelData;
 
 /** Error function, Abramowitz & Stegun 7.1.26 (|error| ≤ 1.5e-7, ample for a p shown to 1 %). */
 export function erf(x: number): number {

@@ -15,6 +15,9 @@ export function spawnEntity<K extends Kind>(world: World, spec: EntitySpec<K>): 
   const id = formatEntityId(table.nextSerial++);
   const slot = table.freeSlots.pop() ?? table.nextSlot++;
   const entity = { ...spec, id, slot } as EntityOf<K>;
+  // Own pose objects (same keys, same order): movers update `pos` / `rot` in place, so specs may share them.
+  entity.pos = { ...spec.pos };
+  entity.rot = { ...spec.rot };
   table.byId[id] = entity as Entity;
   table.order.push(id);
   emit(world, { t: 'Spawned', id, kind: entity.kind, callSign: entity.callSign });
