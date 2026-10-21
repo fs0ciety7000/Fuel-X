@@ -104,13 +104,14 @@ export class Game {
     this.projector.markDirty();
   }
 
-  /** AC 25: at liftoff the camera follows the booster unless the player has selected something else. */
+  /** AC 25: at liftoff the camera follows the booster unless the player is following something else (a plain
+   * selection does not block it, GDD §14.1 call 1). */
   private followLaunch(): void {
     const { countdown } = this.host.inspect();
     if (!countdown) return;
     const s = viewStore.getState();
-    if (s.followId !== null || (s.selectedId !== null && s.selectedId !== countdown.boosterId)) return;
-    view.follow(countdown.boosterId);
+    if (s.followId !== null) return;
+    view.follow(countdown.boosterId, { select: s.selectedId === null });
   }
 
   /** viewStore intents → render controls / time control (the only writer of those from the UI side). */
