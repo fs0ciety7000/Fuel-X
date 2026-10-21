@@ -177,7 +177,7 @@ points, programs, live GL objects) and CPU timings. Δ = vs the Phase 5 audit (5
 | Sim tick, stress (2 000 entities) mean (p95) | 400 µs | 110.3 (205.6) µs | −28 | ok |
 | Host tick in the page (sim + snapshot / anim writers, 900-tick batch) | — (feeds the 4 ms row) | 22–56 µs/tick → 1.1–2.8 ms per 50-step frame at 100× | −9 at T-4 s | ok, see F3 |
 | MVP save at Debrief | 200 KB | 17.1 KB | +0.2 | ok |
-| Golden full-launch test runtime | 5 s | **5.8–6.0 s** (3 runs: 6 030 / 5 882 / 5 793 ms, 7.7–8.0 µs/tick in Vitest) | +2.1 vs 3.7 s (Phase 3) | **OVER**, see F1 |
+| Golden full-launch test runtime | 5 s | ~~5.8–6.0 s~~ → **3.8–3.9 s** after `1fb5887` (3 runs: 3 926 / 3 928 / 3 806 ms, 5.1–5.2 µs/tick in Vitest; same-machine A/B before: 5 519 / 5 877 / 5 920 ms) | +0.2 vs 3.7 s (Phase 3) | ok (F1 fixed) |
 | Projector per run (Node, `tests/projection/perf.test.ts`) median / mean / p95 | 1 ms median | T-4 s 352 / 429 / 705 µs · T+1:45 273 / 375 / 586 µs | −0.01 mean | ok |
 | Projector per run, browser (SwiftShader, 100 µs clock) | — | 0.91–1.34 ms mean, p95 1.9–5 ms | ≈ 0 | indicative |
 | React commits / s (both roots) | ≤ 12 | lowfx: 1× 0–4, 100× 3–7 · full visuals: 1× 0–4, 100× 0–2 (frame-bound: one commit per frame at most under SwiftShader) | — | ok |
@@ -225,7 +225,10 @@ Reference scenes (`tests/e2e/scenes.perf.ts`, counts on a frozen frame, budget �
 
 **Findings (ranked)**
 
-1. **F1 — Medium — golden full-launch test 5.8–6.0 s > 5 s budget** (`tests/golden/full-launch.test.ts`). Cause: the
+1. **F1 — Medium — golden full-launch test 5.8–6.0 s > 5 s budget** — **fixed in `1fb5887`** (simulation-engineer):
+   3.8–3.9 s (3 926 / 3 928 / 3 806 ms vs 5 519 / 5 877 / 5 920 ms before, A/B on the same machine), garbage 2.3 → 1.0
+   KB/tick; module-level aliases for `@data` / `DT_S` (Vitest `export *` getters), FSM trigger index, in-place mover
+   poses, cached `countdownIds`, no per-tick arrays / closures. Golden, projection and save/replay tests unchanged. Original finding (`tests/golden/full-launch.test.ts`). Cause: the
    sim tick grew 2.94 → 5.0 µs/tick in the Node bench since Phase 3 (tower, attitude, weather, ambient logistics, HUD
    decisions), and Vitest + the golden callback add ≈ 2.8 µs/tick. CPU profile of a headless run is flat (top self:
    GC 5.5 %, `step` 5.4 %, `src/data` getters 3.7 %, propellant 3.6 %, environment 2.5 %), so per-tick allocation
