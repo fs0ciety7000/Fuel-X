@@ -232,8 +232,8 @@ Reference scenes (`tests/e2e/scenes.perf.ts`, counts on a frozen frame, budget �
    (GC) is the first lead. Per-tick cost is still 10× under the 50 µs budget, so players are unaffected; the 5 s
    budget protects the test loop. Owner: **simulation-engineer** (cut per-tick allocations, cache `src/data` lookups
    in hot systems) or **systems-architect** (re-budget). Not fixed here: the work is in `src/sim`.
-2. **F2 — Medium — initial JS 441.9 / 450 KB (98 %)**; with the in-flight 8.2 / 8.3 changes it is 446.6 KB, so the
-   next feature overruns. Candidates: load the save / load sheet and IndexedDB code (`src/app/persistence`,
+2. **F2 — Medium — initial JS 441.9 / 450 KB (98 %)**; 8.3 (autosave, `3a3f90e`) landed during the audit: **446.6 KB**
+   at `2b6e87f` (99 %), so the next feature overruns. Candidates: load the save / load sheet and IndexedDB code (`src/app/persistence`,
    `src/ui/hud/persistence`) and the debrief sheet through dynamic imports (needed at Debrief / on `Ctrl+S` only);
    keep `@axe-core/playwright` a devDependency (it is). Owner: **systems-architect** with the 8.3 owner.
 3. **F3 — Low — 5.9 M1 still open**: the snapshot + anim writers run every tick (`src/app/sim-host/inline.ts:135`),
