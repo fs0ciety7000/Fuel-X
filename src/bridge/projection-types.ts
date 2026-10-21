@@ -160,7 +160,7 @@ export interface TimeScaleVM {
   lockCode?: TimeLockCode | null;
   /** Chip text: `1× LOCKED · TERMINAL COUNT`, `MAX 10× · PROPELLANT LOAD`, '' when uncapped. */
   lockLabel?: string;
-  /** Top-bar readout: `SIM 10×`, `SIM PAUSED`, `SIM 7.4× OF 100×`. */
+  /** Top-bar readout: `SIM 10×`, `SIM PAUSED`, `SIM PAUSED · 1 QUEUED` (commands wait for the next tick), `SIM 7.4× OF 100×`. */
   readout?: string;
   /** Skip to next milestone (7.2). */
   skip: SkipVM;

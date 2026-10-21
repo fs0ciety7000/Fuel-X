@@ -92,6 +92,10 @@ describe('Projector cadence', () => {
     for (let i = 0; i < 120; i++) if (t.frame(0)) runs++;
     expect(runs).toBe(0);
     expect(t.store.getState().timeScale.readout).toBe('SIM PAUSED');
+    // A command sent while paused waits for the next tick: the readout says so at once.
+    t.time.queued = 1;
+    expect(t.frame(0)).toBe(true);
+    expect(t.store.getState().timeScale.readout).toBe('SIM PAUSED · 1 QUEUED');
   });
 
   it('keeps identity of unchanged slices between runs', () => {

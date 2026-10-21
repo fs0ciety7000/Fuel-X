@@ -73,6 +73,8 @@ export interface SimHost {
    * `onTick` runs after every tick (the projector samples sparklines so a jump keeps its history).
    */
   jump(target: JumpTarget, maxTicks?: number, onTick?: () => void): Promise<{ ticks: number }>;
+  /** Commands queued for a tick that has not run yet (sent while paused). */
+  pendingCommands(): number;
   /** Events since the last drain (the outbox is emptied every frame). */
   drainEvents(): SimEvent[];
   save(meta: { game: string; createdAt: string }): Promise<string>;

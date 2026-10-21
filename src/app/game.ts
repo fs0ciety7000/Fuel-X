@@ -84,6 +84,7 @@ export class Game {
       skipping: t.skip?.target ?? null,
       skipBlocker: t.skipBlocker(world, cd),
       drop: t.lastDrop ? { code: t.lastDrop.code, tick: t.lastDrop.tick } : null,
+      queued: this.host.pendingCommands(),
     };
   }
 

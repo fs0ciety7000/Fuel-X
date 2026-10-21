@@ -167,7 +167,9 @@ function timeScaleVM(c: Ctx): TimeScaleVM {
       : skip.active
         ? `SIM SKIP → ${skip.target ?? ''}`.trim()
         : t.paused
-          ? 'SIM PAUSED'
+          ? (t.queued ?? 0) > 0
+            ? `SIM PAUSED · ${t.queued} QUEUED`
+            : 'SIM PAUSED'
           : t.lagging
             ? `SIM ${rateText}× OF ${t.effective}×`
             : `SIM ${t.effective}×`,

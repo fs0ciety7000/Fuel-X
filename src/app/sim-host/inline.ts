@@ -89,6 +89,10 @@ export class InlineSimHost implements SimHost {
     enqueueCommand(this.queue, this.world.tick, cmd);
   }
 
+  pendingCommands(): number {
+    return this.queue.pending.length;
+  }
+
   /** One tick: queued commands, then the autopilot's (logged as inputs so the session replays). */
   private tick(): SimEvent[] {
     const w = this.world;

@@ -50,6 +50,7 @@ function timeFingerprint(t: TimeInputs): string {
     t.skipping?.name ?? '',
     t.skipBlocker ?? '',
     t.drop ? `${t.drop.code}@${t.drop.tick}` : '',
+    t.queued ?? 0,
   ].join('|');
 }
 
