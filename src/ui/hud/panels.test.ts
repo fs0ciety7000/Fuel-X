@@ -6,15 +6,8 @@ import { describe, expect, it } from 'vitest';
 import * as fx from '../fixtures';
 import * as px from '../fixtures/panels';
 import type { ActionVM, EventVM } from '../types';
-import {
-  Debrief,
-  actionBlock,
-  debriefActionId,
-  debriefActions,
-  decisionCode,
-  isDebriefOpen,
-  debriefKey,
-} from './debrief';
+import { debriefActionId, debriefActions, isDebriefOpen, debriefKey } from './debrief';
+import { Debrief, actionBlock, decisionCode } from './debrief/Debrief';
 import {
   EventLog,
   MAX_VISIBLE,

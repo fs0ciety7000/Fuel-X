@@ -639,7 +639,18 @@ interface FuelxDebug {
     An imported run resumes paused and is autosaved. Autopilot is not part of the save: a loaded run keeps the page's
     setting (off unless `?autopilot=1`).
   - UI: bridge port `persistence` + `persistenceStore` (`src/bridge/persistence.ts`; app writes, `menuOpen` is a UI
-    intent) → `src/ui/hud/persistence/` (DESIGN_SYSTEM §6.38), mounted in the overlay slot. Debug hooks:
+    intent) → `src/ui/hud/persistence/` (DESIGN_SYSTEM §6.38), mounted in the overlay slot.
+  - **Lazy chunks (8.1 F2)**: `Game.persistence` is a `LazyPersistence` facade (`lazy.ts`, imports only types); the
+    controller + codec + IndexedDB store + browser effects are one dynamic chunk (`runtime.ts`, ≈ 4.0 KB gz) that
+    `boot()` fetches while the fresh run is held paused (boot's own run starts meanwhile; a foreign run started before
+    the chunk arrives releases the page without an offer; port calls made in the window wait for the chunk; a failed
+    fetch releases the run without persistence and is retried by the next call). Nothing is lost: autosaves are
+    skipped during the boot lookup anyway and a paused run cannot reach a milestone. UI: `PersistenceContainer.tsx`
+    (eager: `Ctrl/⌘+S` + a latch) loads `Persistence.tsx` (dialogs, ≈ 1.2 KB gz) the first time an offer or the sheet
+    is wanted and keeps it mounted. Same pattern for the debrief: `DebriefContainer.tsx` + `ReadyBadge.tsx` eager,
+    the sheet `Debrief.tsx` (≈ 2.0 KB gz) lazy, prefetched once `clock.phase` is SAFING / SCRUBBED / DEBRIEF. Rule:
+    `src/ui/hud/{debrief,persistence}/index.ts` and `src/app/persistence/lazy.ts` must never re-export / import the
+    lazy modules at runtime (tests and `/design` import them by path). Debug hooks:
     `__fuelx.autosaves()`, `__fuelx.autosaveJson()`. Tests: `src/app/persistence/persistence.test.ts`,
     `tests/e2e/persistence.e2e.ts`.
 
@@ -738,7 +749,7 @@ Total GLB payload for the MVP site ≤ 4 MB (estimate 2.5 MB). Textures: none by
 
 | Metric | Budget |
 |---|---|
-| Initial JS (gzip) | ≤ 450 KB (three ≈ 170, react-dom ≈ 60, R3F+drei subset ≈ 50, postprocessing ≈ 25, app ≤ 145) — as built 5.9: `postprocessing` is ≈ 63 KB gz (SMAA lookup images inlined) and loads as a lazy chunk with `post/pipeline` (`RenderPass` mounts it; `isReady()` waits for it), initial play.html graph 386 KB |
+| Initial JS (gzip) | ≤ 450 KB (three ≈ 170, react-dom ≈ 60, R3F+drei subset ≈ 50, postprocessing ≈ 25, app ≤ 145) — as built 5.9: `postprocessing` is ≈ 63 KB gz (SMAA lookup images inlined) and loads as a lazy chunk with `post/pipeline` (`RenderPass` mounts it; `isReady()` waits for it), initial play.html graph 386 KB; 8.1 F2: persistence + debrief sheet lazy (§10), 449.0 → 444.3 KB |
 | CSS (gzip) | ≤ 25 KB |
 | Fonts | ≤ 150 KB WOFF2 total (subset, ≤ 4 files) |
 | `/design` entry | separate chunk, not loaded by the game |

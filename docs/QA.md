@@ -235,10 +235,21 @@ Reference scenes (`tests/e2e/scenes.perf.ts`, counts on a frozen frame, budget �
    (GC) is the first lead. Per-tick cost is still 10× under the 50 µs budget, so players are unaffected; the 5 s
    budget protects the test loop. Owner: **simulation-engineer** (cut per-tick allocations, cache `src/data` lookups
    in hot systems) or **systems-architect** (re-budget). Not fixed here: the work is in `src/sim`.
-2. **F2 — Medium — initial JS 441.9 / 450 KB (98 %)**; 8.3 (autosave, `3a3f90e`) landed during the audit: **446.6 KB**
-   at `2b6e87f` (99 %), so the next feature overruns. Candidates: load the save / load sheet and IndexedDB code (`src/app/persistence`,
-   `src/ui/hud/persistence`) and the debrief sheet through dynamic imports (needed at Debrief / on `Ctrl+S` only);
-   keep `@axe-core/playwright` a devDependency (it is). Owner: **systems-architect** with the 8.3 owner.
+2. **F2 — FIXED in part (`app: lazy-load persistence and the debrief sheet (8.1 F2)`) — Medium — initial JS 441.9 / 450 KB (98 %)**;
+   8.3 + 8.2 landed meanwhile: **449.0 KB** at `444ff89`. Persistence (controller, codec / gzip, IndexedDB store,
+   browser effects) is a dynamic chunk fetched by `boot()` while the fresh run is held paused (`runtime-*.js` 4.0 KB
+   gz); the resume / SAVE · LOAD dialogs load the first time one is wanted (`Persistence-*.js` 1.2 KB); the debrief
+   sheet loads on open, prefetched at SAFING / SCRUBBED (`Debrief-*.js` 2.0 KB). Initial play.html graph
+   **449.0 → 444.3 KB** (−4.7; `npx tsx scripts/perf/budgets.ts` on `npm run build`, shared tree incl. the sim agent's
+   uncommitted refactor); CSS 19.6 → 20.6 KB (two CSS files split off the HUD chunk, all entries summed; budget 25).
+   No UX change: e2e `persistence`, `hud-run.scene`, `autopilot-run.scene`, `a11y-play.scene` (debrief Esc / `B`),
+   `hud-panels`, `design`, `smoke`, `hud-world` 23/23 green. **The ≤ 420 KB target is not reached by these two
+   alone** (they were ≈ 6–8 KB of the graph before splitting). What is left in the initial graph (gzip attributed via
+   source maps): three 166 · react-dom 63 · R3F 43 · `src/ui/hud` + components 26 · `src/app/projection` 20 · sim 25 ·
+   GLTFLoader 11.2 + meshopt decoder 6.8 · app host / debug 8. Next levers without a UX change: load GLTFLoader +
+   meshopt through the asset loader's first `import()` (≈ 18 KB, one extra round trip before the first GLB fetch;
+   showcase shares the chunk), `installDebug` behind `?debug=1` (≈ 1.4 KB). Owner: **three-graphics-engineer** (loader)
+   / **systems-architect** (re-budget).
 3. **F3 — Low — 5.9 M1 still open**: the snapshot + anim writers run every tick (`src/app/sim-host/inline.ts:135`),
    host tick 22–56 µs/tick in the page vs 5 µs of sim, so 100× costs 1.1–2.8 ms of the 4 ms per-frame sim budget at
    terminal count. Owner: **systems-architect / three-graphics-engineer** (write only the last two ticks of a batch).

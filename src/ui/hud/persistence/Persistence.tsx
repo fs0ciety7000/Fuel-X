@@ -1,6 +1,6 @@
 import { persistence, persistenceStore } from '@bridge/index';
 import type { PersistenceStatusVM, ResumeOfferVM } from '@bridge/index';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useStore } from 'zustand';
 import { useShallow } from 'zustand/react/shallow';
 import { Button, Dialog, Glyph } from '../../components';
@@ -8,11 +8,8 @@ import styles from './Persistence.module.css';
 
 // 8.3 (ARCHITECTURE §10): the boot resume offer (CONTINUE vs NEW RUN) and the SAVE · LOAD sheet (export / import a
 // `.fuelx.json.gz`). Both are §6.27 dialogs; every text comes from the app's persistence state.
-
-/** `Ctrl/⌘+S` opens the SAVE · LOAD sheet (the browser's "save page" is pre-empted on /play). */
-export function isSaveMenuKey(e: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>): boolean {
-  return (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 's';
-}
+// Loaded on demand (8.1 F2): the game reaches this module only through `PersistenceContainer`'s dynamic import, the
+// first time an offer or the sheet opens; keep it out of every static import of the HUD.
 
 function Status({ s }: { s: PersistenceStatusVM | null }) {
   if (!s) return null;
@@ -95,8 +92,8 @@ export function ResumeDialog({
   );
 }
 
-/** Connected: resume offer + SAVE · LOAD sheet (mounted in the overlay slot). */
-export function PersistenceContainer() {
+/** Connected: resume offer + SAVE · LOAD sheet (rendered by `PersistenceContainer` once either is wanted). */
+export function PersistenceDialogs() {
   const s = useStore(
     persistenceStore,
     useShallow((p) => ({
@@ -110,16 +107,6 @@ export function PersistenceContainer() {
   );
   const file = useRef<HTMLInputElement | null>(null);
   const blocked = s.offer !== null;
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent): void => {
-      if (!isSaveMenuKey(e)) return;
-      e.preventDefault();
-      if (!blocked) persistence.openMenu();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [blocked]);
 
   const autosave = s.autosaveOff ? `OFF · ${s.autosaveOff}` : (s.lastAutosave ?? 'NONE YET THIS SESSION');
   return (

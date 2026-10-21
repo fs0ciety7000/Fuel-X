@@ -8,7 +8,7 @@ import type { Countdown, World } from '@sim/types';
 import { EventBus } from './bus';
 import { GameLoop } from './loop';
 import { formatTClock } from './jump';
-import { PersistenceController, browserPersistenceEnv, openBrowserSaveStore } from './persistence';
+import { LazyPersistence } from './persistence/lazy';
 import { Projector } from './projection/projector';
 import type { TimeInputs } from './projection/context';
 import { SessionController } from './session/controller';
@@ -28,8 +28,8 @@ export class Game {
   readonly projector: Projector;
   /** Runs: URL seed, REPLAY SAME SEED, NEW SEED, EXPORT LOG (GDD §13.2.3). */
   readonly session: SessionController;
-  /** Autosave ring, resume offer, export / import (8.3, ARCHITECTURE §10). */
-  readonly persistence: PersistenceController;
+  /** Autosave ring, resume offer, export / import (8.3, ARCHITECTURE §10); a lazy chunk loaded by `boot` (8.1 F2). */
+  readonly persistence: LazyPersistence;
   scene: SceneApi | null = null;
   private readout: HTMLElement | null = null;
   private readoutAt = 0;
@@ -76,17 +76,17 @@ export class Game {
       viewSite: () => this.cancelSkip(),
     });
     viewStore.subscribe((s, prev) => this.applyView(s, prev));
-    this.persistence = new PersistenceController({
-      host: this.host,
-      bus: this.bus,
-      store: openBrowserSaveStore(),
-      env: browserPersistenceEnv(),
-      setPaused: (on) => {
-        this.time.paused = on;
-        this.projector.markDirty();
-      },
-      afterLoad: () => this.afterLoad(),
-    });
+    const setPaused = (on: boolean): void => {
+      this.time.paused = on;
+      this.projector.markDirty();
+    };
+    this.persistence = new LazyPersistence(
+      () =>
+        import('./persistence/runtime').then((m) =>
+          m.createBrowserPersistence({ host: this.host, bus: this.bus, setPaused, afterLoad: () => this.afterLoad() }),
+        ),
+      setPaused,
+    );
     persistence.bind(this.persistence.handlers);
   }
 

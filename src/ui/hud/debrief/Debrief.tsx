@@ -1,22 +1,13 @@
-import { projectionStore, session } from '@bridge/index';
 import { useEffect, useId, useRef } from 'react';
-import { useStore } from 'zustand';
 import { Button, Glyph, HazardBand, SegmentedProgress, StatusChip, Value } from '../../components';
 import type { ActionVM, DebriefVM, ValueVM } from '../../types';
-import { isPlainKey } from '../tabs/keys';
-import {
-  collapseDebrief,
-  debriefActionId,
-  debriefActions,
-  debriefUi,
-  isDebriefOpen,
-  reopenDebrief,
-  type DebriefActionId,
-} from './debrief-ui';
+import { debriefActionId, debriefActions, type DebriefActionId } from './debrief-ui';
 import styles from './Debrief.module.css';
 
 // §6.29 debrief sheet (GDD §4.9, §9, AC 22): outcome, money / reputation deltas, booster wear and flights, tower,
 // ledger and the timestamped decision log, plus the exit actions. Every number is projected; no client maths.
+// Loaded on demand (8.1 F2): the game imports this module only through `DebriefContainer`'s dynamic import (prefetched
+// at SAFING); keep it out of every static import of the HUD (`index.ts`, TopBar, mounts).
 
 /** Handlers of the exit actions (the HUD container binds them to the `session` port). */
 export type DebriefHandlers = Partial<Record<DebriefActionId, () => void>>;
@@ -219,62 +210,5 @@ export function Debrief({ d, handlers = {}, inline = false }: DebriefProps) {
         ))}
       </footer>
     </dialog>
-  );
-}
-
-/** Collapsed state: the `[■ DEBRIEF READY B]` badge that reopens the sheet. */
-export function DebriefReadyBadge({ onOpen, inline = false }: { onOpen: () => void; inline?: boolean }) {
-  const button = (
-    <button type="button" className={styles.ready} onClick={onOpen} data-testid="debrief-ready" aria-keyshortcuts="B">
-      <Glyph id="parked" />
-      DEBRIEF READY
-      <kbd className={styles.kbd} aria-hidden="true">
-        B
-      </kbd>
-    </button>
-  );
-  // `inline`: a top-bar cell (§6.29 VIEW SITE collapses the sheet to a badge in the top bar).
-  return inline ? button : <div className={styles.readyWrap}>{button}</div>;
-}
-
-/**
- * Store-connected debrief for the HUD `overlay` slot: modal sheet while open, ready badge once collapsed (`B`
- * reopens). `handlers` wires REPLAY / NEW SEED / EXPORT LOG; VIEW SITE (Esc) always collapses.
- */
-/** The app's session commands (GDD §13.2.3, AC 32) behind the exit actions. */
-export const SESSION_DEBRIEF_HANDLERS: DebriefHandlers = {
-  REPLAY: () => session.replaySameSeed(),
-  NEW_SEED: () => session.newSeed(),
-  EXPORT_LOG: () => session.exportLog(),
-};
-
-export function DebriefContainer({ handlers = SESSION_DEBRIEF_HANDLERS }: { handlers?: DebriefHandlers }) {
-  const d = useStore(projectionStore, (p) => p.debrief);
-  const ui = useStore(debriefUi);
-  const open = isDebriefOpen(d, ui);
-  useEffect(() => {
-    if (!d || open) return;
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.defaultPrevented || !isPlainKey(e, 'b')) return;
-      e.preventDefault();
-      reopenDebrief();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [d, open]);
-  if (!d) return null;
-  // Collapsed: the DEBRIEF READY badge lives in the top bar (6.3 TopBar); `B` still reopens from here.
-  if (!open) return null;
-  return (
-    <Debrief
-      d={d}
-      handlers={{
-        ...handlers,
-        VIEW_SITE: () => {
-          collapseDebrief(d);
-          session.viewSite();
-        },
-      }}
-    />
   );
 }

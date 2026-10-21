@@ -13,3 +13,6 @@ export {
 } from './codec';
 export { IdbSaveStore, MemorySaveStore, autosaveKey, latestAutosave, openIdbSaveStore } from './store';
 export type { AutosaveReason, SaveRecord, SaveStore } from './store';
+export { LazyPersistence } from './lazy';
+export type { PersistenceRuntime } from './lazy';
+export { createBrowserPersistence } from './runtime';

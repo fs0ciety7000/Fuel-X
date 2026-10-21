@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import * as fx from '../fixtures';
 import * as px from '../fixtures/panels';
-import { Debrief, DebriefReadyBadge } from '../hud/debrief';
+import { DebriefReadyBadge } from '../hud/debrief';
+import { Debrief } from '../hud/debrief/Debrief';
 import { EventLog, ToastView, type ToastItem } from '../hud/events';
 import { FlightCard } from '../hud/flight';
 import { Inspector } from '../hud/inspector';

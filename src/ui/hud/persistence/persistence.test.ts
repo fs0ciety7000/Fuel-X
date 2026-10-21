@@ -5,7 +5,8 @@ import { createElement as h } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { createStore } from 'zustand/vanilla';
-import { ResumeDialog, isSaveMenuKey } from './Persistence';
+import { ResumeDialog } from './Persistence';
+import { isSaveMenuKey, wantsPersistenceDialogs } from './PersistenceContainer';
 
 const OFFER = {
   seed: '42',
@@ -47,6 +48,13 @@ describe('persistence UI', () => {
     expect(isSaveMenuKey(k('S', { metaKey: true }))).toBe(true);
     expect(isSaveMenuKey(k('s'))).toBe(false);
     expect(isSaveMenuKey(k('s', { ctrlKey: true, shiftKey: true }))).toBe(false);
+  });
+
+  it('loads the lazy dialogs only when an offer or the sheet is wanted (8.1 F2)', () => {
+    const idle = initialPersistenceState();
+    expect(wantsPersistenceDialogs(idle)).toBe(false);
+    expect(wantsPersistenceDialogs({ ...idle, menuOpen: true })).toBe(true);
+    expect(wantsPersistenceDialogs({ ...idle, offer: OFFER })).toBe(true);
   });
 
   it('port: drops calls while unbound, routes them once bound; menu intents write the store', () => {
