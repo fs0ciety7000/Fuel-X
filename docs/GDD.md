@@ -521,6 +521,6 @@ Original mitigations (still valid): compression + skip, anomaly director, polls 
 3. UI language: English only for the MVP (i18n-ready)? (Default: yes.)
 4. Ship fate in MVP: expended after SECO (current), or should a ship return be on the roadmap soon?
 5. Is the anomaly director's "at least one anomaly per run" acceptable for the MVP, knowing it makes runs less "real"?
-6. (7.5, risk 7) Should the final poll (T-00:00:40) always ask for the launch director's GO, even when all five stations are GO? Designer recommendation: **yes**, it is the iconic moment of the fantasy and costs one press; needs a small code change (per-poll auto-GO flag instead of the single `autoGoWhenAllGreen`).
-7. (7.5, risk 6) Accept that ≈ 10 % of EV-correct runs end in a failed catch (−47 M cr, tower damaged) in a one-run MVP? Designer recommendation: **yes**: *p*, EV and the roll are shown, and lowering it would make D3 a formality.
-8. (7.5, call 6) Accept honest weather scrubs at ≤ 2 % of runs once the front plateau is shortened? Designer recommendation: **yes**.
+6. (7.5, risk 7) Should the final poll (T-00:00:40) always ask for the launch director's GO, even when all five stations are GO? Designer recommendation: **yes**, it is the iconic moment of the fantasy and costs one press; needs a small code change (per-poll auto-GO flag instead of the single `autoGoWhenAllGreen`). **User: yes (2026-10-21).**
+7. (7.5, risk 6) Accept that ≈ 10 % of EV-correct runs end in a failed catch (−47 M cr, tower damaged) in a one-run MVP? Designer recommendation: **yes**: *p*, EV and the roll are shown, and lowering it would make D3 a formality. **User: yes (2026-10-21).**
+8. (7.5, call 6) Accept honest weather scrubs at ≤ 2 % of runs once the front plateau is shortened? Designer recommendation: **yes**. **User: yes (2026-10-21).**
