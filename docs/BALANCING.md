@@ -103,8 +103,9 @@ Nominal prep (no holds) from start T-06:00:00: booster lifted → rolled → sta
 | recycle.to | T s | −600 | — | |
 | autoGoAtPoll (7.5b, was `autoGoWhenAllGreen` true) | bool per poll | load true · terminal true · **final false** | — | removes busywork; MARGINAL always asks; the final poll always asks for the launch director's GO (GDD §15 q6, user yes) |
 | marginalBand | – | 0.15 | 0.1–0.25 | MARGINAL = within 15 % of a limit |
-| stationHysteresisFraction (sim addition 3.7) | – | 0.03 → **0.05 proposed** (pass 7.5, §15 P4) | 0.02–0.08 | deadband before a station improves; 0.03 of the 60 m/s upper limit (1.8 m/s) is re-crossed within a minute by the upper-wind series |
-| milestones (skip stops) | T s | ROAD_CLOSURE, TERMINAL_FORCE_1X, ENGINE_IGNITION, LIFTOFF + **3 D1 marks proposed** (§15 P2) | — | D1 is advisory and must not be skipped over |
+| stationHysteresisFraction (sim addition 3.7) | – | **0.05** (was 0.03; applied 7.5b, §15 P4) | 0.02–0.08 | deadband before a station improves; 0.03 of the 60 m/s upper limit (1.8 m/s) is re-crossed within a minute by the upper-wind series |
+| milestones (skip stops) | T s | STANDARD_ORDER_LAST_CALL −17 100, FORECAST_SEES_WINDOW −11 700, RUSH_ORDER_LAST_CALL −8 100 (derived, applied 7.5b, §15 P2), ROAD_CLOSURE, TERMINAL_FORCE_1X, ENGINE_IGNITION, LIFTOFF | — | D1 is advisory and must not be skipped over |
+| orderLastCallLeadS (7.5b) | s | 300 | 120–600 | the two order last-call stops sit this long before the last order that still beats the road closure |
 | crew.shiftLimit | s | 43 200 (12 h) | 36k–50k | |
 | crew.marginalFrom | s | 39 600 (11 h) | — | |
 | crew.elapsedAtStart | s | 14 400 (4 h) | 0–21 600 | nominal T-0 at 10 h; long holds go MARGINAL |
@@ -197,7 +198,7 @@ Success if the lateral error *e* ~ N(0, σ) satisfies |*e*| ≤ tol → **p = er
 | sigma.lowProp (prop < lowPropRef) | m | 0.4 | 0.2–0.6 | |
 | lowPropRef | kg | 60 000 (§13) | 55k–64k | a boostback engine-out (90 − 35 = 55 t) is low-prop, an ascent one (65 t) is not |
 | tower.windLimitCatch (forced divert above) | m/s | 20 | 16–24 | |
-| autoCatchThreshold | – | 0.70 applied (§13.5) → **0.65 proposed** (pass 7.5, §15 P3) | 0.6–0.75 | policy without player input: never takes a contested call; at 0.65 it equals the LEAN floor, so the band word predicts AUTO |
+| autoCatchThreshold | – | **0.65** (applied 7.5b, §15 P3; was 0.70, §13.5) | 0.6–0.75 | policy without player input: never takes a contested call; at 0.65 it equals the LEAN floor, so the band word predicts AUTO |
 | catch.maxVerticalSpeed | m/s | 2 | — | display / assert only (scripted) |
 
 Reference cases (tower wind V<sub>t</sub>; §13): nominal calm 0.997 · nominal V<sub>t</sub> 14.3 0.90 · nominal V<sub>t</sub> 16.9 (ground at the 13 m/s launch limit) 0.78 · ascent engine-out calm 0.74 · ascent EO V<sub>t</sub> 14 0.62 · boostback EO (low prop) calm 0.63 · boostback EO V<sub>t</sub> 14 (σ = 2.45) **0.537** · boostback EO V<sub>t</sub> 16 0.49. Break-even is 0.535 (§9).
@@ -214,7 +215,7 @@ Reference cases (tower wind V<sub>t</sub>; §13): nominal calm 0.997 · nominal 
 | limit.launch.groundWind | m/s | 13 (≈ 25 kn) | 11–16 | typical launch ground wind constraint |
 | limit.launch.upperWind | m/s | 60 | 50–75 | shear loads |
 | front.probability (per run) | – | 0.35 | 0.2–0.5 | drives A2 |
-| front.upperWindBoost / ramp / duration | m/s, s, s | +18 / 1 800 / 2 400–5 400 → **2 400–3 600 proposed** (pass 7.5, §15 P1) | durationMax 3 000–4 500 | crosses the limit from mean + 1 sd; a plateau ≤ 60 min keeps a typical front inside the 75-min hold budget |
+| front.upperWindBoost / ramp / duration | m/s, s, s | +18 / 1 800 / **2 400–3 600** (applied 7.5b, §15 P1; was 2 400–5 400) | durationMax 3 000–4 500 | crosses the limit from mean + 1 sd; a plateau ≤ 60 min keeps a typical front inside the 75-min hold budget |
 | forecast.errorGrowth | m/s per h of lead | 1.0 | 0.5–2 | radar upgrade halves it (post-MVP) |
 | forecast.horizon | s | 10 800 | — | 3 h band on the Range tab |
 | A1 rangeFouled.rate | 1/h | 0.12 (window T-02:00:00 → T-0) | 0.05–0.3 | ≈ 22 % per run |
@@ -291,7 +292,7 @@ Numbers the sim needed that this document did not specify. Each lives in `src/da
 | `anomalies.director.a2EarliestTS` | −4 500 | director front earliest at load start |
 | `anomalies.marginalCategories` | WEATHER, VEHICLE → A4 | "matching category" of GDD §7.1 |
 | `countdown.crew.vanDepartTS / vanStaggerS` | −5 400 / 30 | crew vans clear the pad before T-01:20:00 |
-| `countdown.stationHysteresisFraction` | 0.03 | station deadband (no GO ⇄ MARGINAL flicker) |
+| `countdown.stationHysteresisFraction` | 0.05 (0.03 until 7.5b) | station deadband (no GO ⇄ MARGINAL flicker) |
 | `countdown.stationSampleS` | 0.1 | stations evaluated at 10 Hz |
 | `vehicles.healthLossPerWear` | 0.5 | VEHICLE health = 1 − 0.5·wear (B-09 = 0.89, GO) |
 | `logistics.windLimit.resumeMarginMPerS` | 0.5 | a wind-paused stack / transporter resumes 0.5 m/s under the limit |
@@ -522,7 +523,50 @@ next lever is `propellant.mvpStart.farmLoxKg` (range 4.17–4.25 M kg), which wo
 | `countdown.autoGoWhenAllGreen` true | F2 is real, but the fix (final poll always asks) needs a per-poll flag in code: user call, GDD §15 q6. **Answered yes; applied in 7.5b** as `countdown.autoGoAtPoll` (final false) |
 
 Non-data follow-ups from the same pass (GDD §14.1): `src/app/game.ts` `followLaunch` must ignore a plain selection
-(AC 25); `DIRECTOR` decision-log tag (AC 33); held transporters must read `WIND HOLD` with the gust (AC 26).
+(AC 25); `DIRECTOR` decision-log tag (AC 33); held transporters must read `WIND HOLD` with the gust (AC 26). All three done
+in 7.5b (§15.5).
+
+### 15.5 As applied (7.5b, 2026-10-21, simulation-engineer)
+
+Applied in the order P3 → P2 → P4 → P1, one commit each, all values as proposed; plus the final-poll rule (GDD §15
+q6, user yes): `countdown.autoGoWhenAllGreen` → `countdown.autoGoAtPoll` = load / terminal true, **final false**.
+Step 0 (P1): through the NO-GO holds of seeds 7 and 17 the WEATHER driver is **UPPER_WIND** (peaks 77.0 / 76.4 m/s),
+never GROUND_WIND, so P1 went ahead. Tools: `scripts/sim/outcome-sweep.ts` (new: seeds 0–199 × standard / frugal /
+hedger, 4 workers, scrub attribution by hold cause), `scripts/sim/anomaly-sweep.ts 200` (AC 3c bound updated),
+`scripts/sim/playtest.ts 7,17,42,1234` (Milestone now salient; NO-GO hold count + WEATHER driver). Policies shared in
+`scripts/sim/policies.ts`.
+
+| Check (§15.3) | Before (HEAD of 7.5) | After P4 | After P1 + final poll (as shipped) | Target | |
+|---|---|---|---|---|---|
+| Weather scrubs, seeds 0–39, standard | 2 / 40 (7, 17) | 3 / 40 (2, 7, 17) | **2 / 40** (7, 17) | ≤ 1 / 40 | **missed** |
+| Scrubs, seeds 0–199: frugal / standard / hedger | 13 / 10 / 6 | 16 / 11 / 6 | **14 / 9 / 6** (7.0 / 4.5 / 3.0 %) | frugal > standard ≥ hedger | met |
+| Weather scrubs ≤ 2 % (standard, §15.2 P1; user q8) | 5.0 % | 5.5 % | **4.5 %** | ≤ 2 % | **missed** |
+| Frugal vs hedger: scrub outcome differs (D1 matters) | 9 / 200 (4.5 %) | 12 / 200 | **10 / 200 (5.0 %)** | ≥ 2 % | met |
+| Frugal vs hedger: any outcome differs (incl. catch call) | 37 / 200 | — | 35 / 200 | — | |
+| `hands-off` diverted / failed / scrubbed (AC 3c) | 15.5 % / 5.7 % / 7 | — | **13.9 % / 5.7 % / 6** (27 / 11 of 194 flights; 26 AUTO, 1 FORCED) | 10–25 % / ≤ 8 % / ≤ 7 | met |
+| Diverted at *p* ≥ threshold / without an engine-out | 0 / not checked | — | **0 / 0** | 0 / 0 | met |
+| Anomaly shares vs weights (hands-off) | +3.3 / −2.9 / +0.3 / −0.7 | — | **+3.5 / −2.8 / 0.0 / −0.6** pts | ±10 pts | met |
+| NO-GO holds per run, seeds 7 / 17 (standard) | 7 / 2 | 3 / 1 | **2 / 1** | ≤ 3 each | met (no `releaseDwellS` fallback) |
+| NO-GO holds per run, 200 seeds standard: mean / max / runs > 3 | 1.32 / 13 / 24 | 0.94 / 8 / 14 | **0.90 / 8 / 13** | — | |
+| Longest T-clock stretch before the load poll with nothing salient | 280 min | 90 min | **90 min** (every seed, every policy) | ≤ 90 min | met |
+| Seed 1234 frugal | DIVERTED by AUTO at 0.688 | — | **CAUGHT by AUTO** at 0.688 (+40.22 M) | catch by AUTO | met |
+| Golden seed 42 | CAUGHT *p* 0.997 | — | CAUGHT *p* 0.997, money / debrief identical | unchanged outcome | met |
+
+**Why the scrub targets miss (for game-designer).** P1 removed little: standard 10 → 9 scrubs, and seeds 7 / 17 still
+scrub. The §15.2 P1 argument assumes the base upper wind ≤ mean + 1 sd (45 m/s) under the front; the scrubbed seeds
+sit higher: on the plateau the deviation is +6…+21 m/s in seed 7 and +9…+20 m/s in seed 17 (up to +2.1 sd), and seed 7
+was already at 54–64 m/s for the 90 min *before* its front arrived (a 36-min load-poll hold on UPPER_WIND before the
+front peaked). With that base even a 49–52 min plateau keeps the station NO-GO past the 75-min window, and the holds
+stack with an A1 intrusion (13 min, seed 7) or, for an A2 during the load, a LOX reserve drained by topping (seed 17:
+PROPELLANT FARM_RESERVE_LOX NO-GO 17–19 min on top). UPPER_WIND is the largest hold cause in 8 of the 9 standard
+scrubs (seed 102: FARM_RESERVE_LOX), mostly combined with FARM_RESERVE_LOX — so the margin ladder *does* act (frugal 14
+vs hedger 6 scrubs), but high-base fronts are not out-waitable. Standard also loses seeds 79 / 115 that frugal flies,
+through the 20-min HOLD_FIX (D3b trade-off, F7). The front's length is not the remaining lever. Candidates, not
+applied (designer / user call): `weather.upperWind.sdMPerS` 10 → 8 (no documented range yet), a front boost that does
+not stack fully on a high base (code), or `weather.launchLimit.upperWindMPerS` (range 50–75, kept as grounded in
+§15.4). Before touching `propellant.mvpStart.farmLoxKg` (§15.3 note): D1 already matters (frugal vs hedger scrubs differ
+in 5 % of seeds), the miss is the scrub rate, not D1's weight. Q8 (user: weather scrubs ≤ 2 % after P1) is therefore
+**not met** by P1 alone.
 
 ## Sources (brief)
 - [S1] Widely reported public specs for the super-heavy methalox class (booster ~3 400 t, ship ~1 200–1 500 t of propellant). Not re-verified in this pass; used as order of magnitude only.
