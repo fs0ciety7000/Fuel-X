@@ -12,6 +12,7 @@ npm run test           # vitest: unit, sim, golden, equivalence, property, scaff
 npm run build          # tokens → vite build (index + design entries)
 npm run e2e            # playwright: builds + previews on :4173, Chromium r1194 from /opt/pw-browsers
 npm run perf           # sim timing harness + static budgets (bundle needs a prior build)
+npm run perf -- --browser   # + Playwright `perf` project: reference scenes + leak runs (≈ 10 min, SwiftShader)
 npm run assets         # Blender pipeline (Phase 4)
 ```
 
@@ -31,6 +32,8 @@ Never run `playwright install`; Playwright stays at 1.56.1 until the preinstalle
 | `tests/e2e/showcase.e2e.ts` | Showcase: prerendered HTML + SEO/OG/JSON-LD + font preloads, hydration without console errors, 3 CTAs → `/play`, story driver (T-clock, phase bar, active sheet), keyboard tabs/filters/sites, `/play` + `/play.html`, phone (no horizontal overflow), reduced motion (frozen clock) |
 | `src/render/systems/showcase/pose.test.ts` · `src/data/showcase.test.ts` | Stage choreography (stack heights, arms on pins, thrust windows, catch pose, mechanism ranges, no NaN) and story timeline (chapters, monotonic clock, phases contiguous) |
 | `scripts/perf/budgets.ts` showcase rows | ADR 0009: initial JS ≤ 90 KB gz, 3D chunk ≤ 300 KB gz, showcase GLB ≤ 350 KB, images ≤ 600 KB |
+| `tests/e2e/scenes.perf.ts` (opt-in `perf` project) | ARCHITECTURE §13.1 counts at the 4 reference scenes: main / shadow draw calls, triangles, point cloud, FX sprites, programs |
+| `tests/e2e/leaks.perf.ts` (opt-in `perf` project, 8.1, ≈ 7.5 min) | Four full runs to Debrief (seed 42, seed 42 again, new seed 7, seed 42): live WebGL buffers / textures / VAOs / programs, renderer.info geometries / textures, DOM nodes and JS heap after GC do not grow from run to run |
 
 ## Simulation tests
 
@@ -148,6 +151,104 @@ After merging the 5.3–5.7 render commits (2026-10-19): game initial JS gzip (p
 | Sim per frame at 100× p95 | 4 ms | 0.40 ms | +0.18 (sim only, see host-tick note) |
 | Stress tick mean (p95), 2 000 entities | 400 µs | 138.3 (254.2) µs | +62 |
 | MVP save | 200 KB | 16.9 KB | +0.2 |
+
+### Phase 8 perf audit (8.1, 2026-10-21)
+
+Production builds. Static rows: committed `HEAD` (`14048ee`) built in a clean worktree, so the in-flight 8.2 / 8.3
+edits in the shared tree do not count; `npm run perf` on Node 22, 4 vCPU, load average 3–4 from two other agents.
+Browser rows: `scenes.perf.ts` / `leaks.perf.ts` on the shared tree's build (it included early, uncommitted 8.2 HUD
+edits, none in `src/render` or `src/sim`), `/play.html?debug=1`, full visuals, SwiftShader 1920×1080.
+**SwiftShader caveat**: WebGL is rasterised on the CPU (≈ 1–6 fps here), so frame times, GPU time and fps say
+nothing about the reference iGPU and are not used for a verdict; the audit relies on counts (draw calls, triangles,
+points, programs, live GL objects) and CPU timings. Δ = vs the Phase 5 audit (5.9) above.
+
+| Metric | Budget | Measured | Δ vs 5.9 | Status |
+|---|---|---|---|---|
+| Game initial JS gzip (play.html graph) | 450 KB | **441.9 KB** (play 85.8 · react-dom 66.7 · three/R3F/render 259.2 · HudRoot 27.7 · tokens + preload 2.6); 446.6 KB with the uncommitted 8.2 / 8.3 work in the tree | +55.7 (HUD, Phase 6–7) | ok — 98 %, see F2 |
+| CSS gzip (all entries) | 25 KB | 19.0 KB (HudRoot 10.7) | +11.8 | ok |
+| Fonts (WOFF2) | 150 KB | 85.1 KB | 0 | ok |
+| `/design` entry | separate chunk | `design-*.js` 17.8 KB gz, not in play.html | — | ok |
+| GLB payload (`public/models`, 38 files) | 4 MB | 742.7 KB | +3.5 | ok |
+| Per-asset LOD0 vs §13.2 class caps | tris / KB / draws | largest: tower 4 084 tris · 68.6 KB · 9 draws (hero ≤ 40 k / 500 KB / 10); booster 6 952 · 59.9 KB · 8 (≤ 20 k / 250 KB / 10); crane 3 666 · 58.2 KB · 7; all 16 contracts pass (`tests/assets/contract.test.ts`) | — | ok |
+| Showcase initial JS / 3D chunk / GLB / images (ADR 0009) | 90 / 300 / 350 / 600 KB | 78.0 / 265.1 / 279.9 / 340.5 KB | 0 / +0.3 / +1.1 / 0 | ok |
+| Showcase LCP / CLS (ADR 0009) | < 2.5 s / < 0.05 | not measured (no Lighthouse in the container) | — | — |
+| Sim tick, MVP mean / p95 (Node bench, 750 455 ticks) | 50 / 150 µs | 5.01 / 8.10 µs | +0.14 / −0.17 | ok |
+| Sim per frame at 100× (50 steps) p95 | 4 ms | 0.35 ms (sim only) | −0.05 | ok |
+| Sim tick, stress (2 000 entities) mean (p95) | 400 µs | 110.3 (205.6) µs | −28 | ok |
+| Host tick in the page (sim + snapshot / anim writers, 900-tick batch) | — (feeds the 4 ms row) | 22–56 µs/tick → 1.1–2.8 ms per 50-step frame at 100× | −9 at T-4 s | ok, see F3 |
+| MVP save at Debrief | 200 KB | 17.1 KB | +0.2 | ok |
+| Golden full-launch test runtime | 5 s | **5.8–6.0 s** (3 runs: 6 030 / 5 882 / 5 793 ms, 7.7–8.0 µs/tick in Vitest) | +2.1 vs 3.7 s (Phase 3) | **OVER**, see F1 |
+| Projector per run (Node, `tests/projection/perf.test.ts`) median / mean / p95 | 1 ms median | T-4 s 352 / 429 / 705 µs · T+1:45 273 / 375 / 586 µs | −0.01 mean | ok |
+| Projector per run, browser (SwiftShader, 100 µs clock) | — | 0.91–1.34 ms mean, p95 1.9–5 ms | ≈ 0 | indicative |
+| React commits / s (both roots) | ≤ 12 | lowfx: 1× 0–4, 100× 3–7 · full visuals: 1× 0–4, 100× 0–2 (frame-bound: one commit per frame at most under SwiftShader) | — | ok |
+| Time to `__fuelx.ready()` (cold page, local preview, full visuals) | ≤ 3 s | 2.1 s (SwiftShader) | first measure | ok (indicative) |
+| Frame median / p95 (reference iGPU 16.7 / 20 ms) | — | SwiftShader 483–1 133 / 1 683–2 567 ms | — | not meaningful here |
+| DOM labels positioned per frame | ≤ 64 | ≤ 29 by construction (at most one label per entity, 29 entities) | — | ok |
+| GPU memory textures + RTs | ≤ 96 MB | not measurable via renderer.info; 13 three textures / 17 live GL textures, no asset textures (shadow map 2048², post targets at 1080p) | — | not measured |
+| Particles CPU update | ≤ 1 ms | not instrumented separately | — | — |
+
+Reference scenes (`tests/e2e/scenes.perf.ts`, counts on a frozen frame, budget §13.1; all assertions pass):
+
+| Metric (budget) | Terminal count T-00:00:04 | Liftoff T+00:00:03 | Ascent follow B-09 T+00:01:45 | Rollout SP-41 T-05:15:00 |
+|---|---|---|---|---|
+| Draw calls main (≤ 200) | 48 (+1) | 49 (+17, likely the eased liftoff: the stack is still at the pad in the home frame) | 25 (0) | 28 (0) |
+| Draw calls shadow, last refresh (≤ 60) | 36 (+1) | 36 (+1) | 16 (0) | 18 (0) |
+| Triangles (≤ 800 k) | 13.0 k | 13.0 k | 10.7 k | 15.1 k |
+| Point cloud = points − fxPoints (≤ 300 k) | 297.7 k | 297.7 k | 297.7 k | 297.7 k |
+| FX sprites live (≤ 20 k) | 1 250 | 13 834 | 8 034 | 1 250 |
+| Shader programs (≤ 30) | 15 | 16 | 16 | 16 |
+| Textures / geometries | 13 / 49 | 13 / 50 | 13 / 61 | 13 / 74 |
+| Host tick, µs/tick | 56 | 38 | 22 | 31 |
+| React commits / s live at 1× | 1 | 1 | 2 | 1 |
+
+**Leaks over full runs** (`tests/e2e/leaks.perf.ts`, `?debug=1&seed=42`, full visuals; each run = `seed()` → paused
+`step(9000)` batches with a drawn frame between them → Debrief; counts after 3 frames and two forced GCs):
+
+| Checkpoint | Tick | Entities | Geometries / textures / programs (renderer.info) | Live GL buffers / textures / VAOs / programs | JS heap MB | DOM nodes | Listeners |
+|---|---|---|---|---|---|---|---|
+| Run 1 seed 42, tick 0 (cold page) | 2 | 29 | 37 / 13 / 14 | 121 / 17 / 66 / 14 | 14.1 | 1 253 | 261 |
+| Run 1 Debrief (CAUGHT) | 756 002 | 28 | 84 / 13 / 16 | 272 / 17 / 149 / 16 | 16.6 | 1 644 | 256 |
+| Run 2 seed 42, tick 0 | 0 | 29 | 84 / 13 / 16 | 272 / 17 / 149 / 16 | 16.5 | 1 209 | 262 |
+| Run 2 Debrief (CAUGHT) | 756 000 | 28 | 84 / 13 / 16 | 272 / 17 / 149 / 16 | 16.8 | 1 644 | 256 |
+| Run 3 **new seed 7**, tick 0 | 0 | 29 | 84 / 13 / 16 | 272 / 17 / 149 / 16 | 16.8 | 1 209 | 262 |
+| Run 3 Debrief (SCRUBBED) | 864 000 | 29 | 84 / 13 / 16 | 272 / 17 / 149 / 16 | 17.4 | 1 619 | 256 |
+| Run 4 seed 42, tick 0 | 0 | 29 | 84 / 13 / 16 | 272 / 17 / 149 / 16 | 17.2 | 1 209 | 262 |
+| Run 4 Debrief (CAUGHT) | 756 000 | 28 | 84 / 13 / 16 | 272 / 17 / 149 / 16 | 17.5 | 1 652 | 257 |
+
+- GPU side: **no leak**. Geometries and GL objects grow only during the first run (LODs / FX uploaded on first
+  draw) and stay flat from then on, across a replay and a new seed. Views are keyed by entity id and the MVP ids are
+  the same every run, so a new run reuses the mounted views (no unmount / remount churn).
+- DOM: tick 0 is 1 209 nodes every time; Debrief adds ≈ 410–440 (the debrief sheet), released on the next run.
+- JS heap: +0.1–0.35 MB per run, shrinking each run (8 × `seed()` + headless `jumpTo('Debrief')`: 16.34, 16.82,
+  16.67, 17.00, 16.82, 17.12, 16.94, 17.20 MB, alternating seeds 42 / 7) — consistent with JIT / inline caches
+  settling, not a per-run retained structure; the spec allows 2 MB. Watch item F4.
+
+**Findings (ranked)**
+
+1. **F1 — Medium — golden full-launch test 5.8–6.0 s > 5 s budget** (`tests/golden/full-launch.test.ts`). Cause: the
+   sim tick grew 2.94 → 5.0 µs/tick in the Node bench since Phase 3 (tower, attitude, weather, ambient logistics, HUD
+   decisions), and Vitest + the golden callback add ≈ 2.8 µs/tick. CPU profile of a headless run is flat (top self:
+   GC 5.5 %, `step` 5.4 %, `src/data` getters 3.7 %, propellant 3.6 %, environment 2.5 %), so per-tick allocation
+   (GC) is the first lead. Per-tick cost is still 10× under the 50 µs budget, so players are unaffected; the 5 s
+   budget protects the test loop. Owner: **simulation-engineer** (cut per-tick allocations, cache `src/data` lookups
+   in hot systems) or **systems-architect** (re-budget). Not fixed here: the work is in `src/sim`.
+2. **F2 — Medium — initial JS 441.9 / 450 KB (98 %)**; with the in-flight 8.2 / 8.3 changes it is 446.6 KB, so the
+   next feature overruns. Candidates: load the save / load sheet and IndexedDB code (`src/app/persistence`,
+   `src/ui/hud/persistence`) and the debrief sheet through dynamic imports (needed at Debrief / on `Ctrl+S` only);
+   keep `@axe-core/playwright` a devDependency (it is). Owner: **systems-architect** with the 8.3 owner.
+3. **F3 — Low — 5.9 M1 still open**: the snapshot + anim writers run every tick (`src/app/sim-host/inline.ts:135`),
+   host tick 22–56 µs/tick in the page vs 5 µs of sim, so 100× costs 1.1–2.8 ms of the 4 ms per-frame sim budget at
+   terminal count. Owner: **systems-architect / three-graphics-engineer** (write only the last two ticks of a batch).
+4. **F4 — Low — JS heap +0.1–0.35 MB per new run, decaying** (table above). Re-check after 8.3 autosave lands; take
+   a heap-snapshot diff if it stops decaying. Owner: **qa-perf**.
+5. **F5 — Low — 5.9 L3 still open**: `stats().simUsPerTick` is a mean of per-advance ratios (`inline.ts:148`),
+   200–300 µs here under SwiftShader; use Σ ms / Σ steps. Owner: **systems-architect**.
+6. **F6 — Low (latent)** — `InstancedParts` (`src/render/views/instanced-parts.ts`) creates an `InstancedMesh` per
+   transporter / tanker view and `Pool.lod` (`src/render/views/pools.ts`) keys by entity id; neither is released on
+   unmount. Harmless today (ids are stable, the leak spec shows flat GL buffers), but a future spawn / despawn flow
+   (more tankers, other sites) would leak one instance-matrix buffer per view. Owner: **three-graphics-engineer**
+   (`im.dispose()` in the view's cleanup, `lod.delete(id)` when a handle leaves).
+7. **L1 (5.9) unchanged** — point cloud at 297.7 k of 300 k (99 %).
 
 ## MVP acceptance report (7.4)
 
