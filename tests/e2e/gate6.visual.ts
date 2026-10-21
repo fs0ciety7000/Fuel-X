@@ -1,5 +1,6 @@
 // Gate 6 (docs/TASKS.md): full-HUD screenshots at the visual-check standard states + /design, written to
-// docs/screens/gate6-*.png. Opt-in like the other screen passes: `npx playwright test --project=visual gate6`.
+// docs/screens/gate6-*.png with FUELX_SCREENS=1 (else test-results/, so `npm run e2e` leaves docs untouched):
+// `FUELX_SCREENS=1 npx playwright test --project=visual gate6`.
 // Not a baseline — the run only asserts that every state is reached without page errors.
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
@@ -17,6 +18,7 @@ interface Fx {
   state(): { clock: { tClock: string; phase: string | null } };
 }
 type FxWindow = { __fuelx?: Fx };
+const SCREENS_DIR = process.env.FUELX_SCREENS === '1' ? 'docs/screens' : 'test-results';
 
 // One scripted step per state: [file name, autopilot, script run against window.__fuelx].
 const STATES: [string, boolean, string][] = [
@@ -77,7 +79,7 @@ test.describe('gate 6', () => {
         }, script);
         // Let the 10 Hz projection and React settle on the paused state.
         await page.waitForTimeout(500);
-        await page.screenshot({ path: `docs/screens/gate6-${name}${vp.tag}.png` });
+        await page.screenshot({ path: `${SCREENS_DIR}/gate6-${name}${vp.tag}.png` });
         console.log(name, vp.tag || '1920', clock.tClock, clock.phase);
         expect(errors).toEqual([]);
       });
