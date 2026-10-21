@@ -252,7 +252,8 @@
   letter-spacing: var(--fx-type-label-tracking);
 }
 
-.by[data-by='AUTO'] {
+.by[data-by='AUTO'],
+.by[data-by='DIRECTOR'] {
   color: var(--fx-color-ink-3);
 }
 

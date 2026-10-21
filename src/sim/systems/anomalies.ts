@@ -14,6 +14,7 @@
 // schedule an eligible one now (weights renormalised; A3 only while the load is unfinished).
 import { ANOMALY_IDS, anomalies as an, propellant as pd, vehicles } from '@data/index';
 import type { AnomalyId } from '@data/index';
+import { commandSource } from '../core/commands';
 import type { CommandOf } from '../core/commands';
 import { entitiesOfKind, getEntity } from '../core/entities';
 import { emit } from '../core/events';
@@ -336,7 +337,7 @@ export function commandLeakResponse(world: World, cmd: CommandOf<'LeakResponse'>
   const st = id === undefined ? undefined : world.anomalies[id];
   if (!cd || !st) return 'NO_ACTIVE_LEAK';
   if (st.leak.response !== null) return 'ALREADY_RESPONDED';
-  respondToLeak(world, cd, st, cmd.choice, 'PLAYER');
+  respondToLeak(world, cd, st, cmd.choice, commandSource(cmd));
   return null;
 }
 

@@ -14,6 +14,7 @@
 // phase — vertical rise, prograde (profile climb angle), boostback flip, engines-first entry, upright landing burn;
 // the ship flies prograde on its own after separation (flightProfile.attitude).
 import { catchModel as cm, flightProfile as fp, lc1Layout, siteGeometry as geo, vehicles } from '@data/index';
+import { commandSource } from '../core/commands';
 import type { CommandOf } from '../core/commands';
 import { despawnEntity, getEntity } from '../core/entities';
 import { emit } from '../core/events';
@@ -462,7 +463,7 @@ export function commandCatchDecision(world: World, cmd: CommandOf<'CatchDecision
   if (!r || r.decisionRequiredTick === null) return 'NO_CATCH_DECISION_PENDING';
   // A forced divert commits itself as soon as the decision opens, so this also covers "catch not allowed".
   if (r.mode !== null) return 'ALREADY_DECIDED';
-  commit(world, cd, b, cmd.choice, 'PLAYER');
+  commit(world, cd, b, cmd.choice, commandSource(cmd));
   return null;
 }
 

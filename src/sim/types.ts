@@ -44,7 +44,7 @@ export type {
   Debrief,
 } from './core/world';
 export type { LeakRespondedBy, SimEvent, SimEventInput, SimEventType } from './core/events';
-export type { Command, CommandType, CommandOf, StampedCommand } from './core/commands';
+export type { Command, CommandSource, CommandType, CommandOf, StampedCommand } from './core/commands';
 export type { RngState, RngStream } from './core/rng';
 
 /** Stable entity id, e.g. 'e000123'; never the call-sign. */
@@ -227,7 +227,7 @@ export interface ShipFlight extends FlightTelemetry {
   done: boolean;
 }
 
-export type RecoveryDecidedBy = 'PLAYER' | 'AUTO' | 'FORCED';
+export type RecoveryDecidedBy = 'PLAYER' | 'AUTO' | 'FORCED' | 'DIRECTOR';
 export type ForcedDivertReason = 'LOW_PROPELLANT' | 'TOWER_WIND';
 export type RecoveryResult = 'CAUGHT' | 'CATCH_FAILED' | 'DIVERTED';
 

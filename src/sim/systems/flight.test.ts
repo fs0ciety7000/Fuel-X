@@ -412,6 +412,19 @@ describe('mount heights and attitude (5.0b)', () => {
 // --- Decisions (AC 19–20) ----------------------------------------------------------------------
 
 describe('CatchDecision', () => {
+  it('a DIRECTOR catch call commits by DIRECTOR and is logged once, with its source (AC 33)', () => {
+    const f = toLiftoff();
+    fly(f, (tS) =>
+      tS >= 170 && f.booster.recovery?.mode === null
+        ? [{ t: 'CatchDecision', boosterId: f.booster.id, choice: 'CATCH', source: 'DIRECTOR' }]
+        : [],
+    );
+    expect(f.log.find((e) => e.t === 'RecoveryCommitted')).toMatchObject({ mode: 'CATCH', by: 'DIRECTOR' });
+    expect(f.booster.recovery?.decidedBy).toBe('DIRECTOR');
+    const log = f.world.decisions[f.cd.id]?.filter((d) => d.kind === 'CatchDecision') ?? [];
+    expect(log.map((d) => d.by)).toEqual(['DIRECTOR']);
+  });
+
   it('GO FOR CATCH during boostback commits at once and arms the tower', () => {
     const f = toLiftoff();
     fly(f, (tS) =>

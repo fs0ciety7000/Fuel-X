@@ -2,6 +2,7 @@
 // is injected (src/sim never sees it). Autopilot = the golden-test director (STANDARD_AUTOPILOT), stateless.
 import {
   STANDARD_AUTOPILOT,
+  asDirector,
   autopilotCommands,
   countdownIds,
   createCommandQueue,
@@ -93,11 +94,14 @@ export class InlineSimHost implements SimHost {
     return this.queue.pending.length;
   }
 
-  /** One tick: queued commands, then the autopilot's (logged as inputs so the session replays). */
+  /**
+   * One tick: queued commands, then the autopilot's (logged as inputs so the session replays). Autopilot commands
+   * carry `source: 'DIRECTOR'` so the decision log never credits the player with them (GDD §13.2.1, AC 33).
+   */
   private tick(): SimEvent[] {
     const w = this.world;
     const cmds = takeCommands(this.queue, w.tick);
-    if (this.autopilot && this.cdId) cmds.push(...autopilotCommands(w, this.cdId, STANDARD_AUTOPILOT));
+    if (this.autopilot && this.cdId) cmds.push(...asDirector(autopilotCommands(w, this.cdId, STANDARD_AUTOPILOT)));
     for (const cmd of cmds) this.log.push({ tick: w.tick, seq: this.log.length, cmd });
     const evs = step(w, cmds);
     if (this.sessionEvents.length + evs.length <= MAX_SESSION_EVENTS) for (const e of evs) this.sessionEvents.push(e);

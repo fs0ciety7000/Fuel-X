@@ -11,7 +11,8 @@
 // visible in events (auto poll GO, auto/forced recovery, auto holds, window-closed scrub, D3b AUTO DEGRADED).
 import { contracts as contractDefs, economy as ec, vehicles } from '@data/index';
 import type { Propellant } from '@data/index';
-import type { Command } from '../core/commands';
+import { commandSource } from '../core/commands';
+import type { Command, CommandSource } from '../core/commands';
 import { getEntity } from '../core/entities';
 import { emit, eventsThisTick } from '../core/events';
 import type { SimEvent } from '../core/events';
@@ -91,11 +92,12 @@ export function recordDecision(world: World, countdownId: Id | null, kind: strin
   (world.decisions[countdownId] ??= []).push({ tick: world.tick, tClockTicks: cd.tClockTicks, kind, detail, by });
 }
 
-/** A player command about to be applied: the countdown it belongs to and its log detail (captured pre-apply). */
+/** A command about to be applied: its countdown, log detail (captured pre-apply) and source (PLAYER / DIRECTOR). */
 export interface PendingDecision {
   countdownId: Id | null;
   kind: Command['t'];
   detail: string;
+  by: CommandSource;
 }
 
 function countdownOfBooster(world: World, boosterId: Id): Id | null {
@@ -103,6 +105,10 @@ function countdownOfBooster(world: World, boosterId: Id): Id | null {
 }
 
 export function pendingDecision(world: World, cmd: Command): PendingDecision {
+  return { ...decisionOf(world, cmd), by: commandSource(cmd) };
+}
+
+function decisionOf(world: World, cmd: Command): Omit<PendingDecision, 'by'> {
   switch (cmd.t) {
     case 'StartRollout':
       return { countdownId: countdownOfBooster(world, cmd.boosterId), kind: cmd.t, detail: '' };
@@ -150,9 +156,9 @@ export function pendingDecision(world: World, cmd: Command): PendingDecision {
   }
 }
 
-/** Called by applyCommands for every accepted player command. */
+/** Called by applyCommands for every accepted command, tagged with its source (PLAYER / DIRECTOR). */
 export function recordCommand(world: World, d: PendingDecision): void {
-  recordDecision(world, d.countdownId, d.kind, d.detail, 'PLAYER');
+  recordDecision(world, d.countdownId, d.kind, d.detail, d.by);
 }
 
 // --- Postings -----------------------------------------------------------------------------------------
@@ -346,7 +352,8 @@ function handle(world: World, e: SimEvent): void {
       return;
     }
     case 'RecoveryCommitted':
-      if (e.by !== 'PLAYER')
+      // A commanded catch call (PLAYER / DIRECTOR) is already logged by recordCommand.
+      if (e.by === 'AUTO' || e.by === 'FORCED')
         recordDecision(world, e.countdownId, 'CatchDecision', `${e.mode} P ${e.p.toFixed(3)}`, e.by);
       return;
     case 'LeakResponded':

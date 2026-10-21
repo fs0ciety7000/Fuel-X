@@ -25,6 +25,21 @@ describe('InlineSimHost', () => {
     expect(host.drainEvents()).toEqual([]);
   });
 
+  it("autopilot commands carry source DIRECTOR; a sent command stays the player's (AC 33)", async () => {
+    const host = new InlineSimHost(clock);
+    await host.newGame({ seed: 42 });
+    host.advance({ maxSteps: 2, budgetMs: Number.POSITIVE_INFINITY });
+    const { world, countdown } = host.inspect();
+    host.send({ t: 'OrderDelivery', fluid: 'LOX', rush: true });
+    host.advance({ maxSteps: 1, budgetMs: Number.POSITIVE_INFINITY });
+    const log = host.sessionLog().commandLog;
+    expect(log.slice(0, 5).map((c) => c.cmd.source)).toEqual(Array(5).fill('DIRECTOR'));
+    expect(log.at(-1)?.cmd).toEqual({ t: 'OrderDelivery', fluid: 'LOX', rush: true });
+    const by = (world.decisions[countdown?.id ?? ''] ?? []).map((d) => `${d.kind} ${d.by}`);
+    expect(by.slice(0, 5).every((x) => x.endsWith(' DIRECTOR'))).toBe(true);
+    expect(by.at(-1)).toBe('OrderDelivery PLAYER');
+  });
+
   it('advance honours maxSteps, buffers events, and save/load round-trips the world', async () => {
     const host = new InlineSimHost(clock);
     await host.newGame({ seed: 7 });

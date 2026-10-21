@@ -105,7 +105,11 @@ export interface ContractState {
   closedTick: Tick | null;
 }
 
-export type DecisionBy = 'PLAYER' | 'AUTO' | 'FORCED';
+/**
+ * Decision-log tag (GDD §13.2.1): `PLAYER` / `DIRECTOR` = the command's source, `AUTO` = the sim's documented
+ * default when nobody answered, `FORCED` = no choice existed.
+ */
+export type DecisionBy = 'PLAYER' | 'AUTO' | 'FORCED' | 'DIRECTOR';
 
 /** One entry of the timestamped decision log (AC 22). `detail` is a compact machine string for the UI. */
 export interface DecisionEntry {
