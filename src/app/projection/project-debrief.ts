@@ -24,6 +24,19 @@ const DECISION_CODE: Record<string, string> = {
   LeakResponse: 'D3B',
 };
 
+/** Decision-log verbs for the sim command kinds (the sim keeps `StartRollout`, `CatchDecision`, …). */
+const DECISION_LABEL: Record<string, string> = {
+  StartRollout: 'ROLLOUT',
+  Stack: 'STACK',
+  OrderDelivery: 'DELIVERY',
+  Go: 'GO',
+  Hold: 'HOLD',
+  Recycle: 'RECYCLE',
+  Scrub: 'SCRUB',
+  CatchDecision: 'CATCH CALL',
+  LeakResponse: 'LEAK RESPONSE',
+};
+
 const exit = (session: SessionActionId, label: string, variant: ActionVM['variant'], key?: string): ActionVM => ({
   id: session,
   label,
@@ -104,7 +117,7 @@ export function debriefVM(c: Ctx): DebriefVM | null {
       time: tClock(x.tClockTicks),
       id: `${i}:${x.kind}`,
       code: DECISION_CODE[x.kind] ?? '',
-      detail: `${words(x.kind)}${x.detail ? ` · ${x.detail}` : ''}`,
+      detail: `${DECISION_LABEL[x.kind] ?? words(x.kind)}${x.detail ? ` · ${words(x.detail)}` : ''}`,
       by: x.by,
     })),
     anomalies: d.anomalies.map((a) => ({

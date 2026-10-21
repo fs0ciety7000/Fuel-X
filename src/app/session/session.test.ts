@@ -119,6 +119,9 @@ describe('SessionController', () => {
     expect(ui.debrief?.meta).toBe(`REV ${dataRevision()} · SEED 42`);
     expect(ui.debrief?.decisions.every((d) => ['D1', 'D2', 'D3', 'D3B', ''].includes(d.code ?? 'x'))).toBe(true);
     expect(ui.debrief?.decisions.some((d) => d.code === 'D3')).toBe(true);
+    // Readable verbs, not sim command kinds (6.7 open item).
+    expect(ui.debrief?.decisions.map((d) => d.detail.split(' · ')[0])).not.toContain('STARTROLLOUT');
+    expect(ui.debrief?.decisions.find((d) => d.code === 'D3')?.detail).toMatch(/^CATCH CALL · (CATCH|DIVERT) P /);
     expect(ui.timeScale).toMatchObject({
       runEnded: true,
       paused: true,
