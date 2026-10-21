@@ -325,7 +325,7 @@ Crosshair `+` marks (ink-4) sit on the outer corners of every card and at the fo
 
 - `.hud-root` and every grid area wrapper: `pointer-events: none`.
 - Cards, panels, controls, buttons, inputs, popovers, toasts: `pointer-events: auto` (a click on a card must not select the entity behind it).
-- World label layer: `none`; each label tag: `auto` (click = select/follow). Leader lines: `none`.
+- World label layer: `none`; each label tag: `auto` (click = select, double-click / Enter = follow; GDD AC 25). Leader lines: `none`.
 - Altitude scale, compass tape, noise, stamp: `none` (read-only).
 - The canvas receives everything else (orbit, pick). Wheel over a scrollable panel scrolls the panel, not the camera.
 
@@ -537,7 +537,7 @@ ORG / REGION / [LC-1 ▾]             dropdown (popover):
 - In a `role="listbox"` (single-select) or `<table>`-like grid for Tanks; row = `role="option" aria-selected`.
 - Data: `{id, glyph, name, sub, keyValue, keyUnit, state}`.
 - States: default; hover paper-2; **selected/followed = accent-tint bg + 2 px accent left rule, ink text** (ink on tint 15.98); warn (`△` glyph, sub-status may use accent-text (passes on tint/paper-2 since Gate 1), 2 px accent right edge); danger (row left edge hazard band 4 px + `▲`, text ink); disabled/offline (hatch, ink-4).
-- Behavior: click/Enter = select + camera focus; double-click/F = follow; rows never reorder while hovered or focused (sort freezes, resumes on leave).
+- Behavior: click / Space = **select** (orange row + label, inspector; the camera does not move); double-click / Enter / `F` = **follow** (select + camera frames and tracks the entity). Contract fixed in playtest pass 7.5 (GDD AC 25, §14.1 call 1): inspecting must never steal the camera during a hold or a flight. Rows never reorder while hovered or focused (sort freezes, resumes on leave).
 
 ### 6.14 Tabbed panel (VEHICLES / TANKS / TASKS / RANGE / EVENTS)
 ```
@@ -598,7 +598,7 @@ hover     [◐ PK-03]          paper-2 bg, 2px ink border
             ·  anchor: 3px ink square at SOCKET_Label
 ```
 - DOM tag (CSS2D-like) or instanced sprites — render team's call; visual spec is identical. `<button aria-label="B-14, booster, ascent">`.
-- Behavior: placed at `SOCKET_Label`; screen-space size constant; declutter: priority selected > alert > followed class > rest, lower priority tags collapse to the anchor square when overlapping; hidden beyond LOD distance; never occluded by HUD cards (tags under a card are hidden). Click = select, double-click = follow.
+- Behavior: placed at `SOCKET_Label`; screen-space size constant; declutter: priority selected > alert > followed class > rest, lower priority tags collapse to the anchor square when overlapping; hidden beyond LOD distance; never occluded by HUD cards (tags under a card are hidden). Click / Space = select (no camera move), double-click / Enter = follow (GDD AC 25).
 
 ### 6.21 Altitude scale
 ```
@@ -742,7 +742,7 @@ End-of-run sheet (GDD §4.9, §9, AC 22). Opens when the attempt enters Debrief;
 | [ REPLAY SAME SEED ]  [ NEW SEED ]  [ EXPORT LOG ]                         [ VIEW SITE  Esc ]  |
 +----------------------------------------------------------------------------------------------+
 ```
-- Element: modal `<dialog>` (§6.27 frame, width `--fx-size-debrief`), heading `<h2>`; outcome word in `type-macro-stamp` is the one macro use on screen while it is open (the T-clock is hidden behind it); money/rep deltas as `<data value>` in `type-value`; ledger as `<table>` (`<th scope="col">`, numbers right-aligned, true minus `−`); decision log as `<ol>` of `<samp>` lines (`<time>` T-clock, decision id D1–D3b, detail, `by` tag `PLAYER` ink / `AUTO` ink-3 / `FORCED` accent-text).
+- Element: modal `<dialog>` (§6.27 frame, width `--fx-size-debrief`), heading `<h2>`; outcome word in `type-macro-stamp` is the one macro use on screen while it is open (the T-clock is hidden behind it); money/rep deltas as `<data value>` in `type-value`; ledger as `<table>` (`<th scope="col">`, numbers right-aligned, true minus `−`); decision log as `<ol>` of `<samp>` lines (`<time>` T-clock, decision id D1–D3b, detail, `by` tag `PLAYER` ink / `AUTO` ink-3 / `FORCED` accent-text / `DIRECTOR` ink-3 — commands sent by the `?autopilot=1` demo director, GDD §13.2.1, playtest pass 7.5).
 - States by outcome: `CAUGHT` (ok, ink stamp), `DIVERTED` (warn: 2 px accent frame on the stamp), `CATCH FAILED` (danger: accent plate + hazard band, tower line `TOWER-1 DAMAGED · 21 D`), `SCRUBBED` (danger header, `WINDOW LOST` reason, booster line `NOT FLOWN`, decision log ends with the scrub). Negative money delta = value in ink with `−` and a `▲` glyph; never orange text on a big number.
 - Data: `DebriefVM` (§13). Every number is from the projection; no client maths.
 - Behavior: `VIEW SITE` (Esc) collapses the sheet to a `[■ DEBRIEF READY]` badge in the top bar (reopen with `B`); replay / new seed are commands to `app` (MVP: reload the scenario). Focus starts on the heading; Tab order: deltas → ledger → log → actions.
@@ -852,7 +852,7 @@ Syntax decoration (structure, not ornament): `[ TITLE ]` card heads, `>>>` for "
 | `↑ ↓` / `Home End` | Move in lists, dropdowns |
 | `← →` | Switch tab (in tablist); time scale (in radiogroup) |
 | `Alt+1…5` | Vehicles / Tanks / Tasks / Range / Events |
-| `Enter` | Select + focus camera on row/tag |
+| `Enter` | Follow the focused row/tag (select + camera frames and tracks it); `Space` / click = select only (GDD AC 25) |
 | `F` | Follow / unfollow selected |
 | `C` / `H` / `Z` | Recenter on followed / home view / frame selection |
 | `Shift+H` | **Hold the count** (while counting; the timeline header's only count button, hint `⇧H`). Deliberately not plain `H` (home view): holding is high-stakes and must never fire from a camera habit (6.5) |
