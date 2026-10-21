@@ -197,6 +197,7 @@ export function rangeVM(c: Ctx, stations: StationVM[]): RangeVM {
 interface AlertSpec {
   id: string;
   severity: 'warn' | 'danger';
+  /** Message without the call sign: toasts, log rows and announcements print `entityCode` beside it. */
   text: string;
   entityId: string | null;
 }
@@ -224,27 +225,26 @@ export function alertsVM(c: Ctx, stations: readonly StationVM[]): AlertsVM {
     }
   }
   if (cd && c.world.anomalies[cd.id]?.leak.active) {
-    specs.push({ id: 'leak', severity: 'danger', text: 'GSE LEAK · OLM-1 QUICK DISCONNECT', entityId: cd.padId });
+    specs.push({ id: 'leak', severity: 'danger', text: 'GSE LEAK · QUICK DISCONNECT', entityId: cd.padId });
   }
   for (const b of entitiesOf(c, 'booster')) {
     if (b.flight && !b.flight.done && b.engines.failed > 0) {
       specs.push({
         id: `engines:${b.id}`,
         severity: 'danger',
-        text: `${b.callSign} ENGINE OUT · ${ofTotal(b.engines.lit, b.engines.total)}`,
+        text: `ENGINE OUT · ${ofTotal(b.engines.lit, b.engines.total)}`,
         entityId: b.id,
       });
     }
     const r = b.recovery;
     if (r && r.decisionRequiredTick !== null && r.mode === null && r.result === null) {
-      specs.push({ id: `catch:${b.id}`, severity: 'warn', text: `${b.callSign} CATCH DECISION OPEN`, entityId: b.id });
+      specs.push({ id: `catch:${b.id}`, severity: 'warn', text: 'CATCH DECISION OPEN', entityId: b.id });
     }
-    if (b.fsm.state === 'LOST')
-      specs.push({ id: `lost:${b.id}`, severity: 'danger', text: `${b.callSign} LOST`, entityId: b.id });
+    if (b.fsm.state === 'LOST') specs.push({ id: `lost:${b.id}`, severity: 'danger', text: 'LOST', entityId: b.id });
   }
   for (const t of entitiesOf(c, 'tower')) {
     if (t.fsm.state === 'DAMAGED')
-      specs.push({ id: `damaged:${t.id}`, severity: 'danger', text: `${t.callSign} DAMAGED`, entityId: t.id });
+      specs.push({ id: `damaged:${t.id}`, severity: 'danger', text: 'DAMAGED', entityId: t.id });
   }
   if (cd?.scrubReason === 'WINDOW_CLOSED') {
     specs.push({ id: 'window', severity: 'danger', text: `WINDOW MISSED · ${cd.contractId}`, entityId: null });
