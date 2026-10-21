@@ -85,9 +85,9 @@
 259500 T-03:35:50 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 261001 T-03:35:00 TLM Stack/Counting wind=8.72/10.90/11.34 upper=49.86 stations=GGMGG farm=4027162/1109879 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
 261780 T-03:34:34 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-262941 T-03:33:56 StationChanged station=WEATHER status=GO driver=NOMINAL
+263373 T-03:33:41 StationChanged station=WEATHER status=GO driver=NOMINAL
 267078 T-03:31:38 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-267981 T-03:31:08 StationChanged station=WEATHER status=GO driver=NOMINAL
+269565 T-03:30:15 StationChanged station=WEATHER status=GO driver=NOMINAL
 270001 T-03:30:00 TLM Stack/Counting wind=8.01/10.01/10.41 upper=47.06 stations=GGMGG farm=4027133/1109875 B-09 STACKING 0/0 S-21 ON_TRANSPORTER 0/0 cr=29976000 rep=50
 270001 T-03:30:00 EntityStateChanged id=TOWER-1 kind=tower from=STACKING to=IDLE
 270001 T-03:30:00 ArmsChanged id=TOWER-1 from=CLOSED to=OPEN
@@ -112,12 +112,12 @@
 306001 T-03:10:00 TLM Stack/Counting wind=8.73/10.91/11.35 upper=48.98 stations=GGMGG farm=4027017/1109859 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 310146 T-03:07:42 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
 315001 T-03:05:00 TLM Stack/Counting wind=7.01/8.76/9.11 upper=52.28 stations=MGMGG farm=4026988/1109854 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
-319359 T-03:02:35 StationChanged station=WEATHER status=GO driver=NOMINAL
+320148 T-03:02:09 StationChanged station=WEATHER status=GO driver=NOMINAL
 323400 T-03:00:20 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=AT_PAD
 323400 T-03:00:20 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 324001 T-03:00:00 TLM Stack/Counting wind=5.06/6.33/6.58 upper=47.89 stations=GGMGG farm=4026959/1109850 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 331800 T-02:55:40 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-332508 T-02:55:17 StationChanged station=WEATHER status=GO driver=NOMINAL
+332727 T-02:55:10 StationChanged station=WEATHER status=GO driver=NOMINAL
 333001 T-02:55:00 TLM Stack/Counting wind=2.94/3.67/3.82 upper=47.12 stations=GGMGG farm=4026930/1109846 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 341700 T-02:50:10 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
 341700 T-02:50:10 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
@@ -131,12 +131,12 @@
 378300 T-02:29:50 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
 378300 T-02:29:50 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
 378795 T-02:29:34 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
-380025 T-02:28:53 StationChanged station=WEATHER status=GO driver=NOMINAL
 380671 T-02:28:31 EntityStateChanged id=TOWER-1 kind=tower from=STACKING to=IDLE
 380671 T-02:28:31 ArmsChanged id=TOWER-1 from=CLOSED to=OPEN
 380671 T-02:28:31 EntityStateChanged id=S-21 kind=ship from=STACKING to=STACKED
 380671 T-02:28:31 QdArmChanged id=TOWER-1 from=STOWED to=ENGAGING
 380971 T-02:28:21 QdArmChanged id=TOWER-1 from=ENGAGING to=ENGAGED
+381381 T-02:28:08 StationChanged station=WEATHER status=GO driver=NOMINAL
 387001 T-02:25:00 TLM Stack/Counting wind=9.78/12.22/12.71 upper=44.17 stations=GGMGG farm=4026757/1109821 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 390870 T-02:22:51 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
 396001 T-02:20:00 TLM Stack/Counting wind=11.72/14.65/15.23 upper=43.79 stations=MGMGG farm=4026728/1109817 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
@@ -146,15 +146,11 @@
 397545 T-02:19:09 EntityStateChanged id=SP-42 kind=transporter from=WIND_HOLD to=RETURNING
 399572 T-02:18:01 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=WIND_HOLD
 402423 T-02:16:26 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
-403539 T-02:15:49 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
-404019 T-02:15:33 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
-404337 T-02:15:23 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
-404817 T-02:15:07 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
 404999 T-02:15:00 Milestone name=RUSH_ORDER_LAST_CALL
 405001 T-02:15:00 TLM Stack/Counting wind=13.21/16.52/17.18 upper=43.05 stations=NGMGG farm=4026699/1109813 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
-405633 T-02:14:39 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
+406236 T-02:14:19 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
 407452 T-02:13:39 EntityStateChanged id=SP-42 kind=transporter from=WIND_HOLD to=RETURNING
-412608 T-02:10:47 StationChanged station=WEATHER status=GO driver=NOMINAL
+412674 T-02:10:45 StationChanged station=WEATHER status=GO driver=NOMINAL
 414001 T-02:10:00 TLM Stack/Counting wind=10.52/13.15/13.67 upper=42.96 stations=GGMGG farm=4026670/1109809 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 421518 T-02:05:50 EntityStateChanged id=LX-01 kind=tanker from=OFFMAP to=INBOUND
 421518 T-02:05:50 EntityStateChanged id=LX-02 kind=tanker from=OFFMAP to=INBOUND
@@ -195,11 +191,7 @@
 486001 T-01:30:00 TLM Stack/Counting wind=11.50/14.38/14.96 upper=33.15 stations=MGMGG farm=4086438/1125775 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29959000 rep=50
 486900 T-01:29:30 EntityStateChanged id=CV-02 kind=van from=AT_PAD to=TO_SAFE
 487800 T-01:29:00 EntityStateChanged id=CV-03 kind=van from=AT_PAD to=TO_SAFE
-488040 T-01:28:52 StationChanged station=WEATHER status=GO driver=NOMINAL
-488256 T-01:28:45 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
-488655 T-01:28:32 StationChanged station=WEATHER status=GO driver=NOMINAL
-489270 T-01:28:11 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
-491493 T-01:26:57 StationChanged station=WEATHER status=GO driver=NOMINAL
+491571 T-01:26:55 StationChanged station=WEATHER status=GO driver=NOMINAL
 494439 T-01:25:19 EntityStateChanged id=SP-42 kind=transporter from=AT_PAD to=RETURNING
 494724 T-01:25:10 EntityStateChanged id=MX-01 kind=tanker from=OUTBOUND to=OFFMAP
 495001 T-01:25:00 TLM Stack/Counting wind=10.06/12.57/13.07 upper=29.52 stations=GGMGG farm=4086409/1125771 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29959000 rep=50
@@ -246,14 +238,14 @@
 585001 T-00:55:01 TLM PropellantLoad/Counting wind=5.61/7.01/7.29 upper=52.29 stations=MGMGG farm=2346165/639736 B-09 LOADING 1185249/333224 S-21 LOADING 533362/148761 cr=29959000 rep=50
 585939 T-00:54:29 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
 585939 T-00:54:29 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
-588243 T-00:53:12 StationChanged station=WEATHER status=GO driver=NOMINAL
+589041 T-00:52:46 StationChanged station=WEATHER status=GO driver=NOMINAL
 592254 T-00:50:59 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
 594001 T-00:50:01 TLM PropellantLoad/Counting wind=5.33/6.67/6.93 upper=52.00 stations=MGMGG farm=1911149/518234 B-09 LOADING 1481249/416470 S-21 LOADING 666562/185924 cr=29959000 rep=50
-598452 T-00:47:32 StationChanged station=WEATHER status=GO driver=NOMINAL
+598944 T-00:47:16 StationChanged station=WEATHER status=GO driver=NOMINAL
 598970 T-00:47:15 EntityStateChanged id=SP-42 kind=transporter from=MOVING to=RETURNING
 601896 T-00:45:37 StationChanged station=WEATHER status=MARGINAL driver=UPPER_WIND
 603001 T-00:45:01 TLM PropellantLoad/Counting wind=4.29/5.36/5.58 upper=52.03 stations=MGMGG farm=1476137/396732 B-09 LOADING 1776362/499550 S-21 LOADING 799363/223013 cr=29959000 rep=50
-606303 T-00:43:10 StationChanged station=WEATHER status=GO driver=NOMINAL
+606990 T-00:42:48 StationChanged station=WEATHER status=GO driver=NOMINAL
 612001 T-00:40:01 TLM PropellantLoad/Counting wind=1.63/2.03/2.11 upper=45.26 stations=GGMGG farm=1041127/275231 B-09 LOADING 2070592/582462 S-21 LOADING 931766/260028 cr=29959000 rep=50
 612001 T-00:40:00 Milestone name=ROAD_CLOSURE
 612001 T-00:40:00 RoadClosureChanged siteId=LC-1 closed=true

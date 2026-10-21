@@ -36,9 +36,11 @@ export const countdown = {
   marginalBand: 0.15,
   /**
    * Sim addition 3.7 (review): a station only improves once its value is back this fraction of the limit
-   * inside the threshold (deadband, stops GO ⇄ MARGINAL flicker on noisy wind), unitless.
+   * inside the threshold (deadband, stops GO ⇄ MARGINAL flicker on noisy wind), unitless; range 0.02–0.08.
+   * 0.05 (BALANCING §15 P4): 3.0 m/s on the 60 m/s upper-wind limit ≈ 3 min of series drift, so a NO-GO hold
+   * is not re-entered within a minute of its release (was 0.03).
    */
-  stationHysteresisFraction: 0.03,
+  stationHysteresisFraction: 0.05,
   /** Sim addition 3.7: stations are re-evaluated every this many seconds (10 Hz, the HUD projection rate). */
   stationSampleS: 0.1,
   crew: {

@@ -2085,7 +2085,7 @@
   ],
   "events": [
    {
-    "id": "128",
+    "id": "120",
     "time": "13:34:20",
     "tClock": "T−00:00:40",
     "tick": 682804,
@@ -2098,7 +2098,7 @@
     "acked": false
    },
    {
-    "id": "127",
+    "id": "119",
     "time": "13:34:20",
     "tClock": "",
     "tick": 682804,
@@ -2111,7 +2111,7 @@
     "acked": false
    },
    {
-    "id": "126",
+    "id": "118",
     "time": "13:34:20",
     "tClock": "",
     "tick": 682803,
@@ -2124,7 +2124,7 @@
     "acked": false
    },
    {
-    "id": "125",
+    "id": "117",
     "time": "13:34:20",
     "tClock": "T−00:00:40",
     "tick": 682803,
@@ -2137,7 +2137,7 @@
     "acked": false
    },
    {
-    "id": "124",
+    "id": "116",
     "time": "13:34:20",
     "tClock": "",
     "tick": 682803,
@@ -2150,7 +2150,7 @@
     "acked": false
    },
    {
-    "id": "123",
+    "id": "115",
     "time": "13:32:00",
     "tClock": "",
     "tick": 678602,
@@ -2163,7 +2163,7 @@
     "acked": false
    },
    {
-    "id": "122",
+    "id": "114",
     "time": "13:25:00",
     "tClock": "T−00:10:00",
     "tick": 666003,
@@ -2176,7 +2176,7 @@
     "acked": false
    },
    {
-    "id": "121",
+    "id": "113",
     "time": "13:25:00",
     "tClock": "",
     "tick": 666003,
@@ -2189,7 +2189,7 @@
     "acked": false
    },
    {
-    "id": "120",
+    "id": "112",
     "time": "13:25:00",
     "tClock": "",
     "tick": 666003,
@@ -2202,7 +2202,7 @@
     "acked": false
    },
    {
-    "id": "119",
+    "id": "111",
     "time": "13:25:00",
     "tClock": "",
     "tick": 666002,
@@ -2215,7 +2215,7 @@
     "acked": false
    },
    {
-    "id": "118",
+    "id": "110",
     "time": "13:25:00",
     "tClock": "T−00:10:00",
     "tick": 666002,
@@ -2228,7 +2228,7 @@
     "acked": false
    },
    {
-    "id": "117",
+    "id": "109",
     "time": "13:25:00",
     "tClock": "",
     "tick": 666002,
@@ -2241,7 +2241,7 @@
     "acked": false
    },
    {
-    "id": "116",
+    "id": "108",
     "time": "13:05:03",
     "tClock": "",
     "tick": 630111,
@@ -2254,7 +2254,7 @@
     "acked": false
    },
    {
-    "id": "115",
+    "id": "107",
     "time": "13:04:11",
     "tClock": "",
     "tick": 628536,
@@ -2267,7 +2267,7 @@
     "acked": false
    },
    {
-    "id": "114",
+    "id": "106",
     "time": "12:55:00",
     "tClock": "",
     "tick": 612001,
@@ -2280,7 +2280,7 @@
     "acked": false
    },
    {
-    "id": "113",
+    "id": "105",
     "time": "12:55:00",
     "tClock": "",
     "tick": 612001,
@@ -2293,10 +2293,10 @@
     "acked": false
    },
    {
-    "id": "112",
-    "time": "12:51:50",
+    "id": "104",
+    "time": "12:52:13",
     "tClock": "",
-    "tick": 606303,
+    "tick": 606990,
     "code": "StationChanged",
     "state": "ok",
     "glyph": "ok",
@@ -2306,7 +2306,7 @@
     "acked": false
    },
    {
-    "id": "111",
+    "id": "103",
     "time": "12:49:23",
     "tClock": "",
     "tick": 601896,
@@ -2319,10 +2319,10 @@
     "acked": false
    },
    {
-    "id": "110",
-    "time": "12:47:28",
+    "id": "102",
+    "time": "12:47:44",
     "tClock": "",
-    "tick": 598452,
+    "tick": 598944,
     "code": "StationChanged",
     "state": "ok",
     "glyph": "ok",
@@ -2332,7 +2332,7 @@
     "acked": false
    },
    {
-    "id": "109",
+    "id": "101",
     "time": "12:44:01",
     "tClock": "",
     "tick": 592254,
@@ -2345,10 +2345,10 @@
     "acked": false
    },
    {
-    "id": "108",
-    "time": "12:41:48",
+    "id": "100",
+    "time": "12:42:14",
     "tClock": "",
-    "tick": 588243,
+    "tick": 589041,
     "code": "StationChanged",
     "state": "ok",
     "glyph": "ok",
@@ -2358,7 +2358,7 @@
     "acked": false
    },
    {
-    "id": "107",
+    "id": "99",
     "time": "12:30:41",
     "tClock": "T−01:04:19",
     "tick": 568233,
@@ -2371,7 +2371,7 @@
     "acked": false
    },
    {
-    "id": "106",
+    "id": "98",
     "time": "12:30:41",
     "tClock": "",
     "tick": 568233,
@@ -2384,7 +2384,7 @@
     "acked": false
    },
    {
-    "id": "105",
+    "id": "97",
     "time": "12:30:41",
     "tClock": "",
     "tick": 568232,
@@ -2397,7 +2397,7 @@
     "acked": false
    },
    {
-    "id": "104",
+    "id": "96",
     "time": "12:29:39",
     "tClock": "",
     "tick": 566385,
@@ -2410,7 +2410,7 @@
     "acked": false
    },
    {
-    "id": "103",
+    "id": "95",
     "time": "12:10:41",
     "tClock": "",
     "tick": 532233,
@@ -2423,7 +2423,7 @@
     "acked": false
    },
    {
-    "id": "102",
+    "id": "94",
     "time": "12:10:41",
     "tClock": "",
     "tick": 532232,
@@ -2436,7 +2436,7 @@
     "acked": false
    },
    {
-    "id": "101",
+    "id": "93",
     "time": "12:10:41",
     "tClock": "T−01:04:19",
     "tick": 532232,
@@ -2449,7 +2449,7 @@
     "acked": false
    },
    {
-    "id": "100",
+    "id": "92",
     "time": "12:10:41",
     "tClock": "",
     "tick": 532231,
@@ -2462,7 +2462,7 @@
     "acked": false
    },
    {
-    "id": "99",
+    "id": "91",
     "time": "12:10:41",
     "tClock": "",
     "tick": 532231,
@@ -2475,7 +2475,7 @@
     "acked": false
    },
    {
-    "id": "98",
+    "id": "90",
     "time": "12:00:00",
     "tClock": "",
     "tick": 513000,
@@ -2488,7 +2488,7 @@
     "acked": false
    },
    {
-    "id": "97",
+    "id": "89",
     "time": "12:00:00",
     "tClock": "",
     "tick": 513000,
@@ -2501,7 +2501,7 @@
     "acked": false
    },
    {
-    "id": "96",
+    "id": "88",
     "time": "11:55:00",
     "tClock": "T−01:20:00",
     "tick": 504001,
@@ -2514,7 +2514,7 @@
     "acked": false
    },
    {
-    "id": "95",
+    "id": "87",
     "time": "11:55:00",
     "tClock": "",
     "tick": 504001,
@@ -2527,7 +2527,7 @@
     "acked": false
    },
    {
-    "id": "94",
+    "id": "86",
     "time": "11:55:00",
     "tClock": "",
     "tick": 504001,
@@ -2540,7 +2540,7 @@
     "acked": false
    },
    {
-    "id": "93",
+    "id": "85",
     "time": "11:55:00",
     "tClock": "",
     "tick": 504000,
@@ -2553,7 +2553,7 @@
     "acked": false
    },
    {
-    "id": "92",
+    "id": "84",
     "time": "11:55:00",
     "tClock": "T−01:20:00",
     "tick": 504000,
@@ -2566,7 +2566,7 @@
     "acked": false
    },
    {
-    "id": "91",
+    "id": "83",
     "time": "11:55:00",
     "tClock": "",
     "tick": 504000,
@@ -2579,7 +2579,7 @@
     "acked": false
    },
    {
-    "id": "90",
+    "id": "82",
     "time": "11:54:36",
     "tClock": "",
     "tick": 503302,
@@ -2592,7 +2592,7 @@
     "acked": false
    },
    {
-    "id": "89",
+    "id": "81",
     "time": "11:54:36",
     "tClock": "",
     "tick": 503302,
@@ -2605,7 +2605,7 @@
     "acked": false
    },
    {
-    "id": "88",
+    "id": "80",
     "time": "11:54:36",
     "tClock": "",
     "tick": 503302,
@@ -2618,7 +2618,7 @@
     "acked": false
    },
    {
-    "id": "87",
+    "id": "79",
     "time": "11:51:29",
     "tClock": "",
     "tick": 497673,
@@ -2631,7 +2631,7 @@
     "acked": false
    },
    {
-    "id": "86",
+    "id": "78",
     "time": "11:50:59",
     "tClock": "",
     "tick": 496773,
@@ -2644,7 +2644,7 @@
     "acked": false
    },
    {
-    "id": "85",
+    "id": "77",
     "time": "11:50:29",
     "tClock": "",
     "tick": 495873,
@@ -2657,7 +2657,7 @@
     "acked": false
    },
    {
-    "id": "84",
+    "id": "76",
     "time": "11:49:50",
     "tClock": "",
     "tick": 494724,
@@ -2670,10 +2670,10 @@
     "acked": false
    },
    {
-    "id": "83",
-    "time": "11:48:03",
+    "id": "75",
+    "time": "11:48:05",
     "tClock": "",
-    "tick": 491493,
+    "tick": 491571,
     "code": "StationChanged",
     "state": "ok",
     "glyph": "ok",
@@ -2683,59 +2683,7 @@
     "acked": false
    },
    {
-    "id": "82",
-    "time": "11:46:49",
-    "tClock": "",
-    "tick": 489270,
-    "code": "StationChanged",
-    "state": "warn",
-    "glyph": "warn",
-    "entityId": null,
-    "entityCode": "LC-1",
-    "message": "WEATHER MARGINAL · GROUND WIND",
-    "acked": false
-   },
-   {
-    "id": "81",
-    "time": "11:46:28",
-    "tClock": "",
-    "tick": 488655,
-    "code": "StationChanged",
-    "state": "ok",
-    "glyph": "ok",
-    "entityId": null,
-    "entityCode": "LC-1",
-    "message": "WEATHER GO",
-    "acked": false
-   },
-   {
-    "id": "80",
-    "time": "11:46:15",
-    "tClock": "",
-    "tick": 488256,
-    "code": "StationChanged",
-    "state": "warn",
-    "glyph": "warn",
-    "entityId": null,
-    "entityCode": "LC-1",
-    "message": "WEATHER MARGINAL · GROUND WIND",
-    "acked": false
-   },
-   {
-    "id": "79",
-    "time": "11:46:08",
-    "tClock": "",
-    "tick": 488040,
-    "code": "StationChanged",
-    "state": "ok",
-    "glyph": "ok",
-    "entityId": null,
-    "entityCode": "LC-1",
-    "message": "WEATHER GO",
-    "acked": false
-   },
-   {
-    "id": "78",
+    "id": "74",
     "time": "11:46:00",
     "tClock": "",
     "tick": 487800,
@@ -2748,7 +2696,7 @@
     "acked": false
    },
    {
-    "id": "77",
+    "id": "73",
     "time": "11:45:30",
     "tClock": "",
     "tick": 486900,
@@ -2761,7 +2709,7 @@
     "acked": false
    },
    {
-    "id": "76",
+    "id": "72",
     "time": "11:45:00",
     "tClock": "",
     "tick": 486000,
@@ -2774,7 +2722,7 @@
     "acked": false
    },
    {
-    "id": "75",
+    "id": "71",
     "time": "11:44:45",
     "tClock": "",
     "tick": 485571,
@@ -2787,58 +2735,6 @@
     "acked": false
    },
    {
-    "id": "74",
-    "time": "11:43:00",
-    "tClock": "",
-    "tick": 482410,
-    "code": "DeliveryCompleted",
-    "state": "ok",
-    "glyph": "ok",
-    "entityId": "e000018",
-    "entityCode": "LX-03",
-    "message": "DELIVERED 20 T LOX",
-    "acked": false
-   },
-   {
-    "id": "73",
-    "time": "11:43:00",
-    "tClock": "",
-    "tick": 482410,
-    "code": "EntityStateChanged",
-    "state": "neutral",
-    "glyph": "current",
-    "entityId": "e000018",
-    "entityCode": "LX-03",
-    "message": "OUTBOUND",
-    "acked": false
-   },
-   {
-    "id": "72",
-    "time": "11:43:00",
-    "tClock": "",
-    "tick": 482410,
-    "code": "DeliveryCompleted",
-    "state": "ok",
-    "glyph": "ok",
-    "entityId": "e000017",
-    "entityCode": "LX-02",
-    "message": "DELIVERED 20 T LOX",
-    "acked": false
-   },
-   {
-    "id": "71",
-    "time": "11:43:00",
-    "tClock": "",
-    "tick": 482410,
-    "code": "EntityStateChanged",
-    "state": "neutral",
-    "glyph": "current",
-    "entityId": "e000017",
-    "entityCode": "LX-02",
-    "message": "OUTBOUND",
-    "acked": false
-   },
-   {
     "id": "70",
     "time": "11:43:00",
     "tClock": "",
@@ -2846,8 +2742,8 @@
     "code": "DeliveryCompleted",
     "state": "ok",
     "glyph": "ok",
-    "entityId": "e000016",
-    "entityCode": "LX-01",
+    "entityId": "e000018",
+    "entityCode": "LX-03",
     "message": "DELIVERED 20 T LOX",
     "acked": false
    },
@@ -2859,13 +2755,65 @@
     "code": "EntityStateChanged",
     "state": "neutral",
     "glyph": "current",
+    "entityId": "e000018",
+    "entityCode": "LX-03",
+    "message": "OUTBOUND",
+    "acked": false
+   },
+   {
+    "id": "68",
+    "time": "11:43:00",
+    "tClock": "",
+    "tick": 482410,
+    "code": "DeliveryCompleted",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": "e000017",
+    "entityCode": "LX-02",
+    "message": "DELIVERED 20 T LOX",
+    "acked": false
+   },
+   {
+    "id": "67",
+    "time": "11:43:00",
+    "tClock": "",
+    "tick": 482410,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
+    "entityId": "e000017",
+    "entityCode": "LX-02",
+    "message": "OUTBOUND",
+    "acked": false
+   },
+   {
+    "id": "66",
+    "time": "11:43:00",
+    "tClock": "",
+    "tick": 482410,
+    "code": "DeliveryCompleted",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": "e000016",
+    "entityCode": "LX-01",
+    "message": "DELIVERED 20 T LOX",
+    "acked": false
+   },
+   {
+    "id": "65",
+    "time": "11:43:00",
+    "tClock": "",
+    "tick": 482410,
+    "code": "EntityStateChanged",
+    "state": "neutral",
+    "glyph": "current",
     "entityId": "e000016",
     "entityCode": "LX-01",
     "message": "OUTBOUND",
     "acked": false
    },
    {
-    "id": "68",
+    "id": "64",
     "time": "11:38:24",
     "tClock": "",
     "tick": 474121,
@@ -2878,7 +2826,7 @@
     "acked": false
    },
    {
-    "id": "67",
+    "id": "63",
     "time": "11:38:24",
     "tClock": "",
     "tick": 474121,
@@ -2891,7 +2839,7 @@
     "acked": false
    },
    {
-    "id": "66",
+    "id": "62",
     "time": "11:20:47",
     "tClock": "",
     "tick": 442410,
@@ -2904,7 +2852,7 @@
     "acked": false
    },
    {
-    "id": "65",
+    "id": "61",
     "time": "11:20:47",
     "tClock": "",
     "tick": 442410,
@@ -2917,7 +2865,7 @@
     "acked": false
    },
    {
-    "id": "64",
+    "id": "60",
     "time": "11:20:47",
     "tClock": "",
     "tick": 442410,
@@ -2930,7 +2878,7 @@
     "acked": false
    },
    {
-    "id": "63",
+    "id": "59",
     "time": "11:20:37",
     "tClock": "",
     "tick": 442121,
@@ -2943,7 +2891,7 @@
     "acked": false
    },
    {
-    "id": "62",
+    "id": "58",
     "time": "11:09:10",
     "tClock": "",
     "tick": 421518,
@@ -2956,7 +2904,7 @@
     "acked": false
    },
    {
-    "id": "61",
+    "id": "57",
     "time": "11:09:10",
     "tClock": "",
     "tick": 421518,
@@ -2969,7 +2917,7 @@
     "acked": false
    },
    {
-    "id": "60",
+    "id": "56",
     "time": "11:09:10",
     "tClock": "",
     "tick": 421518,
@@ -2982,7 +2930,7 @@
     "acked": false
    },
    {
-    "id": "59",
+    "id": "55",
     "time": "11:09:10",
     "tClock": "",
     "tick": 421518,
@@ -2995,10 +2943,10 @@
     "acked": false
    },
    {
-    "id": "58",
-    "time": "11:04:13",
+    "id": "54",
+    "time": "11:04:15",
     "tClock": "",
-    "tick": 412608,
+    "tick": 412674,
     "code": "StationChanged",
     "state": "ok",
     "glyph": "ok",
@@ -3008,10 +2956,10 @@
     "acked": false
    },
    {
-    "id": "57",
-    "time": "11:00:21",
+    "id": "53",
+    "time": "11:00:41",
     "tClock": "",
-    "tick": 405633,
+    "tick": 406236,
     "code": "StationChanged",
     "state": "warn",
     "glyph": "warn",
@@ -3021,7 +2969,7 @@
     "acked": false
    },
    {
-    "id": "56",
+    "id": "52",
     "time": "10:59:59",
     "tClock": "",
     "tick": 404999,
@@ -3031,58 +2979,6 @@
     "entityId": null,
     "entityCode": "LC-1",
     "message": "RUSH ORDER LAST CALL",
-    "acked": false
-   },
-   {
-    "id": "55",
-    "time": "10:59:53",
-    "tClock": "",
-    "tick": 404817,
-    "code": "StationChanged",
-    "state": "danger",
-    "glyph": "danger",
-    "entityId": null,
-    "entityCode": "LC-1",
-    "message": "WEATHER NO-GO · GROUND WIND",
-    "acked": false
-   },
-   {
-    "id": "54",
-    "time": "10:59:37",
-    "tClock": "",
-    "tick": 404337,
-    "code": "StationChanged",
-    "state": "warn",
-    "glyph": "warn",
-    "entityId": null,
-    "entityCode": "LC-1",
-    "message": "WEATHER MARGINAL · GROUND WIND",
-    "acked": false
-   },
-   {
-    "id": "53",
-    "time": "10:59:27",
-    "tClock": "",
-    "tick": 404019,
-    "code": "StationChanged",
-    "state": "danger",
-    "glyph": "danger",
-    "entityId": null,
-    "entityCode": "LC-1",
-    "message": "WEATHER NO-GO · GROUND WIND",
-    "acked": false
-   },
-   {
-    "id": "52",
-    "time": "10:59:11",
-    "tClock": "",
-    "tick": 403539,
-    "code": "StationChanged",
-    "state": "warn",
-    "glyph": "warn",
-    "entityId": null,
-    "entityCode": "LC-1",
-    "message": "WEATHER MARGINAL · GROUND WIND",
     "acked": false
    },
    {
@@ -3113,6 +3009,19 @@
    },
    {
     "id": "49",
+    "time": "10:46:52",
+    "tClock": "",
+    "tick": 381381,
+    "code": "StationChanged",
+    "state": "ok",
+    "glyph": "ok",
+    "entityId": null,
+    "entityCode": "LC-1",
+    "message": "WEATHER GO",
+    "acked": false
+   },
+   {
+    "id": "48",
     "time": "10:46:29",
     "tClock": "",
     "tick": 380671,
@@ -3125,7 +3034,7 @@
     "acked": false
    },
    {
-    "id": "48",
+    "id": "47",
     "time": "10:46:29",
     "tClock": "",
     "tick": 380671,
@@ -3138,7 +3047,7 @@
     "acked": false
    },
    {
-    "id": "47",
+    "id": "46",
     "time": "10:46:29",
     "tClock": "",
     "tick": 380671,
@@ -3148,19 +3057,6 @@
     "entityId": "e000002",
     "entityCode": "TOWER-1",
     "message": "IDLE",
-    "acked": false
-   },
-   {
-    "id": "46",
-    "time": "10:46:07",
-    "tClock": "",
-    "tick": 380025,
-    "code": "StationChanged",
-    "state": "ok",
-    "glyph": "ok",
-    "entityId": null,
-    "entityCode": "LC-1",
-    "message": "WEATHER GO",
     "acked": false
    },
    {
@@ -3178,9 +3074,9 @@
    },
    {
     "id": "44",
-    "time": "10:19:43",
+    "time": "10:19:50",
     "tClock": "",
-    "tick": 332508,
+    "tick": 332727,
     "code": "StationChanged",
     "state": "ok",
     "glyph": "ok",
@@ -3204,9 +3100,9 @@
    },
    {
     "id": "42",
-    "time": "10:12:25",
+    "time": "10:12:51",
     "tClock": "",
-    "tick": 319359,
+    "tick": 320148,
     "code": "StationChanged",
     "state": "ok",
     "glyph": "ok",
@@ -3373,9 +3269,9 @@
    },
    {
     "id": "29",
-    "time": "09:43:52",
+    "time": "09:44:45",
     "tClock": "",
-    "tick": 267981,
+    "tick": 269565,
     "code": "StationChanged",
     "state": "ok",
     "glyph": "ok",
@@ -3399,9 +3295,9 @@
    },
    {
     "id": "27",
-    "time": "09:41:04",
+    "time": "09:41:19",
     "tClock": "",
-    "tick": 262941,
+    "tick": 263373,
     "code": "StationChanged",
     "state": "ok",
     "glyph": "ok",
