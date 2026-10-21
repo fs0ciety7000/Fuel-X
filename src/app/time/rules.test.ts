@@ -74,6 +74,17 @@ describe('caps and skip availability', () => {
 
   it('skip targets the next poll / milestone, the Debrief after the flight, nothing in flight', () => {
     const { world, cd } = scenario();
+    // From the scenario start a skip stops at each D1 moment (data milestones, BALANCING §15 P2), then the load poll.
+    const stops: string[] = [];
+    for (let t = nextSkipTarget(cd); t?.kind === 'TCLOCK' && t.poll !== 'load'; t = nextSkipTarget(cd)) {
+      stops.push(`${t.name} ${t.tClockTicks}`);
+      cd.tClockTicks = t.tClockTicks;
+    }
+    expect(stops).toEqual([
+      `STANDARD ORDER LAST CALL ${secondsToTicks(-17_100)}`,
+      `FORECAST SEES WINDOW ${secondsToTicks(-11_700)}`,
+      `RUSH ORDER LAST CALL ${secondsToTicks(-8_100)}`,
+    ]);
     expect(nextSkipTarget(cd)).toMatchObject({ kind: 'TCLOCK', name: 'LOAD POLL', poll: 'load' });
     cd.tClockTicks = secondsToTicks(-4_800);
     expect(nextSkipTarget(cd)).toMatchObject({ name: 'ROAD CLOSURE', tClockTicks: secondsToTicks(-2_400) });
@@ -134,7 +145,7 @@ describe('TimeControl drops', () => {
     const t = new TimeControl();
     t.setScale(10);
     expect(t.startSkip(world, cd)).toBeNull();
-    expect(t.skip?.target.name).toBe('LOAD POLL');
+    expect(t.skip?.target.name).toBe('STANDARD ORDER LAST CALL');
     const noGo = [ev({ t: 'StationChanged', station: 'WEATHER', status: 'NO_GO', driver: 'UPPER WIND' })];
     expect(t.afterTick(noGo, world, cd)).toBe(true);
     expect(t.skip).toBeNull();

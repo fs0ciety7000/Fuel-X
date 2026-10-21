@@ -49,6 +49,7 @@
 126001 T-04:50:00 TLM Stack/Counting wind=7.23/9.04/9.40 upper=22.85 stations=GGMGG farm=4027595/1109942 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 126300 T-04:49:50 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
 133500 T-04:45:50 EntityStateChanged id=SP-42 kind=transporter from=IDLE to=MOVING
+134999 T-04:45:00 Milestone name=STANDARD_ORDER_LAST_CALL
 135001 T-04:45:00 TLM Stack/Counting wind=6.74/8.43/8.77 upper=23.20 stations=GGMGG farm=4027566/1109938 B-09 STACKING 0/0 S-21 IN_YARD 0/0 cr=29976000 rep=50
 135001 T-04:45:00 EntityStateChanged id=SP-41 kind=transporter from=RETURNING to=IDLE
 135001 T-04:45:00 EntityStateChanged id=CR-77 kind=crane from=IDLE to=LIFTING
@@ -103,6 +104,7 @@
 288001 T-03:20:00 TLM Stack/Counting wind=10.05/12.56/13.06 upper=45.48 stations=GGMGG farm=4027075/1109867 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 289407 T-03:19:14 EntityStateChanged id=TOWER-1 kind=tower from=STACKING to=WIND_HOLD
 292077 T-03:17:45 EntityStateChanged id=TOWER-1 kind=tower from=WIND_HOLD to=STACKING
+296999 T-03:15:00 Milestone name=FORECAST_SEES_WINDOW
 297001 T-03:15:00 TLM Stack/Counting wind=9.66/12.08/12.56 upper=47.08 stations=GGMGG farm=4027046/1109863 B-09 STACKED 0/0 S-21 STACKING 0/0 cr=29976000 rep=50
 297001 T-03:15:00 EntityStateChanged id=SP-41 kind=transporter from=RETURNING to=IDLE
 305100 T-03:10:30 EntityStateChanged id=SP-42 kind=transporter from=RETURNING to=IDLE
@@ -148,6 +150,7 @@
 404019 T-02:15:33 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
 404337 T-02:15:23 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
 404817 T-02:15:07 StationChanged station=WEATHER status=NO_GO driver=GROUND_WIND
+404999 T-02:15:00 Milestone name=RUSH_ORDER_LAST_CALL
 405001 T-02:15:00 TLM Stack/Counting wind=13.21/16.52/17.18 upper=43.05 stations=NGMGG farm=4026699/1109813 B-09 STACKED 0/0 S-21 STACKED 0/0 cr=29976000 rep=50
 405633 T-02:14:39 StationChanged station=WEATHER status=MARGINAL driver=GROUND_WIND
 407452 T-02:13:39 EntityStateChanged id=SP-42 kind=transporter from=WIND_HOLD to=RETURNING

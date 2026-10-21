@@ -1,8 +1,16 @@
 // Countdown (BALANCING §4). `…TS` = signed T-clock offset in seconds (negative before liftoff, e.g.
 // T-01:20:00 = -4_800). Durations in s.
+import { mvpContract } from './contracts';
 import { logistics } from './logistics';
+import { weather } from './weather';
 
 export type PollId = 'load' | 'terminal' | 'final';
+
+/**
+ * D1 skip stops sit this long before the last moment an order still beats the road closure (BALANCING §15 P2),
+ * s; range 120–600.
+ */
+const orderLastCallLeadS = 300;
 
 export const countdown = {
   /** Scenario start, T-06:00:00. */
@@ -45,8 +53,23 @@ export const countdown = {
     vanStaggerS: 30,
   },
   safingDurationS: 1_800,
-  /** T-clock marks that emit a `Milestone` event when the clock reaches them (skip-to-milestone stops). */
+  orderLastCallLeadS,
+  /**
+   * T-clock marks that emit a `Milestone` event when the clock reaches them (skip-to-milestone stops), ascending.
+   * The first three are the D1 moments (BALANCING §15 P2), derived from data: the last standard / rush order that
+   * still reaches the gate before the road closure (with `orderLastCallLeadS` to spare), and the moment the
+   * forecast horizon first covers the window open (the informed-rush moment). Advisory: no rate drop.
+   */
   milestones: [
+    {
+      name: 'STANDARD_ORDER_LAST_CALL',
+      tS: logistics.roadClosureStartTS - logistics.delivery.standard.leadTimeS - orderLastCallLeadS,
+    },
+    { name: 'FORECAST_SEES_WINDOW', tS: mvpContract.windowOpenTS - weather.forecast.horizonS },
+    {
+      name: 'RUSH_ORDER_LAST_CALL',
+      tS: logistics.roadClosureStartTS - logistics.delivery.rush.leadTimeS - orderLastCallLeadS,
+    },
     { name: 'ROAD_CLOSURE', tS: logistics.roadClosureStartTS },
     { name: 'TERMINAL_FORCE_1X', tS: -180 },
     { name: 'ENGINE_IGNITION', tS: -3 },
