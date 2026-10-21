@@ -340,9 +340,13 @@ kept), `Esc` deselects · `+ − Q E` each send one camera nudge; `C` re-frames 
     built): filters every tab's rows by call-sign / text, `/` focuses, `Esc` clears.
 11. **FIXED — Low (coordinator, from 8.3) — SAVE · LOAD sheet had no visible entry point.** `SAVE · LOAD` button in the
     top bar → `persistence.openMenu()` (the §6.6 user-chip popover is not built).
-12. **OPEN — Low — rate keys read the 10 Hz projection:** two `Space` / `,` / `.` presses inside ~100 ms toggle from the
-    same stale `timeScale` (Space-Space resumes twice). A human double-tap rarely beats 100 ms; fix = keep the last
-    requested rate UI-side until the projection echoes it. Owner: ui-design-system (post-MVP).
+12. **FIXED (`ui: rate keys act on the authoritative time state (8.2)`) — Low — rate keys read the 10 Hz projection:**
+    two `Space` / `,` / `.` presses inside ~100 ms toggled from the same stale `timeScale` (Space-Space resumed twice).
+    The keys now take `paused / requested / resumeRate` from `session.rateState()`, a synchronous bridge getter the
+    app binds to `TimeControl` through the projector's own `rateFields` mapping (`view.timeScale` applies synchronously
+    in `Game.applyView`), so the second press starts from the first one's result; the UI still imports only the bridge.
+    Unit test `src/ui/hud/frame/rate-keys.test.ts`: paused, Space Space → requests `10×, pause` (was `10×, 10×`);
+    `. . , ,` from 1× → `10×, 100×, 10×, 1×` (was `10×, 10×, …`); plus `src/app/projection/rate-fields.test.ts`.
 13. **OPEN — Low (visual) — compact truncations that keep their accessible names:** flight card vehicles sub-line
     (`B-09 / S-21 · …`), poll header (`[ GO / NO-GO PO…`), and non-current timeline phase codes at both sizes
     (`TERMIN…`, `TE…`): the 5 % segment floor is narrower than the short codes. Readable in full via names / tooltips;

@@ -15,6 +15,7 @@ import type {
   TimeScaleVM,
   UiProjection,
 } from '@bridge/projection-types';
+import type { RateStateVM } from '@bridge/commands';
 import type { ViewState } from '@bridge/stores';
 import { DT_S, isPreLiftoff, propellantReserve, secondsToTicks } from '@sim/index';
 import {
@@ -28,7 +29,7 @@ import {
   time as timeData,
 } from '@data/index';
 import type { Countdown, Phase, PollId, World } from '@sim/types';
-import type { Ctx, ProjectEnv } from './context';
+import type { Ctx, ProjectEnv, TimeInputs } from './context';
 import { entity, makeCtx, tClockAt } from './context';
 import { credits, duration, fixed, hours, missing, num, pct, tClock, tClockS, utc, words } from './format';
 import { GO_LABEL, HOLD_LABEL, PHASE_LABEL, POLL_LABEL, goStatus } from './labels';
@@ -132,6 +133,12 @@ function skipVM(c: Ctx): SkipVM {
   };
 }
 
+/** Rate fields of the time state as printed (shared with the session port's synchronous `rateState`, 8.2). */
+export function rateFields(t: Pick<TimeInputs, 'paused' | 'requested'>, ended: boolean): RateStateVM {
+  const paused = t.paused || ended;
+  return { requested: paused ? 0 : t.requested, resumeRate: t.requested, paused };
+}
+
 function timeScaleVM(c: Ctx): TimeScaleVM {
   const t = c.env.time;
   const ended = runEnded(c.cd);
@@ -145,14 +152,15 @@ function timeScaleVM(c: Ctx): TimeScaleVM {
       : t.maxAllowed === 1
         ? `1× LOCKED · ${word}`
         : `MAX ${t.maxAllowed}× · ${word}`;
-  const paused = t.paused || ended;
+  const fields = rateFields(t, ended);
+  const paused = fields.paused;
   const skip = skipVM(c);
   const rate = t.lagging || skip.active ? t.effectiveRate : t.effective;
   const rateText = fixed(rate, t.lagging ? 1 : 0);
   const drop = t.drop ? { code: t.drop.code, label: `1× · ${DROP_LABEL[t.drop.code]}`, tick: t.drop.tick } : null;
   return {
-    requested: paused ? 0 : t.requested,
-    resumeRate: t.requested,
+    requested: fields.requested,
+    resumeRate: fields.resumeRate,
     effective: ended ? 0 : t.effective,
     maxAllowed: ended ? 0 : t.maxAllowed,
     paused,

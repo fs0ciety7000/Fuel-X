@@ -9,11 +9,13 @@ import { EventBus } from './bus';
 import { GameLoop } from './loop';
 import { formatTClock } from './jump';
 import { LazyPersistence } from './persistence/lazy';
+import { rateFields } from './projection/project';
 import { Projector } from './projection/projector';
 import type { TimeInputs } from './projection/context';
 import { SessionController } from './session/controller';
 import type { RunOptions, SessionEnv } from './session/controller';
 import { InlineSimHost } from './sim-host/inline';
+import { runEnded } from './time/rules';
 import type { SkipBlockCode } from './time/rules';
 import { TimeControl } from './time/time-control';
 
@@ -75,6 +77,8 @@ export class Game {
       exportLog: () => void this.session.exportLog(),
       viewSite: () => this.cancelSkip(),
     });
+    // Rate keys read the authoritative time state (8.2): `view.timeScale` applies synchronously (applyView below).
+    session.bindRateState(() => rateFields(this.time, runEnded(this.host.inspect().countdown)));
     viewStore.subscribe((s, prev) => this.applyView(s, prev));
     const setPaused = (on: boolean): void => {
       this.time.paused = on;

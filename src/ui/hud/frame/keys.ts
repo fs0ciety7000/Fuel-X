@@ -1,9 +1,9 @@
 // Global HUD keys (DESIGN_SYSTEM §8 keyboard map). One window listener; reads the projection at key time (no
-// subscription). Single-letter keys never fire while typing, and Space never steals a focused control's activation.
+// subscription); rate keys take their rate fields from the app's synchronous `session.rateState()` (8.2). Single-letter keys never fire while typing, and Space never steals a focused control's activation.
 import { useEffect } from 'react';
-import { projectionStore, view, viewStore } from '@bridge/index';
+import { projectionStore, session, view, viewStore } from '@bridge/index';
 import { announce } from './live';
-import { rateAnnouncement, runEnded, steppedRate, toggledRate } from '../topbar/rate';
+import { liveTimeScale, rateAnnouncement, runEnded, steppedRate, toggledRate } from '../topbar/rate';
 import { runSkip } from '../topbar/RateControl';
 import { clearSearch, searchUi } from '../search/search';
 
@@ -86,9 +86,10 @@ export function handleHudKey(e: KeyboardEvent, extra?: (e: KeyboardEvent) => boo
       announce('RATE DISABLED, RUN ENDED');
       return true;
     }
-    const r = toggledRate(p.timeScale);
+    const ts = liveTimeScale(p.timeScale, session.rateState());
+    const r = toggledRate(ts);
     view.timeScale(r);
-    announce(r === 0 ? 'PAUSED' : rateAnnouncement(r, p.timeScale));
+    announce(r === 0 ? 'PAUSED' : rateAnnouncement(r, ts));
     return true;
   }
   if (e.key === ',' || e.key === '.') {
@@ -96,10 +97,11 @@ export function handleHudKey(e: KeyboardEvent, extra?: (e: KeyboardEvent) => boo
       announce('RATE DISABLED, RUN ENDED');
       return true;
     }
-    const { rate, blocked } = steppedRate(p.timeScale, e.key === '.' ? 1 : -1);
+    const ts = liveTimeScale(p.timeScale, session.rateState());
+    const { rate, blocked } = steppedRate(ts, e.key === '.' ? 1 : -1);
     if (rate !== null) {
       view.timeScale(rate);
-      announce(rateAnnouncement(rate, p.timeScale));
+      announce(rateAnnouncement(rate, ts));
     } else if (blocked) announce(`RATE LOCKED, ${blocked}`);
     return true;
   }

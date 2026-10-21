@@ -3,7 +3,7 @@
 // binds the sink to `SimHost.send` (stamped for the next tick); rejections come back as `CommandRejected` events in
 // the projection (events log). The bridge cannot import the app, so this is a port the composition root plugs in.
 import type { Command } from '@sim/types';
-import type { SessionActionId } from './projection-types';
+import type { SessionActionId, TimeScaleVM } from './projection-types';
 
 export type CommandSink = (cmd: Command) => void;
 
@@ -66,7 +66,17 @@ export interface SessionHandlers {
   viewSite(): void;
 }
 
+/**
+ * Rate fields of the authoritative time state, mapped exactly as the projection prints them (8.2): rate keys toggle /
+ * step from this, not from the ≤ 10 Hz projection, so two presses inside one projection interval act twice.
+ */
+export type RateStateVM = Required<Pick<TimeScaleVM, 'paused' | 'requested' | 'resumeRate'>>;
+
 export interface SessionPort extends SessionHandlers {
+  /** Synchronous read of the time state's rate fields; null while unbound (callers use the projection). */
+  rateState(): RateStateVM | null;
+  /** Composition root only: plug the rate-state getter. Returns the unbind function. */
+  bindRateState(get: () => RateStateVM): () => void;
   /** Dispatch by stable id (debrief / rate-control buttons). */
   run(id: SessionActionId): void;
   /** Composition root only. Returns the unbind function. */
@@ -85,6 +95,7 @@ const SESSION_METHOD: Record<SessionActionId, keyof SessionHandlers> = {
 
 export function createSessionPort(): SessionPort {
   let h: SessionHandlers | null = null;
+  let rate: (() => RateStateVM) | null = null;
   const stats = { calls: 0, dropped: 0 };
   const call = (m: keyof SessionHandlers): void => {
     if (!h) {
@@ -102,6 +113,13 @@ export function createSessionPort(): SessionPort {
     exportLog: () => call('exportLog'),
     viewSite: () => call('viewSite'),
     run: (id) => call(SESSION_METHOD[id]),
+    rateState: () => (rate ? rate() : null),
+    bindRateState(get) {
+      rate = get;
+      return () => {
+        if (rate === get) rate = null;
+      };
+    },
     bind(next) {
       h = next;
       return () => {
