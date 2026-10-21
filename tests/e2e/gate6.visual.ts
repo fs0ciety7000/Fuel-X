@@ -70,7 +70,6 @@ test.describe('gate 6', () => {
         const clock = await page.evaluate(async (script) => {
           const fx = (window as unknown as FxWindow).__fuelx;
           if (!fx) throw new Error('no __fuelx');
-          // eslint-disable-next-line @typescript-eslint/no-implied-eval
           await (new Function('fx', `return (async () => { ${script} })()`) as (f: Fx) => Promise<void>)(fx);
           fx.freezeVisuals(true);
           await fx.frames(4);

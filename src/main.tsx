@@ -10,15 +10,16 @@ import { App } from '@app/App';
 import { installDebug } from '@app/debug';
 import { debugEnabled } from '@app/debug/enabled';
 import { Game } from '@app/game';
-import { drawSeed, seedFromSearch } from '@app/session/session';
+import { autopilotFromSearch, drawSeed, seedFromSearch } from '@app/session/session';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('#root missing');
 
 const game = new Game();
 // `/play?seed=N` replays a shared run; otherwise a fresh seed, written back into the URL (GDD §13.2.3).
+// The player runs the count (7.1, AC 27); `?autopilot=1` lets the scripted director play it.
 const seed = seedFromSearch(location.search) ?? drawSeed(() => crypto.getRandomValues(new Uint32Array(1))[0] ?? 1);
-void game.newRun(seed);
+void game.newRun(seed, { autopilot: autopilotFromSearch(location.search) });
 if (debugEnabled()) installDebug(game);
 
 createRoot(root).render(
