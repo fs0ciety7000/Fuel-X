@@ -265,33 +265,35 @@ export const DecisionStripView = forwardRef<HTMLElement, DecisionStripViewProps>
         </p>
       ) : (
         <>
-          <div className={styles.body}>
-            <div className={styles.question}>
-              <h2 id={`${id}-q`} className={styles.q}>
-                {d.question}
-              </h2>
-              <p id={`${id}-auto`} className={styles.note}>
-                {d.autoNote || 'NO AUTO ACTION'}
-              </p>
+          <div className={styles.scroll}>
+            <div className={styles.body}>
+              <div className={styles.question}>
+                <h2 id={`${id}-q`} className={styles.q}>
+                  {d.question}
+                </h2>
+                <p id={`${id}-auto`} className={styles.note}>
+                  {d.autoNote || 'NO AUTO ACTION'}
+                </p>
+              </div>
+              <Evidence d={d} />
+              <div className={styles.deadline}>
+                <DeadlineBar d={d.deadline} />
+              </div>
             </div>
-            <Evidence d={d} />
-            <div className={styles.deadline}>
-              <DeadlineBar d={d.deadline} />
-            </div>
+            {d.kind === 'CATCH' && d.drivers.length > 0 ? (
+              <ul className={styles.drivers} aria-label="Drivers">
+                <li className={styles.label}>DRIVERS</li>
+                {d.drivers.map((r) => (
+                  <li key={r.label} className={styles.driver} data-state={r.state}>
+                    {r.state === 'warn' || r.state === 'danger' ? <Glyph id={r.state} /> : null}
+                    <span>{r.label}</span>
+                    <Value v={r.value} />
+                    <span className={styles.effect}>{r.effect}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
-          {d.kind === 'CATCH' && d.drivers.length > 0 ? (
-            <ul className={styles.drivers} aria-label="Drivers">
-              <li className={styles.label}>DRIVERS</li>
-              {d.drivers.map((r) => (
-                <li key={r.label} className={styles.driver} data-state={r.state}>
-                  {r.state === 'warn' || r.state === 'danger' ? <Glyph id={r.state} /> : null}
-                  <span>{r.label}</span>
-                  <Value v={r.value} />
-                  <span className={styles.effect}>{r.effect}</span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
           <div
             className={styles.options}
             style={{ gridTemplateColumns: `repeat(${Math.max(1, d.options.length)}, minmax(0, 1fr))` }}

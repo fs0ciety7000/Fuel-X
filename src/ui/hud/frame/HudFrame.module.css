@@ -29,8 +29,9 @@
   grid-template-columns:
     var(--hud-gutter) var(--hud-left) var(--hud-alt) minmax(0, 1fr) var(--hud-rail) var(--fx-space-3)
     var(--hud-right) var(--hud-gutter);
+  /* The strip row grows to its content but never past the space left (the world row gives way first). */
   grid-template-rows:
-    var(--hud-top) var(--hud-head-gap) auto minmax(0, 1fr) var(--hud-rail) auto var(--hud-time)
+    var(--hud-top) var(--hud-head-gap) auto minmax(0, 1fr) var(--hud-rail) minmax(0, max-content) var(--hud-time)
     var(--hud-gutter);
   grid-template-areas:
     'top    top    top    top     top     top   top     top'
