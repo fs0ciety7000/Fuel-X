@@ -26,7 +26,7 @@ export const weather = {
     tauS: 2_700,
     clampSd: 3,
   },
-  upperWind: { meanMPerS: 35, sdMPerS: 10, tauS: 3_600, altitudeM: 12_000 },
+  upperWind: { meanMPerS: 35, sdMPerS: 8, tauS: 3_600, altitudeM: 12_000 },
   launchLimit: { groundWindMPerS: 13, upperWindMPerS: 60 },
   front: {
     /** Probability that a front occurs in a run (unitless); drives A2. */

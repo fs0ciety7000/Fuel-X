@@ -211,7 +211,7 @@ Reference cases (tower wind V<sub>t</sub>; §13): nominal calm 0.997 · nominal 
 |---|---|---|---|---|
 | groundWind.mean / sd / tau | m/s, m/s, s | 7 / 2.5 / 1 800 | — | Ornstein–Uhlenbeck, seeded. Onshore, from ~210° |
 | windDirection.sd / tau / clamp (sim addition 5.10, **review**) | rad, s, sd | 15° (0.262) / 2 700 / ±3 sd | sd 10–25° | ground wind direction: OU deviation around `groundWind.fromDeg` (210°) on rng stream `wind`; meteorological "from" bearing, clockwise from north. Cosmetic for now (steam / plume drift); no limit reads it |
-| upperWind.mean / sd / tau | m/s, m/s, s | 35 / 10 / 3 600 | — | at ~12 km |
+| upperWind.mean / sd / tau | m/s, m/s, s | 35 / **8** / 3 600 (applied after 7.5b, §15.6; was 10) | sd 7–10 | at ~12 km |
 | limit.launch.groundWind | m/s | 13 (≈ 25 kn) | 11–16 | typical launch ground wind constraint |
 | limit.launch.upperWind | m/s | 60 | 50–75 | shear loads |
 | front.probability (per run) | – | 0.35 | 0.2–0.5 | drives A2 |
@@ -567,6 +567,18 @@ not stack fully on a high base (code), or `weather.launchLimit.upperWindMPerS` (
 §15.4). Before touching `propellant.mvpStart.farmLoxKg` (§15.3 note): D1 already matters (frugal vs hedger scrubs differ
 in 5 % of seeds), the miss is the scrub rate, not D1's weight. Q8 (user: weather scrubs ≤ 2 % after P1) is therefore
 **not met** by P1 alone.
+
+### 15.6 Follow-up after 7.5b — `weather.upperWind.sdMPerS` 10 → 8 (user: go on the recommended option)
+
+Outcome sweep, seeds 0–199 (`scripts/sim/outcome-sweep.ts 200`): weather scrubs standard **9 → 6 (3.0 %)**, frugal
+14 → 10 (5.0 %), hedger 6 → **3 (1.5 %)**; seeds 0–39 standard 2. Ordering frugal > standard ≥ hedger holds and D1
+decides a scrub in 7 / 200 seeds (17, 87, 102, 110, 121, 151, 198: frugal scrubs, hedger flies). Every remaining
+scrub is UPPER_WIND stacked with FARM_RESERVE_LOX, an A1 intrusion or the 20-min HOLD_FIX. Reading of q8: a player
+who uses the margin ladder (hedger) is under 2 %; the standard policy (3 LX + 1 MX standard) sits at 3 %. Anomaly
+sweep 200 (hands-off): shares +3.6 / −2.5 / +0.3 / −1.4 pts, diverted 12.8 %, failed 5.6 %, none at p ≥ 0.65 —
+AC 3 still green. Golden seed 42: only the upper-wind telemetry values and WEATHER MARGINAL/GO crossings change (10
+crossings fewer between T-03:34 and T-02:28, the T-01:04 / T-00:54 pair shifts by ≈ 1 min); no hold, poll, phase,
+flight or debrief line moves.
 
 ## Sources (brief)
 - [S1] Widely reported public specs for the super-heavy methalox class (booster ~3 400 t, ship ~1 200–1 500 t of propellant). Not re-verified in this pass; used as order of magnitude only.
