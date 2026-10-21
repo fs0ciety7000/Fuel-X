@@ -540,6 +540,7 @@ Tables live in `src/sim/entities/machines.ts`; implemented booster/ship states a
   | `session.skipToNextMilestone()` | `SKIP` | starts a skip if `timeScale.skip.enabled` | `timeScale.skip.active`, readout `SIM SKIP → …` |
   | `session.cancelSkip()` | `CANCEL_SKIP` | stops at the current tick, requested rate unchanged | `skip.active = false` |
   | `session.replaySameSeed()` | `REPLAY` | fresh `mvp` world, same seed + autopilot setting, empty command log, money/rep from the scenario; time rules, projector, view, camera reset | new run (`debrief: null`) |
+  | *(boot)* | — | `src/main.tsx`: seed from `?seed=` or `drawSeed`; **autopilot off** unless `?autopilot=1` (7.1: the player runs the count; `__fuelx.seed()` still defaults to the autopilot for tests) | first run |
   | `session.newSeed()` | `NEW_SEED` | same with `drawSeed(crypto)` ≠ current seed; URL → `/play?seed=N` (`history.replaceState`, other params kept) | `debrief.seed` of the next run |
   | `session.exportLog()` | `EXPORT_LOG` | downloads `fuelx-mvp-seed<N>-t<tick>.json` = `SessionFile {format: 'fuelx-session', version 1, game, schema, createdAt, scenario, seed, dataRevision, autopilot, fromTick, tick, commandLog, events, eventsTruncated, debrief[]}` (`src/app/session/session.ts`; loading it back is post-MVP) | — |
   | `session.viewSite()` | `VIEW_SITE` | cancels a skip; the sheet collapse / `B` reopen is UI state (`src/ui/hud/debrief/debrief-ui.ts`); the run stays paused (`RUN ENDED`) | — |
